@@ -17,16 +17,16 @@ const Header = () => {
           </div>
           
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="#buy" className="text-foreground hover:text-primary transition-colors">
+            <a href="/buy" className="text-foreground hover:text-primary transition-colors">
               Хочу купить
             </a>
-            <a href="#sell" className="text-foreground hover:text-primary transition-colors">
+            <a href="/sell" className="text-foreground hover:text-primary transition-colors">
               Хочу продать
             </a>
-            <a href="#catalog" className="text-foreground hover:text-primary transition-colors">
+            <a href="/selection" className="text-foreground hover:text-primary transition-colors">
               Подбор
             </a>
-            <a href="#business" className="text-foreground hover:text-primary transition-colors">
+            <a href="/business" className="text-foreground hover:text-primary transition-colors">
               Для юр.лиц
             </a>
           </nav>
@@ -40,7 +40,9 @@ const Header = () => {
               <span>+7 903 299 00 29</span>
             </a>
             <Button variant="default" className="bg-gradient-primary hover:opacity-90">
-              Оставить заявку
+              <a href="/contact" className="text-inherit no-underline">
+                Оставить заявку
+              </a>
             </Button>
           </div>
         </div>
