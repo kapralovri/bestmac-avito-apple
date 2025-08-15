@@ -124,7 +124,7 @@ const Sell = () => {
                   <div>
                     <Label htmlFor="model">Модель</Label>
                     <Input 
-                      placeholder="Например: MacBook Pro 14\" M2"
+                      placeholder="Например: MacBook Pro 14&quot; M2"
                       value={formData.model}
                       onChange={(e) => setFormData({...formData, model: e.target.value})}
                     />
