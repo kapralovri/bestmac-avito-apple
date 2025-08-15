@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Smartphone, Laptop, Monitor, Tablet, Filter, Search } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { motion } from "framer-motion";
 
 const Buy = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,7 +21,7 @@ const Buy = () => {
       title: "MacBook Pro 14\" M2 Pro 512GB",
       price: 185000,
       originalPrice: 250000,
-      image: "/api/placeholder/300/200",
+      image: "/placeholder.svg",
       condition: "Отличное",
       category: "MacBook",
       specifications: ["Apple M2 Pro", "16GB RAM", "512GB SSD", "2023 год"],
@@ -33,7 +34,7 @@ const Buy = () => {
       title: "iMac 24\" M1 256GB",
       price: 120000,
       originalPrice: 180000,
-      image: "/api/placeholder/300/200",
+      image: "/placeholder.svg",
       condition: "Хорошее",
       category: "iMac",
       specifications: ["Apple M1", "8GB RAM", "256GB SSD", "2021 год"],
@@ -46,7 +47,7 @@ const Buy = () => {
       title: "iPhone 14 Pro 128GB",
       price: 85000,
       originalPrice: 110000,
-      image: "/api/placeholder/300/200",
+      image: "/placeholder.svg",
       condition: "Отличное",
       category: "iPhone",
       specifications: ["A16 Bionic", "128GB", "ProRAW", "2022 год"],
@@ -77,6 +78,28 @@ const Buy = () => {
     return matchesSearch && matchesCategory && matchesPrice;
   });
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut" as const
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -84,7 +107,12 @@ const Buy = () => {
       <main className="pt-20 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Hero Section */}
-          <div className="text-center mb-12">
+          <motion.div 
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
             <h1 className="text-4xl md:text-5xl font-bold font-apple mb-6">
               Купить технику Apple
             </h1>
@@ -92,10 +120,15 @@ const Buy = () => {
               Широкий выбор проверенной техники Apple с гарантией качества. 
               Все устройства проходят тщательную диагностику перед продажей.
             </p>
-          </div>
+          </motion.div>
 
           {/* Search and Filters */}
-          <div className="bg-card rounded-lg border border-border p-6 mb-8">
+          <motion.div 
+            className="bg-card rounded-lg border border-border p-6 mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-apple-gray w-4 h-4" />
@@ -132,119 +165,135 @@ const Buy = () => {
                 </SelectContent>
               </Select>
             </div>
-          </div>
+          </motion.div>
 
           {/* Products Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProducts.map((product) => {
+          <motion.div 
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {filteredProducts.map((product, index) => {
               const IconComponent = getCategoryIcon(product.category);
               
               return (
-                <Card key={product.id} className="bg-card border-border shadow-card hover:shadow-elegant transition-all duration-300 group">
-                  <CardContent className="p-0">
-                    <div className="relative">
-                      <img
-                        src={product.image}
-                        alt={product.title}
-                        className="w-full h-48 object-cover rounded-t-lg"
-                      />
-                      <Badge 
-                        variant="secondary" 
-                        className="absolute top-4 left-4 bg-apple-green text-white"
-                      >
-                        {product.condition}
-                      </Badge>
-                      <div className="absolute top-4 right-4">
-                        <IconComponent className="w-6 h-6 text-primary" />
-                      </div>
-                    </div>
-                    
-                    <div className="p-6">
-                      <h3 className="text-lg font-semibold mb-3 group-hover:text-primary transition-colors">
-                        {product.title}
-                      </h3>
-                      
-                      <div className="mb-4">
-                        {product.specifications.map((spec, index) => (
-                          <span key={index} className="text-sm text-apple-gray mr-3">
-                            {spec}
-                          </span>
-                        ))}
-                      </div>
-                      
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <div className="text-2xl font-bold text-primary">
-                            {product.price.toLocaleString('ru-RU')} ₽
-                          </div>
-                          {product.originalPrice && (
-                            <div className="text-sm text-apple-gray line-through">
-                              {product.originalPrice.toLocaleString('ru-RU')} ₽
-                            </div>
-                          )}
-                        </div>
-                        <Badge variant="outline" className="text-apple-green border-apple-green">
-                          -{Math.round(((product.originalPrice! - product.price) / product.originalPrice!) * 100)}%
-                        </Badge>
-                      </div>
-                      
-                      <div className="flex gap-2">
-                        <Button 
-                          className="flex-1 bg-gradient-primary hover:opacity-90"
-                          onClick={() => window.open(product.avitoUrl, '_blank')}
+                <motion.div key={product.id} variants={itemVariants}>
+                  <Card className="bg-card border-border shadow-card hover:shadow-elegant transition-all duration-500 group transform hover:-translate-y-2 hover:scale-105">
+                    <CardContent className="p-0">
+                      <div className="relative overflow-hidden">
+                        <img
+                          src={product.image}
+                          alt={product.title}
+                          className="w-full h-48 object-cover rounded-t-lg transition-transform duration-500 group-hover:scale-110"
+                        />
+                        <Badge 
+                          variant="secondary" 
+                          className="absolute top-4 left-4 bg-apple-green text-white"
                         >
-                          Смотреть на Avito
-                        </Button>
-                        <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
-                          Связаться
-                        </Button>
+                          {product.condition}
+                        </Badge>
+                        <div className="absolute top-4 right-4">
+                          <IconComponent className="w-6 h-6 text-primary" />
+                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                      
+                      <div className="p-6">
+                        <h3 className="text-lg font-semibold mb-3 group-hover:text-primary transition-colors duration-300">
+                          {product.title}
+                        </h3>
+                        
+                        <div className="mb-4">
+                          {product.specifications.map((spec, index) => (
+                            <span key={index} className="text-sm text-apple-gray mr-3">
+                              {spec}
+                            </span>
+                          ))}
+                        </div>
+                        
+                        <div className="flex items-center justify-between mb-4">
+                          <div>
+                            <div className="text-2xl font-bold text-primary">
+                              {product.price.toLocaleString('ru-RU')} ₽
+                            </div>
+                            {product.originalPrice && (
+                              <div className="text-sm text-apple-gray line-through">
+                                {product.originalPrice.toLocaleString('ru-RU')} ₽
+                              </div>
+                            )}
+                          </div>
+                          <Badge variant="outline" className="text-apple-green border-apple-green">
+                            -{Math.round(((product.originalPrice! - product.price) / product.originalPrice!) * 100)}%
+                          </Badge>
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="flex-1"
+                          >
+                            <Button 
+                              className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-300 hover:shadow-lg"
+                              onClick={() => window.open(product.avitoUrl, '_blank')}
+                            >
+                              Смотреть на Avito
+                            </Button>
+                          </motion.div>
+                          <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
+                              Связаться
+                            </Button>
+                          </motion.div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
 
           {/* Advantages Section */}
-          <div className="mt-16 bg-card rounded-lg border border-border p-8">
+          <motion.div 
+            className="mt-16 bg-card rounded-lg border border-border p-8"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
             <h2 className="text-3xl font-bold font-apple text-center mb-8">
               Почему выбирают нас
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-white text-2xl">🛡️</span>
-                </div>
-                <h3 className="font-semibold mb-2">Гарантия 1 месяц</h3>
-                <p className="text-sm text-apple-gray">Полная проверка и гарантия на всю технику</p>
-              </div>
-              
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-white text-2xl">📋</span>
-                </div>
-                <h3 className="font-semibold mb-2">Полный пакет документов</h3>
-                <p className="text-sm text-apple-gray">Продажа через ИП, все документы в порядке</p>
-              </div>
-              
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-white text-2xl">🚚</span>
-                </div>
-                <h3 className="font-semibold mb-2">Доставка</h3>
-                <p className="text-sm text-apple-gray">По городу и регионам России</p>
-              </div>
-              
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-white text-2xl">🔄</span>
-                </div>
-                <h3 className="font-semibold mb-2">Обмен</h3>
-                <p className="text-sm text-apple-gray">Выгодные условия обмена старой техники</p>
-              </div>
+              {[
+                { emoji: "🛡️", title: "Гарантия 1 месяц", description: "Полная проверка и гарантия на всю технику" },
+                { emoji: "📋", title: "Полный пакет документов", description: "Продажа через ИП, все документы в порядке" },
+                { emoji: "🚚", title: "Доставка", description: "По городу и регионам России" },
+                { emoji: "🔄", title: "Обмен", description: "Выгодные условия обмена старой техники" }
+              ].map((advantage, index) => (
+                <motion.div 
+                  key={index}
+                  className="text-center"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  whileHover={{ scale: 1.05, y: -5 }}
+                >
+                  <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-white text-2xl">{advantage.emoji}</span>
+                  </div>
+                  <h3 className="font-semibold mb-2">{advantage.title}</h3>
+                  <p className="text-sm text-apple-gray">{advantage.description}</p>
+                </motion.div>
+              ))}
             </div>
-          </div>
+          </motion.div>
         </div>
       </main>
       

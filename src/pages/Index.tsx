@@ -1,9 +1,10 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import AboutSection from "@/components/AboutSection";
-import ProductCatalog from "@/components/ProductCatalog";
+// import ProductCatalog from "@/components/ProductCatalog";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
+// import AvitoAuth from "@/components/AvitoAuth";
 
 const Index = () => {
   return (
@@ -11,7 +12,27 @@ const Index = () => {
       <Header />
       <Hero />
       <AboutSection />
-      <ProductCatalog />
+      
+      {/* Секция интеграции с Avito */}
+      {/* Avito Integration Section - TEMPORARILY DISABLED */}
+      {/* 
+      <section className="py-20 bg-card/30">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold font-apple mb-4">
+              Подключение к Avito
+            </h2>
+            <p className="text-lg text-apple-gray">
+              Настройте интеграцию для отображения ваших объявлений
+            </p>
+          </div>
+          <AvitoAuth />
+        </div>
+      </section>
+      */}
+      
+              {/* ProductCatalog temporarily disabled due to Avito integration issues */}
+        {/* <ProductCatalog /> */}
       <ContactSection />
       <Footer />
     </div>

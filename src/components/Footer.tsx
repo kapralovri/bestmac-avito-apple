@@ -1,16 +1,49 @@
+import { Link } from "react-router-dom";
 import { Heart } from "lucide-react";
+import { motion } from "framer-motion";
 
 const Footer = () => {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5
+      }
+    }
+  };
+
   return (
-    <footer className="bg-card border-t border-border">
+    <motion.footer 
+      className="bg-card border-t border-border"
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Логотип и описание */}
-          <div className="col-span-1 md:col-span-2">
+          <motion.div className="col-span-1 md:col-span-2" variants={itemVariants}>
             <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+              <motion.div 
+                className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ duration: 0.2 }}
+              >
                 <span className="text-white font-bold text-lg">M</span>
-              </div>
+              </motion.div>
               <div>
                 <h1 className="text-xl font-bold font-apple">BestMac</h1>
                 <p className="text-xs text-apple-gray">THE</p>
@@ -23,50 +56,56 @@ const Footer = () => {
             <p className="text-sm text-apple-gray">
               ИП Иванов И.И. | ИНН: 123456789012
             </p>
-          </div>
+          </motion.div>
           
           {/* Услуги */}
-          <div>
+          <motion.div variants={itemVariants}>
             <h3 className="font-semibold mb-4">Услуги</h3>
             <ul className="space-y-2 text-apple-gray">
-              <li><a href="#" className="hover:text-primary transition-colors">Покупка техники</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Продажа техники</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Обмен устройств</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Доставка</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Гарантийное обслуживание</a></li>
+              <li><Link to="/buy" className="hover:text-primary transition-colors">Покупка техники</Link></li>
+              <li><Link to="/sell" className="hover:text-primary transition-colors">Продажа техники</Link></li>
+              <li><Link to="/selection" className="hover:text-primary transition-colors">Обмен устройств</Link></li>
+              <li><Link to="/contact" className="hover:text-primary transition-colors">Доставка</Link></li>
+              <li><Link to="/contact" className="hover:text-primary transition-colors">Гарантийное обслуживание</Link></li>
             </ul>
-          </div>
+          </motion.div>
           
           {/* Категории */}
-          <div>
+          <motion.div variants={itemVariants}>
             <h3 className="font-semibold mb-4">Категории</h3>
             <ul className="space-y-2 text-apple-gray">
-              <li><a href="#" className="hover:text-primary transition-colors">MacBook</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">iMac</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">iPhone</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">iPad</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Аксессуары</a></li>
+              <li><Link to="/buy" className="hover:text-primary transition-colors">MacBook</Link></li>
+              <li><Link to="/buy" className="hover:text-primary transition-colors">iMac</Link></li>
+              <li><Link to="/buy" className="hover:text-primary transition-colors">iPhone</Link></li>
+              <li><Link to="/buy" className="hover:text-primary transition-colors">iPad</Link></li>
+              <li><Link to="/buy" className="hover:text-primary transition-colors">Аксессуары</Link></li>
             </ul>
-          </div>
+          </motion.div>
         </div>
         
-        <div className="border-t border-border mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+        <motion.div 
+          className="border-t border-border mt-8 pt-8 flex flex-col md:flex-row justify-between items-center"
+          variants={itemVariants}
+        >
           <p className="text-apple-gray text-sm">
             © 2024 BestMac. Все права защищены.
           </p>
           <div className="flex items-center space-x-4 text-sm text-apple-gray mt-4 md:mt-0">
-            <a href="/privacy" className="hover:text-primary transition-colors">Политика конфиденциальности</a>
-            <a href="/terms" className="hover:text-primary transition-colors">Условия использования</a>
+            <Link to="/privacy" className="hover:text-primary transition-colors">Политика конфиденциальности</Link>
+            <Link to="/terms" className="hover:text-primary transition-colors">Условия использования</Link>
           </div>
-        </div>
+        </motion.div>
         
-        <div className="text-center mt-4">
+        <motion.div 
+          className="text-center mt-4"
+          variants={itemVariants}
+        >
           <p className="text-xs text-apple-gray flex items-center justify-center">
-            Сделано с <Heart className="w-4 h-4 mx-1 text-red-500" fill="currentColor" /> для любителей Apple
+            Сделано с <motion.span whileHover={{ scale: 1.2 }}><Heart className="w-4 h-4 mx-1 text-red-500" fill="currentColor" /></motion.span> для любителей Apple
           </p>
-        </div>
+        </motion.div>
       </div>
-    </footer>
+    </motion.footer>
   );
 };
 
