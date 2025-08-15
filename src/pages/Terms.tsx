@@ -105,8 +105,7 @@ const Terms = () => {
           <section>
             <h2 className="text-2xl font-semibold mb-4">10. Контактная информация</h2>
             <p className="text-muted-foreground">
-              ИП Иванов И.И.<br />
-              ИНН: 123456789012<br />
+              ИП Капралов Р.И.<br />
               Телефон: +7 903 299 00 29<br />
               По всем вопросам обращайтесь по указанному телефону.
             </p>
