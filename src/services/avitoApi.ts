@@ -17,21 +17,33 @@ interface AvitoApiResponse {
   items?: Array<{
     id?: string;
     title: string;
+    description?: string;
     price?: {
       value: number;
       original_value?: number;
+      currency?: string;
     };
     images?: Array<{
       url: string;
+      is_main?: boolean;
     }>;
     condition?: string;
     category?: string;
-    attributes?: Record<string, string>;
+    subcategory?: string;
+    attributes?: Record<string, any>;
     status?: string;
     url?: string;
     location?: {
       title?: string;
+      region?: string;
+      city?: string;
     };
+    created_at?: string;
+    updated_at?: string;
+    views_count?: number;
+    favorite_count?: number;
+    contact_phone?: string;
+    contact_name?: string;
   }>;
 }
 
@@ -129,7 +141,12 @@ class AvitoApiService {
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/core/v1/items/my`, {
+      const params = new URLSearchParams({
+        limit: '20',
+        offset: '0'
+      });
+      
+      const response = await fetch(`${this.baseUrl}/core/v1/items?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -161,13 +178,13 @@ class AvitoApiService {
       title: item.title,
       price: item.price?.value || 0,
       originalPrice: item.price?.original_value,
-      image: item.images?.[0]?.url || '/placeholder.svg',
+      image: item.images?.find(img => img.is_main)?.url || item.images?.[0]?.url || '/placeholder.svg',
       condition: this.mapCondition(item.condition),
       category: this.mapCategory(item.category),
       specifications: this.extractSpecifications(item),
       isAvailable: item.status === 'active',
       avitoUrl: `https://www.avito.ru${item.url || ''}`,
-      location: item.location?.title || 'Москва',
+      location: item.location?.title || item.location?.city || 'Москва',
       sellerRating: 4.8 // Рейтинг продавца
     })) || [];
   }
@@ -196,10 +213,20 @@ class AvitoApiService {
     
     if (item.attributes) {
       Object.entries(item.attributes).forEach(([key, value]) => {
-        if (value && typeof value === 'string') {
-          specs.push(value);
+        if (value && typeof value === 'string' && value.length > 0) {
+          // Преобразуем ключи в читаемый вид
+          const readableKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          specs.push(`${readableKey}: ${value}`);
+        } else if (typeof value === 'number') {
+          const readableKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          specs.push(`${readableKey}: ${value}`);
         }
       });
+    }
+
+    // Добавляем описание если есть
+    if (item.description && item.description.length > 0) {
+      specs.unshift(item.description.substring(0, 50) + (item.description.length > 50 ? '...' : ''));
     }
 
     return specs.slice(0, 4); // Максимум 4 характеристики
