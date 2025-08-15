@@ -1,5 +1,6 @@
 import { ShieldCheck, Award, Handshake, HeartHandshake } from "lucide-react";
 import { motion } from "framer-motion";
+import romanPhoto from "@/assets/hero-apple-devices.jpg";
 
 const AboutSection = () => {
   const containerVariants = {
@@ -54,7 +55,7 @@ const AboutSection = () => {
                 transition={{ duration: 0.2 }}
               >
                 <img 
-                  src="/hero-apple-devices.jpg" 
+                  src={romanPhoto} 
                   alt="Роман Капралов - основатель BestMac" 
                   className="w-full h-full object-cover"
                 />

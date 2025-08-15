@@ -113,11 +113,11 @@ const Business = () => {
               Работаем официально с полным пакетом документов и персональным сервисом.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-gradient-primary hover:opacity-90">
+              <Button size="lg" className="bg-gradient-primary hover:opacity-90" onClick={() => window.location.href = '/contact'}>
                 Получить коммерческое предложение
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
-              <Button variant="outline" size="lg" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
+              <Button variant="outline" size="lg" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => window.location.href = '/contact'}>
                 Рассчитать стоимость
                 <Calculator className="ml-2 w-5 h-5" />
               </Button>

@@ -53,8 +53,13 @@ const Footer = () => {
               Надежный партнер в мире техники Apple. Продаем качественные устройства 
               с гарантией и полным сервисом поддержки.
             </p>
-            <p className="text-sm text-apple-gray">
+            <p className="text-sm text-apple-gray mb-3">
               ИП Капралов Р.И. | ИНН: 123456789012
+            </p>
+            <p className="text-sm text-primary">
+              <a href="https://t.me/romanmanro" target="_blank" rel="noopener noreferrer" className="hover:underline">
+                💬 Telegram: @romanmanro
+              </a>
             </p>
           </motion.div>
           

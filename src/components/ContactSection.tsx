@@ -57,6 +57,13 @@ const ContactSection = () => {
       content: "Пн-Пт: 10:00-20:00\nСб-Вс: 11:00-18:00",
       link: null,
       type: "schedule"
+    },
+    {
+      icon: Phone,
+      title: "Telegram",
+      content: "@romanmanro",
+      link: "https://t.me/romanmanro",
+      type: "telegram"
     }
   ];
 
