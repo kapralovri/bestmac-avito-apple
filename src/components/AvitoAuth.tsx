@@ -122,6 +122,37 @@ const AvitoAuth = () => {
                 <p className="text-sm text-apple-gray">
                   Для отображения ваших объявлений с Avito необходимо авторизоваться через API.
                 </p>
+                
+                <div className="bg-blue-50 p-4 rounded-lg text-sm border border-blue-200">
+                  <p className="font-medium mb-3 text-blue-800">📋 Настройка в Avito:</p>
+                  <div className="space-y-2 text-blue-700">
+                    <div className="flex items-start space-x-2">
+                      <span className="font-mono text-xs bg-blue-100 px-2 py-1 rounded">1</span>
+                      <span>Перейдите на <a href="https://developers.avito.ru/" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-900">developers.avito.ru</a></span>
+                    </div>
+                    <div className="flex items-start space-x-2">
+                      <span className="font-mono text-xs bg-blue-100 px-2 py-1 rounded">2</span>
+                      <span>Создайте приложение и получите Client ID и Client Secret</span>
+                    </div>
+                    <div className="flex items-start space-x-2">
+                      <span className="font-mono text-xs bg-blue-100 px-2 py-1 rounded">3</span>
+                      <span>Укажите Redirect URL: <code className="bg-blue-100 px-2 py-1 rounded text-xs">https://bestmac.ru</code></span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-yellow-50 p-4 rounded-lg text-sm border border-yellow-200">
+                  <p className="font-medium mb-3 text-yellow-800">⚙️ Настройка для разработки:</p>
+                  <div className="space-y-2 text-yellow-700">
+                    <p className="text-xs">Создайте файл <code className="bg-yellow-100 px-2 py-1 rounded">.env.local</code> в корне проекта:</p>
+                    <div className="bg-yellow-100 p-3 rounded text-xs font-mono">
+                      VITE_AVITO_CLIENT_ID=ваш_client_id<br/>
+                      VITE_AVITO_CLIENT_SECRET=ваш_client_secret<br/>
+                      VITE_AVITO_REDIRECT_URL=http://localhost:8080
+                    </div>
+                  </div>
+                </div>
+                
                 <div className="bg-gray-50 p-3 rounded-lg text-sm">
                   <p className="font-medium mb-2">Что произойдет после авторизации:</p>
                   <ul className="space-y-1 text-apple-gray">

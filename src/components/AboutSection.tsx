@@ -47,7 +47,23 @@ const AboutSection = () => {
           viewport={{ once: true }}
         >
           <motion.div variants={itemVariants}>
-            <h2 className="text-3xl font-bold mb-6">Обо мне</h2>
+            <div className="flex items-center space-x-6 mb-6">
+              <motion.div 
+                className="w-24 h-24 rounded-full overflow-hidden border-4 border-primary/20"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2 }}
+              >
+                <img 
+                  src="/hero-apple-devices.jpg" 
+                  alt="Роман Капралов - основатель BestMac" 
+                  className="w-full h-full object-cover"
+                />
+              </motion.div>
+              <div>
+                <h2 className="text-3xl font-bold">Обо мне</h2>
+                <p className="text-lg text-muted-foreground">Роман Капралов</p>
+              </div>
+            </div>
             <div className="space-y-4 text-lg text-muted-foreground">
               <motion.p
                 initial={{ opacity: 0, y: 20 }}

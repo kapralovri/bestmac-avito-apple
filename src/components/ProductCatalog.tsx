@@ -194,7 +194,7 @@ const ProductCatalog = () => {
             variant="outline" 
             size="lg"
             className="px-8 py-4 text-lg border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:scale-105 hover:shadow-lg"
-            onClick={() => window.open('https://www.avito.ru/user/your-profile', '_blank')}
+            onClick={() => window.open('https://www.avito.ru/brands/i46958617', '_blank')}
           >
             Смотреть все объявления на Avito
             <ArrowRight className="ml-2 w-5 h-5" />

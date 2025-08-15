@@ -207,7 +207,7 @@ const Contact = () => {
                       </div>
                       <div>
                         <p className="font-medium">Telegram</p>
-                        <a href="https://t.me/bestmac_ru" className="text-primary hover:underline">
+                        <a href="https://t.me/Romanmanro" className="text-primary hover:underline">
                           @bestmac_ru
                         </a>
                       </div>

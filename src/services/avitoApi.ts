@@ -15,7 +15,7 @@ interface AvitoProduct {
 
 interface AvitoApiResponse {
   items?: Array<{
-    id: string;
+    id?: string;
     title: string;
     price?: {
       value: number;
@@ -156,8 +156,8 @@ class AvitoApiService {
 
   private transformAvitoData(avitoData: AvitoApiResponse): AvitoProduct[] {
     // Трансформация данных из API Avito в наш формат
-    return avitoData.items?.map((item) => ({
-      id: item.id,
+    return avitoData.items?.map((item, index) => ({
+      id: item.id || `avito-${index}`,
       title: item.title,
       price: item.price?.value || 0,
       originalPrice: item.price?.original_value,

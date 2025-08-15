@@ -54,7 +54,7 @@ const Footer = () => {
               с гарантией и полным сервисом поддержки.
             </p>
             <p className="text-sm text-apple-gray">
-              ИП Иванов И.И. | ИНН: 123456789012
+              ИП Капралов Р.И. | ИНН: 123456789012
             </p>
           </motion.div>
           
@@ -88,7 +88,7 @@ const Footer = () => {
           variants={itemVariants}
         >
           <p className="text-apple-gray text-sm">
-            © 2024 BestMac. Все права защищены.
+            © 2025 BestMac. Все права защищены.
           </p>
           <div className="flex items-center space-x-4 text-sm text-apple-gray mt-4 md:mt-0">
             <Link to="/privacy" className="hover:text-primary transition-colors">Политика конфиденциальности</Link>
