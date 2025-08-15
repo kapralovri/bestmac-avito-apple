@@ -55,8 +55,8 @@ const Footer = () => {
             © 2024 BestMac. Все права защищены.
           </p>
           <div className="flex items-center space-x-4 text-sm text-apple-gray mt-4 md:mt-0">
-            <a href="#" className="hover:text-primary transition-colors">Политика конфиденциальности</a>
-            <a href="#" className="hover:text-primary transition-colors">Условия использования</a>
+            <a href="/privacy" className="hover:text-primary transition-colors">Политика конфиденциальности</a>
+            <a href="/terms" className="hover:text-primary transition-colors">Условия использования</a>
           </div>
         </div>
         
