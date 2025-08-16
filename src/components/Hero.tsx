@@ -2,8 +2,11 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield, FileText, Truck, RefreshCw } from "lucide-react";
 import heroImage from "@/assets/hero-apple-devices.jpg";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
+  const navigate = useNavigate();
+  
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -105,7 +108,7 @@ const Hero = () => {
                 variant="outline" 
                 size="lg"
                 className="border-border hover:bg-secondary px-8 py-4 text-lg"
-                onClick={() => window.location.href = '/sell'}
+                onClick={() => navigate('/sell')}
               >
                 Продать технику
               </Button>

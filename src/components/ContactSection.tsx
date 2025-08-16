@@ -95,7 +95,7 @@ const ContactSection = () => {
           {/* Контактная информация */}
           <motion.div className="space-y-8" variants={itemVariants}>
             <div>
-              <h3 className="text-2xl font-semibold mb-6">Наши контакты</h3>
+              <h3 className="text-2xl font-semibold mb-6">Мои контакты</h3>
               <div className="space-y-4">
                 {contactInfo.map((contact, index) => (
                   <motion.div 
@@ -141,7 +141,7 @@ const ContactSection = () => {
             >
               <Card className="bg-gradient-primary text-white border-0">
                 <CardContent className="p-6">
-                  <h4 className="text-xl font-semibold mb-4">Наши преимущества</h4>
+                  <h4 className="text-xl font-semibold mb-4">Мои преимущества</h4>
                   <ul className="space-y-3 text-sm">
                     <li>✓ Гарантия 1 месяц на всю технику</li>
                     <li>✓ Проверка устройств перед продажей</li>

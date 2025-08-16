@@ -53,11 +53,11 @@ const AvitoOffers = () => {
         <a href={offer.url} target="_blank" rel="noopener noreferrer" className="block">
           <img 
             className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
-            src={offer.imageUrl || '/placeholder.svg'} 
+            src={offer.imageUrl || ''} 
             alt={offer.title}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.src = '/placeholder.svg';
+              target.style.display = 'none';
             }}
           />
         </a>

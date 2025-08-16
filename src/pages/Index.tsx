@@ -37,7 +37,7 @@ const Index = () => {
               Актуальные предложения
             </h2>
             <p className="text-lg text-apple-gray">
-              Наши лучшие предложения с Avito
+              Мои лучшие предложения с Avito
             </p>
           </div>
           

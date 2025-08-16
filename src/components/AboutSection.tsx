@@ -1,6 +1,6 @@
 import { ShieldCheck, Award, Handshake, HeartHandshake } from "lucide-react";
 import { motion } from "framer-motion";
-import romanPhoto from "@/assets/hero-apple-devices.jpg";
+import romanPhoto from "@/assets/about-me.png";
 
 const AboutSection = () => {
   const containerVariants = {
@@ -73,7 +73,7 @@ const AboutSection = () => {
                 viewport={{ once: true }}
               >
                 Меня зовут <span className="font-semibold text-foreground">Роман</span>, я уже более 
-                <span className="font-semibold text-primary"> 6 лет</span> занимаюсь подбором и продажей 
+                <span className="font-semibold text-primary"> 10 лет</span> занимаюсь подбором и продажей 
                 подержанной техники Apple.
               </motion.p>
               <motion.p

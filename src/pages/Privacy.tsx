@@ -38,7 +38,7 @@ const Privacy = () => {
             <ul className="list-disc list-inside text-muted-foreground space-y-2">
               <li>Обработки заявок на покупку/продажу техники</li>
               <li>Связи с вами по поводу сделок</li>
-              <li>Улучшения качества наших услуг</li>
+              <li>Улучшения качества моих услуг</li>
               <li>Информирования о новых предложениях</li>
             </ul>
           </section>
