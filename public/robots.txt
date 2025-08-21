@@ -10,6 +10,10 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
+User-agent: Yandex
+Allow: /
+Host: bestmac.ru
+
 User-agent: *
 Allow: /
 Sitemap: https://bestmac.ru/sitemap.xml
