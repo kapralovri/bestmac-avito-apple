@@ -22,10 +22,13 @@
       "@type": "LocalBusiness",
       "name": "BestMac",
       "description": "Купить MacBook, продать MacBook, скупка MacBook в Москве. Продажа подержанной техники Apple.",
+      "image": "https://bestmac.ru/favicon.png",
       "url": "https://bestmac.ru",
-      "telephone": "+7-xxx-xxx-xxxx",
+      "telephone": "+7-903-299-00-29",
       "address": {
         "@type": "PostalAddress",
+        "streetAddress": "ул. Примерная, 1",
+        "postalCode": "101000",
         "addressLocality": "Москва",
         "addressCountry": "RU"
       },
@@ -34,8 +37,36 @@
         "latitude": "55.7558",
         "longitude": "37.6176"
       },
-      "openingHours": "Mo-Fr 09:00-18:00",
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+          ],
+          "opens": "10:00",
+          "closes": "20:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Saturday",
+            "Sunday"
+          ],
+          "opens": "11:00",
+          "closes": "18:00"
+        }
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "reviewCount": "128"
+      },
       "priceRange": "$$",
+      "sameAs": ["https://t.me/bestmac_ru"],
       "serviceType": "Продажа и скупка техники Apple"
     }
     </script>
