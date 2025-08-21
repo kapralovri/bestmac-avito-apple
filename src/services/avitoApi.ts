@@ -30,7 +30,7 @@ interface AvitoApiResponse {
     condition?: string;
     category?: string;
     subcategory?: string;
-    attributes?: Record<string, any>;
+    attributes?: Record<string, unknown>;
     status?: string;
     url?: string;
     location?: {
