@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { sendEmail } from "@/services/email";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -31,13 +32,10 @@ const Contact = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Here would be integration with Telegram Bot API
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await sendEmail({ form: "contact", ...formData });
       setIsSubmitted(true);
-      
+
       // Reset form after 3 seconds
       setTimeout(() => {
         setIsSubmitted(false);
@@ -85,7 +83,7 @@ const Contact = () => {
                 {isSubmitted ? (
                   <div className="text-center py-8">
                     <CheckCircle className="w-16 h-16 text-apple-green mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">Сообщение отправлено!</h3>
+                    <h3 className="text-xl font-semibold mb-2">Сообщение успешно отправлено</h3>
                     <p className="text-apple-gray">
                       Мы получили вашу заявку и свяжемся с вами в ближайшее время.
                     </p>

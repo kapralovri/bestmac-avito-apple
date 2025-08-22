@@ -9,24 +9,32 @@ import { Slider } from "@/components/ui/slider";
 import { Search, Target, CheckCircle, MessageCircle, HandHeart, ArrowRight } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { sendEmail } from "@/services/email";
 
 const Selection = () => {
   const [budget, setBudget] = useState([100000]);
-  const [formData, setFormData] = useState({
+  const initialState = {
     purpose: "",
     devices: "",
-    budget: 100000,
     features: "",
     timeline: "",
-    contact: "",
     phone: "",
     additional: ""
-  });
+  };
+  const [formData, setFormData] = useState(initialState);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Integration with Telegram Bot API
-    console.log("Selection request submitted:", formData);
+    try {
+      await sendEmail({ form: "selection", ...formData, budget: budget[0] });
+      setIsSubmitted(true);
+      setFormData(initialState);
+      setBudget([100000]);
+      setTimeout(() => setIsSubmitted(false), 3000);
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
   };
 
   return (
@@ -123,6 +131,15 @@ const Selection = () => {
                 <CardTitle className="text-2xl font-apple">Заявка на подбор</CardTitle>
               </CardHeader>
               <CardContent>
+                {isSubmitted ? (
+                  <div className="text-center py-8">
+                    <CheckCircle className="w-16 h-16 text-apple-green mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">Сообщение успешно отправлено</h3>
+                    <p className="text-apple-gray">
+                      Мы получили вашу заявку и свяжемся с вами в ближайшее время.
+                    </p>
+                  </div>
+                ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div>
                     <Label htmlFor="purpose">Для каких задач нужна техника?</Label>
@@ -226,6 +243,7 @@ const Selection = () => {
                     <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
                 </form>
+                )}
               </CardContent>
             </Card>
           </div>

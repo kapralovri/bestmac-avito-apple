@@ -9,18 +9,20 @@ import { CheckCircle, ArrowRight, Calculator, Clock, Shield, Banknote } from "lu
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
+import { sendEmail } from "@/services/email";
 
 const Sell = () => {
-  const [formData, setFormData] = useState({
+  const initialState = {
     device: "",
     model: "",
     year: "",
     condition: "",
     storage: "",
     description: "",
-    contact: "",
     phone: ""
-  });
+  };
+  const [formData, setFormData] = useState(initialState);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const priceRanges = {
     "MacBook Air M1": "80,000 - 120,000 ₽",
@@ -31,10 +33,16 @@ const Sell = () => {
     "iPad Pro 12.9\"": "60,000 - 100,000 ₽"
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here would be integration with Telegram Bot API
-    console.log("Form submitted:", formData);
+    try {
+      await sendEmail({ form: "sell", ...formData });
+      setIsSubmitted(true);
+      setFormData(initialState);
+      setTimeout(() => setIsSubmitted(false), 3000);
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
   };
 
   const containerVariants = {
@@ -140,6 +148,15 @@ const Sell = () => {
                   <CardTitle className="text-2xl font-apple">Быстрая оценка</CardTitle>
                 </CardHeader>
                 <CardContent>
+                  {isSubmitted ? (
+                    <div className="text-center py-8">
+                      <CheckCircle className="w-16 h-16 text-apple-green mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold mb-2">Сообщение успешно отправлено</h3>
+                      <p className="text-apple-gray">
+                        Мы получили вашу заявку и свяжемся с вами в ближайшее время.
+                      </p>
+                    </div>
+                  ) : (
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                       <Label htmlFor="device">Тип устройства</Label>
@@ -229,6 +246,7 @@ const Sell = () => {
                       </Button>
                     </motion.div>
                   </form>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
