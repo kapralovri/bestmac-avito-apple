@@ -63,7 +63,7 @@ const Hero = () => {
       >
         <div className="max-w-3xl">
           <motion.h1
-            className="relative z-10 text-5xl md:text-7xl font-bold font-apple mb-8 leading-tight"
+            className="text-5xl md:text-7xl font-bold font-apple mb-8 leading-tight"
             variants={itemVariants}
           >
             <ShatterText
