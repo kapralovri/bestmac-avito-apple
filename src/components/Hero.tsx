@@ -3,6 +3,7 @@ import { ArrowRight, Shield, FileText, Truck, RefreshCw } from "lucide-react";
 import heroImage from "@/assets/hero-apple-devices.jpg";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import ShatterText from "@/components/ShatterText";
 
 const Hero = () => {
   const navigate = useNavigate();
@@ -61,14 +62,14 @@ const Hero = () => {
         animate="visible"
       >
         <div className="max-w-3xl">
-          <motion.h1 
+          <motion.h1
             className="text-5xl md:text-7xl font-bold font-apple mb-8 leading-tight"
             variants={itemVariants}
           >
-            Купите{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-primary">
-              iMac и MacBook
-            </span>
+            <ShatterText
+              text="Купите iMac и MacBook"
+              className="text-transparent bg-clip-text bg-gradient-primary"
+            />
             <br />
             в Москве выгодно
           </motion.h1>
