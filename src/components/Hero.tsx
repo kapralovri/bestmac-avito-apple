@@ -3,6 +3,7 @@ import { ArrowRight, Shield, FileText, Truck, RefreshCw } from "lucide-react";
 import heroImage from "@/assets/hero-apple-devices.jpg";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import ShatterText from "@/components/ShatterText";
 
 const Hero = () => {
   const navigate = useNavigate();
@@ -43,9 +44,9 @@ const Hero = () => {
 
   return (
     <section className="relative min-h-screen flex items-center">
-      <div className="absolute inset-0 bg-gradient-hero" />
-      <div 
-        className="absolute inset-0 opacity-30"
+      <div className="absolute inset-0 bg-gradient-hero pointer-events-none" />
+      <div
+        className="absolute inset-0 opacity-30 pointer-events-none"
         style={{
           backgroundImage: `url(${heroImage})`,
           backgroundSize: 'cover',
@@ -53,22 +54,22 @@ const Hero = () => {
           backgroundRepeat: 'no-repeat'
         }}
       />
-      
-      <motion.div 
-        className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32"
+
+      <motion.div
+        className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
         <div className="max-w-3xl">
-          <motion.h1 
+          <motion.h1
             className="text-5xl md:text-7xl font-bold font-apple mb-8 leading-tight"
             variants={itemVariants}
           >
-            Купите{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-primary">
-              iMac и MacBook
-            </span>
+            <ShatterText
+              text="Купите iMac и MacBook"
+              className="text-transparent bg-clip-text bg-gradient-primary"
+            />
             <br />
             в Москве выгодно
           </motion.h1>
