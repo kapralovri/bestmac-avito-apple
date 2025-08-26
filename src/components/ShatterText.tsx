@@ -47,23 +47,24 @@ const ShatterText = ({ text, className }: ShatterTextProps) => {
   }, [shattered, letters]);
 
   return (
-    <span
-      onClick={() => setShattered((prev) => !prev)}
-      style={{ display: "inline-block", cursor: "pointer", perspective: 1000 }}
-    >
-      {letters.map((char, i) => (
-        <motion.span
-          key={i}
-          className={className}
-          style={{ display: "inline-block", whiteSpace: "pre", transformStyle: "preserve-3d" }}
-          animate={targets[i]}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        >
-          {char}
-        </motion.span>
-      ))}
-    </span>
-  );
+  <span
+    className="relative z-10"
+    onClick={() => setShattered(prev => !prev)}
+    style={{ display: "inline-block", cursor: "pointer", perspective: 1000 }}
+  >
+    {letters.map((char, i) => (
+      <motion.span
+        key={i}
+        className={className}
+        style={{ display: "inline-block", whiteSpace: "pre", transformStyle: "preserve-3d" }}
+        animate={targets[i]}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+      >
+        {char}
+      </motion.span>
+    ))}
+  </span>
+);
 };
 
 export default ShatterText;
