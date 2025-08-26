@@ -8,6 +8,7 @@ import { Smartphone, Laptop, Monitor, Tablet, Filter, Search } from "lucide-reac
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
+import AvitoOffers from "@/components/AvitoOffers";
 
 const Buy = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -256,6 +257,26 @@ const Buy = () => {
                 </motion.div>
               );
             })}
+          </motion.div>
+
+          {/* Актуальные предложения из Avito */}
+          <motion.div 
+            className="mt-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold font-apple mb-4">
+                Актуальные предложения
+              </h2>
+              <p className="text-lg text-apple-gray">
+                Мои лучшие предложения с Avito
+              </p>
+            </div>
+            
+            <AvitoOffers />
           </motion.div>
 
           {/* Advantages Section */}
