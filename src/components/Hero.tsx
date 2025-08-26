@@ -44,9 +44,9 @@ const Hero = () => {
 
   return (
     <section className="relative min-h-screen flex items-center">
-      <div className="absolute inset-0 bg-gradient-hero" />
-      <div 
-        className="absolute inset-0 opacity-30"
+      <div className="absolute inset-0 bg-gradient-hero pointer-events-none" />
+      <div
+        className="absolute inset-0 opacity-30 pointer-events-none"
         style={{
           backgroundImage: `url(${heroImage})`,
           backgroundSize: 'cover',
@@ -54,9 +54,9 @@ const Hero = () => {
           backgroundRepeat: 'no-repeat'
         }}
       />
-      
-      <motion.div 
-        className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32"
+
+      <motion.div
+        className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
