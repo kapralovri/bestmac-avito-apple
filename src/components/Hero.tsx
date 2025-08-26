@@ -66,9 +66,8 @@ const Hero = () => {
             className="relative z-10 text-5xl md:text-7xl font-bold font-apple mb-8 leading-tight"
             variants={itemVariants}
           >
-            Купите{" "}
             <ShatterText
-              text="iMac и MacBook"
+              text="Купите iMac и MacBook"
               className="text-transparent bg-clip-text bg-gradient-primary"
             />
             <br />
