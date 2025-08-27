@@ -34,9 +34,12 @@ const randomTransform = (): Transform => ({
 });
 
 const ShatterText = ({ text, className }: ShatterTextProps) => {
-  const letters = text.split("");
+  const words = text.split(/(\s+)/);
+  const letters = text.replace(/\s+/g, "").split("");
   const [shattered, setShattered] = useState(false);
-  const [targets, setTargets] = useState<Transform[]>(letters.map(() => createZeroTransform()));
+  const [targets, setTargets] = useState<Transform[]>(
+    letters.map(() => createZeroTransform())
+  );
 
   useEffect(() => {
     if (shattered) {
@@ -46,25 +49,42 @@ const ShatterText = ({ text, className }: ShatterTextProps) => {
     }
   }, [shattered, letters]);
 
+  let letterIndex = -1;
+
   return (
-  <span
-    className="relative z-10"
-    onClick={() => setShattered(prev => !prev)}
-    style={{ display: "inline-block", cursor: "pointer", perspective: 1000 }}
-  >
-    {letters.map((char, i) => (
-      <motion.span
-        key={i}
-        className={className}
-        style={{ display: "inline-block", whiteSpace: "pre", transformStyle: "preserve-3d" }}
-        animate={targets[i]}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-      >
-        {char}
-      </motion.span>
-    ))}
-  </span>
-);
+    <span
+      className="relative z-10"
+      onClick={() => setShattered(prev => !prev)}
+      style={{ display: "inline-block", cursor: "pointer", perspective: 1000 }}
+    >
+      {words.map((word, i) =>
+        word.trim() === "" ? (
+          word
+        ) : (
+          <span key={i} className="inline-flex whitespace-nowrap">
+            {word.split("").map((char, j) => {
+              letterIndex++;
+              return (
+                <motion.span
+                  key={j}
+                  className={className}
+                  style={{
+                    display: "inline-block",
+                    whiteSpace: "pre",
+                    transformStyle: "preserve-3d"
+                  }}
+                  animate={targets[letterIndex]}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                >
+                  {char}
+                </motion.span>
+              );
+            })}
+          </span>
+        )
+      )}
+    </span>
+  );
 };
 
 export default ShatterText;

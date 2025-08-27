@@ -68,7 +68,7 @@ const Hero = () => {
           >
             <ShatterText
               text="Купите iMac и MacBook"
-              className="text-transparent bg-clip-text bg-gradient-primary whitespace-nowrap"
+              className="text-transparent bg-clip-text bg-gradient-primary"
             />
             <br />
             в Москве выгодно
