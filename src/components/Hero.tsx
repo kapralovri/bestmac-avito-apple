@@ -66,10 +66,12 @@ const Hero = () => {
             className="text-5xl md:text-7xl font-bold font-apple mb-8 leading-tight"
             variants={itemVariants}
           >
-            <ShatterText
-              text="Купите iMac и MacBook"
-              className="text-transparent bg-clip-text bg-gradient-primary"
-            />
+            <span className="whitespace-nowrap">
+              <ShatterText
+                text="Купите iMac и MacBook"
+                className="text-transparent bg-clip-text bg-gradient-primary"
+              />
+            </span>
             <br />
             в Москве выгодно
           </motion.h1>
