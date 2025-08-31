@@ -6,10 +6,19 @@ import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
 // import AvitoAuth from "@/components/AvitoAuth";
 import AvitoOffers from "@/components/AvitoOffers";
+import SEOHead from "@/components/SEOHead";
+import { organizationSchema } from "@/lib/schema";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <SEOHead 
+        title="BestMac - Купить MacBook, продать MacBook, скупка MacBook в Москве | Техника Apple"
+        description="Купить MacBook, продать MacBook, скупка MacBook в Москве. Продажа подержанной техники Apple с гарантией 1 месяц. Выкуп MacBook, iMac, iPhone. Через ИП без НДС."
+        canonical="/"
+        schema={organizationSchema}
+        keywords="купить macbook, продать macbook, скупка macbook, бу macbook, macbook москва, macbook apple, imac купить, iphone продать, техника apple, apple москва"
+      />
       <Header />
       <Hero />
       <AboutSection />

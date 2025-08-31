@@ -17,6 +17,10 @@ import {
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { sendEmail } from "@/services/email";
+import SEOHead from "@/components/SEOHead";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import ContactMap from "@/components/ContactMap";
+import { trackFormSubmit, trackContactClick } from "@/components/Analytics";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -30,10 +34,16 @@ const Contact = () => {
 
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const breadcrumbItems = [
+    { name: "Главная", url: "/" },
+    { name: "Контакты", url: "/contact" }
+  ];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await sendEmail({ form: "contact", ...formData });
+      trackFormSubmit('contact');
       setIsSubmitted(true);
 
       // Reset form after 3 seconds
@@ -54,42 +64,50 @@ const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background text-foreground">
+      <SEOHead 
+        title="Контакты BestMac — связаться с нами в Москве | BestMac"
+        description="Контакты BestMac в Москве. Телефон, адрес, время работы. Свяжитесь с нами для покупки или продажи техники Apple."
+        canonical="/contact"
+        keywords="контакты bestmac, адрес bestmac, телефон bestmac москва, связаться с bestmac"
+      />
       <Header />
       
-      <main className="pt-20 pb-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Hero Section */}
-          <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-bold font-apple mb-6">
-              Связаться с нами
-            </h1>
-            <p className="text-xl text-apple-gray max-w-3xl mx-auto mb-8">
-              Есть вопросы о покупке или продаже техники Apple? Хотите получить персональную консультацию? 
-              Мы всегда готовы помочь и ответить на все ваши вопросы.
-            </p>
-          </div>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Breadcrumbs items={breadcrumbItems} />
+        
+        {/* Hero Section */}
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-5xl font-bold font-apple mb-6">
+            Связаться с нами
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+            Есть вопросы о покупке или продаже техники Apple? Хотите получить персональную консультацию? 
+            Мы всегда готовы помочь и ответить на все ваши вопросы.
+          </p>
+        </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Contact Form */}
-            <Card className="bg-card border-border shadow-elegant">
-              <CardHeader>
-                <CardTitle className="text-2xl font-apple flex items-center">
-                  <MessageCircle className="w-6 h-6 mr-2 text-primary" />
-                  Оставить заявку
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isSubmitted ? (
-                  <div className="text-center py-8">
-                    <CheckCircle className="w-16 h-16 text-apple-green mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">Сообщение успешно отправлено</h3>
-                    <p className="text-apple-gray">
-                      Мы получили вашу заявку и свяжемся с вами в ближайшее время.
-                    </p>
-                  </div>
-                ) : (
-                  <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+          {/* Contact Form */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold flex items-center">
+                <MessageCircle className="w-6 h-6 mr-2 text-primary" />
+                Оставить заявку
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isSubmitted ? (
+                <div className="text-center py-8">
+                  <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">Сообщение отправлено!</h3>
+                  <p className="text-muted-foreground">
+                    Мы получили вашу заявку и свяжемся с вами в ближайшее время.
+                  </p>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="name">Имя *</Label>
                       <Input 
@@ -100,238 +118,185 @@ const Contact = () => {
                         required
                       />
                     </div>
-
                     <div>
                       <Label htmlFor="phone">Телефон *</Label>
                       <Input 
                         id="phone"
+                        type="tel"
                         placeholder="+7 (999) 123-45-67"
                         value={formData.phone}
                         onChange={(e) => setFormData({...formData, phone: e.target.value})}
                         required
                       />
                     </div>
+                  </div>
 
-                    <div>
-                      <Label htmlFor="email">Email</Label>
-                      <Input 
-                        id="email"
-                        type="email"
-                        placeholder="your@email.com"
-                        value={formData.email}
-                        onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      />
-                    </div>
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input 
+                      id="email"
+                      type="email"
+                      placeholder="your@email.com"
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    />
+                  </div>
 
-                    <div>
-                      <Label htmlFor="subject">Тема обращения</Label>
-                      <Select value={formData.subject} onValueChange={(value) => setFormData({...formData, subject: value})}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Выберите тему" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="buy">Покупка техники</SelectItem>
-                          <SelectItem value="sell">Продажа техники</SelectItem>
-                          <SelectItem value="selection">Подбор устройства</SelectItem>
-                          <SelectItem value="business">Корпоративные закупки</SelectItem>
-                          <SelectItem value="support">Техническая поддержка</SelectItem>
-                          <SelectItem value="other">Другое</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div>
+                    <Label htmlFor="subject">Тема</Label>
+                    <Select 
+                      value={formData.subject} 
+                      onValueChange={(value) => setFormData({...formData, subject: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите тему обращения" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Покупка техники">Покупка техники</SelectItem>
+                        <SelectItem value="Продажа техники">Продажа техники</SelectItem>
+                        <SelectItem value="Подбор техники">Подбор техники</SelectItem>
+                        <SelectItem value="Корпоративные закупки">Корпоративные закупки</SelectItem>
+                        <SelectItem value="Техническая поддержка">Техническая поддержка</SelectItem>
+                        <SelectItem value="Другое">Другое</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                    <div>
-                      <Label htmlFor="preferredContact">Предпочтительный способ связи</Label>
-                      <Select value={formData.preferredContact} onValueChange={(value) => setFormData({...formData, preferredContact: value})}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Как с вами связаться?" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="phone">Телефонный звонок</SelectItem>
-                          <SelectItem value="telegram">Telegram</SelectItem>
-                          <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                          <SelectItem value="email">Email</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div>
+                    <Label htmlFor="message">Сообщение *</Label>
+                    <Textarea
+                      id="message"
+                      placeholder="Опишите ваш вопрос или задачу..."
+                      value={formData.message}
+                      onChange={(e) => setFormData({...formData, message: e.target.value})}
+                      rows={4}
+                      required
+                    />
+                  </div>
 
-                    <div>
-                      <Label htmlFor="message">Сообщение *</Label>
-                      <Textarea 
-                        id="message"
-                        placeholder="Опишите ваш вопрос или требования..."
-                        value={formData.message}
-                        onChange={(e) => setFormData({...formData, message: e.target.value})}
-                        rows={4}
-                        required
-                      />
-                    </div>
+                  <div>
+                    <Label htmlFor="preferredContact">Предпочтительный способ связи</Label>
+                    <Select 
+                      value={formData.preferredContact} 
+                      onValueChange={(value) => setFormData({...formData, preferredContact: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите способ связи" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Телефон">Телефон</SelectItem>
+                        <SelectItem value="Email">Email</SelectItem>
+                        <SelectItem value="Telegram">Telegram</SelectItem>
+                        <SelectItem value="WhatsApp">WhatsApp</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                    <Button type="submit" className="w-full bg-gradient-primary hover:opacity-90">
-                      Отправить сообщение
-                      <Send className="ml-2 w-4 h-4" />
-                    </Button>
+                  <Button type="submit" className="w-full bg-gradient-primary hover:opacity-90">
+                    Отправить сообщение
+                    <Send className="w-4 h-4 ml-2" />
+                  </Button>
+                </form>
+              )}
+            </CardContent>
+          </Card>
 
-                    <p className="text-xs text-apple-gray text-center">
-                      * Обязательные поля для заполнения
+          {/* Contact Information */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl font-bold">Контактная информация</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <Phone className="w-5 h-5 text-primary" />
+                  <div>
+                    <p className="font-medium">Телефон</p>
+                    <a 
+                      href="tel:+79032990029" 
+                      className="text-primary hover:underline"
+                      onClick={() => trackContactClick('phone')}
+                    >
+                      +7 (903) 299-00-29
+                    </a>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  <Mail className="w-5 h-5 text-primary" />
+                  <div>
+                    <p className="font-medium">Email</p>
+                    <a 
+                      href="mailto:info@bestmac.ru" 
+                      className="text-primary hover:underline"
+                      onClick={() => trackContactClick('email')}
+                    >
+                      info@bestmac.ru
+                    </a>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-3">
+                  <MapPin className="w-5 h-5 text-primary mt-1" />
+                  <div>
+                    <p className="font-medium">Адрес</p>
+                    <p className="text-muted-foreground">
+                      ул. Дениса Давыдова 3<br />
+                      Москва
                     </p>
-                  </form>
-                )}
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  <Clock className="w-5 h-5 text-primary" />
+                  <div>
+                    <p className="font-medium">Время работы</p>
+                    <p className="text-muted-foreground">
+                      Пн-Пт: 10:00 - 20:00<br />
+                      Сб-Вс: 11:00 - 18:00
+                    </p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
-            {/* Contact Information */}
-            <div className="space-y-8">
-              {/* Contact Methods */}
-              <Card className="bg-card border-border">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold mb-6">Контактная информация</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
-                        <Phone className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="font-medium">Телефон</p>
-                        <a href="tel:+79032990029" className="text-primary hover:underline">
-                          +7 903 299 00 29
-                        </a>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
-                        <MessageCircle className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="font-medium">Telegram</p>
-                        <a href="https://t.me/Romanmanro" className="text-primary hover:underline">
-                          @bestmac_ru
-                        </a>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
-                        <Mail className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="font-medium">Email</p>
-                        <a href="mailto:info@bestmac.ru" className="text-primary hover:underline">
-                          info@bestmac.ru
-                        </a>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
-                        <MapPin className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="font-medium">Адрес</p>
-                        <p className="text-apple-gray">г. Москва</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Working Hours */}
-              <Card className="bg-card border-border">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold mb-6 flex items-center">
-                    <Clock className="w-5 h-5 mr-2 text-primary" />
-                    Время работы
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span>Понедельник - Пятница</span>
-                      <span className="font-medium">10:00 - 20:00</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Суббота - Воскресенье</span>
-                      <span className="font-medium">11:00 - 19:00</span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-apple-gray mt-4">
-                    Консультации по телефону и в мессенджерах доступны ежедневно с 9:00 до 22:00
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* Quick Responses */}
-              <Card className="bg-card border-border">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold mb-6">Быстрые ответы</h3>
-                  <div className="space-y-3">
-                    <div className="p-3 bg-apple-light-gray rounded-lg">
-                      <p className="font-medium text-sm">Время ответа на заявки</p>
-                      <p className="text-apple-gray text-sm">В течение 30 минут в рабочее время</p>
-                    </div>
-                    <div className="p-3 bg-apple-light-gray rounded-lg">
-                      <p className="font-medium text-sm">Консультации</p>
-                      <p className="text-apple-gray text-sm">Бесплатно по всем вопросам</p>
-                    </div>
-                    <div className="p-3 bg-apple-light-gray rounded-lg">
-                      <p className="font-medium text-sm">Выезд на осмотр</p>
-                      <p className="text-apple-gray text-sm">По Москве в течение дня</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* FAQ */}
-          <div className="mt-16">
-            <h2 className="text-3xl font-bold font-apple text-center mb-12">
-              Часто задаваемые вопросы
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="bg-card border-border">
-                <CardContent className="p-6">
-                  <h3 className="font-semibold mb-3">Как быстро вы отвечаете на заявки?</h3>
-                  <p className="text-apple-gray text-sm">
-                    Мы отвечаем на все заявки в течение 30 минут в рабочее время. 
-                    В выходные дни - в течение 2-3 часов.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-card border-border">
-                <CardContent className="p-6">
-                  <h3 className="font-semibold mb-3">Можно ли посмотреть технику перед покупкой?</h3>
-                  <p className="text-apple-gray text-sm">
-                    Конечно! Мы организуем встречу в удобном для вас месте или 
-                    вы можете приехать к нам для осмотра техники.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-card border-border">
-                <CardContent className="p-6">
-                  <h3 className="font-semibold mb-3">Какие документы вы предоставляете?</h3>
-                  <p className="text-apple-gray text-sm">
-                    При покупке выдаем договор купли-продажи, чек, гарантийный талон. 
-                    Для юридических лиц - полный пакет документов.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-card border-border">
-                <CardContent className="p-6">
-                  <h3 className="font-semibold mb-3">Есть ли доставка?</h3>
-                  <p className="text-apple-gray text-sm">
-                    Да, доставляем по Москве в день покупки. 
-                    В регионы отправляем транспортными компаниями.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl font-bold">Мессенджеры</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button variant="outline" className="w-full justify-start" asChild>
+                  <a 
+                    href="https://t.me/romanmanro" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    onClick={() => trackContactClick('telegram')}
+                  >
+                    💬 Telegram: @romanmanro
+                  </a>
+                </Button>
+                <Button variant="outline" className="w-full justify-start" asChild>
+                  <a 
+                    href="https://wa.me/79032990029" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    onClick={() => trackContactClick('whatsapp')}
+                  >
+                    📱 WhatsApp: +7 (903) 299-00-29
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
+
+        {/* Map Section */}
+        <div className="mb-16">
+          <h2 className="text-2xl font-bold text-center mb-8">Как нас найти</h2>
+          <ContactMap />
+        </div>
       </main>
-      
+
       <Footer />
     </div>
   );

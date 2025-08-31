@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { Heart } from "lucide-react";
+import { Heart, MapPin, Phone, Mail } from "lucide-react";
+import { trackContactClick } from "@/components/Analytics";
 import { motion } from "framer-motion";
 
 const Footer = () => {
@@ -53,14 +54,47 @@ const Footer = () => {
               Надежный партнер в мире техники Apple. Продаем качественные устройства 
               с гарантией и полным сервисом поддержки.
             </p>
-            <p className="text-sm text-apple-gray mb-3">
-              ИП Капралов Р.И. | ИНН: 123456789012
-            </p>
-            <p className="text-sm text-primary">
-              <a href="https://t.me/romanmanro" target="_blank" rel="noopener noreferrer" className="hover:underline">
-                💬 Telegram: @romanmanro
-              </a>
-            </p>
+            
+            {/* NAP разметка */}
+            <div itemScope itemType="https://schema.org/Organization" className="space-y-2">
+              <p className="text-sm text-apple-gray">
+                <span itemProp="name">BestMac</span> | ИП Капралов Р.И. | ИНН: 123456789012
+              </p>
+              <div itemProp="address" itemScope itemType="https://schema.org/PostalAddress" className="flex items-start space-x-2">
+                <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-apple-gray">
+                  <span itemProp="streetAddress">ул. Дениса Давыдова 3</span>.
+                  <span itemProp="addressLocality"> Москва</span>
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Phone className="w-4 h-4 text-muted-foreground" />
+                <a 
+                  href="tel:+79032990029" 
+                  itemProp="telephone"
+                  className="text-sm text-primary hover:underline"
+                  onClick={() => trackContactClick('phone')}
+                >
+                  +7 (903) 299-00-29
+                </a>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Mail className="w-4 h-4 text-muted-foreground" />
+                <a 
+                  href="mailto:info@bestmac.ru" 
+                  itemProp="email"
+                  className="text-sm text-primary hover:underline"
+                  onClick={() => trackContactClick('email')}
+                >
+                  info@bestmac.ru
+                </a>
+              </div>
+              <p className="text-sm text-primary">
+                <a href="https://t.me/romanmanro" target="_blank" rel="noopener noreferrer" className="hover:underline" onClick={() => trackContactClick('telegram')}>
+                  💬 Telegram: @romanmanro
+                </a>
+              </p>
+            </div>
           </motion.div>
           
           {/* Услуги */}

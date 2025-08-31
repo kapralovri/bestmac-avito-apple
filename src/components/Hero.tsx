@@ -94,9 +94,9 @@ const Hero = () => {
               <Button 
                 size="lg" 
                 className="bg-gradient-primary hover:opacity-90 shadow-elegant px-8 py-4 text-lg"
-                onClick={() => document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => navigate('/buy')}
               >
-                Смотреть каталог
+                Смотреть предложения
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </motion.div>

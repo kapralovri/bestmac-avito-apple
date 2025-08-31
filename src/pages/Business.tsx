@@ -17,8 +17,17 @@ import {
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import FAQ from "@/components/FAQ";
+import { faqData } from "@/lib/schema";
 
 const Business = () => {
+  const breadcrumbItems = [
+    { name: "Главная", url: "/" },
+    { name: "Для бизнеса", url: "/business" }
+  ];
+
   const advantages = [
     {
       icon: FileText,
@@ -95,191 +104,121 @@ const Business = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background text-foreground">
+      <SEOHead 
+        title="Техника Apple для бизнеса в Москве — корпоративные решения | BestMac"
+        description="Техника Apple для бизнеса в Москве. Корпоративные закупки, лизинг, trade-in. Полный пакет документов, безналичный расчет, доставка в офис."
+        canonical="/business"
+        keywords="техника apple для бизнеса, корпоративные закупки, лизинг macbook, trade-in для бизнеса москва"
+      />
       <Header />
       
-      <main className="pt-20 pb-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Hero Section */}
-          <div className="text-center mb-16">
-            <Badge variant="outline" className="mb-4 text-primary border-primary">
-              Для юридических лиц
-            </Badge>
-            <h1 className="text-4xl md:text-5xl font-bold font-apple mb-6">
-              Корпоративные решения Apple
-            </h1>
-            <p className="text-xl text-apple-gray max-w-3xl mx-auto mb-8">
-              Помогаем бизнесу оснащаться качественной техникой Apple по выгодным ценам. 
-              Работаем официально с полным пакетом документов и персональным сервисом.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-gradient-primary hover:opacity-90" onClick={() => window.location.href = '/contact'}>
-                Получить коммерческое предложение
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-              <Button variant="outline" size="lg" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => window.location.href = '/contact'}>
-                Рассчитать стоимость
-                <Calculator className="ml-2 w-5 h-5" />
-              </Button>
-            </div>
-          </div>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Breadcrumbs items={breadcrumbItems} />
+        
+        {/* Hero Section */}
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-5xl font-bold font-apple mb-6">
+            Техника Apple для бизнеса
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+            Комплексные решения для корпоративных клиентов. От единичных закупок до оснащения 
+            целых офисов. Работаем официально с полным пакетом документов.
+          </p>
+        </div>
 
-          {/* Advantages */}
-          <div className="mb-16">
-            <h2 className="text-3xl font-bold font-apple text-center mb-12">
-              Преимущества работы с нами
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {advantages.map((advantage, index) => {
-                const IconComponent = advantage.icon;
-                return (
-                  <Card key={index} className="bg-card border-border hover:shadow-elegant transition-all duration-300">
-                    <CardContent className="p-6">
-                      <div className="flex items-start space-x-4">
-                        <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center flex-shrink-0">
-                          <IconComponent className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold mb-2">{advantage.title}</h3>
-                          <p className="text-apple-gray text-sm">{advantage.description}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Services */}
-          <div className="mb-16">
-            <h2 className="text-3xl font-bold font-apple text-center mb-12">
-              Корпоративные услуги
-            </h2>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {services.map((service, index) => (
-                <Card key={index} className="bg-card border-border shadow-elegant">
-                  <CardHeader>
-                    <CardTitle className="text-xl font-apple">{service.title}</CardTitle>
-                    <p className="text-apple-gray">{service.description}</p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3 mb-6">
-                      {service.features.map((feature, featureIndex) => (
-                        <div key={featureIndex} className="flex items-center space-x-2">
-                          <CheckCircle className="w-4 h-4 text-apple-green" />
-                          <span className="text-sm">{feature}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="text-primary font-semibold">{service.price}</div>
-                      <Button variant="outline" size="sm" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
-                        Подробнее
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          {/* Success Cases */}
-          <div className="mb-16">
-            <h2 className="text-3xl font-bold font-apple text-center mb-12">
-              Успешные проекты
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {cases.map((case_, index) => (
-                <Card key={index} className="bg-card border-border">
-                  <CardContent className="p-6">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Building2 className="w-8 h-8 text-white" />
-                      </div>
-                      <h3 className="font-semibold text-lg mb-2">{case_.company}</h3>
-                      <p className="text-apple-gray mb-4">{case_.devices}</p>
-                      <div className="space-y-2">
-                        <p className="text-sm">{case_.result}</p>
-                        <p className="text-primary font-semibold">{case_.economy}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          {/* Process */}
-          <div className="mb-16">
-            <h2 className="text-3xl font-bold font-apple text-center mb-12">
-              Как мы работаем
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-white font-bold text-xl">1</span>
+        {/* Advantages Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+          {advantages.map((advantage, index) => (
+            <Card key={index} className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center mb-4">
+                  <advantage.icon className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="font-semibold mb-2">Анализ потребностей</h3>
-                <p className="text-apple-gray text-sm">
-                  Изучаем специфику вашего бизнеса и технические требования
-                </p>
-              </div>
+                <h3 className="font-semibold text-lg mb-2">{advantage.title}</h3>
+                <p className="text-muted-foreground">{advantage.description}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-white font-bold text-xl">2</span>
-                </div>
-                <h3 className="font-semibold mb-2">Коммерческое предложение</h3>
-                <p className="text-apple-gray text-sm">
-                  Готовим детальное КП с техническими характеристиками и ценами
-                </p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-white font-bold text-xl">3</span>
-                </div>
-                <h3 className="font-semibold mb-2">Заключение договора</h3>
-                <p className="text-apple-gray text-sm">
-                  Оформляем официальный договор поставки с гарантийными обязательствами
-                </p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-white font-bold text-xl">4</span>
-                </div>
-                <h3 className="font-semibold mb-2">Поставка и поддержка</h3>
-                <p className="text-apple-gray text-sm">
-                  Доставляем технику и обеспечиваем техническую поддержку
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* CTA Section */}
-          <div className="bg-gradient-primary rounded-lg p-8 text-center text-white">
-            <h2 className="text-3xl font-bold mb-4">
-              Готовы обсудить ваш проект?
-            </h2>
-            <p className="text-xl mb-8 opacity-90">
-              Оставьте заявку, и мы подготовим персональное коммерческое предложение
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-              <Button variant="secondary" size="lg" className="bg-white text-primary hover:bg-gray-100">
-                Оставить заявку
-                <Handshake className="ml-2 w-5 h-5" />
-              </Button>
-              <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-primary">
-                Связаться с менеджером
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-            </div>
+        {/* Services */}
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold font-apple text-center mb-12">Наши услуги</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {services.map((service, index) => (
+              <Card key={index} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="text-xl">{service.title}</CardTitle>
+                  <p className="text-muted-foreground">{service.description}</p>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 mb-6">
+                    {service.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-center space-x-2">
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                        <span className="text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="text-center">
+                    <Badge variant="secondary" className="text-lg px-4 py-2">
+                      {service.price}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
+
+        {/* Cases */}
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold font-apple text-center mb-12">Кейсы</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {cases.map((case_, index) => (
+              <Card key={index} className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <h3 className="font-semibold text-lg mb-2">{case_.company}</h3>
+                  <p className="text-muted-foreground mb-4">{case_.devices}</p>
+                  <div className="space-y-2">
+                    <p className="text-sm"><strong>Результат:</strong> {case_.result}</p>
+                    <p className="text-sm text-primary font-semibold">{case_.economy}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* CTA */}
+        <div className="text-center mb-16">
+          <Card className="max-w-2xl mx-auto">
+            <CardContent className="p-8">
+              <h2 className="text-2xl font-bold mb-4">Готовы обсудить проект?</h2>
+              <p className="text-muted-foreground mb-6">
+                Свяжитесь с нами для получения персонального предложения
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button className="bg-gradient-primary hover:opacity-90">
+                  <a href="tel:+79032990029" className="text-inherit no-underline">
+                    Позвонить
+                  </a>
+                </Button>
+                <Button variant="outline">
+                  <a href="https://t.me/romanmanro" target="_blank" rel="noopener noreferrer" className="text-inherit no-underline">
+                    Написать в Telegram
+                  </a>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* FAQ Section */}
+        <FAQ items={faqData.business} title="Часто задаваемые вопросы для бизнеса" />
       </main>
-      
+
       <Footer />
     </div>
   );

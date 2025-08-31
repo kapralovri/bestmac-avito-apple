@@ -1,19 +1,24 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
-User-agent: Yandex
-Allow: /
-Host: bestmac.ru
-
 User-agent: *
 Allow: /
+
+# Разрешаем индексацию основных страниц
+Allow: /buy
+Allow: /sell
+Allow: /selection
+Allow: /business
+Allow: /contact
+Allow: /privacy
+Allow: /terms
+
+# Запрещаем служебные разделы
+Disallow: /api/
+Disallow: /admin/
+Disallow: /*?*utm_
+Disallow: /*?*ref=
+Disallow: /*?*source=
+
+# Указываем путь к sitemap
 Sitemap: https://bestmac.ru/sitemap.xml
+
+# Для Яндекса указываем основной хост
+Host: bestmac.ru
