@@ -1,9 +1,8 @@
 {
   "rewrites": [
-    {
-      "source": "/((?!.*\\.).*)",
-      "destination": "/index.html"
-    }
+    { "source": "/sell", "destination": "/api/sell" },
+    { "source": "/sell/", "destination": "/api/sell" },
+    { "source": "/api/buyout/estimate", "destination": "/api/buyout/estimate" },
+    { "source": "/((?!.*\\.).*)", "destination": "/index.html" }
   ]
 }
-

@@ -14,6 +14,10 @@ import SEOHead from "@/components/SEOHead";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { productOfferSchema } from "@/lib/schema";
 import { trackFormSubmit } from "@/components/Analytics";
+import BuyoutTable from "@/components/BuyoutTable";
+import { useEffect, useMemo, useState as useStateReact } from 'react';
+import type { BuyoutRow } from '@/types/buyout';
+import { estimatePrice } from '@/lib/buyout';
 
 const Sell = () => {
   const initialState = {
@@ -27,6 +31,40 @@ const Sell = () => {
   };
   const [formData, setFormData] = useState(initialState);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [buyoutData, setBuyoutData] = useStateReact<BuyoutRow[]>([]);
+
+  useEffect(() => {
+    fetch('/data/buyout.json')
+      .then(r => r.ok ? r.json() : [])
+      .then((data: BuyoutRow[]) => setBuyoutData(data))
+      .catch(() => setBuyoutData([]));
+  }, []);
+
+  // Калькулятор
+  const [calc, setCalc] = useStateReact({
+    model: '',
+    condition: 'A' as 'A' | 'B' | 'C',
+    batteryCycles: 0,
+    displayDefect: false,
+    bodyDefect: false,
+    hasCharger: true,
+    hasBox: true,
+    icloudBlocked: false,
+  });
+
+  const estimate = useMemo(() => {
+    if (!calc.model) return null;
+    return estimatePrice({
+      model: calc.model,
+      condition: calc.condition,
+      batteryCycles: calc.batteryCycles,
+      displayDefect: calc.displayDefect,
+      bodyDefect: calc.bodyDefect,
+      hasCharger: calc.hasCharger,
+      hasBox: calc.hasBox,
+      icloudBlocked: calc.icloudBlocked,
+    }, buyoutData);
+  }, [calc, buyoutData]);
 
   const breadcrumbItems = [
     { name: "Главная", url: "/" },
@@ -92,6 +130,84 @@ const Sell = () => {
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumbs items={breadcrumbItems} />
+
+        {/* Примерные цены (видимая таблица) */}
+        <BuyoutTable />
+
+        {/* Калькулятор выкупа */}
+        <section className="mb-16">
+          <h2 className="text-3xl font-bold font-apple mb-6">Калькулятор выкупа</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 border border-border rounded-lg p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="model">Модель</Label>
+                  <Select value={calc.model} onValueChange={(v) => setCalc({ ...calc, model: v })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите модель" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-80">
+                      {buyoutData.map((r) => (
+                        <SelectItem key={r.model} value={r.model}>{r.model}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Состояние</Label>
+                  <Select value={calc.condition} onValueChange={(v) => setCalc({ ...calc, condition: v as any })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="A">A — Отличное</SelectItem>
+                      <SelectItem value="B">B — Хорошее</SelectItem>
+                      <SelectItem value="C">C — Удовлетворительное</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="cycles">Циклы батареи</Label>
+                  <Input id="cycles" type="number" min={0} max={1500} value={calc.batteryCycles} onChange={(e) => setCalc({ ...calc, batteryCycles: Number(e.target.value || 0) })} />
+                </div>
+                <div className="grid grid-cols-2 gap-2 pt-6">
+                  <div className="flex items-center space-x-2">
+                    <input id="displayDefect" type="checkbox" checked={calc.displayDefect} onChange={(e) => setCalc({ ...calc, displayDefect: e.target.checked })} />
+                    <Label htmlFor="displayDefect">Дефект дисплея</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input id="bodyDefect" type="checkbox" checked={calc.bodyDefect} onChange={(e) => setCalc({ ...calc, bodyDefect: e.target.checked })} />
+                    <Label htmlFor="bodyDefect">Дефект корпуса</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input id="hasCharger" type="checkbox" checked={calc.hasCharger} onChange={(e) => setCalc({ ...calc, hasCharger: e.target.checked })} />
+                    <Label htmlFor="hasCharger">Есть зарядка</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input id="hasBox" type="checkbox" checked={calc.hasBox} onChange={(e) => setCalc({ ...calc, hasBox: e.target.checked })} />
+                    <Label htmlFor="hasBox">Есть коробка</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input id="icloudBlocked" type="checkbox" checked={calc.icloudBlocked} onChange={(e) => setCalc({ ...calc, icloudBlocked: e.target.checked })} />
+                    <Label htmlFor="icloudBlocked">iCloud заблокирован</Label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="border border-border rounded-lg p-6">
+              <h3 className="font-semibold mb-2">Оценка</h3>
+              {estimate && calc.model ? (
+                <>
+                  <p className="text-sm text-muted-foreground mb-2">Базовая цена: {estimate.base.toLocaleString('ru-RU')} ₽</p>
+                  <p className="text-xl font-bold">{estimate.priceMin.toLocaleString('ru-RU')} – {estimate.priceMax.toLocaleString('ru-RU')} ₽</p>
+                  <p className="text-sm text-muted-foreground mt-2">Точная цена после диагностики. Оставьте телефон — закрепим предложение.</p>
+                </>
+              ) : (
+                <p className="text-muted-foreground">Выберите модель и параметры для расчёта.</p>
+              )}
+            </div>
+          </div>
+        </section>
         
         {/* Hero Section */}
         <motion.div 
