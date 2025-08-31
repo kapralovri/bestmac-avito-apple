@@ -4,7 +4,7 @@ import path from 'path';
 
 export default function handler(_req: VercelRequest, res: VercelResponse) {
   const dataPath = path.join(process.cwd(), 'public', 'data', 'buyout.json');
-  const rows: Array<{ model: string; basePrice: number }> = fs.existsSync(dataPath)
+  const rows: Array<{ model: string; basePrice: number; ram?: string; storage?: string }> = fs.existsSync(dataPath)
     ? JSON.parse(fs.readFileSync(dataPath, 'utf-8'))
     : [];
 
@@ -71,10 +71,10 @@ export default function handler(_req: VercelRequest, res: VercelResponse) {
         <div style="overflow-x:auto">
           <table>
             <thead>
-              <tr><th>Модель</th><th>Базовая цена, ₽</th></tr>
+              <tr><th>Модель</th><th>Оперативная память</th><th>SSD</th><th>Базовая цена, ₽</th></tr>
             </thead>
             <tbody>
-              ${list.map(r => `<tr><td><strong>${escapeHtml(r.model)}</strong></td><td>${formatPrice(r.basePrice)}</td></tr>`).join('')}
+              ${list.map(r => `<tr><td><strong>${escapeHtml(r.model)}</strong></td><td>${escapeHtml(r.ram || '-') }</td><td>${escapeHtml(r.storage || '-') }</td><td>${formatPrice(r.basePrice)}</td></tr>`).join('')}
             </tbody>
           </table>
         </div>
@@ -96,4 +96,3 @@ function escapeHtml(s: string) {
 function formatPrice(n: number) {
   return new Intl.NumberFormat('ru-RU').format(n) + ' ₽';
 }
-

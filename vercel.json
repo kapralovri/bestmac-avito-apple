@@ -1,4 +1,12 @@
 {
+  "functions": {
+    "api/sell.ts": {
+      "includeFiles": "public/data/**"
+    },
+    "api/buyout/estimate.ts": {
+      "includeFiles": "public/data/**"
+    }
+  },
   "rewrites": [
     { "source": "/sell", "destination": "/api/sell" },
     { "source": "/sell/", "destination": "/api/sell" },

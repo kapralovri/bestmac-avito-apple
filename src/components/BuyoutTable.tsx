@@ -25,6 +25,8 @@ const BuyoutTable = () => {
           <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-3">Модель</th>
+              <th className="text-left p-3">Оперативная память</th>
+              <th className="text-left p-3">SSD</th>
               <th className="text-left p-3">Базовая цена, ₽</th>
             </tr>
           </thead>
@@ -32,6 +34,8 @@ const BuyoutTable = () => {
             {list.map((r) => (
               <tr key={r.model} className="border-t border-border">
                 <td className="p-3"><strong>{r.model}</strong></td>
+                <td className="p-3">{r.ram || '-'}</td>
+                <td className="p-3">{r.storage || '-'}</td>
                 <td className="p-3">{r.basePrice.toLocaleString('ru-RU')}</td>
               </tr>
             ))}
@@ -50,4 +54,3 @@ const BuyoutTable = () => {
 };
 
 export default BuyoutTable;
-

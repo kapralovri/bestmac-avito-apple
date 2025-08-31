@@ -131,8 +131,77 @@ const Sell = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumbs items={breadcrumbItems} />
 
-        {/* Примерные цены (видимая таблица) */}
-        <BuyoutTable />
+        {/* порядок секций отрегулирован ниже */}
+        
+        
+        {/* Hero Section */}
+        <motion.div 
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <h1 className="text-4xl md:text-5xl font-bold font-apple mb-6">
+            Продать технику Apple
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+            Честная оценка, быстрая сделка и максимальная цена за вашу технику Apple. 
+            Работаем официально через ИП с полным пакетом документов.
+          </p>
+        </motion.div>
+
+        <motion.div 
+          className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {/* Process Steps */}
+          <motion.div variants={itemVariants}>
+            <h2 className="text-3xl font-bold font-apple mb-8">Как проходит выкуп</h2>
+            <div className="space-y-6">
+              {[
+                {
+                  icon: Calculator,
+                  title: "Оценка",
+                  description: "Бесплатная оценка вашей техники по фото или при личной встрече"
+                },
+                {
+                  icon: Clock,
+                  title: "Быстрая сделка",
+                  description: "Сделка за 15 минут. Наличный расчет или перевод на карту"
+                },
+                {
+                  icon: Shield,
+                  title: "Безопасность",
+                  description: "Официальная сделка через ИП с полным пакетом документов"
+                },
+                {
+                  icon: Banknote,
+                  title: "Максимальная цена",
+                  description: "Предлагаем лучшую цену на рынке за вашу технику"
+                }
+              ].map((step, index) => (
+                <motion.div 
+                  key={index}
+                  className="flex items-start space-x-4"
+                  whileHover={{ x: 10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                    <step.icon className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2">{step.title}</h3>
+                    <p className="text-muted-foreground">{step.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Здесь не показываем старый блок цен. Вместо него ниже будет таблица цен */}
+        </motion.div>
 
         {/* Калькулятор выкупа */}
         <section className="mb-16">
@@ -208,94 +277,9 @@ const Sell = () => {
             </div>
           </div>
         </section>
-        
-        {/* Hero Section */}
-        <motion.div 
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <h1 className="text-4xl md:text-5xl font-bold font-apple mb-6">
-            Продать технику Apple
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Честная оценка, быстрая сделка и максимальная цена за вашу технику Apple. 
-            Работаем официально через ИП с полным пакетом документов.
-          </p>
-        </motion.div>
 
-        <motion.div 
-          className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {/* Process Steps */}
-          <motion.div variants={itemVariants}>
-            <h2 className="text-3xl font-bold font-apple mb-8">Как проходит выкуп</h2>
-            <div className="space-y-6">
-              {[
-                {
-                  icon: Calculator,
-                  title: "Оценка",
-                  description: "Бесплатная оценка вашей техники по фото или при личной встрече"
-                },
-                {
-                  icon: Clock,
-                  title: "Быстрая сделка",
-                  description: "Сделка за 15 минут. Наличный расчет или перевод на карту"
-                },
-                {
-                  icon: Shield,
-                  title: "Безопасность",
-                  description: "Официальная сделка через ИП с полным пакетом документов"
-                },
-                {
-                  icon: Banknote,
-                  title: "Максимальная цена",
-                  description: "Предлагаем лучшую цену на рынке за вашу технику"
-                }
-              ].map((step, index) => (
-                <motion.div 
-                  key={index}
-                  className="flex items-start space-x-4"
-                  whileHover={{ x: 10 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center flex-shrink-0">
-                    <step.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg mb-2">{step.title}</h3>
-                    <p className="text-muted-foreground">{step.description}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Price Ranges */}
-          <motion.div variants={itemVariants}>
-            <h2 className="text-3xl font-bold font-apple mb-8">Примерные цены</h2>
-            <div className="space-y-4">
-              {Object.entries(priceRanges).map(([model, price]) => (
-                <motion.div 
-                  key={model}
-                  className="flex justify-between items-center p-4 bg-card border border-border rounded-lg"
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <span className="font-medium">{model}</span>
-                  <span className="text-primary font-semibold">{price}</span>
-                </motion.div>
-              ))}
-            </div>
-            <p className="text-sm text-muted-foreground mt-4">
-              * Цены указаны ориентировочно. Точная стоимость зависит от состояния и комплектации
-            </p>
-          </motion.div>
-        </motion.div>
+        {/* Примерные цены выкупа (таблица c RAM/SSD) */}
+        <BuyoutTable />
 
         {/* Contact Form */}
         <motion.div 
