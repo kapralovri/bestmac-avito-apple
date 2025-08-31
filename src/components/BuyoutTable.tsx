@@ -14,7 +14,21 @@ const BuyoutTable = () => {
       .catch(() => setRows([]));
   }, []);
 
-  const list = showAll ? rows : rows.slice(0, DEFAULT_LIMIT);
+  // Удаляем дубли по модель+RAM+SSD
+  const deduped = (() => {
+    const seen = new Set<string>();
+    const out: BuyoutRow[] = [];
+    for (const r of rows) {
+      const key = `${r.model}|${r.ram || ''}|${r.storage || ''}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        out.push(r);
+      }
+    }
+    return out;
+  })();
+
+  const list = showAll ? deduped : deduped.slice(0, DEFAULT_LIMIT);
 
   return (
     <section aria-labelledby="prices" className="mb-12">

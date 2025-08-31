@@ -1,15 +1,31 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import fs from 'fs';
-import path from 'path';
 
-export default function handler(_req: VercelRequest, res: VercelResponse) {
-  const dataPath = path.join(process.cwd(), 'public', 'data', 'buyout.json');
-  const rows: Array<{ model: string; basePrice: number; ram?: string; storage?: string }> = fs.existsSync(dataPath)
-    ? JSON.parse(fs.readFileSync(dataPath, 'utf-8'))
-    : [];
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Загружаем данные с публичного URL, чтобы избежать проблем с путями в serverless-функции
+  // и гарантировать одинаковые данные с клиентской таблицей
+  const host = req.headers['x-forwarded-host'] || req.headers.host || 'bestmac.ru';
+  const proto = (req.headers['x-forwarded-proto'] || 'https') as string;
+  const url = `${proto}://${host}/data/buyout.json`;
+  let rows: Array<{ model: string; basePrice: number; ram?: string; storage?: string }> = [];
+  try {
+    const r = await fetch(url);
+    if (r.ok) rows = await r.json();
+  } catch (_) {
+    rows = [];
+  }
 
   const limit = 100;
-  const list = rows.slice(0, limit);
+  // Удаляем дубли по ключу модель+RAM+SSD
+  const seen = new Set<string>();
+  const deduped: typeof rows = [];
+  for (const r of rows) {
+    const key = `${r.model}|${r.ram || ''}|${r.storage || ''}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      deduped.push(r);
+    }
+  }
+  const list = deduped.slice(0, limit);
 
   // Schema.org ItemList with Product + Offer
   const itemList = {
