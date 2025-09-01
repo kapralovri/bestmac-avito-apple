@@ -1,31 +1,29 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+export const config = { runtime: 'edge' } as const;
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Загружаем данные с публичного URL, чтобы избежать проблем с путями в serverless-функции
-  // и гарантировать одинаковые данные с клиентской таблицей
-  const host = req.headers['x-forwarded-host'] || req.headers.host || 'bestmac.ru';
-  const proto = (req.headers['x-forwarded-proto'] || 'https') as string;
-  const url = `${proto}://${host}/data/buyout.json`;
-  let rows: Array<{ model: string; basePrice: number; ram?: string; storage?: string }> = [];
+export default async function handler(req: Request): Promise<Response> {
   try {
-    const r = await fetch(url);
-    if (r.ok) rows = await r.json();
-  } catch (_) {
-    rows = [];
-  }
+    // Загружаем данные статически из публичного ассета
+    const url = new URL('/data/buyout.json', new URL(req.url).origin).toString();
+    let rows: Array<{ model: string; basePrice: number; ram?: string; storage?: string }>;    
+    try {
+      const r = await fetch(url, { cache: 'no-store' });
+      rows = r.ok ? await r.json() : [];
+    } catch {
+      rows = [];
+    }
 
   const limit = 100;
   // Удаляем дубли по ключу модель+RAM+SSD
-  const seen = new Set<string>();
-  const deduped: typeof rows = [];
-  for (const r of rows) {
-    const key = `${r.model}|${r.ram || ''}|${r.storage || ''}`;
-    if (!seen.has(key)) {
-      seen.add(key);
-      deduped.push(r);
+    const seen = new Set<string>();
+    const deduped: typeof rows = [];
+    for (const r of rows) {
+      const key = `${r.model}|${r.ram || ''}|${r.storage || ''}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        deduped.push(r);
+      }
     }
-  }
-  const list = deduped.slice(0, limit);
+    const list = deduped.slice(0, limit);
 
   // Schema.org ItemList with Product + Offer
   const itemList = {
@@ -102,8 +100,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   </body>
   </html>`;
 
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.status(200).send(html);
+    return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+  } catch (e) {
+    const html = '<!doctype html><meta charset="utf-8"><title>Sell</title><body>Произошла ошибка. Попробуйте позже.</body>';
+    return new Response(html, { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+  }
 }
 
 function escapeHtml(s: string) {

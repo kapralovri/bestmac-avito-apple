@@ -1,7 +1,7 @@
 {
   "functions": {
     "api/sell.ts": {
-      "includeFiles": "public/data/**"
+      "runtime": "edge"
     },
     "api/buyout/estimate.ts": {
       "includeFiles": "public/data/**"
