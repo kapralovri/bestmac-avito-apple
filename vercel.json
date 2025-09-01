@@ -2,9 +2,6 @@
   "functions": {
     "api/sell.ts": {
       "runtime": "edge"
-    },
-    "api/buyout/estimate.ts": {
-      "includeFiles": "public/data/**"
     }
   },
   "rewrites": [
