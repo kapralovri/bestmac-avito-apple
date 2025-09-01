@@ -1,4 +1,5 @@
 {
+  "trailingSlash": false,
   "rewrites": [
     { "source": "/sell", "destination": "/api/sell" },
     { "source": "/sell/", "destination": "/api/sell" },

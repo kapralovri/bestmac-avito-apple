@@ -150,10 +150,11 @@ const Sell = () => {
           </p>
         </motion.div>
 
-        {/* Full-bleed section for desktop */}
-        <section className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen px-4 md:px-8 mb-16">
+        {/* Full-bleed section for desktop (with inner container to keep site spacing) */}
+        <section className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen mb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 gap-8 md:mt-6"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -202,6 +203,7 @@ const Sell = () => {
             </div>
           </motion.div>
         </motion.div>
+        </div>
         </section>
           {/* Здесь не показываем старый блок цен. Вместо него ниже будет таблица цен */}
 
