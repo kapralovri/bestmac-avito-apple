@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "api/sell.ts": {
-      "runtime": "edge"
-    }
-  },
   "rewrites": [
     { "source": "/sell", "destination": "/api/sell" },
     { "source": "/sell/", "destination": "/api/sell" },
