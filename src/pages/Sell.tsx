@@ -154,7 +154,7 @@ const Sell = () => {
         <section className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen mb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 gap-8 md:mt-6"
+          className="grid grid-cols-1 gap-8 md:mt-6"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -187,16 +187,16 @@ const Sell = () => {
               ].map((step, index) => (
                 <motion.div 
                   key={index}
-                  className="flex items-start space-x-4"
+                  className="flex items-start space-x-4 h-full"
                   whileHover={{ x: 10 }}
                   transition={{ duration: 0.3 }}
                 >
                   <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center flex-shrink-0">
                     <step.icon className="w-6 h-6 text-white" />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h3 className="font-semibold text-lg mb-2">{step.title}</h3>
-                    <p className="text-muted-foreground">{step.description}</p>
+                    <p className="text-muted-foreground min-h-[96px] md:min-h-[120px]">{step.description}</p>
                   </div>
                 </motion.div>
               ))}
