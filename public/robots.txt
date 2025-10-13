@@ -20,5 +20,3 @@ Disallow: /*?*source=
 # Указываем путь к sitemap
 Sitemap: https://bestmac.ru/sitemap.xml
 
-# Для Яндекса указываем основной хост
-Host: bestmac.ru

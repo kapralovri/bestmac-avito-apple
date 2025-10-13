@@ -12,7 +12,7 @@ import { motion } from "framer-motion";
 import { sendEmail } from "@/services/email";
 import SEOHead from "@/components/SEOHead";
 import Breadcrumbs from "@/components/Breadcrumbs";
-import { productOfferSchema } from "@/lib/schema";
+import { productOfferSchema, serviceSchema } from "@/lib/schema";
 import { trackFormSubmit } from "@/components/Analytics";
 import BuyoutTable from "@/components/BuyoutTable";
 import { useEffect, useMemo, useState as useStateReact } from 'react';
@@ -71,7 +71,13 @@ const Sell = () => {
     { name: "Продать MacBook", url: "/sell" }
   ];
 
-  const schema = productOfferSchema('sell');
+  const schema = serviceSchema({
+    name: "Выкуп техники Apple",
+    description: "Выкуп MacBook и другой техники Apple. Быстрая оценка, наличный расчет, выезд специалиста.",
+    url: "https://bestmac.ru/sell",
+    aggregateLowRub: 30000,
+    aggregateHighRub: 180000
+  });
 
   const priceRanges = {
     "MacBook Air M1": "80,000 - 120,000 ₽",

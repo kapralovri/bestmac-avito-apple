@@ -18,6 +18,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { sendEmail } from "@/services/email";
 import SEOHead from "@/components/SEOHead";
+import { organizationSchema } from "@/lib/schema";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ContactMap from "@/components/ContactMap";
 import { trackFormSubmit, trackContactClick } from "@/components/Analytics";
@@ -70,6 +71,7 @@ const Contact = () => {
         description="Контакты BestMac в Москве. Телефон, адрес, время работы. Свяжитесь с нами для покупки или продажи техники Apple."
         canonical="/contact"
         keywords="контакты bestmac, адрес bestmac, телефон bestmac москва, связаться с bestmac"
+        schema={organizationSchema}
       />
       <Header />
       

@@ -11,6 +11,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { sendEmail } from "@/services/email";
 import SEOHead from "@/components/SEOHead";
+import { serviceSchema } from "@/lib/schema";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import FAQ from "@/components/FAQ";
 import { faqData } from "@/lib/schema";
@@ -55,6 +56,11 @@ const Selection = () => {
         description="Подбор техники Apple в Москве. Персональные консультации и рекомендации от экспертов. Поможем выбрать идеальное решение под ваши задачи и бюджет."
         canonical="/selection"
         keywords="подбор техники apple, консультация macbook, выбор iphone, подбор imac москва"
+        schema={serviceSchema({
+          name: "Подбор техники Apple",
+          description: "Персональная консультация и подбор техники Apple под задачи и бюджет",
+          url: "https://bestmac.ru/selection"
+        })}
       />
       <Header />
       

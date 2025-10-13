@@ -11,25 +11,28 @@ export const organizationSchema = {
     "@type": "PostalAddress",
     "streetAddress": "ул. Дениса Давыдова 3",
     "addressLocality": "Москва",
+    "addressRegion": "Дорогомилово",
     "addressCountry": "RU"
   },
   "geo": {
     "@type": "GeoCoordinates",
-    "latitude": "55.7558",
-    "longitude": "37.6176"
+    "latitude": "55.739052",
+    "longitude": "37.519755"
   },
   "openingHoursSpecification": [
     {
       "@type": "OpeningHoursSpecification",
-      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      "dayOfWeek": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday"
+      ],
       "opens": "10:00",
-      "closes": "20:00"
-    },
-    {
-      "@type": "OpeningHoursSpecification",
-      "dayOfWeek": ["Saturday", "Sunday"],
-      "opens": "11:00",
-      "closes": "18:00"
+      "closes": "23:00"
     }
   ],
   "aggregateRating": {
@@ -98,6 +101,62 @@ export const breadcrumbSchema = (items: Array<{name: string, url: string}>) => (
     "item": item.url
   }))
 });
+
+// Schema для сервисов (услуги)
+export const serviceSchema = (params: {
+  name: string;
+  description: string;
+  url: string;
+  priceFromRub?: number;
+  aggregateLowRub?: number;
+  aggregateHighRub?: number;
+}) => {
+  let offers: any = undefined;
+  if (typeof params.aggregateLowRub === 'number' && typeof params.aggregateHighRub === 'number') {
+    offers = {
+      "@type": "AggregateOffer",
+      priceCurrency: "RUB",
+      lowPrice: String(params.aggregateLowRub),
+      highPrice: String(params.aggregateHighRub),
+      url: params.url,
+      offerCount: "1",
+      seller: {
+        "@type": "Organization",
+        name: "BestMac"
+      }
+    };
+  } else if (typeof params.priceFromRub === 'number') {
+    offers = {
+      "@type": "Offer",
+      priceCurrency: "RUB",
+      price: String(params.priceFromRub),
+      url: params.url,
+      availability: "https://schema.org/InStock",
+      seller: {
+        "@type": "Organization",
+        name: "BestMac"
+      }
+    };
+  }
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: params.name,
+    description: params.description,
+    provider: {
+      "@type": "LocalBusiness",
+      name: "BestMac",
+      url: "https://bestmac.ru"
+    },
+    areaServed: {
+      "@type": "City",
+      name: "Москва"
+    },
+    offers,
+    url: params.url
+  } as const;
+};
 
 // FAQ данные для разных страниц
 export const faqData = {

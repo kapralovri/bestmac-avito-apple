@@ -18,6 +18,7 @@ import {
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
+import { serviceSchema } from "@/lib/schema";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import FAQ from "@/components/FAQ";
 import { faqData } from "@/lib/schema";
@@ -110,6 +111,11 @@ const Business = () => {
         description="Техника Apple для бизнеса в Москве. Корпоративные закупки, лизинг, trade-in. Полный пакет документов, безналичный расчет, доставка в офис."
         canonical="/business"
         keywords="техника apple для бизнеса, корпоративные закупки, лизинг macbook, trade-in для бизнеса москва"
+        schema={serviceSchema({
+          name: "Корпоративные решения BestMac",
+          description: "Поставка, лизинг и trade-in техники Apple для бизнеса",
+          url: "https://bestmac.ru/business"
+        })}
       />
       <Header />
       
