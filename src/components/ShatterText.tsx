@@ -73,8 +73,8 @@ const ShatterText = ({ text, className }: ShatterTextProps) => {
                     whiteSpace: "pre",
                     transformStyle: "preserve-3d"
                   }}
-                  animate={targets[letterIndex]}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  animate={targets[letterIndex] as any}
+                  transition={{ duration: 0.8 }}
                 >
                   {char}
                 </motion.span>
