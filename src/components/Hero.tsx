@@ -53,6 +53,8 @@ const Hero = () => {
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'
         }}
+        role="img"
+        aria-label="Коллекция техники Apple: MacBook, iMac и другие устройства"
       />
 
       <motion.div
@@ -67,11 +69,11 @@ const Hero = () => {
             variants={itemVariants}
           >
             <ShatterText
-              text="Купите iMac и MacBook"
+              text="Купить MacBook и iMac"
               className="text-transparent bg-clip-text bg-gradient-primary"
             />
             <br />
-            в Москве выгодно
+            б/у в Москве выгодно
           </motion.h1>
           
           <motion.p 

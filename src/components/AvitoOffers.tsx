@@ -54,7 +54,8 @@ const AvitoOffers = () => {
           <img 
             className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
             src={offer.imageUrl || ''} 
-            alt={offer.title}
+            alt={`${offer.title} - MacBook или техника Apple по цене ${formattedPrice} ₽ на Avito`}
+            loading="lazy"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.style.display = 'none';

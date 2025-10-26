@@ -2,9 +2,10 @@ import { motion } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AvitoOffers from "@/components/AvitoOffers";
+import FAQ from "@/components/FAQ";
 import SEOHead from "@/components/SEOHead";
 import Breadcrumbs from "@/components/Breadcrumbs";
-import { productOfferSchema } from "@/lib/schema";
+import { productOfferSchema, faqData } from "@/lib/schema";
 
 const Buy = () => {
   const breadcrumbItems = [
@@ -39,6 +40,8 @@ const Buy = () => {
           </motion.div>
           <AvitoOffers />
         </section>
+
+        <FAQ items={faqData.buy} title="Вопросы о покупке" />
       </main>
 
       <Footer />

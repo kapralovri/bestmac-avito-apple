@@ -8,11 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CheckCircle, ArrowRight, Calculator, Clock, Shield, Banknote } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import FAQ from "@/components/FAQ";
 import { motion } from "framer-motion";
 import { sendEmail } from "@/services/email";
 import SEOHead from "@/components/SEOHead";
 import Breadcrumbs from "@/components/Breadcrumbs";
-import { productOfferSchema, serviceSchema } from "@/lib/schema";
+import { productOfferSchema, serviceSchema, faqData } from "@/lib/schema";
 import { trackFormSubmit } from "@/components/Analytics";
 import BuyoutTable from "@/components/BuyoutTable";
 import { useEffect, useMemo, useState as useStateReact } from 'react';
@@ -416,6 +417,8 @@ const Sell = () => {
             </CardContent>
           </Card>
         </motion.div>
+
+        <FAQ items={faqData.sell} title="Частые вопросы о выкупе" />
       </main>
 
       <Footer />

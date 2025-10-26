@@ -1,13 +1,14 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import AboutSection from "@/components/AboutSection";
-// import ProductCatalog from "@/components/ProductCatalog";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
-// import AvitoAuth from "@/components/AvitoAuth";
 import AvitoOffers from "@/components/AvitoOffers";
+import Reviews from "@/components/Reviews";
+import FAQ from "@/components/FAQ";
+import BlogPreview from "@/components/BlogPreview";
 import SEOHead from "@/components/SEOHead";
-import { organizationSchema } from "@/lib/schema";
+import { organizationSchema, faqData } from "@/lib/schema";
 
 const Index = () => {
   return (
@@ -54,6 +55,12 @@ const Index = () => {
           <AvitoOffers />
         </div>
       </section>
+
+      <Reviews />
+      
+      <BlogPreview />
+      
+      <FAQ items={faqData.home} />
       
       <ContactSection />
       <Footer />
