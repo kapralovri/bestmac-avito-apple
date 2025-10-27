@@ -10,7 +10,7 @@ import { productOfferSchema, faqData } from "@/lib/schema";
 const Buy = () => {
   const breadcrumbItems = [
     { name: "Главная", url: "/" },
-    { name: "Купить MacBook", url: "/buy" }
+    { name: "Выкуп", url: "/buy" }
   ];
 
   const schema = productOfferSchema('buy');
@@ -18,11 +18,11 @@ const Buy = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SEOHead 
-        title="Купить MacBook б/у в Москве — гарантия, доставка | BestMac"
-        description="Купить MacBook б/у в Москве с гарантией. Широкий выбор MacBook Air и MacBook Pro по выгодным ценам. Доставка по Москве и области."
+        title="Выкуп MacBook б/у в Москве — гарантия, доставка | BestMac"
+        description="Выкуп MacBook б/у в Москве с гарантией. Широкий выбор MacBook Air и MacBook Pro по выгодным ценам. Доставка по Москве и области."
         canonical="/buy"
         schema={schema}
-        keywords="купить macbook бу, macbook б/у москва, купить macbook air, купить macbook pro, macbook с гарантией"
+        keywords="выкуп macbook бу, macbook б/у москва, купить macbook air, купить macbook pro, macbook с гарантией"
       />
       <Header />
       
@@ -35,8 +35,8 @@ const Buy = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-3xl font-bold font-apple mb-2">Актуальные предложения</h1>
-            <p className="text-muted-foreground">Мои лучшие предложения с Avito</p>
+            <h1 className="text-3xl font-bold font-apple mb-2">Выкуп MacBook</h1>
+            <p className="text-muted-foreground">Актуальные предложения с Avito</p>
           </motion.div>
           <AvitoOffers />
         </section>

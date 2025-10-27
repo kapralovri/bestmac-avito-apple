@@ -1,0 +1,20 @@
+[
+  {
+    "model": "MacBook Air 13" ,
+    "ram": "8 GB",
+    "storage": "256 GB",
+    "basePrice": 95000
+  },
+  {
+    "model": "MacBook Pro 14",
+    "ram": "16 GB",
+    "storage": "512 GB",
+    "basePrice": 160000
+  },
+  {
+    "model": "MacBook Pro 13 (Intel)",
+    "_remove": true
+  }
+]
+
+

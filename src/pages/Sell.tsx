@@ -18,7 +18,8 @@ import { trackFormSubmit } from "@/components/Analytics";
 import BuyoutTable from "@/components/BuyoutTable";
 import { useEffect, useMemo, useState as useStateReact } from 'react';
 import type { BuyoutRow } from '@/types/buyout';
-import { estimatePrice } from '@/lib/buyout';
+import { estimatePrice, loadBuyoutData } from '@/lib/buyout';
+import { adjustments } from '@/config/buyout-adjustments';
 
 const Sell = () => {
   const initialState = {
@@ -35,15 +36,12 @@ const Sell = () => {
   const [buyoutData, setBuyoutData] = useStateReact<BuyoutRow[]>([]);
 
   useEffect(() => {
-    fetch('/data/buyout.json')
-      .then(r => r.ok ? r.json() : [])
-      .then((data: BuyoutRow[]) => setBuyoutData(data))
-      .catch(() => setBuyoutData([]));
+    loadBuyoutData().then(setBuyoutData).catch(() => setBuyoutData([]));
   }, []);
 
   // Калькулятор
   const [calc, setCalc] = useStateReact({
-    model: '',
+    configId: '', // ID выбранной конфигурации
     condition: 'A' as 'A' | 'B' | 'C',
     batteryCycles: 0,
     displayDefect: false,
@@ -53,23 +51,65 @@ const Sell = () => {
     icloudBlocked: false,
   });
 
+  // Получаем выбранную конфигурацию
+  const selectedConfig = useMemo(() => {
+    return buyoutData.find(r => `${r.model}|${r.ram || ''}|${r.storage || ''}` === calc.configId);
+  }, [calc.configId, buyoutData]);
+
   const estimate = useMemo(() => {
-    if (!calc.model) return null;
-    return estimatePrice({
-      model: calc.model,
-      condition: calc.condition,
-      batteryCycles: calc.batteryCycles,
-      displayDefect: calc.displayDefect,
-      bodyDefect: calc.bodyDefect,
-      hasCharger: calc.hasCharger,
-      hasBox: calc.hasBox,
-      icloudBlocked: calc.icloudBlocked,
-    }, buyoutData);
-  }, [calc, buyoutData]);
+    if (!selectedConfig) return null;
+    
+    // Используем базовую цену из выбранной конфигурации
+    const base = selectedConfig.basePrice;
+    
+    if (adjustments.icloudBlockedZero && calc.icloudBlocked) {
+      return { base, priceMin: 0, priceMax: 0 };
+    }
+
+    let price = base;
+
+    // Состояние
+    price *= adjustments.condition[calc.condition];
+
+    // Циклы батареи
+    const cycles = calc.batteryCycles ?? 0;
+    const idx = adjustments.batteryCycles.thresholds.findIndex((t) => cycles < t);
+    const penalty = idx === -1
+      ? adjustments.batteryCycles.penalties.at(-1)!
+      : adjustments.batteryCycles.penalties[idx];
+    price -= penalty;
+
+    // Дефекты
+    if (calc.displayDefect) price -= base * adjustments.displayDefectPenalty;
+    if (calc.bodyDefect) price -= base * adjustments.bodyDefectPenalty;
+
+    // Комплект
+    if (calc.hasCharger === false) price -= adjustments.noChargerPenalty;
+    if (calc.hasBox === false) price -= adjustments.noBoxPenalty;
+
+    const spread = price * adjustments.minMaxSpreadPct;
+    const priceMin = Math.max(0, Math.round(price - spread));
+    const priceMax = Math.max(0, Math.round(price + spread));
+
+    return { base, priceMin, priceMax };
+  }, [selectedConfig, calc]);
+
+  // Получаем все доступные конфигурации (уникальные)
+  const allConfigs = useMemo(() => {
+    const seen = new Set<string>();
+    return buyoutData.filter(r => {
+      const key = `${r.model}|${r.ram || ''}|${r.storage || ''}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        return true;
+      }
+      return false;
+    });
+  }, [buyoutData]);
 
   const breadcrumbItems = [
     { name: "Главная", url: "/" },
-    { name: "Продать MacBook", url: "/sell" }
+    { name: "В продаже", url: "/sell" }
   ];
 
   const schema = serviceSchema({
@@ -127,8 +167,8 @@ const Sell = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SEOHead 
-        title="Продать MacBook в Москве — выкуп техники Apple | BestMac"
-        description="Продать MacBook в Москве. Выкуп техники Apple по выгодным ценам. Быстрая оценка, наличный расчет, выезд специалиста. Работаем официально."
+        title="В продаже MacBook в Москве — выкуп техники Apple | BestMac"
+        description="В продаже MacBook в Москве. Выкуп техники Apple по выгодным ценам. Быстрая оценка, наличный расчет, выезд специалиста. Работаем официально."
         canonical="/sell"
         schema={schema}
         keywords="продать macbook, выкуп macbook, скупка macbook москва, продать iphone, выкуп техники apple"
@@ -149,7 +189,7 @@ const Sell = () => {
           transition={{ duration: 0.6 }}
         >
           <h1 className="text-4xl md:text-5xl font-bold font-apple mb-6">
-            Продать технику Apple
+            В продаже техника Apple
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
             Честная оценка, быстрая сделка и максимальная цена за вашу технику Apple. 
@@ -220,16 +260,25 @@ const Sell = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 border border-border rounded-lg p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="model">Модель</Label>
-                  <Select value={calc.model} onValueChange={(v) => setCalc({ ...calc, model: v })}>
+                <div className="md:col-span-2">
+                  <Label htmlFor="config">Конфигурация</Label>
+                  <Select value={calc.configId} onValueChange={(v) => setCalc({ ...calc, configId: v })}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Выберите модель" />
+                      <SelectValue placeholder="Выберите конфигурацию" />
                     </SelectTrigger>
-                    <SelectContent className="max-h-80">
-                      {buyoutData.map((r) => (
-                        <SelectItem key={r.model} value={r.model}>{r.model}</SelectItem>
-                      ))}
+                    <SelectContent className="max-h-96">
+                      <SelectItem value="">Не выбрано</SelectItem>
+                      {allConfigs.map((config) => {
+                        const configId = `${config.model}|${config.ram || ''}|${config.storage || ''}`;
+                        const displayName = config.ram || config.storage
+                          ? `${config.model}, ${config.ram ? `${config.ram} GB RAM` : ''}${config.ram && config.storage ? ', ' : ''}${config.storage ? `${config.storage} GB SSD` : ''}`
+                          : config.model;
+                        return (
+                          <SelectItem key={configId} value={configId}>
+                            {displayName}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
@@ -276,14 +325,14 @@ const Sell = () => {
             </div>
             <div className="border border-border rounded-lg p-6">
               <h3 className="font-semibold mb-2">Оценка</h3>
-              {estimate && calc.model ? (
+              {estimate && selectedConfig ? (
                 <>
                   <p className="text-sm text-muted-foreground mb-2">Базовая цена: {estimate.base.toLocaleString('ru-RU')} ₽</p>
                   <p className="text-xl font-bold">{estimate.priceMin.toLocaleString('ru-RU')} – {estimate.priceMax.toLocaleString('ru-RU')} ₽</p>
                   <p className="text-sm text-muted-foreground mt-2">Точная цена после диагностики. Оставьте телефон — закрепим предложение.</p>
                 </>
               ) : (
-                <p className="text-muted-foreground">Выберите модель и параметры для расчёта.</p>
+                <p className="text-muted-foreground">Выберите конфигурацию и параметры для расчёта.</p>
               )}
             </div>
           </div>
@@ -291,6 +340,34 @@ const Sell = () => {
 
         {/* Примерные цены выкупа (таблица c RAM/SSD) */}
         <BuyoutTable />
+        
+        {/* Structured data для таблицы цен */}
+        {buyoutData.length > 0 && (
+          <script type="application/ld+json">
+            {JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "PriceSpecification",
+              "priceCurrency": "RUB",
+              "name": "Примерные цены выкупа MacBook в Москве",
+              "description": "Базовая цена выкупа MacBook в зависимости от модели, оперативной памяти и SSD. Цены ориентировочные, зависят от состояния и комплекта.",
+              "priceRange": "30000-180000 RUB",
+              "itemOffered": buyoutData.slice(0, 20).map(item => ({
+                "@type": "Product",
+                "name": item.model,
+                "description": item.storage ? 
+                  `${item.model}, ${item.ram ? `RAM ${item.ram} GB` : ''}, SSD ${item.storage} GB` :
+                  item.model,
+                "offers": {
+                  "@type": "Offer",
+                  "price": item.basePrice,
+                  "priceCurrency": "RUB",
+                  "availability": "https://schema.org/InStock",
+                  "priceSpecification": "Базовая цена"
+                }
+              }))
+            })}
+          </script>
+        )}
 
         {/* Contact Form */}
         <motion.div 

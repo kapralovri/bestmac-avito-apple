@@ -7,8 +7,8 @@ const Header = () => {
   const location = useLocation();
 
   const navItems = [
-    { path: "/buy", label: "Хочу купить" },
-    { path: "/sell", label: "Хочу продать" },
+    { path: "/buy", label: "Выкуп" },
+    { path: "/sell", label: "В продаже" },
     { path: "/selection", label: "Подбор" },
     { path: "/business", label: "Для юр.лиц" }
   ];

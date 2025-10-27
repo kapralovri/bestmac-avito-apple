@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { BuyoutRow } from '@/types/buyout';
+import { loadBuyoutData } from '@/lib/buyout';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const DEFAULT_LIMIT = 50;
 
@@ -11,10 +13,7 @@ const BuyoutTable = () => {
   const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
-    fetch('/data/buyout.json')
-      .then((r) => (r.ok ? r.json() : []))
-      .then((data: BuyoutRow[]) => setRows(data))
-      .catch(() => setRows([]));
+    loadBuyoutData().then(setRows).catch(() => setRows([]));
   }, []);
 
   // Удаляем дубли по модель+RAM+SSD
@@ -31,15 +30,28 @@ const BuyoutTable = () => {
     return out;
   }, [rows]);
 
+  // Получаем уникальные модели для выпадающего списка
+  const uniqueModels = useMemo(() => {
+    const seen = new Set<string>();
+    return deduped
+      .filter(r => {
+        if (!seen.has(r.model)) {
+          seen.add(r.model);
+          return true;
+        }
+        return false;
+      })
+      .map(r => r.model)
+      .sort((a, b) => a.localeCompare(b, 'ru'));
+  }, [deduped]);
+
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    const byQuery = q
-      ? deduped.filter(r =>
-          r.model.toLowerCase().includes(q) ||
-          (r.ram || '').toLowerCase().includes(q) ||
-          (r.storage || '').toLowerCase().includes(q)
-        )
+    // Фильтруем по точному совпадению модели (если выбрана модель)
+    const byQuery = search
+      ? deduped.filter(r => r.model === search)
       : deduped;
+    
+    // Сортируем результаты
     const sorted = [...byQuery].sort((a, b) => {
       if (sortKey === 'model') {
         const cmp = a.model.localeCompare(b.model, 'ru');
@@ -60,12 +72,21 @@ const BuyoutTable = () => {
       <p className="text-muted-foreground mb-4">Цены ориентировочные, зависят от состояния и комплекта. Базовые цены из каталога.</p>
 
       <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between mb-3">
-        <input
-          className="w-full md:w-1/2 border border-border rounded-md px-3 py-2 bg-background"
-          placeholder="Поиск по модели, RAM или SSD"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+        <div className="w-full md:w-1/2">
+          <Select value={search} onValueChange={setSearch}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Выберите модель для фильтрации" />
+            </SelectTrigger>
+            <SelectContent className="max-h-80">
+              <SelectItem value="">Все модели</SelectItem>
+              {uniqueModels.map((model) => (
+                <SelectItem key={model} value={model}>
+                  {model}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <div className="flex items-center gap-2">
           <label className="text-sm text-muted-foreground">Сортировка:</label>
           <select
@@ -99,8 +120,8 @@ const BuyoutTable = () => {
             {list.map((r) => (
               <tr key={`${r.model}-${r.ram}-${r.storage}`} className="border-t border-border">
                 <td className="p-3"><strong>{r.model}</strong></td>
-                <td className="p-3">{r.ram || '-'}</td>
-                <td className="p-3">{r.storage || '-'}</td>
+                <td className="p-3">{r.ram ? `${r.ram} GB` : '-'}</td>
+                <td className="p-3">{r.storage ? `${r.storage} GB` : '-'}</td>
                 <td className="p-3">{r.basePrice.toLocaleString('ru-RU')}</td>
               </tr>
             ))}

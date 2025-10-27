@@ -15,6 +15,9 @@ import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
+import KakVybratMacbook2024 from "./pages/blog/KakVybratMacbook2024";
+import ProverkaMacbookPeredPokupkoi from "./pages/blog/ProverkaMacbookPeredPokupkoi";
+import MacbookAirM2vsM3 from "./pages/blog/MacbookAirM2vsM3";
 import { initAnalytics } from "./components/Analytics";
 
 const queryClient = new QueryClient();
@@ -41,6 +44,10 @@ const App = () => {
             <Route path="/contact" element={<Contact />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
+            {/* Blog routes */}
+            <Route path="/blog/kak-vybrat-macbook-2024" element={<KakVybratMacbook2024 />} />
+            <Route path="/blog/proverka-macbook-pered-pokupkoi" element={<ProverkaMacbookPeredPokupkoi />} />
+            <Route path="/blog/macbook-air-m2-vs-m3" element={<MacbookAirM2vsM3 />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

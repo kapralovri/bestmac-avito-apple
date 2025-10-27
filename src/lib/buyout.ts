@@ -56,8 +56,56 @@ export function estimatePrice(input: EstimateInput, data: BuyoutRow[]) {
 }
 
 export async function loadBuyoutData(): Promise<BuyoutRow[]> {
-  const res = await fetch('/data/buyout.json');
-  if (!res.ok) return [];
-  return res.json();
+  // Базовые данные
+  const baseRes = await fetch('/data/buyout.json');
+  const base: BuyoutRow[] = baseRes.ok ? await baseRes.json() : [];
+
+  // Опциональные оверрайды ассортимента и цен
+  let overrides: any[] = [];
+  try {
+    const o = await fetch('/data/buyout-overrides.json');
+    if (o.ok) {
+      overrides = await o.json();
+    }
+  } catch {
+    // ignore
+  }
+
+  if (!overrides?.length) return base;
+
+  type OverrideRow = Partial<BuyoutRow> & {
+    model: string;
+    ram?: string;
+    storage?: string;
+    _remove?: boolean;
+  };
+
+  const keyOf = (r: { model: string; ram?: string; storage?: string }) =>
+    `${r.model}|${r.ram ?? ''}|${r.storage ?? ''}`;
+
+  const map = new Map<string, BuyoutRow>();
+  for (const r of base) map.set(keyOf(r), r);
+
+  for (const raw of overrides as OverrideRow[]) {
+    if (!raw?.model) continue;
+    const key = keyOf(raw);
+    if (raw._remove) {
+      map.delete(key);
+      continue;
+    }
+    const existing = map.get(key);
+    const merged: BuyoutRow = {
+      manufacturer: raw.manufacturer ?? existing?.manufacturer ?? 'Apple',
+      model: raw.model,
+      cpu: raw.cpu ?? existing?.cpu,
+      ram: raw.ram ?? existing?.ram,
+      storage: raw.storage ?? existing?.storage,
+      gpu: raw.gpu ?? existing?.gpu,
+      basePrice: typeof raw.basePrice === 'number' ? raw.basePrice : (existing?.basePrice ?? 0),
+    };
+    map.set(key, merged);
+  }
+
+  return Array.from(map.values());
 }
 

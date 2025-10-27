@@ -1,0 +1,956 @@
+[
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2020, M1)",
+    "cpu": "Apple M1",
+    "ram": "8",
+    "storage": "256",
+    "gpu": "Apple graphics 7-core",
+    "basePrice": 30000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2020, M1)",
+    "cpu": "Apple M1",
+    "ram": "8",
+    "storage": "256",
+    "gpu": "Apple graphics 8-core",
+    "basePrice": 30000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 15 (2023, M2)",
+    "cpu": "Apple M2",
+    "ram": "8",
+    "storage": "512",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 30000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2022, M2)",
+    "cpu": "Apple M2",
+    "ram": "8",
+    "storage": "256",
+    "gpu": "Apple graphics 8-core",
+    "basePrice": 35000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2020, M1)",
+    "cpu": "Apple M1",
+    "ram": "8",
+    "storage": "1000",
+    "gpu": "Другое",
+    "basePrice": 35000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 13 (2020, M1)",
+    "cpu": "Apple M1",
+    "ram": "8",
+    "storage": "256",
+    "gpu": "Apple graphics 8-core",
+    "basePrice": 35000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 16 (2021)",
+    "cpu": "Apple M1 Pro",
+    "ram": "16",
+    "storage": "512",
+    "gpu": "Apple graphics 16-core",
+    "basePrice": 35000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 15 (2023, M2)",
+    "cpu": "Apple M2",
+    "ram": "8",
+    "storage": "256",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 35000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2020, M1)",
+    "cpu": "Apple M1",
+    "ram": "16",
+    "storage": "256",
+    "gpu": "Apple graphics 7-core",
+    "basePrice": 35000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2022, M2)",
+    "cpu": "Apple M2",
+    "ram": "16",
+    "storage": "256",
+    "gpu": "Apple graphics 8-core",
+    "basePrice": 35000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2020, M1)",
+    "cpu": "Apple M1",
+    "ram": "8",
+    "storage": "512",
+    "gpu": "Apple graphics 8-core",
+    "basePrice": 35000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2020, M1)",
+    "cpu": "Apple M1",
+    "ram": "16",
+    "storage": "512",
+    "gpu": "Apple graphics 8-core",
+    "basePrice": 35000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2022, M2)",
+    "cpu": "Apple M2",
+    "ram": "8",
+    "storage": "512",
+    "gpu": "Apple graphics 8-core",
+    "basePrice": 35000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2020, M1)",
+    "cpu": "Apple M1",
+    "ram": "16",
+    "storage": "512",
+    "gpu": "Apple graphics 7-core",
+    "basePrice": 35000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2020, M1)",
+    "cpu": "Apple M1",
+    "ram": "8",
+    "storage": "512",
+    "gpu": "Apple graphics 7-core",
+    "basePrice": 35000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 16 (2021)",
+    "cpu": "Apple M1 Pro",
+    "ram": "32",
+    "storage": "512",
+    "gpu": "Apple graphics 16-core",
+    "basePrice": 35000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2020, M1)",
+    "cpu": "Apple M1",
+    "ram": "16",
+    "storage": "1024",
+    "gpu": "Apple graphics 8-core",
+    "basePrice": 35000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2020, M1)",
+    "cpu": "Apple M1",
+    "ram": "16",
+    "storage": "1024",
+    "gpu": "Apple graphics 7-core",
+    "basePrice": 35000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 15 (2024, M3)",
+    "cpu": "Apple M3",
+    "ram": "8",
+    "storage": "256",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 36000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 13 (2020, M1)",
+    "cpu": "Apple M1",
+    "ram": "8",
+    "storage": "512",
+    "gpu": "Apple graphics 8-core",
+    "basePrice": 38000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2023)",
+    "cpu": "Apple M3",
+    "ram": "8",
+    "storage": "512",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 38000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 16 (2023)",
+    "cpu": "Apple M2 Pro",
+    "ram": "16",
+    "storage": "512",
+    "gpu": "Apple graphics 19-core",
+    "basePrice": 38000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2021)",
+    "cpu": "Apple M1 Max",
+    "ram": "32",
+    "storage": "512",
+    "gpu": "Apple graphics 24-core",
+    "basePrice": 38000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 16 (2024)",
+    "cpu": "Apple M4 Max",
+    "ram": "48",
+    "storage": "4096",
+    "gpu": "Apple graphics 40-core",
+    "basePrice": 40000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2020, M1)",
+    "cpu": "Apple M1",
+    "ram": "16",
+    "storage": "256",
+    "gpu": "Apple graphics 8-core",
+    "basePrice": 40000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2024)",
+    "cpu": "Apple M4 Max",
+    "ram": "128",
+    "storage": "4096",
+    "gpu": "Apple graphics 40-core",
+    "basePrice": 40000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 16 (2021)",
+    "cpu": "Apple M1 Pro",
+    "ram": "32",
+    "storage": "1000",
+    "gpu": "Apple graphics 16-core",
+    "basePrice": 40000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2024, M3)",
+    "cpu": "Apple M3",
+    "ram": "8",
+    "storage": "256",
+    "gpu": "Apple graphics 8-core",
+    "basePrice": 45000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2024, M3)",
+    "cpu": "Apple M3",
+    "ram": "16",
+    "storage": "256",
+    "gpu": "Apple graphics 8-core",
+    "basePrice": 45000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 13 (2020, M1)",
+    "cpu": "Apple M1",
+    "ram": "16",
+    "storage": "256",
+    "gpu": "Apple graphics 8-core",
+    "basePrice": 45000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2024)",
+    "cpu": "Apple M4 Pro",
+    "ram": "24",
+    "storage": "1024",
+    "gpu": "Apple graphics 20-core",
+    "basePrice": 45000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2024, M3)",
+    "cpu": "Apple M3",
+    "ram": "8",
+    "storage": "256",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 45000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 16 (2021)",
+    "cpu": "Apple M1 Pro",
+    "ram": "16",
+    "storage": "1024",
+    "gpu": "Apple graphics 16-core",
+    "basePrice": 45000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 16 (2021)",
+    "cpu": "Apple M1 Pro",
+    "ram": "32",
+    "storage": "1024",
+    "gpu": "Apple graphics 16-core",
+    "basePrice": 45000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2021)",
+    "cpu": "Apple M1 Pro",
+    "ram": "32",
+    "storage": "512",
+    "gpu": "Apple graphics 14-core",
+    "basePrice": 45000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2020, M1)",
+    "cpu": "Apple M1",
+    "ram": "8",
+    "storage": "2000",
+    "gpu": "Apple graphics 7-core",
+    "basePrice": 45000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 16 (2023)",
+    "cpu": "Apple M2 Pro",
+    "ram": "16",
+    "storage": "1024",
+    "gpu": "Apple graphics 19-core",
+    "basePrice": 48000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 16 (2021)",
+    "cpu": "Apple M1 Max",
+    "ram": "32",
+    "storage": "1024",
+    "gpu": "Apple graphics 24-core",
+    "basePrice": 48000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2025, M4)",
+    "cpu": "Apple M4",
+    "ram": "16",
+    "storage": "256",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 50000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2022, M2)",
+    "cpu": "Apple M2",
+    "ram": "8",
+    "storage": "256",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 50000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2022, M2)",
+    "cpu": "Apple M2",
+    "ram": "8",
+    "storage": "512",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 50000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2024, M3)",
+    "cpu": "Apple M3",
+    "ram": "8",
+    "storage": "512",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 50000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 15 (2025, M4)",
+    "cpu": "Apple M4",
+    "ram": "16",
+    "storage": "256",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 50000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 16 (2023)",
+    "cpu": "Apple M3 Max",
+    "ram": "48",
+    "storage": "1024",
+    "gpu": "Apple graphics 40-core",
+    "basePrice": 50000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2022, M2)",
+    "cpu": "Apple M2",
+    "ram": "16",
+    "storage": "512",
+    "gpu": "Apple graphics 8-core",
+    "basePrice": 50000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2022, M2)",
+    "cpu": "Apple M2",
+    "ram": "16",
+    "storage": "256",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 50000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2022, M2)",
+    "cpu": "Apple M2",
+    "ram": "16",
+    "storage": "512",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 50000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 15 (2023, M2)",
+    "cpu": "Apple M2",
+    "ram": "16",
+    "storage": "512",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 50000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2023)",
+    "cpu": "Apple M2 Max",
+    "ram": "32",
+    "storage": "1024",
+    "gpu": "Apple graphics 30-core",
+    "basePrice": 50000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2022, M2)",
+    "cpu": "Apple M2",
+    "ram": "8",
+    "storage": "1024",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 50000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 16 (2021)",
+    "cpu": "Apple M1 Max",
+    "ram": "64",
+    "storage": "1024",
+    "gpu": "Apple graphics 32-core",
+    "basePrice": 50000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 13 (2022, M2)",
+    "cpu": "Apple M2",
+    "ram": "16",
+    "storage": "256",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 50000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 15 (2023, M2)",
+    "cpu": "Apple M2",
+    "ram": "16",
+    "storage": "256",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 50000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2021)",
+    "cpu": "Apple M1 Pro",
+    "ram": "32",
+    "storage": "512",
+    "gpu": "Apple graphics 16-core",
+    "basePrice": 50000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 15 (2024, M3)",
+    "cpu": "Apple M3",
+    "ram": "8",
+    "storage": "512",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 53000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 15 (2024, M3)",
+    "cpu": "Apple M3",
+    "ram": "16",
+    "storage": "512",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 55000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2024, M3)",
+    "cpu": "Apple M3",
+    "ram": "16",
+    "storage": "512",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 55000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2025, M4)",
+    "cpu": "Apple M4",
+    "ram": "16",
+    "storage": "512",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 55000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 15 (2024, M3)",
+    "cpu": "Apple M3",
+    "ram": "16",
+    "storage": "256",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 55000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 16 (2024)",
+    "cpu": "Apple M4 Max",
+    "ram": "36",
+    "storage": "1024",
+    "gpu": "Apple graphics 32-core",
+    "basePrice": 55000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 13 (2020, M1)",
+    "cpu": "Apple M1",
+    "ram": "16",
+    "storage": "1024",
+    "gpu": "Apple graphics 8-core",
+    "basePrice": 55000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2024, M3)",
+    "cpu": "Apple M3",
+    "ram": "8",
+    "storage": "512",
+    "gpu": "Apple graphics 8-core",
+    "basePrice": 55000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 13 (2022, M2)",
+    "cpu": "Apple M2",
+    "ram": "8",
+    "storage": "256",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 45000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2023)",
+    "cpu": "Apple M3 Pro",
+    "ram": "18",
+    "storage": "512",
+    "gpu": "Apple graphics 14-core",
+    "basePrice": 60000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 16 (2023)",
+    "cpu": "Apple M3 Pro",
+    "ram": "18",
+    "storage": "512",
+    "gpu": "Apple graphics 18-core",
+    "basePrice": 60000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2021)",
+    "cpu": "Apple M1 Pro",
+    "ram": "16",
+    "storage": "512",
+    "gpu": "Apple graphics 16-core",
+    "basePrice": 60000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 16 (2023)",
+    "cpu": "Apple M3 Max",
+    "ram": "36",
+    "storage": "1024",
+    "gpu": "Apple graphics 30-core",
+    "basePrice": 60000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 15 (2025, M4)",
+    "cpu": "Apple M4",
+    "ram": "16",
+    "storage": "512",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 65000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2024, M3)",
+    "cpu": "Apple M3",
+    "ram": "16",
+    "storage": "256",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 65000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2024, M3)",
+    "cpu": "Apple M3",
+    "ram": "16",
+    "storage": "512",
+    "gpu": "Apple graphics 8-core",
+    "basePrice": 65000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2025, M4)",
+    "cpu": "Apple M4",
+    "ram": "24",
+    "storage": "512",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 65000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2024, M3)",
+    "cpu": "Apple M3",
+    "ram": "24",
+    "storage": "512",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 65000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 16 (2023)",
+    "cpu": "Apple M2 Max",
+    "ram": "32",
+    "storage": "1024",
+    "gpu": "Apple graphics 38-core",
+    "basePrice": 65000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 13 (2022, M2)",
+    "cpu": "Apple M2",
+    "ram": "16",
+    "storage": "512",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 60000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2021)",
+    "cpu": "Apple M1 Pro",
+    "ram": "16",
+    "storage": "512",
+    "gpu": "Apple graphics 14-core",
+    "basePrice": 70000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2024)",
+    "cpu": "Apple M4 Pro",
+    "ram": "24",
+    "storage": "512",
+    "gpu": "Apple graphics 16-core",
+    "basePrice": 70000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 16 (2021)",
+    "cpu": "Apple M1 Max",
+    "ram": "32",
+    "storage": "1024",
+    "gpu": "Apple graphics 32-core",
+    "basePrice": 70000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 15 (2024, M3)",
+    "cpu": "Apple M3",
+    "ram": "24",
+    "storage": "512",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 70000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 13 (2024, M3)",
+    "cpu": "Apple M3",
+    "ram": "16",
+    "storage": "1024",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 70000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 15 (2024, M3)",
+    "cpu": "Apple M3",
+    "ram": "16",
+    "storage": "1024",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 70000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2021)",
+    "cpu": "Apple M1 Pro",
+    "ram": "16",
+    "storage": "1024",
+    "gpu": "Apple graphics 14-core",
+    "basePrice": 73000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 13 (2020, M1)",
+    "cpu": "Apple M1",
+    "ram": "16",
+    "storage": "512",
+    "gpu": "Apple graphics 8-core",
+    "basePrice": 75000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2021)",
+    "cpu": "Apple M1 Pro",
+    "ram": "16",
+    "storage": "1024",
+    "gpu": "Apple graphics 16-core",
+    "basePrice": 75000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 16 (2023)",
+    "cpu": "Apple M3 Max",
+    "ram": "128",
+    "storage": "8192",
+    "gpu": "Apple graphics 40-core",
+    "basePrice": 75000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2023)",
+    "cpu": "Apple M3 Pro",
+    "ram": "18",
+    "storage": "1024",
+    "gpu": "Apple graphics 18-core",
+    "basePrice": 78000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2023)",
+    "cpu": "Apple M2 Pro",
+    "ram": "16",
+    "storage": "512",
+    "gpu": "Apple graphics 16-core",
+    "basePrice": 80000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2024)",
+    "cpu": "Apple M4",
+    "ram": "16",
+    "storage": "512",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 80000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2021)",
+    "cpu": "Apple M1 Pro",
+    "ram": "32",
+    "storage": "1024",
+    "gpu": "Apple graphics 16-core",
+    "basePrice": 80000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2023)",
+    "cpu": "Apple M3",
+    "ram": "8",
+    "storage": "1024",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 80000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2024)",
+    "cpu": "Apple M4 Pro",
+    "ram": "24",
+    "storage": "512",
+    "gpu": "",
+    "basePrice": 80000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 16 (2021)",
+    "cpu": "Apple M1 Pro",
+    "ram": "16",
+    "storage": "1000",
+    "gpu": "Apple graphics 16-core",
+    "basePrice": 80000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2023)",
+    "cpu": "Apple M3 Pro",
+    "ram": "18",
+    "storage": "512",
+    "gpu": "Apple graphics 18-core",
+    "basePrice": 80000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Air 15 (2025, M4)",
+    "cpu": "Apple M4",
+    "ram": "24",
+    "storage": "512",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 80000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2023)",
+    "cpu": "Apple M2 Pro",
+    "ram": "16",
+    "storage": "512",
+    "gpu": "Apple graphics 19-core",
+    "basePrice": 80000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2023)",
+    "cpu": "Apple M3 Max",
+    "ram": "36",
+    "storage": "1024",
+    "gpu": "Apple graphics 30-core",
+    "basePrice": 80000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2023)",
+    "cpu": "Apple M3",
+    "ram": "16",
+    "storage": "1024",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 80000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 13 (2022, M2)",
+    "cpu": "Apple M2",
+    "ram": "8",
+    "storage": "512",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 50000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2023)",
+    "cpu": "Apple M2 Pro",
+    "ram": "16",
+    "storage": "1024",
+    "gpu": "Apple graphics 19-core",
+    "basePrice": 85000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2021)",
+    "cpu": "Apple M1 Max",
+    "ram": "64",
+    "storage": "1024",
+    "gpu": "Apple graphics 32-core",
+    "basePrice": 85000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 16 (2021)",
+    "cpu": "Apple M1 Max",
+    "ram": "64",
+    "storage": "1024",
+    "gpu": "Apple graphics 24-core",
+    "basePrice": 88000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2023)",
+    "cpu": "Apple M2 Pro",
+    "ram": "32",
+    "storage": "512",
+    "gpu": "Apple graphics 16-core",
+    "basePrice": 110000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2023)",
+    "cpu": "Apple M3",
+    "ram": "16",
+    "storage": "512",
+    "gpu": "Apple graphics 10-core",
+    "basePrice": 120000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 16 (2021)",
+    "cpu": "Apple M1 Max",
+    "ram": "64",
+    "storage": "2048",
+    "gpu": "Apple graphics 32-core",
+    "basePrice": 120000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 16 (2024)",
+    "cpu": "Apple M4 Pro",
+    "ram": "48",
+    "storage": "512",
+    "gpu": "Apple graphics 20-core",
+    "basePrice": 130000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 16 (2023)",
+    "cpu": "Apple M3 Pro",
+    "ram": "36",
+    "storage": "512",
+    "gpu": "Apple graphics 18-core",
+    "basePrice": 140000
+  },
+  {
+    "manufacturer": "Apple",
+    "model": "MacBook Pro 14 (2023)",
+    "cpu": "Apple M3 Max",
+    "ram": "128",
+    "storage": "8192",
+    "gpu": "Apple graphics 40-core",
+    "basePrice": 180000
+  }
+]
