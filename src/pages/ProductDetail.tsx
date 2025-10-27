@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import SEOHead from "@/components/SEOHead";
 import { useNavigate } from "react-router-dom";
 
 const ProductDetail = () => {
@@ -92,12 +94,25 @@ const ProductDetail = () => {
   const IconComponent = getCategoryIcon(product.category);
   const discountPercent = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
 
+  const breadcrumbItems = [
+    { name: "Главная", url: "/" },
+    { name: "В продаже", url: "/buy" },
+    { name: product.title, url: `/product/${id}` }
+  ];
+
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead 
+        title={`${product.title} — купить в Москве | BestMac`}
+        description={`Купить ${product.title} в Москве. ${product.condition} состояние. Цена: ${product.price.toLocaleString('ru-RU')} ₽. Гарантия, проверка при покупке.`}
+        canonical={`/product/${id}`}
+      />
       <Header />
       
       <main className="pt-20 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Breadcrumbs items={breadcrumbItems} />
+          
           {/* Back Button */}
           <div className="mb-6">
             <Button 

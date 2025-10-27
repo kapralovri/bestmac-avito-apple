@@ -244,7 +244,8 @@ const Contact = () => {
                     <p className="font-medium">Адрес</p>
                     <p className="text-muted-foreground">
                       ул. Дениса Давыдова 3<br />
-                      Москва
+                      Москва, Дорогомилово, ЦАО<br />
+                      м. Киевская
                     </p>
                   </div>
                 </div>

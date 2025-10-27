@@ -18,6 +18,7 @@ import NotFound from "./pages/NotFound";
 import KakVybratMacbook2024 from "./pages/blog/KakVybratMacbook2024";
 import ProverkaMacbookPeredPokupkoi from "./pages/blog/ProverkaMacbookPeredPokupkoi";
 import MacbookAirM2vsM3 from "./pages/blog/MacbookAirM2vsM3";
+import Pickup from "./pages/Pickup";
 import { initAnalytics } from "./components/Analytics";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => {
             <Route path="/business" element={<Business />} />
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/pickup" element={<Pickup />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
             {/* Blog routes */}

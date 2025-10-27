@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,10 +16,11 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import { productOfferSchema, serviceSchema, faqData } from "@/lib/schema";
 import { trackFormSubmit } from "@/components/Analytics";
 import BuyoutTable from "@/components/BuyoutTable";
-import { useEffect, useMemo, useState as useStateReact } from 'react';
 import type { BuyoutRow } from '@/types/buyout';
 import { estimatePrice, loadBuyoutData } from '@/lib/buyout';
 import { adjustments } from '@/config/buyout-adjustments';
+
+import Reviews from "@/components/Reviews";
 
 const Sell = () => {
   const initialState = {
@@ -33,14 +34,14 @@ const Sell = () => {
   };
   const [formData, setFormData] = useState(initialState);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [buyoutData, setBuyoutData] = useStateReact<BuyoutRow[]>([]);
+  const [buyoutData, setBuyoutData] = useState<BuyoutRow[]>([]);
 
   useEffect(() => {
     loadBuyoutData().then(setBuyoutData).catch(() => setBuyoutData([]));
   }, []);
 
   // Калькулятор
-  const [calc, setCalc] = useStateReact({
+  const [calc, setCalc] = useState({
     configId: '', // ID выбранной конфигурации
     condition: 'A' as 'A' | 'B' | 'C',
     batteryCycles: 0,
@@ -109,7 +110,7 @@ const Sell = () => {
 
   const breadcrumbItems = [
     { name: "Главная", url: "/" },
-    { name: "В продаже", url: "/sell" }
+    { name: "Выкуп", url: "/sell" }
   ];
 
   const schema = serviceSchema({
@@ -167,8 +168,8 @@ const Sell = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SEOHead 
-        title="В продаже MacBook в Москве — выкуп техники Apple | BestMac"
-        description="В продаже MacBook в Москве. Выкуп техники Apple по выгодным ценам. Быстрая оценка, наличный расчет, выезд специалиста. Работаем официально."
+        title="Выкуп MacBook в Москве — продать технику Apple выгодно | BestMac"
+        description="Выкуп MacBook в Москве по выгодным ценам в районах Дорогомилово, Киевская, ЦАО. Быстрая оценка, наличный расчет, выезд специалиста. Работаем официально."
         canonical="/sell"
         schema={schema}
         keywords="продать macbook, выкуп macbook, скупка macbook москва, продать iphone, выкуп техники apple"
@@ -189,11 +190,12 @@ const Sell = () => {
           transition={{ duration: 0.6 }}
         >
           <h1 className="text-4xl md:text-5xl font-bold font-apple mb-6">
-            В продаже техника Apple
+            Выкуп техники Apple в Москве
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
             Честная оценка, быстрая сделка и максимальная цена за вашу технику Apple. 
-            Работаем официально через ИП с полным пакетом документов.
+            Работаем в районах Дорогомилово, Киевская, ЦАО и по всей Москве. 
+            Официально через ИП с полным пакетом документов.
           </p>
         </motion.div>
 
@@ -496,6 +498,11 @@ const Sell = () => {
         </motion.div>
 
         <FAQ items={faqData.sell} title="Частые вопросы о выкупе" />
+
+        {/* Reviews Section */}
+        <div className="mt-16">
+          <Reviews title="Отзывы о выкупе техники" />
+        </div>
       </main>
 
       <Footer />

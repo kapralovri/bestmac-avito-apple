@@ -63,8 +63,8 @@ const Footer = () => {
               <div itemProp="address" itemScope itemType="https://schema.org/PostalAddress" className="flex items-start space-x-2">
                 <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                 <p className="text-sm text-apple-gray">
-                  <span itemProp="streetAddress">ул. Дениса Давыдова 3</span>.
-                  <span itemProp="addressLocality"> Москва</span>
+                  <span itemProp="streetAddress">ул. Дениса Давыдова 3</span>, 
+                  <span itemProp="addressLocality"> Москва</span>, Дорогомилово, ЦАО, м. Киевская
                 </p>
               </div>
               <div className="flex items-center space-x-2">
@@ -101,11 +101,11 @@ const Footer = () => {
           <motion.div variants={itemVariants}>
             <h3 className="font-semibold mb-4">Услуги</h3>
             <ul className="space-y-2 text-apple-gray">
-              <li><Link to="/buy" className="hover:text-primary transition-colors">Покупка техники</Link></li>
-              <li><Link to="/sell" className="hover:text-primary transition-colors">Продажа техники</Link></li>
-              <li><Link to="/selection" className="hover:text-primary transition-colors">Обмен устройств</Link></li>
-              <li><Link to="/contact" className="hover:text-primary transition-colors">Доставка</Link></li>
-              <li><Link to="/contact" className="hover:text-primary transition-colors">Гарантийное обслуживание</Link></li>
+              <li><Link to="/buy" className="hover:text-primary transition-colors">Купить технику</Link></li>
+              <li><Link to="/sell" className="hover:text-primary transition-colors">Продать технику</Link></li>
+              <li><Link to="/selection" className="hover:text-primary transition-colors">Подбор техники</Link></li>
+              <li><Link to="/pickup" className="hover:text-primary transition-colors">Самовывоз</Link></li>
+              <li><Link to="/business" className="hover:text-primary transition-colors">Для бизнеса</Link></li>
             </ul>
           </motion.div>
           

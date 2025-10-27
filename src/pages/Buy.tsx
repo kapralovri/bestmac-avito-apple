@@ -10,7 +10,7 @@ import { productOfferSchema, faqData } from "@/lib/schema";
 const Buy = () => {
   const breadcrumbItems = [
     { name: "Главная", url: "/" },
-    { name: "Выкуп", url: "/buy" }
+    { name: "В продаже", url: "/buy" }
   ];
 
   const schema = productOfferSchema('buy');
@@ -18,11 +18,11 @@ const Buy = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SEOHead 
-        title="Выкуп MacBook б/у в Москве — гарантия, доставка | BestMac"
-        description="Выкуп MacBook б/у в Москве с гарантией. Широкий выбор MacBook Air и MacBook Pro по выгодным ценам. Доставка по Москве и области."
+        title="Купить MacBook б/у в Москве — техника Apple с гарантией | BestMac"
+        description="Купить MacBook б/у в Москве в районах Дорогомилово, Киевская, ЦАО. Большой выбор техники Apple с гарантией. Проверенные MacBook, iMac, iPhone, iPad. Официально, с документами, доставка."
         canonical="/buy"
         schema={schema}
-        keywords="выкуп macbook бу, macbook б/у москва, купить macbook air, купить macbook pro, macbook с гарантией"
+        keywords="купить macbook бу, macbook б/у москва, купить macbook air, купить macbook pro, macbook с гарантией"
       />
       <Header />
       
@@ -35,8 +35,14 @@ const Buy = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-3xl font-bold font-apple mb-2">Выкуп MacBook</h1>
-            <p className="text-muted-foreground">Актуальные предложения с Avito</p>
+            <h1 className="text-4xl md:text-5xl font-bold font-apple mb-6">
+              Купить MacBook б/у в Москве с гарантией
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Большой выбор проверенной техники Apple с гарантией в районах Дорогомилово, Киевская, ЦАО. 
+              Все устройства тщательно протестированы и готовы к использованию. Официальная сделка с документами, 
+              самовывоз или доставка по Москве.
+            </p>
           </motion.div>
           <AvitoOffers />
         </section>

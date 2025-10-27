@@ -1,11 +1,24 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import SEOHead from "@/components/SEOHead";
 
 const Privacy = () => {
+  const breadcrumbItems = [
+    { name: "Главная", url: "/" },
+    { name: "Политика конфиденциальности", url: "/privacy" }
+  ];
+
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <SEOHead 
+        title="Политика конфиденциальности | BestMac"
+        description="Политика конфиденциальности BestMac. Информация о сборе и обработке персональных данных пользователей."
+        canonical="/privacy"
+      />
       <Header />
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mt-16">
+        <Breadcrumbs items={breadcrumbItems} />
         <h1 className="text-3xl font-bold mb-8">Политика конфиденциальности</h1>
         
         <div className="prose prose-lg max-w-none space-y-6">

@@ -1,11 +1,24 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import SEOHead from "@/components/SEOHead";
 
 const Terms = () => {
+  const breadcrumbItems = [
+    { name: "Главная", url: "/" },
+    { name: "Условия использования", url: "/terms" }
+  ];
+
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <SEOHead 
+        title="Условия использования | BestMac"
+        description="Условия использования сайта BestMac. Правила покупки и продажи техники Apple, гарантийные обязательства."
+        canonical="/terms"
+      />
       <Header />
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mt-16">
+        <Breadcrumbs items={breadcrumbItems} />
         <h1 className="text-3xl font-bold mb-8">Условия использования</h1>
         
         <div className="prose prose-lg max-w-none space-y-6">
