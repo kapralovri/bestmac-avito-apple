@@ -1,10 +1,12 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Phone } from "lucide-react";
-import { motion } from "framer-motion";
+import { Phone, Menu, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
 
 const Header = () => {
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
     { path: "/buy", label: "В продаже" },
@@ -72,6 +74,7 @@ const Header = () => {
               <span>+7 903 299 00 29</span>
             </motion.a>
             <motion.div
+              className="hidden md:block"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -81,8 +84,55 @@ const Header = () => {
                 </Link>
               </Button>
             </motion.div>
+            
+            {/* Mobile Menu Button */}
+            <button
+              className="md:hidden p-2"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {isMobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden border-t border-border"
+            >
+              <nav className="flex flex-col space-y-4 p-4">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`transition-colors duration-300 py-2 ${
+                      location.pathname === item.path
+                        ? 'text-primary font-semibold'
+                        : 'text-foreground hover:text-primary'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <Button variant="default" className="bg-gradient-primary hover:opacity-90 w-full">
+                  <Link to="/contact" className="text-inherit no-underline" onClick={() => setIsMobileMenuOpen(false)}>
+                    Оставить заявку
+                  </Link>
+                </Button>
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.header>
   );

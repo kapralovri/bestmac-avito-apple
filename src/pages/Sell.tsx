@@ -264,12 +264,11 @@ const Sell = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
                   <Label htmlFor="config">Конфигурация</Label>
-                  <Select value={calc.configId} onValueChange={(v) => setCalc({ ...calc, configId: v })}>
+                  <Select value={calc.configId || undefined} onValueChange={(v) => setCalc({ ...calc, configId: v })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите конфигурацию" />
                     </SelectTrigger>
                     <SelectContent className="max-h-96">
-                      <SelectItem value="">Не выбрано</SelectItem>
                       {allConfigs.map((config) => {
                         const configId = `${config.model}|${config.ram || ''}|${config.storage || ''}`;
                         const displayName = config.ram || config.storage
