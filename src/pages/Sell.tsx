@@ -269,17 +269,19 @@ const Sell = () => {
                       <SelectValue placeholder="Выберите конфигурацию" />
                     </SelectTrigger>
                     <SelectContent className="max-h-96">
-                      {allConfigs.map((config) => {
-                        const configId = `${config.model}|${config.ram || ''}|${config.storage || ''}`;
-                        const displayName = config.ram || config.storage
-                          ? `${config.model}, ${config.ram ? `${config.ram} GB RAM` : ''}${config.ram && config.storage ? ', ' : ''}${config.storage ? `${config.storage} GB SSD` : ''}`
-                          : config.model;
-                        return (
-                          <SelectItem key={configId} value={configId}>
-                            {displayName}
-                          </SelectItem>
-                        );
-                      })}
+                      {allConfigs
+                        .filter((config) => config.model && config.model.trim() !== '')
+                        .map((config) => {
+                          const configId = `${config.model}|${config.ram || ''}|${config.storage || ''}`;
+                          const displayName = config.ram || config.storage
+                            ? `${config.model}, ${config.ram ? `${config.ram} GB RAM` : ''}${config.ram && config.storage ? ', ' : ''}${config.storage ? `${config.storage} GB SSD` : ''}`
+                            : config.model;
+                          return (
+                            <SelectItem key={configId} value={configId}>
+                              {displayName}
+                            </SelectItem>
+                          );
+                        })}
                     </SelectContent>
                   </Select>
                 </div>
