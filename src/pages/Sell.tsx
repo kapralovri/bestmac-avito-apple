@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CheckCircle, ArrowRight, Calculator, Clock, Shield, Banknote } from "lucide-react";
+import { CheckCircle, Calculator, Clock, Shield, Banknote } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import FAQ from "@/components/FAQ";
@@ -13,36 +13,29 @@ import { motion } from "framer-motion";
 import { sendEmail } from "@/services/email";
 import SEOHead from "@/components/SEOHead";
 import Breadcrumbs from "@/components/Breadcrumbs";
-import { productOfferSchema, serviceSchema, faqData } from "@/lib/schema";
+import { serviceSchema } from "@/lib/schema";
 import { trackFormSubmit } from "@/components/Analytics";
 import BuyoutTable from "@/components/BuyoutTable";
 import type { BuyoutRow } from '@/types/buyout';
-import { estimatePrice, loadBuyoutData } from '@/lib/buyout';
+import { loadBuyoutData } from '@/lib/buyout';
 import { adjustments } from '@/config/buyout-adjustments';
-
 import Reviews from "@/components/Reviews";
 
 const Sell = () => {
-  const initialState = {
-    device: "",
-    model: "",
-    year: "",
-    condition: "",
-    storage: "",
-    description: "",
-    phone: ""
-  };
-  const [formData, setFormData] = useState(initialState);
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const [buyoutData, setBuyoutData] = useState<BuyoutRow[]>([]);
-
-  useEffect(() => {
-    loadBuyoutData().then(setBuyoutData).catch(() => setBuyoutData([]));
-  }, []);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  
+  // Форма заявки
+  const [formData, setFormData] = useState({
+    model: "",
+    condition: "",
+    phone: "",
+    description: ""
+  });
 
   // Калькулятор
   const [calc, setCalc] = useState({
-    configId: '', // ID выбранной конфигурации
+    selectedModel: '',
     condition: 'A' as 'A' | 'B' | 'C',
     batteryCycles: 0,
     displayDefect: false,
@@ -52,22 +45,44 @@ const Sell = () => {
     icloudBlocked: false,
   });
 
-  // Получаем выбранную конфигурацию
-  const selectedConfig = useMemo(() => {
-    return buyoutData.find(r => `${r.model}|${r.ram || ''}|${r.storage || ''}` === calc.configId);
-  }, [calc.configId, buyoutData]);
+  useEffect(() => {
+    loadBuyoutData()
+      .then(data => setBuyoutData(data))
+      .catch(() => setBuyoutData([]));
+  }, []);
 
+  // Получаем уникальные модели для выбора
+  const uniqueModels = useMemo(() => {
+    const models = new Set<string>();
+    buyoutData.forEach(item => {
+      if (item.model && item.model.trim()) {
+        models.add(item.model);
+      }
+    });
+    return Array.from(models).sort();
+  }, [buyoutData]);
+
+  // Получаем конфигурации для выбранной модели
+  const availableConfigs = useMemo(() => {
+    if (!calc.selectedModel) return [];
+    return buyoutData.filter(item => item.model === calc.selectedModel);
+  }, [calc.selectedModel, buyoutData]);
+
+  // Расчет цены
   const estimate = useMemo(() => {
-    if (!selectedConfig) return null;
-    
-    // Используем базовую цену из выбранной конфигурации
-    const base = selectedConfig.basePrice;
-    
+    const configs = availableConfigs;
+    if (!configs.length) return null;
+
+    // Берем среднюю базовую цену для этой модели
+    const avgBase = Math.round(
+      configs.reduce((sum, c) => sum + c.basePrice, 0) / configs.length
+    );
+
     if (adjustments.icloudBlockedZero && calc.icloudBlocked) {
-      return { base, priceMin: 0, priceMax: 0 };
+      return { base: avgBase, priceMin: 0, priceMax: 0 };
     }
 
-    let price = base;
+    let price = avgBase;
 
     // Состояние
     price *= adjustments.condition[calc.condition];
@@ -81,35 +96,19 @@ const Sell = () => {
     price -= penalty;
 
     // Дефекты
-    if (calc.displayDefect) price -= base * adjustments.displayDefectPenalty;
-    if (calc.bodyDefect) price -= base * adjustments.bodyDefectPenalty;
+    if (calc.displayDefect) price -= avgBase * adjustments.displayDefectPenalty;
+    if (calc.bodyDefect) price -= avgBase * adjustments.bodyDefectPenalty;
 
     // Комплект
-    if (calc.hasCharger === false) price -= adjustments.noChargerPenalty;
-    if (calc.hasBox === false) price -= adjustments.noBoxPenalty;
+    if (!calc.hasCharger) price -= adjustments.noChargerPenalty;
+    if (!calc.hasBox) price -= adjustments.noBoxPenalty;
 
     const spread = price * adjustments.minMaxSpreadPct;
     const priceMin = Math.max(0, Math.round(price - spread));
     const priceMax = Math.max(0, Math.round(price + spread));
 
-    return { base, priceMin, priceMax };
-  }, [selectedConfig, calc]);
-
-  // Получаем все доступные конфигурации (уникальные)
-  const allConfigs = useMemo(() => {
-    const seen = new Set<string>();
-    return buyoutData.filter(r => {
-      // Пропускаем записи с пустым model
-      if (!r.model || r.model.trim() === '') return false;
-      
-      const key = `${r.model}|${r.ram || ''}|${r.storage || ''}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        return true;
-      }
-      return false;
-    });
-  }, [buyoutData]);
+    return { base: avgBase, priceMin, priceMax };
+  }, [calc, availableConfigs]);
 
   const breadcrumbItems = [
     { name: "Главная", url: "/" },
@@ -124,47 +123,16 @@ const Sell = () => {
     aggregateHighRub: 180000
   });
 
-  const priceRanges = {
-    "MacBook Air M1": "80,000 - 120,000 ₽",
-    "MacBook Pro 14\" M2": "150,000 - 200,000 ₽", 
-    "iMac 24\" M1": "100,000 - 150,000 ₽",
-    "iPhone 14 Pro": "70,000 - 95,000 ₽",
-    "iPhone 13": "50,000 - 70,000 ₽",
-    "iPad Pro 12.9\"": "60,000 - 100,000 ₽"
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await sendEmail({ form: "sell", ...formData });
       trackFormSubmit('sell');
       setIsSubmitted(true);
-      setFormData(initialState);
+      setFormData({ model: "", condition: "", phone: "", description: "" });
       setTimeout(() => setIsSubmitted(false), 3000);
     } catch (error) {
       console.error("Error sending message:", error);
-    }
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut" as const
-      }
     }
   };
 
@@ -181,9 +149,6 @@ const Sell = () => {
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumbs items={breadcrumbItems} />
-
-        {/* порядок секций отрегулирован ниже */}
-        
         
         {/* Hero Section */}
         <motion.div 
@@ -202,95 +167,82 @@ const Sell = () => {
           </p>
         </motion.div>
 
-        {/* Full-bleed section for desktop (with inner container to keep site spacing) */}
-        <section className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen mb-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div 
-          className="grid grid-cols-1 gap-8 md:mt-6"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {/* Process Steps */}
-          <motion.div variants={itemVariants}>
-            <h2 className="text-3xl font-bold font-apple mb-8">Как проходит выкуп</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-              {[
-                {
-                  icon: Calculator,
-                  title: "Оценка",
-                  description: "Бесплатная оценка вашей техники по фото или при личной встрече"
-                },
-                {
-                  icon: Clock,
-                  title: "Быстрая сделка",
-                  description: "Сделка за 15 минут. Наличный расчет или перевод на карту"
-                },
-                {
-                  icon: Shield,
-                  title: "Безопасность",
-                  description: "Официальная сделка через ИП с полным пакетом документов"
-                },
-                {
-                  icon: Banknote,
-                  title: "Максимальная цена",
-                  description: "Предлагаем лучшую цену на рынке за вашу технику"
-                }
-              ].map((step, index) => (
-                <motion.div 
-                  key={index}
-                  className="flex items-start space-x-4 h-full"
-                  whileHover={{ x: 10 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center flex-shrink-0">
-                    <step.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg mb-2">{step.title}</h3>
-                    <p className="text-muted-foreground min-h-[96px] md:min-h-[120px]">{step.description}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </motion.div>
-        </div>
+        {/* Process Steps */}
+        <section className="mb-16">
+          <h2 className="text-3xl font-bold font-apple mb-8">Как проходит выкуп</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                icon: Calculator,
+                title: "Оценка",
+                description: "Бесплатная оценка вашей техники по фото или при личной встрече"
+              },
+              {
+                icon: Clock,
+                title: "Быстрая сделка",
+                description: "Сделка за 15 минут. Наличный расчет или перевод на карту"
+              },
+              {
+                icon: Shield,
+                title: "Безопасность",
+                description: "Официальная сделка через ИП с полным пакетом документов"
+              },
+              {
+                icon: Banknote,
+                title: "Максимальная цена",
+                description: "Предлагаем лучшую цену на рынке за вашу технику"
+              }
+            ].map((step, index) => (
+              <motion.div 
+                key={index}
+                className="flex flex-col items-center text-center p-6 border border-border rounded-lg"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+              >
+                <div className="w-16 h-16 bg-gradient-primary rounded-lg flex items-center justify-center mb-4">
+                  <step.icon className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="font-semibold text-lg mb-2">{step.title}</h3>
+                <p className="text-muted-foreground">{step.description}</p>
+              </motion.div>
+            ))}
+          </div>
         </section>
-          {/* Здесь не показываем старый блок цен. Вместо него ниже будет таблица цен */}
 
         {/* Калькулятор выкупа */}
         <section className="mb-16">
           <h2 className="text-3xl font-bold font-apple mb-6">Калькулятор выкупа</h2>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 border border-border rounded-lg p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Выбор модели */}
                 <div className="md:col-span-2">
-                  <Label htmlFor="config">Конфигурация</Label>
-                  <Select value={calc.configId || undefined} onValueChange={(v) => setCalc({ ...calc, configId: v })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите конфигурацию" />
+                  <Label htmlFor="model-select">Модель</Label>
+                  <Select 
+                    value={calc.selectedModel} 
+                    onValueChange={(v) => setCalc({ ...calc, selectedModel: v })}
+                  >
+                    <SelectTrigger id="model-select">
+                      <SelectValue placeholder="Выберите модель MacBook" />
                     </SelectTrigger>
                     <SelectContent className="max-h-96">
-                      {allConfigs
-                        .filter((config) => config.model && config.model.trim() !== '')
-                        .map((config) => {
-                          const configId = `${config.model}|${config.ram || ''}|${config.storage || ''}`;
-                          const displayName = config.ram || config.storage
-                            ? `${config.model}, ${config.ram ? `${config.ram} GB RAM` : ''}${config.ram && config.storage ? ', ' : ''}${config.storage ? `${config.storage} GB SSD` : ''}`
-                            : config.model;
-                          return (
-                            <SelectItem key={configId} value={configId}>
-                              {displayName}
-                            </SelectItem>
-                          );
-                        })}
+                      {uniqueModels.map((model) => (
+                        <SelectItem key={model} value={model}>
+                          {model}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Состояние */}
                 <div>
                   <Label>Состояние</Label>
-                  <Select value={calc.condition} onValueChange={(v) => setCalc({ ...calc, condition: v as any })}>
+                  <Select 
+                    value={calc.condition} 
+                    onValueChange={(v) => setCalc({ ...calc, condition: v as 'A' | 'B' | 'C' })}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -301,50 +253,103 @@ const Sell = () => {
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Циклы батареи */}
                 <div>
                   <Label htmlFor="cycles">Циклы батареи</Label>
-                  <Input id="cycles" type="number" min={0} max={1500} value={calc.batteryCycles} onChange={(e) => setCalc({ ...calc, batteryCycles: Number(e.target.value || 0) })} />
+                  <Input 
+                    id="cycles" 
+                    type="number" 
+                    min={0} 
+                    max={1500} 
+                    value={calc.batteryCycles} 
+                    onChange={(e) => setCalc({ ...calc, batteryCycles: Number(e.target.value || 0) })} 
+                  />
                 </div>
-                <div className="grid grid-cols-2 gap-2 pt-6">
+
+                {/* Чекбоксы */}
+                <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4">
                   <div className="flex items-center space-x-2">
-                    <input id="displayDefect" type="checkbox" checked={calc.displayDefect} onChange={(e) => setCalc({ ...calc, displayDefect: e.target.checked })} />
-                    <Label htmlFor="displayDefect">Дефект дисплея</Label>
+                    <input 
+                      id="displayDefect" 
+                      type="checkbox" 
+                      checked={calc.displayDefect} 
+                      onChange={(e) => setCalc({ ...calc, displayDefect: e.target.checked })} 
+                      className="h-4 w-4"
+                    />
+                    <Label htmlFor="displayDefect" className="cursor-pointer">Дефект дисплея</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <input id="bodyDefect" type="checkbox" checked={calc.bodyDefect} onChange={(e) => setCalc({ ...calc, bodyDefect: e.target.checked })} />
-                    <Label htmlFor="bodyDefect">Дефект корпуса</Label>
+                    <input 
+                      id="bodyDefect" 
+                      type="checkbox" 
+                      checked={calc.bodyDefect} 
+                      onChange={(e) => setCalc({ ...calc, bodyDefect: e.target.checked })} 
+                      className="h-4 w-4"
+                    />
+                    <Label htmlFor="bodyDefect" className="cursor-pointer">Дефект корпуса</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <input id="hasCharger" type="checkbox" checked={calc.hasCharger} onChange={(e) => setCalc({ ...calc, hasCharger: e.target.checked })} />
-                    <Label htmlFor="hasCharger">Есть зарядка</Label>
+                    <input 
+                      id="hasCharger" 
+                      type="checkbox" 
+                      checked={calc.hasCharger} 
+                      onChange={(e) => setCalc({ ...calc, hasCharger: e.target.checked })} 
+                      className="h-4 w-4"
+                    />
+                    <Label htmlFor="hasCharger" className="cursor-pointer">Есть зарядка</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <input id="hasBox" type="checkbox" checked={calc.hasBox} onChange={(e) => setCalc({ ...calc, hasBox: e.target.checked })} />
-                    <Label htmlFor="hasBox">Есть коробка</Label>
+                    <input 
+                      id="hasBox" 
+                      type="checkbox" 
+                      checked={calc.hasBox} 
+                      onChange={(e) => setCalc({ ...calc, hasBox: e.target.checked })} 
+                      className="h-4 w-4"
+                    />
+                    <Label htmlFor="hasBox" className="cursor-pointer">Есть коробка</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <input id="icloudBlocked" type="checkbox" checked={calc.icloudBlocked} onChange={(e) => setCalc({ ...calc, icloudBlocked: e.target.checked })} />
-                    <Label htmlFor="icloudBlocked">iCloud заблокирован</Label>
+                    <input 
+                      id="icloudBlocked" 
+                      type="checkbox" 
+                      checked={calc.icloudBlocked} 
+                      onChange={(e) => setCalc({ ...calc, icloudBlocked: e.target.checked })} 
+                      className="h-4 w-4"
+                    />
+                    <Label htmlFor="icloudBlocked" className="cursor-pointer">iCloud заблокирован</Label>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="border border-border rounded-lg p-6">
-              <h3 className="font-semibold mb-2">Оценка</h3>
-              {estimate && selectedConfig ? (
-                <>
-                  <p className="text-sm text-muted-foreground mb-2">Базовая цена: {estimate.base.toLocaleString('ru-RU')} ₽</p>
-                  <p className="text-xl font-bold">{estimate.priceMin.toLocaleString('ru-RU')} – {estimate.priceMax.toLocaleString('ru-RU')} ₽</p>
-                  <p className="text-sm text-muted-foreground mt-2">Точная цена после диагностики. Оставьте телефон — закрепим предложение.</p>
-                </>
+
+            {/* Результат оценки */}
+            <div className="border border-border rounded-lg p-6 flex flex-col">
+              <h3 className="font-semibold text-xl mb-4">Оценка</h3>
+              {estimate && calc.selectedModel ? (
+                <div className="flex-1 flex flex-col justify-center">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Базовая цена: {estimate.base.toLocaleString('ru-RU')} ₽
+                  </p>
+                  <p className="text-3xl font-bold mb-4">
+                    {estimate.priceMin.toLocaleString('ru-RU')} – {estimate.priceMax.toLocaleString('ru-RU')} ₽
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Точная цена после диагностики. Оставьте телефон — закрепим предложение.
+                  </p>
+                </div>
               ) : (
-                <p className="text-muted-foreground">Выберите конфигурацию и параметры для расчёта.</p>
+                <div className="flex-1 flex items-center justify-center">
+                  <p className="text-muted-foreground text-center">
+                    Выберите модель и параметры для расчёта стоимости
+                  </p>
+                </div>
               )}
             </div>
           </div>
         </section>
 
-        {/* Примерные цены выкупа (таблица c RAM/SSD) */}
+        {/* Таблица цен на выкуп */}
         <BuyoutTable />
         
         {/* Structured data для таблицы цен */}
@@ -375,9 +380,9 @@ const Sell = () => {
           </script>
         )}
 
-        {/* Contact Form */}
+        {/* Форма заявки */}
         <motion.div 
-          className="max-w-2xl mx-auto"
+          className="max-w-2xl mx-auto mb-16"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
@@ -389,124 +394,106 @@ const Sell = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="device">Тип устройства</Label>
-                    <Select 
-                      value={formData.device} 
-                      onValueChange={(value) => setFormData({...formData, device: value})}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Выберите устройство" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="MacBook Air">MacBook Air</SelectItem>
-                        <SelectItem value="MacBook Pro">MacBook Pro</SelectItem>
-                        <SelectItem value="iMac">iMac</SelectItem>
-                        <SelectItem value="iPhone">iPhone</SelectItem>
-                        <SelectItem value="iPad">iPad</SelectItem>
-                        <SelectItem value="Другое">Другое</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="model">Модель</Label>
-                    <Input
-                      id="model"
-                      placeholder="Например: M1, M2 Pro, iPhone 14"
-                      value={formData.model}
-                      onChange={(e) => setFormData({...formData, model: e.target.value})}
-                    />
-                  </div>
+              {isSubmitted ? (
+                <div className="text-center py-8">
+                  <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">Заявка отправлена!</h3>
+                  <p className="text-muted-foreground">Мы свяжемся с вами в ближайшее время</p>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-6">
                   <div>
-                    <Label htmlFor="year">Год выпуска</Label>
+                    <Label htmlFor="form-model">Модель устройства *</Label>
                     <Input
-                      id="year"
-                      placeholder="2023"
-                      value={formData.year}
-                      onChange={(e) => setFormData({...formData, year: e.target.value})}
+                      id="form-model"
+                      value={formData.model}
+                      onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                      placeholder="Например: MacBook Pro 14 2023"
+                      required
                     />
                   </div>
+
                   <div>
-                    <Label htmlFor="condition">Состояние</Label>
-                    <Select 
-                      value={formData.condition} 
-                      onValueChange={(value) => setFormData({...formData, condition: value})}
+                    <Label htmlFor="form-condition">Состояние *</Label>
+                    <Select
+                      value={formData.condition}
+                      onValueChange={(value) => setFormData({ ...formData, condition: value })}
+                      required
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="form-condition">
                         <SelectValue placeholder="Выберите состояние" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Отличное">Отличное</SelectItem>
-                        <SelectItem value="Хорошее">Хорошее</SelectItem>
-                        <SelectItem value="Удовлетворительное">Удовлетворительное</SelectItem>
+                        <SelectItem value="excellent">Отличное (как новый)</SelectItem>
+                        <SelectItem value="good">Хорошее (небольшие потертости)</SelectItem>
+                        <SelectItem value="fair">Удовлетворительное (есть царапины)</SelectItem>
+                        <SelectItem value="poor">Требует ремонта</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+
                   <div>
-                    <Label htmlFor="storage">Объем памяти</Label>
+                    <Label htmlFor="form-phone">Телефон *</Label>
                     <Input
-                      id="storage"
-                      placeholder="256GB, 512GB"
-                      value={formData.storage}
-                      onChange={(e) => setFormData({...formData, storage: e.target.value})}
+                      id="form-phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      placeholder="+7 (___) ___-__-__"
+                      required
                     />
                   </div>
-                </div>
 
-                <div>
-                  <Label htmlFor="description">Дополнительная информация</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Опишите состояние устройства, комплектацию, дефекты..."
-                    value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
-                    rows={4}
-                  />
-                </div>
+                  <div>
+                    <Label htmlFor="form-description">Дополнительная информация</Label>
+                    <Textarea
+                      id="form-description"
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      placeholder="Расскажите о комплектации, дефектах, циклах батареи и т.д."
+                      rows={4}
+                    />
+                  </div>
 
-                <div>
-                  <Label htmlFor="phone">Контактный телефон</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="+7 (999) 123-45-67"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    required
-                  />
-                </div>
-
-                <Button type="submit" className="w-full bg-gradient-primary hover:opacity-90">
-                  Отправить заявку
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </form>
-
-              {isSubmitted && (
-                <motion.div 
-                  className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center space-x-2"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                >
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                  <span className="text-green-800">Заявка отправлена! Мы свяжемся с вами в ближайшее время.</span>
-                </motion.div>
+                  <Button type="submit" className="w-full" size="lg">
+                    Отправить заявку
+                  </Button>
+                </form>
               )}
             </CardContent>
           </Card>
         </motion.div>
 
-        <FAQ items={faqData.sell} title="Частые вопросы о выкупе" />
+        {/* Отзывы */}
+        <Reviews />
 
-        {/* Reviews Section */}
-        <div className="mt-16">
-          <Reviews title="Отзывы о выкупе техники" />
-        </div>
+        {/* FAQ */}
+        <FAQ items={[
+          {
+            question: "Как происходит выкуп техники?",
+            answer: "Процесс очень прост: вы оставляете заявку, мы оцениваем вашу технику, согласовываем цену и проводим сделку. Весь процесс занимает не более 15 минут."
+          },
+          {
+            question: "Какие документы нужны для продажи?",
+            answer: "Для продажи техники нужен только паспорт. Мы работаем официально через ИП и предоставляем все необходимые документы."
+          },
+          {
+            question: "Какую технику вы принимаете?",
+            answer: "Мы выкупаем MacBook, iMac, Mac Mini, Mac Pro, iPhone, iPad и другую технику Apple в любом состоянии."
+          },
+          {
+            question: "Можно ли продать технику с дефектами?",
+            answer: "Да, мы выкупаем технику в любом состоянии. Цена будет зависеть от типа и серьезности дефектов."
+          },
+          {
+            question: "Как быстро происходит оплата?",
+            answer: "Оплата производится сразу после диагностики и оформления документов. Наличными или переводом на карту."
+          },
+          {
+            question: "Можете ли вы выехать для оценки?",
+            answer: "Да, мы можем выехать для оценки и выкупа техники по Москве. Это бесплатно при сумме сделки от 30 000 ₽."
+          }
+        ]} />
       </main>
 
       <Footer />
