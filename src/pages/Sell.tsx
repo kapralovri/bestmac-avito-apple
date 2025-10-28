@@ -55,11 +55,11 @@ const Sell = () => {
   const uniqueModels = useMemo(() => {
     const models = new Set<string>();
     buyoutData.forEach(item => {
-      if (item.model && item.model.trim()) {
-        models.add(item.model);
+      if (item.model && typeof item.model === 'string' && item.model.trim().length > 0) {
+        models.add(item.model.trim());
       }
     });
-    return Array.from(models).sort();
+    return Array.from(models).filter(m => m && m.length > 0).sort();
   }, [buyoutData]);
 
   // Получаем конфигурации для выбранной модели
@@ -227,7 +227,7 @@ const Sell = () => {
                       <SelectValue placeholder="Выберите модель MacBook" />
                     </SelectTrigger>
                     <SelectContent className="max-h-96">
-                      {uniqueModels.map((model) => (
+                      {uniqueModels.filter(m => m && m.trim().length > 0).map((model) => (
                         <SelectItem key={model} value={model}>
                           {model}
                         </SelectItem>
