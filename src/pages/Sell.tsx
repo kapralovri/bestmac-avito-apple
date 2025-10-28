@@ -99,6 +99,9 @@ const Sell = () => {
   const allConfigs = useMemo(() => {
     const seen = new Set<string>();
     return buyoutData.filter(r => {
+      // Пропускаем записи с пустым model
+      if (!r.model || r.model.trim() === '') return false;
+      
       const key = `${r.model}|${r.ram || ''}|${r.storage || ''}`;
       if (!seen.has(key)) {
         seen.add(key);
