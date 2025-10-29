@@ -7,7 +7,7 @@ const DEFAULT_LIMIT = 50;
 
 const BuyoutTable = () => {
   const [rows, setRows] = useState<BuyoutRow[]>([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState('__ALL__');
   const [sortKey, setSortKey] = useState<'model' | 'basePrice'>('model');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [showAll, setShowAll] = useState(false);
@@ -47,7 +47,7 @@ const BuyoutTable = () => {
 
   const filtered = useMemo(() => {
     // Фильтруем по точному совпадению модели (если выбрана модель)
-    const byQuery = search
+    const byQuery = search && search !== '__ALL__'
       ? deduped.filter(r => r.model === search)
       : deduped;
     
@@ -78,7 +78,7 @@ const BuyoutTable = () => {
               <SelectValue placeholder="Выберите модель для фильтрации" />
             </SelectTrigger>
             <SelectContent className="max-h-80">
-              <SelectItem value="">Все модели</SelectItem>
+              <SelectItem value="__ALL__">Все модели</SelectItem>
               {uniqueModels.map((model) => (
                 <SelectItem key={model} value={model}>
                   {model}

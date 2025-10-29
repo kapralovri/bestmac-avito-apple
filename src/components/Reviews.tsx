@@ -112,11 +112,9 @@ const Reviews = ({ reviews = defaultReviews, title = "Отзывы наших к
 
   return (
     <>
-      <SEOHead 
-        title=""
-        description=""
-        schema={reviewSchema}
-      />
+      <script type="application/ld+json">
+        {JSON.stringify(reviewSchema)}
+      </script>
       <section className="py-16 bg-card/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
