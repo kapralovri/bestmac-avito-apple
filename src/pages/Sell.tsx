@@ -7,6 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import Breadcrumbs from '@/components/Breadcrumbs';
+import SEOHead from '@/components/SEOHead';
+import BuyoutTable from '@/components/BuyoutTable';
+import { CheckCircle2, Shield, Clock, Wallet, TrendingUp, Award } from 'lucide-react';
 
 const Sell = () => {
   const [data, setData] = useState<BuyoutRow[]>([]);
@@ -39,12 +45,46 @@ const Sell = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-2">Калькулятор выкупа техники Apple</h1>
-          <p className="text-muted-foreground mb-8">Узнайте примерную стоимость вашего устройства прямо сейчас</p>
+      <SEOHead 
+        title="Продать MacBook в Москве - Выкуп техники Apple | BestMac"
+        description="Продать MacBook выгодно в Москве. Онлайн калькулятор оценки стоимости. Быстрый выкуп MacBook, iMac, iPhone за наличные. Выезд на дом бесплатно. Гарантия честной цены."
+        canonical="/sell"
+        keywords="продать macbook, выкуп macbook, скупка macbook москва, продать macbook срочно, оценка macbook, сдать macbook"
+      />
+      <Header />
+      
+      <div className="container mx-auto px-4 py-8">
+        <Breadcrumbs items={[
+          { name: 'Главная', url: '/' },
+          { name: 'Продать технику', url: '/sell' }
+        ]} />
 
-          <div className="grid md:grid-cols-2 gap-6">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-4xl md:text-5xl font-bold mb-3">Продать MacBook в Москве</h1>
+          <p className="text-lg text-muted-foreground mb-8">Узнайте стоимость вашего устройства за 2 минуты. Честная цена, выезд на дом, оплата сразу.</p>
+
+          {/* Преимущества */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+            <div className="text-center p-4 bg-card rounded-lg border">
+              <Clock className="w-8 h-8 mx-auto mb-2 text-primary" />
+              <p className="font-semibold">Оценка за 2 минуты</p>
+            </div>
+            <div className="text-center p-4 bg-card rounded-lg border">
+              <Wallet className="w-8 h-8 mx-auto mb-2 text-primary" />
+              <p className="font-semibold">Оплата сразу</p>
+            </div>
+            <div className="text-center p-4 bg-card rounded-lg border">
+              <TrendingUp className="w-8 h-8 mx-auto mb-2 text-primary" />
+              <p className="font-semibold">Высокая цена</p>
+            </div>
+            <div className="text-center p-4 bg-card rounded-lg border">
+              <Shield className="w-8 h-8 mx-auto mb-2 text-primary" />
+              <p className="font-semibold">Безопасно</p>
+            </div>
+          </div>
+
+          {/* Калькулятор */}
+          <div className="grid md:grid-cols-2 gap-6 mb-16">
             <Card>
               <CardHeader>
                 <CardTitle>Параметры устройства</CardTitle>
@@ -196,8 +236,15 @@ const Sell = () => {
                           </p>
                         </div>
 
-                        <Button variant="default" size="lg" className="w-full">
-                          Связаться с нами
+                        <Button 
+                          variant="default" 
+                          size="lg" 
+                          className="w-full"
+                          asChild
+                        >
+                          <a href="https://t.me/romanmanro" target="_blank" rel="noopener noreferrer">
+                            Написать в Telegram
+                          </a>
                         </Button>
                       </>
                     )}
@@ -206,8 +253,139 @@ const Sell = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Таблица с ценами */}
+          <BuyoutTable />
+
+          {/* Процесс выкупа */}
+          <section className="mb-16">
+            <h2 className="text-3xl font-bold mb-6 text-center">Как проходит выкуп?</h2>
+            <div className="grid md:grid-cols-4 gap-6">
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold mx-auto mb-4">1</div>
+                <h3 className="font-semibold mb-2">Оценка онлайн</h3>
+                <p className="text-sm text-muted-foreground">Заполните калькулятор выше и узнайте примерную стоимость</p>
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold mx-auto mb-4">2</div>
+                <h3 className="font-semibold mb-2">Связь с нами</h3>
+                <p className="text-sm text-muted-foreground">Свяжитесь через Telegram для уточнения деталей</p>
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold mx-auto mb-4">3</div>
+                <h3 className="font-semibold mb-2">Осмотр техники</h3>
+                <p className="text-sm text-muted-foreground">Бесплатный выезд или встреча в удобном месте</p>
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold mx-auto mb-4">4</div>
+                <h3 className="font-semibold mb-2">Получение денег</h3>
+                <p className="text-sm text-muted-foreground">Оплата наличными или переводом сразу после осмотра</p>
+              </div>
+            </div>
+          </section>
+
+          {/* Гарантии */}
+          <section className="mb-16 bg-card p-8 rounded-lg border">
+            <h2 className="text-3xl font-bold mb-6 text-center">Наши гарантии</h2>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="flex gap-4">
+                <CheckCircle2 className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
+                <div>
+                  <h3 className="font-semibold mb-1">Честная цена</h3>
+                  <p className="text-sm text-muted-foreground">Цена не меняется после осмотра, если вы правильно указали состояние</p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <CheckCircle2 className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
+                <div>
+                  <h3 className="font-semibold mb-1">Конфиденциальность</h3>
+                  <p className="text-sm text-muted-foreground">Полное удаление ваших данных с устройства при выкупе</p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <CheckCircle2 className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
+                <div>
+                  <h3 className="font-semibold mb-1">Работаем официально</h3>
+                  <p className="text-sm text-muted-foreground">Оформление через ИП, договор купли-продажи</p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <CheckCircle2 className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
+                <div>
+                  <h3 className="font-semibold mb-1">Быстро и удобно</h3>
+                  <p className="text-sm text-muted-foreground">Выезд в любую точку Москвы, оплата сразу</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Срочный выкуп */}
+          <section className="mb-16 bg-gradient-to-r from-primary/10 to-primary/5 p-8 rounded-lg border border-primary/20">
+            <div className="max-w-3xl mx-auto text-center">
+              <Award className="w-16 h-16 mx-auto mb-4 text-primary" />
+              <h2 className="text-3xl font-bold mb-4">Нужно продать срочно?</h2>
+              <p className="text-lg text-muted-foreground mb-6">
+                Готовы приехать в течение часа! При срочном выкупе предлагаем максимальную цену без торга.
+              </p>
+              <Button size="lg" asChild>
+                <a href="https://t.me/romanmanro" target="_blank" rel="noopener noreferrer">
+                  Продать срочно
+                </a>
+              </Button>
+            </div>
+          </section>
+
+          {/* FAQ */}
+          <section className="mb-16">
+            <h2 className="text-3xl font-bold mb-6 text-center">Частые вопросы</h2>
+            <div className="space-y-4 max-w-3xl mx-auto">
+              <details className="bg-card p-4 rounded-lg border">
+                <summary className="font-semibold cursor-pointer">Как узнать циклы батареи на MacBook?</summary>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Зажмите Option и нажмите на логотип Apple → "Информация о системе" → "Питание" → "Информация о батарее". Там будет указано "Счетчик циклов".
+                </p>
+              </details>
+              <details className="bg-card p-4 rounded-lg border">
+                <summary className="font-semibold cursor-pointer">Выкупаете ли MacBook с дефектами?</summary>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Да, выкупаем технику с дефектами корпуса, экрана, но с учетом снижения цены. Не выкупаем устройства с блокировкой iCloud.
+                </p>
+              </details>
+              <details className="bg-card p-4 rounded-lg border">
+                <summary className="font-semibold cursor-pointer">Как происходит оплата?</summary>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Оплата производится наличными или переводом сразу после проверки и подписания договора. Никаких задержек.
+                </p>
+              </details>
+              <details className="bg-card p-4 rounded-lg border">
+                <summary className="font-semibold cursor-pointer">Нужна ли коробка и зарядное устройство?</summary>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Наличие коробки и зарядки увеличивает стоимость, но не обязательно. Выкупаем и без комплекта.
+                </p>
+              </details>
+              <details className="bg-card p-4 rounded-lg border">
+                <summary className="font-semibold cursor-pointer">Сколько времени занимает сделка?</summary>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Обычно 15-30 минут: проверка устройства, подписание договора и передача денег.
+                </p>
+              </details>
+            </div>
+          </section>
+
+          {/* CTA */}
+          <section className="text-center py-12">
+            <h2 className="text-3xl font-bold mb-4">Готовы продать свой MacBook?</h2>
+            <p className="text-lg text-muted-foreground mb-6">Свяжитесь с нами прямо сейчас</p>
+            <Button size="lg" asChild>
+              <a href="https://t.me/romanmanro" target="_blank" rel="noopener noreferrer">
+                Написать в Telegram
+              </a>
+            </Button>
+          </section>
         </div>
       </div>
+      
+      <Footer />
     </div>
   );
 };
