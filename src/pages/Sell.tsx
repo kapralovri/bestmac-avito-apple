@@ -17,8 +17,12 @@ import { CheckCircle2, Shield, Clock, Wallet, TrendingUp, Award } from 'lucide-r
 const Sell = () => {
   const [data, setData] = useState<BuyoutRow[]>([]);
   const [models, setModels] = useState<string[]>([]);
-  const [formData, setFormData] = useState<EstimateInput>({
+  const [ramOptions, setRamOptions] = useState<string[]>([]);
+  const [storageOptions, setStorageOptions] = useState<string[]>([]);
+  const [formData, setFormData] = useState<Partial<EstimateInput>>({
     model: '',
+    ram: '',
+    storage: '',
     condition: 'A',
     batteryCycles: 0,
     displayDefect: false,
@@ -37,9 +41,42 @@ const Sell = () => {
     });
   }, []);
 
+  // При выборе модели обновляем доступные RAM
+  useEffect(() => {
+    if (!formData.model) {
+      setRamOptions([]);
+      setStorageOptions([]);
+      return;
+    }
+    
+    const rowsForModel = data.filter(r => r.model === formData.model);
+    const uniqueRam = Array.from(new Set(rowsForModel.map(r => r.ram).filter(Boolean) as string[]))
+      .sort((a, b) => parseInt(a) - parseInt(b));
+    setRamOptions(uniqueRam);
+    
+    // Сбрасываем RAM и Storage при смене модели
+    setFormData(prev => ({ ...prev, ram: '', storage: '' }));
+  }, [formData.model, data]);
+
+  // При выборе RAM обновляем доступные Storage
+  useEffect(() => {
+    if (!formData.model || !formData.ram) {
+      setStorageOptions([]);
+      return;
+    }
+    
+    const rowsForConfig = data.filter(r => r.model === formData.model && r.ram === formData.ram);
+    const uniqueStorage = Array.from(new Set(rowsForConfig.map(r => r.storage).filter(Boolean) as string[]))
+      .sort((a, b) => parseInt(a) - parseInt(b));
+    setStorageOptions(uniqueStorage);
+    
+    // Сбрасываем Storage при смене RAM
+    setFormData(prev => ({ ...prev, storage: '' }));
+  }, [formData.ram, formData.model, data]);
+
   const handleCalculate = () => {
-    if (!formData.model) return;
-    const estimate = estimatePrice(formData, data);
+    if (!formData.model || !formData.ram || !formData.storage) return;
+    const estimate = estimatePrice(formData as EstimateInput, data);
     setResult(estimate);
   };
 
@@ -101,6 +138,46 @@ const Sell = () => {
                       {models.map((model) => (
                         <SelectItem key={model} value={model}>
                           {model}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="ram">Оперативная память</Label>
+                  <Select 
+                    value={formData.ram} 
+                    onValueChange={(value) => setFormData({ ...formData, ram: value })}
+                    disabled={!formData.model}
+                  >
+                    <SelectTrigger id="ram">
+                      <SelectValue placeholder="Выберите RAM" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ramOptions.map((ram) => (
+                        <SelectItem key={ram} value={ram}>
+                          {ram} GB
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="storage">SSD накопитель</Label>
+                  <Select 
+                    value={formData.storage} 
+                    onValueChange={(value) => setFormData({ ...formData, storage: value })}
+                    disabled={!formData.ram}
+                  >
+                    <SelectTrigger id="storage">
+                      <SelectValue placeholder="Выберите SSD" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {storageOptions.map((storage) => (
+                        <SelectItem key={storage} value={storage}>
+                          {storage} GB
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -181,7 +258,12 @@ const Sell = () => {
                   </div>
                 </div>
 
-                <Button onClick={handleCalculate} className="w-full" size="lg" disabled={!formData.model}>
+                <Button 
+                  onClick={handleCalculate} 
+                  className="w-full" 
+                  size="lg" 
+                  disabled={!formData.model || !formData.ram || !formData.storage}
+                >
                   Рассчитать стоимость
                 </Button>
               </CardContent>
@@ -216,6 +298,18 @@ const Sell = () => {
                         </div>
 
                         <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Модель:</span>
+                            <span className="font-semibold text-right">{formData.model}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">RAM:</span>
+                            <span className="font-semibold">{formData.ram} GB</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">SSD:</span>
+                            <span className="font-semibold">{formData.storage} GB</span>
+                          </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Базовая цена:</span>
                             <span className="font-semibold">{result.base.toLocaleString('ru-RU')} ₽</span>

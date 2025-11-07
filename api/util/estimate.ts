@@ -1,12 +1,20 @@
 import { adjustments } from '../../src/config/buyout-adjustments';
 
-export function findBase(model: string, data: any[]) {
-  const row = data.find((r) => r.model === model);
-  return row?.basePrice ?? 0;
+export function findBase(model: string, ram: string, storage: string, data: any[]) {
+  // Ищем все строки с данной комбинацией model + ram + storage
+  const matches = data.filter(
+    (r: any) => r.model === model && 
+                r.ram === ram && 
+                r.storage === storage
+  );
+  
+  // Берем максимальную basePrice среди всех совпадений
+  if (matches.length === 0) return 0;
+  return Math.max(...matches.map((r: any) => r.basePrice));
 }
 
 export function estimatePrice(input: any, data: any[]) {
-  const base = findBase(input?.model, data);
+  const base = findBase(input?.model, input?.ram, input?.storage, data);
   if (!base) return { base, priceMin: 0, priceMax: 0 };
 
   if (adjustments.icloudBlockedZero && input?.icloudBlocked) {
