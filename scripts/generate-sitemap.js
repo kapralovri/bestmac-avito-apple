@@ -49,6 +49,30 @@ const pages = [
     lastmod: new Date().toISOString().split('T')[0],
     changefreq: 'yearly',
     priority: '0.3'
+  },
+  {
+    url: 'https://bestmac.ru/blog/kak-vybrat-macbook-2024',
+    lastmod: new Date().toISOString().split('T')[0],
+    changefreq: 'monthly',
+    priority: '0.7'
+  },
+  {
+    url: 'https://bestmac.ru/blog/macbook-air-m2-vs-m3',
+    lastmod: new Date().toISOString().split('T')[0],
+    changefreq: 'monthly',
+    priority: '0.7'
+  },
+  {
+    url: 'https://bestmac.ru/blog/proverka-macbook-pered-pokupkoi',
+    lastmod: new Date().toISOString().split('T')[0],
+    changefreq: 'monthly',
+    priority: '0.7'
+  },
+  {
+    url: 'https://bestmac.ru/blog/kak-prodat-macbook-vygodno',
+    lastmod: new Date().toISOString().split('T')[0],
+    changefreq: 'monthly',
+    priority: '0.7'
   }
 ];
 

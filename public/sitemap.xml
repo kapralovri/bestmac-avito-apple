@@ -44,8 +44,32 @@
   </url>
   <url>
     <loc>https://bestmac.ru/terms</loc>
-    <lastmod>2025-01-27</lastmod>
+    <lastmod>2025-11-09</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://bestmac.ru/blog/kak-vybrat-macbook-2024</loc>
+    <lastmod>2025-11-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bestmac.ru/blog/macbook-air-m2-vs-m3</loc>
+    <lastmod>2025-11-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bestmac.ru/blog/proverka-macbook-pered-pokupkoi</loc>
+    <lastmod>2025-11-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bestmac.ru/blog/kak-prodat-macbook-vygodno</loc>
+    <lastmod>2025-11-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 </urlset>

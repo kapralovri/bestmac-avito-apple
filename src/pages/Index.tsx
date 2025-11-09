@@ -8,6 +8,8 @@ import Reviews from "@/components/Reviews";
 import FAQ from "@/components/FAQ";
 import BlogPreview from "@/components/BlogPreview";
 import SEOHead from "@/components/SEOHead";
+import SEOContent from "@/components/SEOContent";
+import LeadForm from "@/components/LeadForm";
 import { organizationSchema, faqData } from "@/lib/schema";
 
 const Index = () => {
@@ -57,6 +59,18 @@ const Index = () => {
       </section>
 
       <Reviews />
+      
+      <SEOContent />
+      
+      <section className="py-20 bg-card/30">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <LeadForm 
+            title="Получите бесплатную консультацию"
+            subtitle="Ответим на все вопросы о покупке или продаже MacBook"
+            formType="general"
+          />
+        </div>
+      </section>
       
       <BlogPreview />
       

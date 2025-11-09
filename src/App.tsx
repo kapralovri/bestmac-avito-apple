@@ -18,6 +18,7 @@ import NotFound from "./pages/NotFound";
 import KakVybratMacbook2024 from "./pages/blog/KakVybratMacbook2024";
 import ProverkaMacbookPeredPokupkoi from "./pages/blog/ProverkaMacbookPeredPokupkoi";
 import MacbookAirM2vsM3 from "./pages/blog/MacbookAirM2vsM3";
+import KakProdatMacbookVygodno from "./pages/blog/KakProdatMacbookVygodno";
 import Pickup from "./pages/Pickup";
 import { initAnalytics } from "./components/Analytics";
 
@@ -50,6 +51,7 @@ const App = () => {
             <Route path="/blog/kak-vybrat-macbook-2024" element={<KakVybratMacbook2024 />} />
             <Route path="/blog/proverka-macbook-pered-pokupkoi" element={<ProverkaMacbookPeredPokupkoi />} />
             <Route path="/blog/macbook-air-m2-vs-m3" element={<MacbookAirM2vsM3 />} />
+            <Route path="/blog/kak-prodat-macbook-vygodno" element={<KakProdatMacbookVygodno />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
