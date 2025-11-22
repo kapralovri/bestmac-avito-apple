@@ -4,8 +4,11 @@
     { "source": "/sell", "destination": "/api/sell" },
     { "source": "/sell/", "destination": "/api/sell" },
     { "source": "/api/buyout/estimate", "destination": "/api/buyout/estimate" },
-    { "source": "/favicon.ico", "destination": "/favicon.png" },
-    { "source": "/((?!.*\\.).*)", "destination": "/index.html" }
+    { "source": "/favicon.ico", "destination": "/favicon.png" }
+  ],
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "status": 404, "dest": "/index.html" }
   ],
   "redirects": [
     {

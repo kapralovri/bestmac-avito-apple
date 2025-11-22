@@ -19,12 +19,16 @@ const SEOHead = ({
 }: SEOHeadProps) => {
   const baseUrl = "https://bestmac.ru";
   const fullCanonical = canonical ? `${baseUrl}${canonical}` : undefined;
+  
+  // Detect 404 pages and add noindex
+  const is404 = title?.includes('404') || title?.includes('не найдена');
 
   return (
     <Helmet>
       {title && <title>{title}</title>}
       {description && <meta name="description" content={description} />}
       {keywords && <meta name="keywords" content={keywords} />}
+      {is404 && <meta name="robots" content="noindex, nofollow" />}
       {fullCanonical && <link rel="canonical" href={fullCanonical} />}
 
       {/* Open Graph */}
