@@ -19,24 +19,24 @@ interface BlogPreviewProps {
 
 const defaultPosts: BlogPost[] = [
   {
-    slug: "kak-vybrat-macbook-2024",
-    title: "Как выбрать MacBook в 2024: полное руководство",
-    excerpt: "Подробный гид по выбору MacBook. Сравниваем модели Air и Pro, процессоры M1/M2/M3, объясняем какие характеристики важны для разных задач.",
-    date: "2024-03-20",
+    slug: "macbook-m4-obzor",
+    title: "MacBook M4: подробный обзор 2024",
+    excerpt: "Новый MacBook Pro на чипе M4 - революция или эволюция? Обзор характеристик, производительности и цен.",
+    date: "2024-01-20",
     author: "Роман Капралов"
   },
   {
-    slug: "kak-prodat-macbook-vygodno",
-    title: "Как продать MacBook выгодно в Москве",
-    excerpt: "Полное руководство по продаже MacBook: подготовка устройства, оценка стоимости, где продать дороже, документы и безопасность сделки.",
-    date: "2024-03-19",
+    slug: "macbook-vs-windows",
+    title: "MacBook или Windows: что выбрать в 2024",
+    excerpt: "Детальное сравнение MacBook и Windows ноутбуков по цене, производительности и экосистеме.",
+    date: "2024-01-15",
     author: "Роман Капралов"
   },
   {
-    slug: "proverka-macbook-pered-pokupkoi",
-    title: "Как проверить MacBook перед покупкой б/у",
-    excerpt: "Чек-лист проверки MacBook при покупке с рук: состояние батареи, дисплей, клавиатура, блокировки iCloud, скрытые дефекты.",
-    date: "2024-03-18",
+    slug: "macbook-dlia-studenta",
+    title: "Какой MacBook выбрать студенту",
+    excerpt: "Лучшие модели MacBook для учебы. Сравнение цен, характеристик и советы по экономии до 50%.",
+    date: "2024-01-12",
     author: "Роман Капралов"
   }
 ];
