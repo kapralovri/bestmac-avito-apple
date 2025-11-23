@@ -20,6 +20,10 @@ import ProverkaMacbookPeredPokupkoi from "./pages/blog/ProverkaMacbookPeredPokup
 import MacbookAirM2vsM3 from "./pages/blog/MacbookAirM2vsM3";
 import KakProdatMacbookVygodno from "./pages/blog/KakProdatMacbookVygodno";
 import MacbookM4Obzor from "./pages/blog/MacbookM4Obzor";
+import MacbookVsWindows from "./pages/blog/MacbookVsWindows";
+import MacbookBuPodvodnye from "./pages/blog/MacbookBuPodvodnye";
+import MacbookDliaStudenta from "./pages/blog/MacbookDliaStudenta";
+import MacbookApgreid from "./pages/blog/MacbookApgreid";
 import MacbookAirM2Buy from "./pages/longtail/MacbookAirM2Buy";
 import MacbookBrokenScreen from "./pages/longtail/MacbookBrokenScreen";
 import MacbookPro14M3 from "./pages/longtail/MacbookPro14M3";
@@ -58,6 +62,10 @@ const App = () => {
             <Route path="/blog/macbook-air-m2-vs-m3" element={<MacbookAirM2vsM3 />} />
             <Route path="/blog/kak-prodat-macbook-vygodno" element={<KakProdatMacbookVygodno />} />
             <Route path="/blog/macbook-m4-obzor" element={<MacbookM4Obzor />} />
+            <Route path="/blog/macbook-vs-windows" element={<MacbookVsWindows />} />
+            <Route path="/blog/macbook-bu-podvodnye" element={<MacbookBuPodvodnye />} />
+            <Route path="/blog/macbook-dlia-studenta" element={<MacbookDliaStudenta />} />
+            <Route path="/blog/macbook-apgreid" element={<MacbookApgreid />} />
             {/* Long-tail landing pages */}
             <Route path="/buy/macbook-air-m2-16gb" element={<MacbookAirM2Buy />} />
             <Route path="/sell/macbook-broken-screen" element={<MacbookBrokenScreen />} />
