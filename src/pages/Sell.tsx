@@ -13,6 +13,7 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import SEOHead from '@/components/SEOHead';
 import BuyoutTable from '@/components/BuyoutTable';
 import { CheckCircle2, Shield, Clock, Wallet, TrendingUp, Award } from 'lucide-react';
+import { generateProductSchema } from '@/lib/structured-data';
 
 const Sell = () => {
   const [data, setData] = useState<BuyoutRow[]>([]);
@@ -80,6 +81,13 @@ const Sell = () => {
     setResult(estimate);
   };
 
+  const productSchema = generateProductSchema({
+    name: "Выкуп MacBook в Москве",
+    price: 50000,
+    condition: "UsedCondition",
+    description: "Быстрый выкуп MacBook по честной цене. Оценка за 2 минуты, выезд на дом бесплатно, оплата сразу наличными или переводом."
+  });
+
   return (
     <div className="min-h-screen bg-background">
       <SEOHead 
@@ -87,6 +95,7 @@ const Sell = () => {
         description="Продать MacBook выгодно в Москве. Онлайн калькулятор оценки стоимости. Быстрый выкуп MacBook, iMac, iPhone за наличные. Выезд на дом бесплатно. Гарантия честной цены."
         canonical="/sell"
         keywords="продать macbook, выкуп macbook, скупка macbook москва, продать macbook срочно, оценка macbook, сдать macbook"
+        schema={productSchema}
       />
       <Header />
       

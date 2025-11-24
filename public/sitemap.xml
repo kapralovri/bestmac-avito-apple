@@ -127,6 +127,18 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://bestmac.ru/buy/macbook-pro-16-m3-max</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://bestmac.ru/buy/macbook-air-m3-students</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://bestmac.ru/pickup</loc>
     <lastmod>2025-01-27</lastmod>
     <changefreq>monthly</changefreq>

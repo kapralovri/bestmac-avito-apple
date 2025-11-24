@@ -10,7 +10,11 @@ interface AvitoOffer {
   status: string;
 }
 
-const AvitoOffers = () => {
+interface AvitoOffersProps {
+  limit?: number;
+}
+
+const AvitoOffers = ({ limit }: AvitoOffersProps = {}) => {
   const [offers, setOffers] = useState<AvitoOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -123,7 +127,7 @@ const AvitoOffers = () => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {offers.map(createOfferCard)}
+      {(limit ? offers.slice(0, limit) : offers).map(createOfferCard)}
     </div>
   );
 };

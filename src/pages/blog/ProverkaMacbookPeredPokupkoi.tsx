@@ -247,6 +247,15 @@ const ProverkaMacbookPeredPokupkoi = () => {
                   <li>☐ Чек/документы на руках</li>
                 </ul>
               </div>
+              
+              <div className="mt-8 p-6 bg-muted/50 rounded-lg">
+                <h3 className="font-semibold mb-3">📚 Читайте также:</h3>
+                <ul className="space-y-2 text-sm">
+                  <li><Link to="/blog/kak-vybrat-macbook-2024" className="text-primary hover:underline">→ Как выбрать MacBook в 2024 году</Link></li>
+                  <li><Link to="/blog/macbook-bu-podvodnye" className="text-primary hover:underline">→ Подводные камни покупки б/у MacBook</Link></li>
+                  <li><Link to="/buy" className="text-primary hover:underline">→ Купить проверенный MacBook с гарантией</Link></li>
+                </ul>
+              </div>
             </section>
           </div>
 
