@@ -27,6 +27,8 @@ import MacbookApgreid from "./pages/blog/MacbookApgreid";
 import MacbookAirM2Buy from "./pages/longtail/MacbookAirM2Buy";
 import MacbookBrokenScreen from "./pages/longtail/MacbookBrokenScreen";
 import MacbookPro14M3 from "./pages/longtail/MacbookPro14M3";
+import MacbookPro16M3Max from "./pages/longtail/MacbookPro16M3Max";
+import MacbookAirM3Students from "./pages/longtail/MacbookAirM3Students";
 import Comparison from "./pages/Comparison";
 import Pickup from "./pages/Pickup";
 import { initAnalytics } from "./components/Analytics";
@@ -70,6 +72,8 @@ const App = () => {
             <Route path="/buy/macbook-air-m2-16gb" element={<MacbookAirM2Buy />} />
             <Route path="/sell/macbook-broken-screen" element={<MacbookBrokenScreen />} />
             <Route path="/buy/macbook-pro-14-m3" element={<MacbookPro14M3 />} />
+            <Route path="/buy/macbook-pro-16-m3-max" element={<MacbookPro16M3Max />} />
+            <Route path="/buy/macbook-air-m3-students" element={<MacbookAirM3Students />} />
             <Route path="/comparison" element={<Comparison />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

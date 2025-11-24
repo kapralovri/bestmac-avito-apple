@@ -188,6 +188,15 @@ const KakVybratMacbook2024 = () => {
                   </p>
                 </div>
               </div>
+              
+              <div className="mt-8 p-6 bg-muted/50 rounded-lg">
+                <h3 className="font-semibold mb-3">📚 Читайте также:</h3>
+                <ul className="space-y-2 text-sm">
+                  <li><Link to="/blog/proverka-macbook-pered-pokupkoi" className="text-primary hover:underline">→ Проверка MacBook перед покупкой</Link></li>
+                  <li><Link to="/blog/macbook-air-m2-vs-m3" className="text-primary hover:underline">→ MacBook Air M2 vs M3: какой выбрать?</Link></li>
+                  <li><Link to="/comparison" className="text-primary hover:underline">→ Сравнение моделей MacBook</Link></li>
+                </ul>
+              </div>
             </section>
           </div>
 
