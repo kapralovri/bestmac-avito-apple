@@ -287,6 +287,20 @@ const MacbookM4Obzor = () => {
             </section>
           </div>
 
+          <section className="my-8">
+            <h2 className="text-2xl font-bold mb-4">Читайте также</h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              <Link to="/blog/macbook-air-m2-vs-m3" className="border border-border rounded-lg p-4 hover:bg-muted transition">
+                <h3 className="font-semibold mb-2">MacBook Air M2 vs M3</h3>
+                <p className="text-sm text-muted-foreground">Стоит ли переплачивать за M3</p>
+              </Link>
+              <Link to="/blog/kak-vybrat-macbook-2024" className="border border-border rounded-lg p-4 hover:bg-muted transition">
+                <h3 className="font-semibold mb-2">Как выбрать MacBook</h3>
+                <p className="text-sm text-muted-foreground">Полное руководство по выбору</p>
+              </Link>
+            </div>
+          </section>
+
           <div className="mt-12 bg-gradient-primary rounded-lg p-8 text-white text-center">
             <h3 className="text-2xl font-bold mb-4">Ищете MacBook M4?</h3>
             <p className="mb-6">Следите за нашими поступлениями или оставьте заявку на подбор</p>

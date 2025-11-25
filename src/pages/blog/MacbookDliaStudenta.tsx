@@ -4,6 +4,7 @@ import SEOHead from "@/components/SEOHead";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { generateArticleSchema } from "@/lib/structured-data";
 import { GraduationCap, DollarSign, Zap, Clock } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const MacbookDliaStudenta = () => {
   const article = generateArticleSchema({
@@ -339,6 +340,20 @@ const MacbookDliaStudenta = () => {
                 <p>У проверенных ритейлеров с гарантией. Покупка с рук дешевле на 5-10%, 
                 но рискованнее - можете получить iCloud Lock или скрытые дефекты.</p>
               </div>
+            </div>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">Читайте также</h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              <Link to="/blog/kak-vybrat-macbook-2024" className="border border-border rounded-lg p-4 hover:bg-muted transition">
+                <h3 className="font-semibold mb-2">Как выбрать MacBook</h3>
+                <p className="text-sm text-muted-foreground">Полное руководство по выбору модели</p>
+              </Link>
+              <Link to="/blog/macbook-bu-podvodnye" className="border border-border rounded-lg p-4 hover:bg-muted transition">
+                <h3 className="font-semibold mb-2">Подводные камни MacBook б/у</h3>
+                <p className="text-sm text-muted-foreground">Как не купить проблемное устройство</p>
+              </Link>
             </div>
           </section>
 
