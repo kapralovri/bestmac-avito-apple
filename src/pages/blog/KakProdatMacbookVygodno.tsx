@@ -248,6 +248,20 @@ const KakProdatMacbookVygodno = () => {
           </section>
 
           <section className="mt-12">
+            <h2 className="text-2xl font-bold mb-4">Читайте также</h2>
+            <div className="grid md:grid-cols-2 gap-4 mb-8">
+              <Link to="/blog/proverka-macbook-pered-pokupkoi" className="border border-border rounded-lg p-4 hover:bg-muted transition">
+                <h3 className="font-semibold mb-2">Как проверить MacBook перед покупкой</h3>
+                <p className="text-sm text-muted-foreground">Чек-лист для проверки б/у устройства</p>
+              </Link>
+              <Link to="/blog/macbook-air-m2-vs-m3" className="border border-border rounded-lg p-4 hover:bg-muted transition">
+                <h3 className="font-semibold mb-2">MacBook Air M2 vs M3</h3>
+                <p className="text-sm text-muted-foreground">Сравнение и какую модель выбрать</p>
+              </Link>
+            </div>
+          </section>
+
+          <section className="mt-12">
             <h2 className="text-3xl font-bold mb-6">Заключение</h2>
             <p className="mb-4">
               Продажа MacBook — это не сложно, если подойти с умом. Подготовьте устройство, оцените реальную стоимость, выберите подходящий способ продажи и оформите сделку правильно. Следуя этому руководству, вы продадите MacBook быстро, безопасно и по максимальной цене.

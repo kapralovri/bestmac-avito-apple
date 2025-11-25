@@ -45,16 +45,11 @@ const Hero = () => {
   return (
     <section className="relative min-h-screen flex items-center">
       <div className="absolute inset-0 bg-gradient-hero pointer-events-none" />
-      <div
-        className="absolute inset-0 opacity-30 pointer-events-none"
-        style={{
-          backgroundImage: `url(${heroImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
-        role="img"
-        aria-label="Коллекция техники Apple: MacBook, iMac и другие устройства"
+      <img
+        src={heroImage}
+        alt="Коллекция техники Apple: MacBook, iMac и другие устройства"
+        className="absolute inset-0 w-full h-full object-cover opacity-30 pointer-events-none"
+        loading="lazy"
       />
 
       <motion.div

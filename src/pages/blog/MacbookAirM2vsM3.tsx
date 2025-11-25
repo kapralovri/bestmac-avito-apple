@@ -307,6 +307,20 @@ const MacbookAirM2vsM3 = () => {
             </section>
           </div>
 
+          <section className="mt-12">
+            <h2 className="text-2xl font-bold mb-4">Читайте также</h2>
+            <div className="grid md:grid-cols-2 gap-4 mb-8">
+              <Link to="/blog/kak-vybrat-macbook-2024" className="border border-border rounded-lg p-4 hover:bg-muted transition">
+                <h3 className="font-semibold mb-2">Как выбрать MacBook в 2024 году</h3>
+                <p className="text-sm text-muted-foreground">Полное руководство по выбору подходящей модели</p>
+              </Link>
+              <Link to="/blog/macbook-m4-obzor" className="border border-border rounded-lg p-4 hover:bg-muted transition">
+                <h3 className="font-semibold mb-2">MacBook M4: что нового</h3>
+                <p className="text-sm text-muted-foreground">Обзор нового процессора и сравнение</p>
+              </Link>
+            </div>
+          </section>
+
           <div className="mt-12 bg-gradient-primary rounded-lg p-8 text-white text-center">
             <h3 className="text-2xl font-bold mb-4">Готовы купить MacBook Air?</h3>
             <p className="mb-6">Посмотрите наши предложения с M2 и M3</p>

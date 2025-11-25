@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { generateArticleSchema } from "@/lib/structured-data";
+import { Link } from "react-router-dom";
 
 const MacbookVsWindows = () => {
   const article = generateArticleSchema({
@@ -184,6 +185,20 @@ const MacbookVsWindows = () => {
                   </tr>
                 </tbody>
               </table>
+            </div>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">Читайте также</h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              <Link to="/blog/kak-vybrat-macbook-2024" className="border border-border rounded-lg p-4 hover:bg-muted transition">
+                <h3 className="font-semibold mb-2">Как выбрать MacBook в 2024</h3>
+                <p className="text-sm text-muted-foreground">Полное руководство по выбору модели</p>
+              </Link>
+              <Link to="/blog/macbook-air-m2-vs-m3" className="border border-border rounded-lg p-4 hover:bg-muted transition">
+                <h3 className="font-semibold mb-2">MacBook Air M2 vs M3</h3>
+                <p className="text-sm text-muted-foreground">Сравнение и выбор оптимальной модели</p>
+              </Link>
             </div>
           </section>
 
