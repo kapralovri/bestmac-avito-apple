@@ -53,7 +53,7 @@ const Selection = () => {
     <div className="min-h-screen bg-background text-foreground">
       <SEOHead 
         title="Подбор техники Apple в Москве — персональные консультации | BestMac"
-        description="Подбор техники Apple в Москве. Персональные консультации и рекомендации от экспертов. Поможем выбрать идеальное решение под ваши задачи и бюджет."
+        description="Не знаете, какой MacBook, iMac или iPhone выбрать? Эксперты BestMac подберут технику Apple под ваши задачи и бюджет. Анализ потребностей, 2-3 варианта решений, консультация по телефону или в Telegram. Помощь с настройкой и обслуживанием."
         canonical="/selection"
         keywords="подбор техники apple, консультация macbook, выбор iphone, подбор imac москва"
         schema={serviceSchema({

@@ -17,7 +17,7 @@ const Index = () => {
     <div className="min-h-screen bg-background text-foreground">
       <SEOHead 
         title="BestMac - Купить MacBook, продать MacBook, скупка MacBook в Москве | Техника Apple"
-        description="Купить MacBook, продать MacBook, скупка MacBook в Москве. Продажа подержанной техники Apple с гарантией 1 месяц. Выкуп MacBook, iMac, iPhone. Через ИП без НДС."
+        description="Купить или продать MacBook б/у в Москве с гарантией 1 месяц. Официальная скупка MacBook, iMac, iPhone через ИП. Районы: Дорогомилово, Киевская, ЦАО. Онлайн-калькулятор оценки, выезд на дом, безналичный расчет."
         canonical="/"
         schema={organizationSchema}
         keywords="купить macbook, продать macbook, скупка macbook, бу macbook, macbook москва, macbook apple, imac купить, iphone продать, техника apple, apple москва"
