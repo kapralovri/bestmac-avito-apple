@@ -68,7 +68,7 @@ const Contact = () => {
     <div className="min-h-screen bg-background text-foreground">
       <SEOHead 
         title="Контакты BestMac — связаться с нами в Москве | BestMac"
-        description="Контакты BestMac в Москве. Телефон, адрес, время работы. Свяжитесь с нами для покупки или продажи техники Apple."
+        description="Свяжитесь с BestMac в Москве: телефон +7 (903) 299-00-29, адрес ул. Дениса Давыдова 3 (м. Киевская, Дорогомилово). График: Пн-Пт 10:00-20:00, Сб-Вс 11:00-18:00. Telegram @romanmanro. Форма обратной связи, карта проезда, способы оплаты."
         canonical="/contact"
         keywords="контакты bestmac, адрес bestmac, телефон bestmac москва, связаться с bestmac"
         schema={organizationSchema}

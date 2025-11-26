@@ -92,7 +92,7 @@ const Sell = () => {
     <div className="min-h-screen bg-background">
       <SEOHead 
         title="Продать MacBook в Москве - Выкуп техники Apple | BestMac"
-        description="Продать MacBook выгодно в Москве. Онлайн калькулятор оценки стоимости. Быстрый выкуп MacBook, iMac, iPhone за наличные. Выезд на дом бесплатно. Гарантия честной цены."
+        description="Онлайн-калькулятор выкупа MacBook за 2 минуты. Оценка по модели, памяти, состоянию батареи. Выезд специалиста на дом бесплатно, оплата сразу наличными или переводом. Честные цены на MacBook Air, Pro, iMac, iPhone в Москве."
         canonical="/sell"
         keywords="продать macbook, выкуп macbook, скупка macbook москва, продать macbook срочно, оценка macbook, сдать macbook"
         schema={productSchema}

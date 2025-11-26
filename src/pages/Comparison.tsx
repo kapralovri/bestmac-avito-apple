@@ -210,7 +210,7 @@ const Comparison = () => {
     <div className="min-h-screen bg-background">
       <SEOHead 
         title="Сравнение MacBook — какой выбрать? Air vs Pro, M1 vs M2 vs M3 | BestMac"
-        description="Интерактивное сравнение всех моделей MacBook: Air M1/M2/M3, Pro 14/16. Характеристики, производительность, цены. Поможем выбрать идеальный MacBook."
+        description="Интерактивная таблица сравнения MacBook: Air M1/M2/M3, Pro 14/16. Процессоры, память, дисплеи, автономность, цены б/у. Выберите до 3 моделей для детального сравнения характеристик, преимуществ и недостатков. Рейтинги производительности и цена/качество."
         canonical="/comparison"
         keywords="сравнение macbook, macbook air vs pro, m1 vs m2 vs m3, какой macbook выбрать, сравнить macbook"
       />
