@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Phone, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import logo from "@/assets/logo.png";
 
 const Header = () => {
   const location = useLocation();
@@ -30,9 +31,7 @@ const Header = () => {
             transition={{ duration: 0.2 }}
           >
             <Link to="/">
-              <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">M</span>
-              </div>
+              <img src={logo} alt="BestMac logo" className="w-8 h-8 rounded-lg" />
             </Link>
             <Link to="/">
               <div>
