@@ -1,4 +1,4 @@
-import { adjustments } from '../../src/config/buyout-adjustments';
+import { adjustments } from '../../src/config/buyout-adjustments.js';
 
 export function findBase(model: string, ram: string, storage: string, data: any[]) {
   // Ищем все строки с данной комбинацией model + ram + storage
