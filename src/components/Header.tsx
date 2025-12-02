@@ -31,7 +31,7 @@ const Header = () => {
             transition={{ duration: 0.2 }}
           >
             <Link to="/">
-              <img src={logo} alt="BestMac logo" className="w-8 h-8 rounded-lg" />
+              <img src={logo} alt="BestMac logo" className="w-8 h-8" />
             </Link>
             <Link to="/">
               <div>
