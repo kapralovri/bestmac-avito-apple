@@ -1,100 +1,123 @@
-import { useState, useEffect } from 'react';
-import { loadBuyoutData, estimatePrice, type EstimateInput } from '@/lib/buyout';
-import type { BuyoutRow } from '@/types/buyout';
+import { useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { 
+  loadAvitoPrices, 
+  getUniqueModels, 
+  getUniqueCpus, 
+  getUniqueRam, 
+  getUniqueSsd,
+  findPriceStat,
+  calculateBuyoutPrice,
+  formatSsd,
+  formatPrice
+} from '@/lib/avito-prices';
+import type { AvitoPriceStat, ConditionValue } from '@/types/avito-prices';
+import { CONDITIONS, REGIONS } from '@/types/avito-prices';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import SEOHead from '@/components/SEOHead';
-import BuyoutTable from '@/components/BuyoutTable';
-import { CheckCircle2, Shield, Clock, Wallet, TrendingUp, Award } from 'lucide-react';
+import { Clock, Wallet, TrendingUp, Shield, BarChart3, MapPin, Cpu, HardDrive, MemoryStick, Sparkles } from 'lucide-react';
 import { generateProductSchema } from '@/lib/structured-data';
 
 const Sell = () => {
-  const [data, setData] = useState<BuyoutRow[]>([]);
-  const [models, setModels] = useState<string[]>([]);
-  const [ramOptions, setRamOptions] = useState<string[]>([]);
-  const [storageOptions, setStorageOptions] = useState<string[]>([]);
-  const [formData, setFormData] = useState<Partial<EstimateInput>>({
-    model: '',
-    ram: '',
-    storage: '',
-    condition: 'A',
-    batteryCycles: 0,
-    displayDefect: false,
-    bodyDefect: false,
-    hasCharger: true,
-    hasBox: true,
-    icloudBlocked: false,
-  });
-  const [result, setResult] = useState<{ base: number; priceMin: number; priceMax: number } | null>(null);
-
+  const [stats, setStats] = useState<AvitoPriceStat[]>([]);
+  const [totalListings, setTotalListings] = useState(0);
+  const [lastUpdate, setLastUpdate] = useState<string>('');
+  
+  // Форма
+  const [model, setModel] = useState('');
+  const [cpu, setCpu] = useState('');
+  const [ram, setRam] = useState<number | ''>('');
+  const [ssd, setSsd] = useState<number | ''>('');
+  const [region, setRegion] = useState('Москва');
+  const [condition, setCondition] = useState<ConditionValue>('excellent');
+  
+  // Результат
+  const [result, setResult] = useState<{
+    marketMin: number;
+    marketMax: number;
+    marketMedian: number;
+    buyoutPrice: number;
+    samplesCount: number;
+  } | null>(null);
+  
+  // Загрузка данных
   useEffect(() => {
-    loadBuyoutData().then((rows) => {
-      setData(rows);
-      const uniqueModels = Array.from(new Set(rows.map(r => r.model))).sort((a, b) => a.localeCompare(b, 'ru'));
-      setModels(uniqueModels);
+    loadAvitoPrices().then((data) => {
+      setStats(data.stats);
+      setTotalListings(data.total_listings);
+      if (data.generated_at) {
+        const date = new Date(data.generated_at);
+        setLastUpdate(date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }));
+      }
     });
   }, []);
-
-  // При выборе модели обновляем доступные RAM
+  
+  // Опции для селектов
+  const models = useMemo(() => getUniqueModels(stats), [stats]);
+  const cpus = useMemo(() => model ? getUniqueCpus(stats, model) : [], [stats, model]);
+  const rams = useMemo(() => model && cpu ? getUniqueRam(stats, model, cpu) : [], [stats, model, cpu]);
+  const ssds = useMemo(() => model && cpu && ram ? getUniqueSsd(stats, model, cpu, Number(ram)) : [], [stats, model, cpu, ram]);
+  
+  // Сброс зависимых полей
   useEffect(() => {
-    if (!formData.model) {
-      setRamOptions([]);
-      setStorageOptions([]);
-      return;
-    }
-    
-    const rowsForModel = data.filter(r => r.model === formData.model);
-    const uniqueRam = Array.from(new Set(rowsForModel.map(r => r.ram).filter(Boolean) as string[]))
-      .sort((a, b) => parseInt(a) - parseInt(b));
-    setRamOptions(uniqueRam);
-    
-    // Сбрасываем RAM и Storage при смене модели
-    setFormData(prev => ({ ...prev, ram: '', storage: '' }));
-  }, [formData.model, data]);
-
-  // При выборе RAM обновляем доступные Storage
+    setCpu('');
+    setRam('');
+    setSsd('');
+    setResult(null);
+  }, [model]);
+  
   useEffect(() => {
-    if (!formData.model || !formData.ram) {
-      setStorageOptions([]);
-      return;
-    }
-    
-    const rowsForConfig = data.filter(r => r.model === formData.model && r.ram === formData.ram);
-    const uniqueStorage = Array.from(new Set(rowsForConfig.map(r => r.storage).filter(Boolean) as string[]))
-      .sort((a, b) => parseInt(a) - parseInt(b));
-    setStorageOptions(uniqueStorage);
-    
-    // Сбрасываем Storage при смене RAM
-    setFormData(prev => ({ ...prev, storage: '' }));
-  }, [formData.ram, formData.model, data]);
-
+    setRam('');
+    setSsd('');
+    setResult(null);
+  }, [cpu]);
+  
+  useEffect(() => {
+    setSsd('');
+    setResult(null);
+  }, [ram]);
+  
+  // Расчет
   const handleCalculate = () => {
-    if (!formData.model || !formData.ram || !formData.storage) return;
-    const estimate = estimatePrice(formData as EstimateInput, data);
-    setResult(estimate);
+    if (!model || !cpu || !ram || !ssd) return;
+    
+    const stat = findPriceStat(stats, model, cpu, Number(ram), Number(ssd), region);
+    if (!stat) {
+      setResult(null);
+      return;
+    }
+    
+    const priceResult = calculateBuyoutPrice(stat, condition);
+    setResult({
+      marketMin: priceResult.marketMin,
+      marketMax: priceResult.marketMax,
+      marketMedian: priceResult.marketMedian,
+      buyoutPrice: priceResult.buyoutPrice,
+      samplesCount: priceResult.samplesCount,
+    });
   };
-
+  
+  const isFormComplete = model && cpu && ram && ssd;
+  
   const productSchema = generateProductSchema({
     name: "Выкуп MacBook в Москве",
     price: 50000,
     condition: "UsedCondition",
-    description: "Быстрый выкуп MacBook по честной цене. Оценка за 2 минуты, выезд на дом бесплатно, оплата сразу наличными или переводом."
+    description: "Узнайте реальную рыночную стоимость вашего MacBook. Оценка на основе анализа открытого рынка."
   });
 
   return (
     <div className="min-h-screen bg-background">
       <SEOHead 
-        title="Продать MacBook в Москве - Выкуп техники Apple | BestMac"
-        description="Онлайн-калькулятор выкупа MacBook за 2 минуты. Оценка по модели, памяти, состоянию батареи. Выезд специалиста на дом бесплатно, оплата сразу наличными или переводом. Честные цены на MacBook Air, Pro, iMac, iPhone в Москве."
+        title="Сколько стоит ваш MacBook? Калькулятор рыночной цены | BestMac"
+        description="Узнайте реальную рыночную стоимость вашего MacBook за 30 секунд. Оценка на основе анализа открытого рынка. Актуальные цены на MacBook Air, Pro, M1, M2, M3, M4."
         canonical="/sell"
-        keywords="продать macbook, выкуп macbook, скупка macbook москва, продать macbook срочно, оценка macbook, сдать macbook"
+        keywords="сколько стоит macbook, цена macbook бу, продать macbook цена, оценка macbook, калькулятор цены macbook"
         schema={productSchema}
       />
       <Header />
@@ -102,392 +125,369 @@ const Sell = () => {
       <div className="container mx-auto px-4 py-8">
         <Breadcrumbs items={[
           { name: 'Главная', url: '/' },
-          { name: 'Продать технику', url: '/sell' }
+          { name: 'Оценка MacBook', url: '/sell' }
         ]} />
 
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold mb-3">Продать MacBook в Москве</h1>
-          <p className="text-lg text-muted-foreground mb-8">Узнайте стоимость вашего устройства за 2 минуты. Честная цена, выезд на дом, оплата сразу.</p>
-
-          {/* Преимущества */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-            <div className="text-center p-4 bg-card rounded-lg border">
-              <Clock className="w-8 h-8 mx-auto mb-2 text-primary" />
-              <p className="font-semibold">Оценка за 2 минуты</p>
+        <div className="max-w-5xl mx-auto">
+          {/* Hero */}
+          <motion.div 
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              Сколько стоит ваш MacBook?
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
+              Узнайте реальную рыночную стоимость прямо сейчас. 
+              Оценка на основе анализа {totalListings > 0 ? totalListings.toLocaleString('ru-RU') : '800+'} объявлений.
+            </p>
+            
+            {/* Преимущества */}
+            <div className="flex flex-wrap justify-center gap-4 text-sm">
+              <div className="flex items-center gap-2 bg-muted/50 px-4 py-2 rounded-full">
+                <Clock className="w-4 h-4 text-primary" />
+                <span>30 секунд</span>
+              </div>
+              <div className="flex items-center gap-2 bg-muted/50 px-4 py-2 rounded-full">
+                <BarChart3 className="w-4 h-4 text-primary" />
+                <span>Реальные цены рынка</span>
+              </div>
+              <div className="flex items-center gap-2 bg-muted/50 px-4 py-2 rounded-full">
+                <TrendingUp className="w-4 h-4 text-primary" />
+                <span>Обновление ежедневно</span>
+              </div>
             </div>
-            <div className="text-center p-4 bg-card rounded-lg border">
-              <Wallet className="w-8 h-8 mx-auto mb-2 text-primary" />
-              <p className="font-semibold">Оплата сразу</p>
-            </div>
-            <div className="text-center p-4 bg-card rounded-lg border">
-              <TrendingUp className="w-8 h-8 mx-auto mb-2 text-primary" />
-              <p className="font-semibold">Высокая цена</p>
-            </div>
-            <div className="text-center p-4 bg-card rounded-lg border">
-              <Shield className="w-8 h-8 mx-auto mb-2 text-primary" />
-              <p className="font-semibold">Безопасно</p>
-            </div>
-          </div>
+          </motion.div>
 
           {/* Калькулятор */}
-          <div className="grid md:grid-cols-2 gap-6 mb-16">
-            <Card>
-              <CardHeader>
-                <CardTitle>Параметры устройства</CardTitle>
-                <CardDescription>Заполните информацию о вашем MacBook</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="model">Модель</Label>
-                  <Select value={formData.model} onValueChange={(value) => setFormData({ ...formData, model: value })}>
-                    <SelectTrigger id="model">
-                      <SelectValue placeholder="Выберите модель" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-80">
-                      {models.map((model) => (
-                        <SelectItem key={model} value={model}>
-                          {model}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="ram">Оперативная память</Label>
-                  <Select 
-                    value={formData.ram} 
-                    onValueChange={(value) => setFormData({ ...formData, ram: value })}
-                    disabled={!formData.model}
+          <div className="grid lg:grid-cols-2 gap-8 mb-16">
+            {/* Форма */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <Card className="h-full">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-primary" />
+                    Параметры устройства
+                  </CardTitle>
+                  <CardDescription>
+                    Выберите характеристики вашего MacBook
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-5">
+                  {/* Модель */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">1</span>
+                      Модель
+                    </label>
+                    <Select value={model} onValueChange={setModel}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите модель" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {models.map((m) => (
+                          <SelectItem key={m} value={m}>{m}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Процессор */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">2</span>
+                      <Cpu className="w-4 h-4" />
+                      Процессор
+                    </label>
+                    <Select value={cpu} onValueChange={setCpu} disabled={!model}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите процессор" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {cpus.map((c) => (
+                          <SelectItem key={c} value={c}>Apple {c}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* RAM */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">3</span>
+                      <MemoryStick className="w-4 h-4" />
+                      Оперативная память
+                    </label>
+                    <Select value={ram ? String(ram) : ''} onValueChange={(v) => setRam(Number(v))} disabled={!cpu}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите RAM" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {rams.map((r) => (
+                          <SelectItem key={r} value={String(r)}>{r} GB</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* SSD */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">4</span>
+                      <HardDrive className="w-4 h-4" />
+                      Накопитель SSD
+                    </label>
+                    <Select value={ssd ? String(ssd) : ''} onValueChange={(v) => setSsd(Number(v))} disabled={!ram}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите SSD" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ssds.map((s) => (
+                          <SelectItem key={s} value={String(s)}>{formatSsd(s)}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Состояние */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">5</span>
+                      <Shield className="w-4 h-4" />
+                      Состояние
+                    </label>
+                    <Select value={condition} onValueChange={(v) => setCondition(v as ConditionValue)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CONDITIONS.map((c) => (
+                          <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Город */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      Город
+                    </label>
+                    <Select value={region} onValueChange={setRegion}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {REGIONS.map((r) => (
+                          <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <Button 
+                    onClick={handleCalculate}
+                    className="w-full"
+                    size="lg"
+                    disabled={!isFormComplete}
                   >
-                    <SelectTrigger id="ram">
-                      <SelectValue placeholder="Выберите RAM" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ramOptions.map((ram) => (
-                        <SelectItem key={ram} value={ram}>
-                          {ram} GB
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                    <TrendingUp className="w-4 h-4 mr-2" />
+                    Узнать стоимость
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="storage">SSD накопитель</Label>
-                  <Select 
-                    value={formData.storage} 
-                    onValueChange={(value) => setFormData({ ...formData, storage: value })}
-                    disabled={!formData.ram}
-                  >
-                    <SelectTrigger id="storage">
-                      <SelectValue placeholder="Выберите SSD" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {storageOptions.map((storage) => (
-                        <SelectItem key={storage} value={storage}>
-                          {storage} GB
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="condition">Состояние</Label>
-                  <Select value={formData.condition} onValueChange={(value: any) => setFormData({ ...formData, condition: value })}>
-                    <SelectTrigger id="condition">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="A">A - Отличное (минимальные следы использования)</SelectItem>
-                      <SelectItem value="B">B - Хорошее (видимые следы использования)</SelectItem>
-                      <SelectItem value="C">C - Удовлетворительное (значительные следы)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="cycles">Циклы батареи</Label>
-                  <Input
-                    id="cycles"
-                    type="number"
-                    min="0"
-                    value={formData.batteryCycles}
-                    onChange={(e) => setFormData({ ...formData, batteryCycles: Number(e.target.value) })}
-                    placeholder="Например: 150"
-                  />
-                  <p className="text-xs text-muted-foreground">Узнать в: О системе → Питание → Информация о батарее</p>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="displayDefect"
-                      checked={formData.displayDefect}
-                      onCheckedChange={(checked) => setFormData({ ...formData, displayDefect: checked as boolean })}
-                    />
-                    <Label htmlFor="displayDefect" className="cursor-pointer">Дефекты экрана (царапины, пятна)</Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="bodyDefect"
-                      checked={formData.bodyDefect}
-                      onCheckedChange={(checked) => setFormData({ ...formData, bodyDefect: checked as boolean })}
-                    />
-                    <Label htmlFor="bodyDefect" className="cursor-pointer">Дефекты корпуса (вмятины, сколы)</Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="hasCharger"
-                      checked={formData.hasCharger}
-                      onCheckedChange={(checked) => setFormData({ ...formData, hasCharger: checked as boolean })}
-                    />
-                    <Label htmlFor="hasCharger" className="cursor-pointer">Есть зарядное устройство</Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="hasBox"
-                      checked={formData.hasBox}
-                      onCheckedChange={(checked) => setFormData({ ...formData, hasBox: checked as boolean })}
-                    />
-                    <Label htmlFor="hasBox" className="cursor-pointer">Есть коробка</Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="icloudBlocked"
-                      checked={formData.icloudBlocked}
-                      onCheckedChange={(checked) => setFormData({ ...formData, icloudBlocked: checked as boolean })}
-                    />
-                    <Label htmlFor="icloudBlocked" className="cursor-pointer text-destructive">iCloud заблокирован</Label>
-                  </div>
-                </div>
-
-                <Button 
-                  onClick={handleCalculate} 
-                  className="w-full" 
-                  size="lg" 
-                  disabled={!formData.model || !formData.ram || !formData.storage}
-                >
-                  Рассчитать стоимость
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Оценка стоимости</CardTitle>
-                <CardDescription>Примерная цена выкупа вашего устройства</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {!result ? (
-                  <div className="flex items-center justify-center h-64 text-muted-foreground">
-                    <p>Заполните параметры и нажмите "Рассчитать стоимость"</p>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {result.priceMin === 0 && result.priceMax === 0 ? (
-                      <div className="text-center py-8">
-                        <p className="text-lg font-semibold text-destructive mb-2">Выкуп невозможен</p>
-                        <p className="text-sm text-muted-foreground">
-                          {formData.icloudBlocked ? 'Устройство с блокировкой iCloud не подлежит выкупу' : 'К сожалению, выкуп данного устройства невозможен'}
+            {/* Результат */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <Card className="h-full">
+                <CardHeader>
+                  <CardTitle>Рыночная стоимость</CardTitle>
+                  <CardDescription>
+                    {lastUpdate && `Данные обновлены: ${lastUpdate}`}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {!result ? (
+                    <div className="flex flex-col items-center justify-center h-64 text-center text-muted-foreground">
+                      <BarChart3 className="w-12 h-12 mb-4 opacity-30" />
+                      <p>Заполните параметры устройства</p>
+                      <p className="text-sm">и нажмите «Узнать стоимость»</p>
+                    </div>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className="space-y-6"
+                    >
+                      {/* Рыночная цена */}
+                      <div className="text-center p-6 bg-muted/30 rounded-xl border">
+                        <p className="text-sm text-muted-foreground mb-2">Рыночная цена сейчас</p>
+                        <p className="text-3xl md:text-4xl font-bold">
+                          {formatPrice(result.marketMin)} – {formatPrice(result.marketMax)}
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Медиана: {formatPrice(result.marketMedian)}
                         </p>
                       </div>
-                    ) : (
-                      <>
-                        <div className="text-center py-6 border-b">
-                          <p className="text-sm text-muted-foreground mb-2">Диапазон цены</p>
-                          <p className="text-4xl font-bold text-primary">
-                            {result.priceMin.toLocaleString('ru-RU')} - {result.priceMax.toLocaleString('ru-RU')} ₽
-                          </p>
-                        </div>
-
-                        <div className="space-y-3">
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Модель:</span>
-                            <span className="font-semibold text-right">{formData.model}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">RAM:</span>
-                            <span className="font-semibold">{formData.ram} GB</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">SSD:</span>
-                            <span className="font-semibold">{formData.storage} GB</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Базовая цена:</span>
-                            <span className="font-semibold">{result.base.toLocaleString('ru-RU')} ₽</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Состояние:</span>
-                            <span className="font-semibold">{formData.condition}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Циклы батареи:</span>
-                            <span className="font-semibold">{formData.batteryCycles}</span>
-                          </div>
-                        </div>
-
-                        <div className="bg-muted/50 p-4 rounded-lg">
-                          <p className="text-xs text-muted-foreground">
-                            ⚠️ Итоговая цена может отличаться после осмотра устройства. Для точной оценки свяжитесь с нами.
-                          </p>
-                        </div>
-
-                        <Button 
-                          variant="default" 
-                          size="lg" 
-                          className="w-full"
-                          asChild
-                        >
-                          <a href="https://t.me/romanmanro" target="_blank" rel="noopener noreferrer">
-                            Написать в Telegram
-                          </a>
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                      
+                      {/* Цена выкупа */}
+                      <div className="text-center p-6 bg-primary/5 rounded-xl border-2 border-primary/20">
+                        <p className="text-sm font-medium text-primary mb-2">
+                          💰 Рекомендуемая цена выкупа
+                        </p>
+                        <p className="text-4xl md:text-5xl font-bold text-primary">
+                          ≈ {formatPrice(result.buyoutPrice)}
+                        </p>
+                      </div>
+                      
+                      {/* Статистика */}
+                      <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                        <BarChart3 className="w-4 h-4" />
+                        <span>На основе {result.samplesCount} объявлений за последние 30 дней</span>
+                      </div>
+                      
+                      {/* Дисклеймер */}
+                      <div className="bg-muted/50 p-4 rounded-lg text-xs text-muted-foreground">
+                        <p>
+                          ⚠️ Оценка на основе анализа открытого рынка. Итоговая цена может отличаться 
+                          в зависимости от комплектации, циклов батареи и состояния устройства.
+                        </p>
+                      </div>
+                      
+                      {/* CTA */}
+                      <Button 
+                        variant="default" 
+                        size="lg" 
+                        className="w-full"
+                        asChild
+                      >
+                        <a href="https://t.me/romanmanro" target="_blank" rel="noopener noreferrer">
+                          <Wallet className="w-4 h-4 mr-2" />
+                          Продать сейчас
+                        </a>
+                      </Button>
+                    </motion.div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
 
-          {/* Таблица с ценами */}
-          <BuyoutTable />
+          {/* Как это работает */}
+          <motion.section 
+            className="mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <h2 className="text-2xl font-bold text-center mb-8">Как это работает?</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              <Card className="text-center">
+                <CardContent className="pt-6">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <BarChart3 className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold mb-2">Анализ рынка</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Ежедневно собираем данные о ценах на MacBook с открытого рынка
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card className="text-center">
+                <CardContent className="pt-6">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <TrendingUp className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold mb-2">Расчет медианы</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Удаляем выбросы и рассчитываем справедливую рыночную цену
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card className="text-center">
+                <CardContent className="pt-6">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Wallet className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold mb-2">Честная цена выкупа</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Предлагаем до 90% от рыночной стоимости с мгновенной выплатой
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </motion.section>
 
-          {/* Процесс выкупа */}
-          <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-center">Как проходит выкуп?</h2>
-            <div className="grid md:grid-cols-4 gap-6">
-              <div className="text-center">
-                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold mx-auto mb-4">1</div>
-                <h3 className="font-semibold mb-2">Оценка онлайн</h3>
-                <p className="text-sm text-muted-foreground">Заполните калькулятор выше и узнайте примерную стоимость</p>
+          {/* Преимущества */}
+          <motion.section 
+            className="mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <h2 className="text-2xl font-bold text-center mb-8">Почему выбирают нас</h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="text-center p-6 bg-card rounded-xl border">
+                <Clock className="w-8 h-8 mx-auto mb-3 text-primary" />
+                <p className="font-semibold">Быстрая оценка</p>
+                <p className="text-sm text-muted-foreground">30 секунд онлайн</p>
               </div>
-              <div className="text-center">
-                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold mx-auto mb-4">2</div>
-                <h3 className="font-semibold mb-2">Связь с нами</h3>
-                <p className="text-sm text-muted-foreground">Свяжитесь через Telegram для уточнения деталей</p>
+              <div className="text-center p-6 bg-card rounded-xl border">
+                <Wallet className="w-8 h-8 mx-auto mb-3 text-primary" />
+                <p className="font-semibold">Оплата сразу</p>
+                <p className="text-sm text-muted-foreground">Наличные или перевод</p>
               </div>
-              <div className="text-center">
-                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold mx-auto mb-4">3</div>
-                <h3 className="font-semibold mb-2">Осмотр техники</h3>
-                <p className="text-sm text-muted-foreground">Бесплатный выезд или встреча в удобном месте</p>
+              <div className="text-center p-6 bg-card rounded-xl border">
+                <TrendingUp className="w-8 h-8 mx-auto mb-3 text-primary" />
+                <p className="font-semibold">Честная цена</p>
+                <p className="text-sm text-muted-foreground">До 90% от рынка</p>
               </div>
-              <div className="text-center">
-                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold mx-auto mb-4">4</div>
-                <h3 className="font-semibold mb-2">Получение денег</h3>
-                <p className="text-sm text-muted-foreground">Оплата наличными или переводом сразу после осмотра</p>
+              <div className="text-center p-6 bg-card rounded-xl border">
+                <Shield className="w-8 h-8 mx-auto mb-3 text-primary" />
+                <p className="font-semibold">Безопасно</p>
+                <p className="text-sm text-muted-foreground">Официальная сделка</p>
               </div>
             </div>
-          </section>
-
-          {/* Гарантии */}
-          <section className="mb-16 bg-card p-8 rounded-lg border">
-            <h2 className="text-3xl font-bold mb-6 text-center">Наши гарантии</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="flex gap-4">
-                <CheckCircle2 className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
-                <div>
-                  <h3 className="font-semibold mb-1">Честная цена</h3>
-                  <p className="text-sm text-muted-foreground">Цена не меняется после осмотра, если вы правильно указали состояние</p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <CheckCircle2 className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
-                <div>
-                  <h3 className="font-semibold mb-1">Конфиденциальность</h3>
-                  <p className="text-sm text-muted-foreground">Полное удаление ваших данных с устройства при выкупе</p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <CheckCircle2 className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
-                <div>
-                  <h3 className="font-semibold mb-1">Работаем официально</h3>
-                  <p className="text-sm text-muted-foreground">Оформление через ИП, договор купли-продажи</p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <CheckCircle2 className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
-                <div>
-                  <h3 className="font-semibold mb-1">Быстро и удобно</h3>
-                  <p className="text-sm text-muted-foreground">Выезд в любую точку Москвы, оплата сразу</p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Срочный выкуп */}
-          <section className="mb-16 bg-gradient-to-r from-primary/10 to-primary/5 p-8 rounded-lg border border-primary/20">
-            <div className="max-w-3xl mx-auto text-center">
-              <Award className="w-16 h-16 mx-auto mb-4 text-primary" />
-              <h2 className="text-3xl font-bold mb-4">Нужно продать срочно?</h2>
-              <p className="text-lg text-muted-foreground mb-6">
-                Готовы приехать в течение часа! При срочном выкупе предлагаем максимальную цену без торга.
-              </p>
-              <Button size="lg" asChild>
-                <a href="https://t.me/romanmanro" target="_blank" rel="noopener noreferrer">
-                  Продать срочно
-                </a>
-              </Button>
-            </div>
-          </section>
-
-          {/* FAQ */}
-          <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-center">Частые вопросы</h2>
-            <div className="space-y-4 max-w-3xl mx-auto">
-              <details className="bg-card p-4 rounded-lg border">
-                <summary className="font-semibold cursor-pointer">Как узнать циклы батареи на MacBook?</summary>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Зажмите Option и нажмите на логотип Apple → "Информация о системе" → "Питание" → "Информация о батарее". Там будет указано "Счетчик циклов".
-                </p>
-              </details>
-              <details className="bg-card p-4 rounded-lg border">
-                <summary className="font-semibold cursor-pointer">Выкупаете ли MacBook с дефектами?</summary>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Да, выкупаем технику с дефектами корпуса, экрана, но с учетом снижения цены. Не выкупаем устройства с блокировкой iCloud.
-                </p>
-              </details>
-              <details className="bg-card p-4 rounded-lg border">
-                <summary className="font-semibold cursor-pointer">Как происходит оплата?</summary>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Оплата производится наличными или переводом сразу после проверки и подписания договора. Никаких задержек.
-                </p>
-              </details>
-              <details className="bg-card p-4 rounded-lg border">
-                <summary className="font-semibold cursor-pointer">Нужна ли коробка и зарядное устройство?</summary>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Наличие коробки и зарядки увеличивает стоимость, но не обязательно. Выкупаем и без комплекта.
-                </p>
-              </details>
-              <details className="bg-card p-4 rounded-lg border">
-                <summary className="font-semibold cursor-pointer">Сколько времени занимает сделка?</summary>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Обычно 15-30 минут: проверка устройства, подписание договора и передача денег.
-                </p>
-              </details>
-            </div>
-          </section>
+          </motion.section>
 
           {/* CTA */}
-          <section className="text-center py-12">
-            <h2 className="text-3xl font-bold mb-4">Готовы продать свой MacBook?</h2>
-            <p className="text-lg text-muted-foreground mb-6">Свяжитесь с нами прямо сейчас</p>
+          <motion.section 
+            className="text-center py-12 px-6 bg-primary/5 rounded-2xl border"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <h2 className="text-2xl md:text-3xl font-bold mb-4">
+              Готовы продать MacBook?
+            </h2>
+            <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
+              Свяжитесь с нами для точной оценки и быстрой сделки. 
+              Выезд специалиста по Москве бесплатно.
+            </p>
             <Button size="lg" asChild>
               <a href="https://t.me/romanmanro" target="_blank" rel="noopener noreferrer">
                 Написать в Telegram
               </a>
             </Button>
-          </section>
+          </motion.section>
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );
