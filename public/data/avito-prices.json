@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-01-06T06:36:15.170708",
-  "total_listings": 200,
+  "generated_at": "2026-01-07T06:35:38.323509",
+  "total_listings": 100,
   "stats": [
     {
       "model": "MacBook Air",
@@ -9,12 +9,12 @@
       "ram": 8,
       "ssd": 256,
       "region": "Москва",
-      "median_price": 39000,
-      "min_price": 34990,
-      "max_price": 49900,
-      "buyout_price": 35100,
-      "samples_count": 50,
-      "updated_at": "2026-01-06T06:36:15.170575"
+      "median_price": 35945,
+      "min_price": 30500,
+      "max_price": 48900,
+      "buyout_price": 32350,
+      "samples_count": 38,
+      "updated_at": "2026-01-07T06:35:38.323386"
     },
     {
       "model": "MacBook Air",
@@ -23,26 +23,12 @@
       "ram": 8,
       "ssd": 256,
       "region": "Москва",
-      "median_price": 37000,
-      "min_price": 32000,
-      "max_price": 49990,
-      "buyout_price": 33300,
-      "samples_count": 72,
-      "updated_at": "2026-01-06T06:36:15.170597"
-    },
-    {
-      "model": "MacBook Air",
-      "cpu": "M1",
-      "year": 2023,
-      "ram": 16,
-      "ssd": 512,
-      "region": "Москва",
-      "median_price": 47000,
-      "min_price": 24000,
-      "max_price": 52990,
-      "buyout_price": 42300,
-      "samples_count": 8,
-      "updated_at": "2026-01-06T06:36:15.170603"
+      "median_price": 36000,
+      "min_price": 30000,
+      "max_price": 50500,
+      "buyout_price": 32400,
+      "samples_count": 45,
+      "updated_at": "2026-01-07T06:35:38.323410"
     },
     {
       "model": "MacBook Air",
@@ -51,26 +37,12 @@
       "ram": 8,
       "ssd": 512,
       "region": "Москва",
-      "median_price": 41990,
+      "median_price": 41702,
       "min_price": 35000,
-      "max_price": 50990,
-      "buyout_price": 37791,
-      "samples_count": 5,
-      "updated_at": "2026-01-06T06:36:15.170608"
-    },
-    {
-      "model": "MacBook Air",
-      "cpu": "M1",
-      "year": 2023,
-      "ram": 8,
-      "ssd": 512,
-      "region": "Москва",
-      "median_price": 44444,
-      "min_price": 38000,
-      "max_price": 45000,
-      "buyout_price": 39999,
-      "samples_count": 3,
-      "updated_at": "2026-01-06T06:36:15.170612"
+      "max_price": 43990,
+      "buyout_price": 37531,
+      "samples_count": 4,
+      "updated_at": "2026-01-07T06:35:38.323415"
     },
     {
       "model": "MacBook Air",
@@ -79,54 +51,26 @@
       "ram": 16,
       "ssd": 256,
       "region": "Москва",
-      "median_price": 43120,
-      "min_price": 40000,
-      "max_price": 45000,
-      "buyout_price": 38808,
-      "samples_count": 4,
-      "updated_at": "2026-01-06T06:36:15.170616"
+      "median_price": 40000,
+      "min_price": 39990,
+      "max_price": 43250,
+      "buyout_price": 36000,
+      "samples_count": 3,
+      "updated_at": "2026-01-07T06:35:38.323418"
     },
     {
       "model": "MacBook Air",
-      "cpu": "M2",
-      "year": 2022,
-      "ram": 8,
-      "ssd": 256,
-      "region": "Москва",
-      "median_price": 58990,
-      "min_price": 44990,
-      "max_price": 67500,
-      "buyout_price": 53091,
-      "samples_count": 17,
-      "updated_at": "2026-01-06T06:36:15.170620"
-    },
-    {
-      "model": "MacBook Air",
-      "cpu": "M2",
-      "year": 2023,
-      "ram": 8,
-      "ssd": 256,
-      "region": "Москва",
-      "median_price": 58000,
-      "min_price": 49600,
-      "max_price": 66000,
-      "buyout_price": 52200,
-      "samples_count": 26,
-      "updated_at": "2026-01-06T06:36:15.170627"
-    },
-    {
-      "model": "MacBook Air",
-      "cpu": "M2",
-      "year": 2023,
-      "ram": 8,
+      "cpu": "M1",
+      "year": 2020,
+      "ram": 16,
       "ssd": 512,
       "region": "Москва",
-      "median_price": 66000,
-      "min_price": 66000,
-      "max_price": 80990,
-      "buyout_price": 59400,
-      "samples_count": 5,
-      "updated_at": "2026-01-06T06:36:15.170632"
+      "median_price": 40999,
+      "min_price": 40999,
+      "max_price": 42999,
+      "buyout_price": 36899,
+      "samples_count": 3,
+      "updated_at": "2026-01-07T06:35:38.323421"
     }
   ]
 }
