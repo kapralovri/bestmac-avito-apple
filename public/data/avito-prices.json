@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-01-07T06:35:38.323509",
-  "total_listings": 100,
+  "generated_at": "2026-01-08T06:35:54.001956",
+  "total_listings": 150,
   "stats": [
     {
       "model": "MacBook Air",
@@ -9,12 +9,12 @@
       "ram": 8,
       "ssd": 256,
       "region": "Москва",
-      "median_price": 35945,
-      "min_price": 30500,
-      "max_price": 48900,
-      "buyout_price": 32350,
-      "samples_count": 38,
-      "updated_at": "2026-01-07T06:35:38.323386"
+      "median_price": 36500,
+      "min_price": 32500,
+      "max_price": 44990,
+      "buyout_price": 32850,
+      "samples_count": 55,
+      "updated_at": "2026-01-08T06:35:54.001824"
     },
     {
       "model": "MacBook Air",
@@ -23,12 +23,12 @@
       "ram": 8,
       "ssd": 256,
       "region": "Москва",
-      "median_price": 36000,
+      "median_price": 36250,
       "min_price": 30000,
-      "max_price": 50500,
-      "buyout_price": 32400,
-      "samples_count": 45,
-      "updated_at": "2026-01-07T06:35:38.323410"
+      "max_price": 49990,
+      "buyout_price": 32625,
+      "samples_count": 68,
+      "updated_at": "2026-01-08T06:35:54.001849"
     },
     {
       "model": "MacBook Air",
@@ -37,12 +37,26 @@
       "ram": 8,
       "ssd": 512,
       "region": "Москва",
-      "median_price": 41702,
+      "median_price": 41990,
       "min_price": 35000,
       "max_price": 43990,
-      "buyout_price": 37531,
-      "samples_count": 4,
-      "updated_at": "2026-01-07T06:35:38.323415"
+      "buyout_price": 37791,
+      "samples_count": 3,
+      "updated_at": "2026-01-08T06:35:54.001854"
+    },
+    {
+      "model": "MacBook Air",
+      "cpu": "M1",
+      "year": 2023,
+      "ram": 8,
+      "ssd": 512,
+      "region": "Москва",
+      "median_price": 45000,
+      "min_price": 38190,
+      "max_price": 63829,
+      "buyout_price": 40500,
+      "samples_count": 3,
+      "updated_at": "2026-01-08T06:35:54.001858"
     },
     {
       "model": "MacBook Air",
@@ -52,25 +66,25 @@
       "ssd": 256,
       "region": "Москва",
       "median_price": 40000,
-      "min_price": 39990,
-      "max_price": 43250,
+      "min_price": 40000,
+      "max_price": 45000,
       "buyout_price": 36000,
-      "samples_count": 3,
-      "updated_at": "2026-01-07T06:35:38.323418"
+      "samples_count": 5,
+      "updated_at": "2026-01-08T06:35:54.001862"
     },
     {
       "model": "MacBook Air",
       "cpu": "M1",
-      "year": 2020,
+      "year": 2023,
       "ram": 16,
       "ssd": 512,
       "region": "Москва",
-      "median_price": 40999,
-      "min_price": 40999,
-      "max_price": 42999,
-      "buyout_price": 36899,
-      "samples_count": 3,
-      "updated_at": "2026-01-07T06:35:38.323421"
+      "median_price": 50000,
+      "min_price": 40000,
+      "max_price": 52990,
+      "buyout_price": 45000,
+      "samples_count": 4,
+      "updated_at": "2026-01-08T06:35:54.001867"
     }
   ]
 }
