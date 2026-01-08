@@ -30,9 +30,14 @@ export async function loadAvitoPrices(): Promise<AvitoPricesData> {
 
 /**
  * Получить список моделей (формат каталога Авито)
+ * Возвращает только модели, для которых есть данные в stats
  */
 export function getModels(data: AvitoPricesData): string[] {
-  return data.models || [];
+  if (!data.stats || data.stats.length === 0) return [];
+  
+  // Берем уникальные модели только из stats (реальные данные парсинга)
+  const uniqueModels = [...new Set(data.stats.map(s => s.model_name))];
+  return uniqueModels.sort();
 }
 
 /**

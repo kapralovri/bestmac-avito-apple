@@ -346,22 +346,10 @@ def run_parser(output_path: str, max_pages: int = 2):
     output = Path(output_path)
     output.parent.mkdir(parents=True, exist_ok=True)
     
-    # Генерируем все возможные модели из каталога (даже если для них нет данных)
-    all_possible_models = set()
-    for model_info in AVITO_MODELS:
-        query, screen_size, year, cpu = model_info
-        is_pro = 'pro' in query.lower() and 'air' not in query.lower()
-        model_name = format_model_name(screen_size, year, cpu, is_pro)
-        all_possible_models.add(model_name)
-    
-    # Добавляем модели, для которых есть статистика
-    found_models = set(s.model_name for s in all_stats)
-    all_possible_models.update(found_models)
-    
     result = {
         "generated_at": datetime.now().isoformat(),
         "total_listings": total_listings,
-        "models": sorted(list(all_possible_models)),  # все модели из каталога + найденные
+        "models": sorted(list(set(s.model_name for s in all_stats))),  # только модели с реальными данными из stats
         "stats": [asdict(s) for s in all_stats],
     }
     

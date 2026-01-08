@@ -2,31 +2,7 @@
   "generated_at": "2026-01-08T12:32:52.255650",
   "total_listings": 100,
   "models": [
-    "MacBook Air 13 (2020, M1)",
-    "MacBook Air 13 (2022, M2)",
-    "MacBook Air 13 (2024, M3)",
-    "MacBook Air 15 (2023, M2)",
-    "MacBook Air 15 (2024, M3)",
-    "MacBook Pro 13 (2020, M1)",
-    "MacBook Pro 13 (2022, M2)",
-    "MacBook Pro 14 (2021, M1 Pro)",
-    "MacBook Pro 14 (2021, M1 Max)",
-    "MacBook Pro 14 (2023, M2 Pro)",
-    "MacBook Pro 14 (2023, M2 Max)",
-    "MacBook Pro 14 (2023, M3)",
-    "MacBook Pro 14 (2023, M3 Pro)",
-    "MacBook Pro 14 (2023, M3 Max)",
-    "MacBook Pro 14 (2024, M4)",
-    "MacBook Pro 14 (2024, M4 Pro)",
-    "MacBook Pro 14 (2024, M4 Max)",
-    "MacBook Pro 16 (2021, M1 Pro)",
-    "MacBook Pro 16 (2021, M1 Max)",
-    "MacBook Pro 16 (2023, M2 Pro)",
-    "MacBook Pro 16 (2023, M2 Max)",
-    "MacBook Pro 16 (2023, M3 Pro)",
-    "MacBook Pro 16 (2023, M3 Max)",
-    "MacBook Pro 16 (2024, M4 Pro)",
-    "MacBook Pro 16 (2024, M4 Max)"
+    "MacBook Air 13 (2020, M1)"
   ],
   "stats": [
     {
