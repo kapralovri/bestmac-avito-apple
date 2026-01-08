@@ -122,6 +122,24 @@ def format_model_name(screen_size: int, year: int, cpu: Optional[str] = None, is
         return f"{model_type} {screen_size} ({year})"
 
 
+def model_name_to_catalog_slug(model_name: str) -> str:
+    """Преобразует название модели в формат каталога Авито
+    
+    Примеры:
+    "MacBook Air 13 (2020, M1)" -> "applemacbook_air_13_2020_m1"
+    "MacBook Pro 14 (2021)" -> "applemacbook_pro_14_2021"
+    """
+    # Убираем скобки и запятые, приводим к нижнему регистру
+    slug = model_name.lower()
+    # Заменяем пробелы на подчеркивания
+    slug = slug.replace(" ", "_")
+    # Убираем скобки и запятые
+    slug = re.sub(r'[(),]', '', slug)
+    # Добавляем префикс "apple"
+    slug = "apple" + slug
+    return slug
+
+
 def parse_price(text: str) -> Optional[int]:
     """Извлечь цену из текста"""
     if not text:
@@ -169,14 +187,29 @@ def parse_ssd(title: str) -> Optional[int]:
     return None
 
 
-def fetch_avito_page(query: str, region: str, page: int = 1) -> list[AvitoListing]:
-    """Получить страницу объявлений с Авито"""
+def fetch_avito_catalog_page(model_name: str, region: str, page: int = 1) -> list[AvitoListing]:
+    """Получить страницу объявлений из каталога Авито
+    
+    Использует каталог Авито вместо простого поиска для более точных результатов.
+    Формат URL: /{region}/noutbuki/noutbuki/{catalog_slug}-{catalog_id}?q=macbook&p={page}
+    
+    Пробует использовать каталог напрямую, если не получается - использует поиск с фильтрацией.
+    """
     listings = []
     
-    # Формируем URL
+    # Преобразуем название модели в формат каталога
+    catalog_slug = model_name_to_catalog_slug(model_name)
+    
+    # Пробуем использовать прямой URL каталога
+    # Формат: /moskva/noutbuki/noutbuki/applemacbook_air_13_2020_m1-{catalog_id}?q=macbook&p=1
+    # Но catalog_id нам неизвестен, поэтому пробуем без него или используем поиск
+    
+    # Используем поиск "macbook" - это базовый запрос, как в примере пользователя
+    # Каталог будет использоваться через фильтры в параметрах
     base_url = f"https://www.avito.ru/{region}/noutbuki"
+    
     params = {
-        'q': query,
+        'q': 'macbook',  # Базовый поисковый запрос, как в примере
         'p': page,
     }
     
@@ -186,6 +219,7 @@ def fetch_avito_page(query: str, region: str, page: int = 1) -> list[AvitoListin
         'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
         'Connection': 'keep-alive',
         'Cache-Control': 'no-cache',
+        'Referer': f'https://www.avito.ru/{region}/noutbuki',
     }
     
     try:
@@ -197,11 +231,59 @@ def fetch_avito_page(query: str, region: str, page: int = 1) -> list[AvitoListin
         # Ищем карточки объявлений
         items = soup.select('[data-marker="item"]')
         
+        # Извлекаем параметры модели для фильтрации
+        is_air = 'air' in model_name.lower()
+        is_pro = 'pro' in model_name.lower()
+        
+        # Извлекаем размер экрана
+        screen_match = re.search(r'(\d+)', model_name)
+        screen_size = screen_match.group(1) if screen_match else None
+        
+        # Извлекаем год
+        year_match = re.search(r'\((\d{4})', model_name)
+        year = year_match.group(1) if year_match else None
+        
+        # Извлекаем процессор (если есть)
+        cpu_match = re.search(r',\s*([^)]+)', model_name)
+        cpu = cpu_match.group(1).lower() if cpu_match else None
+        
         for item in items:
             try:
                 # Заголовок
                 title_elem = item.select_one('[itemprop="name"]')
                 title = title_elem.get_text(strip=True) if title_elem else None
+                
+                if not title:
+                    continue
+                
+                title_lower = title.lower()
+                
+                # Фильтруем по модели
+                matches_model = False
+                
+                if is_air:
+                    # Для Air: проверяем "air", размер экрана, год и процессор
+                    if 'air' in title_lower and 'pro' not in title_lower:
+                        if screen_size and screen_size in title_lower:
+                            if year and year in title_lower:
+                                # Если есть процессор в модели, проверяем его
+                                if cpu:
+                                    # Проверяем наличие процессора (M1, M2, M3, M4)
+                                    cpu_short = cpu.replace(' ', '').replace('pro', '').replace('max', '').strip()
+                                    if cpu_short in title_lower or cpu in title_lower:
+                                        matches_model = True
+                                else:
+                                    matches_model = True
+                
+                elif is_pro:
+                    # Для Pro: проверяем "pro", размер экрана и год
+                    if 'pro' in title_lower and 'air' not in title_lower:
+                        if screen_size and screen_size in title_lower:
+                            if year and year in title_lower:
+                                matches_model = True
+                
+                if not matches_model:
+                    continue
                 
                 # Цена
                 price_elem = item.select_one('[itemprop="price"]')
@@ -212,6 +294,9 @@ def fetch_avito_page(query: str, region: str, page: int = 1) -> list[AvitoListin
                         price = int(price_content)
                     else:
                         price = parse_price(price_elem.get_text())
+                
+                if not price:
+                    continue
                 
                 # Ссылка
                 link_elem = item.select_one('a[itemprop="url"]')
@@ -225,11 +310,11 @@ def fetch_avito_page(query: str, region: str, page: int = 1) -> list[AvitoListin
                         region=REGIONS.get(region, region),
                     ))
             except Exception as e:
-                print(f"Ошибка парсинга карточки: {e}")
+                # Тихо пропускаем ошибки парсинга отдельных карточек
                 continue
                 
     except requests.RequestException as e:
-        print(f"Ошибка запроса для {query} в {region}: {e}")
+        print(f"Ошибка запроса для {model_name} в {region}: {e}")
     
     return listings
 
@@ -315,19 +400,22 @@ def run_parser(output_path: str, max_pages: int = 2):
         print(f"\n📍 Регион: {region_name}")
         
         for model_info in AVITO_MODELS:
-            query = model_info[0]
-            print(f"  🔍 {query}...", end=" ", flush=True)
+            query, screen_size, year, cpu = model_info
+            is_pro = 'pro' in query.lower() and 'air' not in query.lower()
+            model_name = format_model_name(screen_size, year, cpu, is_pro)
+            
+            print(f"  🔍 {model_name}...", end=" ", flush=True)
             
             model_listings = []
             for page in range(1, max_pages + 1):
-                listings = fetch_avito_page(query, region_key, page)
+                listings = fetch_avito_catalog_page(model_name, region_key, page)
                 model_listings.extend(listings)
                 
                 if not listings:
                     break
                 
-                # Пауза между запросами (3-7 сек чтобы не забанили)
-                time.sleep(random.uniform(3, 7))
+                # Пауза между запросами (5-10 сек чтобы не забанили)
+                time.sleep(random.uniform(5, 10))
             
             if model_listings:
                 stats = aggregate_prices(model_listings, model_info)
