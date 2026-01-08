@@ -1,5 +1,7 @@
 /**
  * Загрузка и обработка данных о ценах с Авито
+ * 
+ * Формат модели: "MacBook Air 13 (2020, M1)"
  */
 
 import type { AvitoPricesData, AvitoPriceStat, MarketPriceResult, ConditionValue } from '@/types/avito-prices';
@@ -22,50 +24,39 @@ export async function loadAvitoPrices(): Promise<AvitoPricesData> {
     return cachedData!;
   } catch (error) {
     console.error('Error loading avito prices:', error);
-    return { generated_at: '', total_listings: 0, stats: [] };
+    return { generated_at: '', total_listings: 0, models: [], stats: [] };
   }
 }
 
 /**
- * Получить уникальные модели
+ * Получить список моделей (формат каталога Авито)
  */
-export function getUniqueModels(stats: AvitoPriceStat[]): string[] {
-  return [...new Set(stats.map(s => s.model))].sort();
+export function getModels(data: AvitoPricesData): string[] {
+  return data.models || [];
 }
 
 /**
- * Получить уникальные процессоры для модели
+ * Получить уникальные RAM для модели
  */
-export function getUniqueCpus(stats: AvitoPriceStat[], model: string): string[] {
-  return [...new Set(stats.filter(s => s.model === model).map(s => s.cpu))].sort((a, b) => {
-    // Сортировка: M4 > M3 > M2 > M1 > Intel
-    const order = ['M4', 'M3', 'M2', 'M1', 'Intel'];
-    return order.indexOf(a) - order.indexOf(b);
-  });
-}
-
-/**
- * Получить уникальные RAM для модели и процессора
- */
-export function getUniqueRam(stats: AvitoPriceStat[], model: string, cpu: string): number[] {
+export function getRamOptions(stats: AvitoPriceStat[], modelName: string): number[] {
   return [...new Set(
-    stats.filter(s => s.model === model && s.cpu === cpu).map(s => s.ram)
+    stats.filter(s => s.model_name === modelName).map(s => s.ram)
   )].sort((a, b) => a - b);
 }
 
 /**
- * Получить уникальные SSD для модели, процессора и RAM
+ * Получить уникальные SSD для модели и RAM
  */
-export function getUniqueSsd(stats: AvitoPriceStat[], model: string, cpu: string, ram: number): number[] {
+export function getSsdOptions(stats: AvitoPriceStat[], modelName: string, ram: number): number[] {
   return [...new Set(
-    stats.filter(s => s.model === model && s.cpu === cpu && s.ram === ram).map(s => s.ssd)
+    stats.filter(s => s.model_name === modelName && s.ram === ram).map(s => s.ssd)
   )].sort((a, b) => a - b);
 }
 
 /**
  * Получить уникальные регионы
  */
-export function getUniqueRegions(stats: AvitoPriceStat[]): string[] {
+export function getRegions(stats: AvitoPriceStat[]): string[] {
   return [...new Set(stats.map(s => s.region))].sort();
 }
 
@@ -74,8 +65,7 @@ export function getUniqueRegions(stats: AvitoPriceStat[]): string[] {
  */
 export function findPriceStat(
   stats: AvitoPriceStat[],
-  model: string,
-  cpu: string,
+  modelName: string,
   ram: number,
   ssd: number,
   region?: string
@@ -83,14 +73,14 @@ export function findPriceStat(
   // Сначала ищем точное совпадение с регионом
   if (region) {
     const exact = stats.find(
-      s => s.model === model && s.cpu === cpu && s.ram === ram && s.ssd === ssd && s.region === region
+      s => s.model_name === modelName && s.ram === ram && s.ssd === ssd && s.region === region
     );
     if (exact) return exact;
   }
   
-  // Если не найдено, берем любой регион
+  // Если не найдено, берем любой регион (Москва по умолчанию)
   return stats.find(
-    s => s.model === model && s.cpu === cpu && s.ram === ram && s.ssd === ssd
+    s => s.model_name === modelName && s.ram === ram && s.ssd === ssd
   );
 }
 
@@ -133,4 +123,13 @@ export function formatSsd(ssd: number): string {
  */
 export function formatPrice(price: number): string {
   return price.toLocaleString('ru-RU') + ' ₽';
+}
+
+/**
+ * Фильтрация моделей по поисковому запросу
+ */
+export function filterModels(models: string[], search: string): string[] {
+  if (!search) return models;
+  const searchLower = search.toLowerCase();
+  return models.filter(m => m.toLowerCase().includes(searchLower));
 }

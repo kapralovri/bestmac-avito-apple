@@ -2,35 +2,37 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
   loadAvitoPrices, 
-  getUniqueModels, 
-  getUniqueCpus, 
-  getUniqueRam, 
-  getUniqueSsd,
+  getModels,
+  getRamOptions, 
+  getSsdOptions,
   findPriceStat,
   calculateBuyoutPrice,
   formatSsd,
-  formatPrice
+  formatPrice,
+  filterModels
 } from '@/lib/avito-prices';
-import type { AvitoPriceStat, ConditionValue } from '@/types/avito-prices';
+import type { AvitoPriceStat, ConditionValue, AvitoPricesData } from '@/types/avito-prices';
 import { CONDITIONS, REGIONS } from '@/types/avito-prices';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import SEOHead from '@/components/SEOHead';
-import { Clock, Wallet, TrendingUp, Shield, BarChart3, MapPin, Cpu, HardDrive, MemoryStick, Sparkles } from 'lucide-react';
+import { Clock, Wallet, TrendingUp, Shield, BarChart3, MapPin, HardDrive, MemoryStick, Sparkles, Search, X, Check } from 'lucide-react';
 import { generateProductSchema } from '@/lib/structured-data';
 
 const Sell = () => {
-  const [stats, setStats] = useState<AvitoPriceStat[]>([]);
+  const [data, setData] = useState<AvitoPricesData | null>(null);
   const [totalListings, setTotalListings] = useState(0);
   const [lastUpdate, setLastUpdate] = useState<string>('');
   
   // Форма
-  const [model, setModel] = useState('');
-  const [cpu, setCpu] = useState('');
+  const [modelName, setModelName] = useState('');
+  const [modelSearch, setModelSearch] = useState('');
+  const [isModelOpen, setIsModelOpen] = useState(false);
   const [ram, setRam] = useState<number | ''>('');
   const [ssd, setSsd] = useState<number | ''>('');
   const [region, setRegion] = useState('Москва');
@@ -47,35 +49,44 @@ const Sell = () => {
   
   // Загрузка данных
   useEffect(() => {
-    loadAvitoPrices().then((data) => {
-      setStats(data.stats);
-      setTotalListings(data.total_listings);
-      if (data.generated_at) {
-        const date = new Date(data.generated_at);
+    loadAvitoPrices().then((loadedData) => {
+      setData(loadedData);
+      setTotalListings(loadedData.total_listings);
+      if (loadedData.generated_at) {
+        const date = new Date(loadedData.generated_at);
         setLastUpdate(date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }));
       }
     });
   }, []);
   
-  // Опции для селектов
-  const models = useMemo(() => getUniqueModels(stats), [stats]);
-  const cpus = useMemo(() => model ? getUniqueCpus(stats, model) : [], [stats, model]);
-  const rams = useMemo(() => model && cpu ? getUniqueRam(stats, model, cpu) : [], [stats, model, cpu]);
-  const ssds = useMemo(() => model && cpu && ram ? getUniqueSsd(stats, model, cpu, Number(ram)) : [], [stats, model, cpu, ram]);
+  // Список моделей с фильтрацией
+  const models = useMemo(() => {
+    if (!data) return [];
+    return filterModels(getModels(data), modelSearch);
+  }, [data, modelSearch]);
+  
+  const allModels = useMemo(() => {
+    if (!data) return [];
+    return getModels(data);
+  }, [data]);
+  
+  // Опции RAM и SSD
+  const ramOptions = useMemo(() => {
+    if (!data || !modelName) return [];
+    return getRamOptions(data.stats, modelName);
+  }, [data, modelName]);
+  
+  const ssdOptions = useMemo(() => {
+    if (!data || !modelName || !ram) return [];
+    return getSsdOptions(data.stats, modelName, Number(ram));
+  }, [data, modelName, ram]);
   
   // Сброс зависимых полей
   useEffect(() => {
-    setCpu('');
     setRam('');
     setSsd('');
     setResult(null);
-  }, [model]);
-  
-  useEffect(() => {
-    setRam('');
-    setSsd('');
-    setResult(null);
-  }, [cpu]);
+  }, [modelName]);
   
   useEffect(() => {
     setSsd('');
@@ -84,9 +95,9 @@ const Sell = () => {
   
   // Расчет
   const handleCalculate = () => {
-    if (!model || !cpu || !ram || !ssd) return;
+    if (!data || !modelName || !ram || !ssd) return;
     
-    const stat = findPriceStat(stats, model, cpu, Number(ram), Number(ssd), region);
+    const stat = findPriceStat(data.stats, modelName, Number(ram), Number(ssd), region);
     if (!stat) {
       setResult(null);
       return;
@@ -102,7 +113,7 @@ const Sell = () => {
     });
   };
   
-  const isFormComplete = model && cpu && ram && ssd;
+  const isFormComplete = modelName && ram && ssd;
   
   const productSchema = generateProductSchema({
     name: "Выкуп MacBook в Москве",
@@ -110,6 +121,18 @@ const Sell = () => {
     condition: "UsedCondition",
     description: "Узнайте реальную рыночную стоимость вашего MacBook. Оценка на основе анализа открытого рынка."
   });
+
+  // Обработка выбора модели
+  const handleModelSelect = (model: string) => {
+    setModelName(model);
+    setModelSearch('');
+    setIsModelOpen(false);
+  };
+
+  const clearModel = () => {
+    setModelName('');
+    setModelSearch('');
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -180,56 +203,93 @@ const Sell = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
-                  {/* Модель */}
+                  {/* Модель - как в каталоге Авито */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">1</span>
-                      Модель
-                    </label>
-                    <Select value={model} onValueChange={setModel}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Выберите модель" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {models.map((m) => (
-                          <SelectItem key={m} value={m}>{m}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  {/* Процессор */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">2</span>
-                      <Cpu className="w-4 h-4" />
-                      Процессор
-                    </label>
-                    <Select value={cpu} onValueChange={setCpu} disabled={!model}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Выберите процессор" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {cpus.map((c) => (
-                          <SelectItem key={c} value={c}>Apple {c}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">1</span>
+                        Модель
+                      </label>
+                      {modelName && (
+                        <button 
+                          onClick={clearModel}
+                          className="text-xs text-primary hover:underline"
+                        >
+                          Сбросить
+                        </button>
+                      )}
+                    </div>
+                    
+                    <div className="relative">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          placeholder={modelName || "Поиск модели..."}
+                          value={modelSearch}
+                          onChange={(e) => {
+                            setModelSearch(e.target.value);
+                            setIsModelOpen(true);
+                          }}
+                          onFocus={() => setIsModelOpen(true)}
+                          className="pl-10 pr-10"
+                        />
+                        {(modelSearch || modelName) && (
+                          <button 
+                            onClick={clearModel}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      
+                      {/* Dropdown с моделями */}
+                      {isModelOpen && models.length > 0 && (
+                        <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-64 overflow-auto">
+                          {models.map((model) => (
+                            <button
+                              key={model}
+                              onClick={() => handleModelSelect(model)}
+                              className={`w-full px-4 py-2.5 text-left text-sm hover:bg-accent flex items-center justify-between ${
+                                modelName === model ? 'bg-accent' : ''
+                              }`}
+                            >
+                              <span>{model}</span>
+                              {modelName === model && (
+                                <Check className="w-4 h-4 text-primary" />
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Выбранная модель */}
+                    {modelName && !isModelOpen && (
+                      <div className="flex items-center gap-2 p-2 bg-primary/5 rounded-md border border-primary/20">
+                        <Check className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium">{modelName}</span>
+                      </div>
+                    )}
                   </div>
                   
                   {/* RAM */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">3</span>
+                      <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">2</span>
                       <MemoryStick className="w-4 h-4" />
                       Оперативная память
                     </label>
-                    <Select value={ram ? String(ram) : ''} onValueChange={(v) => setRam(Number(v))} disabled={!cpu}>
+                    <Select 
+                      value={ram ? String(ram) : ''} 
+                      onValueChange={(v) => setRam(Number(v))} 
+                      disabled={!modelName || ramOptions.length === 0}
+                    >
                       <SelectTrigger>
-                        <SelectValue placeholder="Выберите RAM" />
+                        <SelectValue placeholder={ramOptions.length === 0 && modelName ? "Нет данных" : "Выберите RAM"} />
                       </SelectTrigger>
                       <SelectContent>
-                        {rams.map((r) => (
+                        {ramOptions.map((r) => (
                           <SelectItem key={r} value={String(r)}>{r} GB</SelectItem>
                         ))}
                       </SelectContent>
@@ -239,16 +299,20 @@ const Sell = () => {
                   {/* SSD */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">4</span>
+                      <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">3</span>
                       <HardDrive className="w-4 h-4" />
                       Накопитель SSD
                     </label>
-                    <Select value={ssd ? String(ssd) : ''} onValueChange={(v) => setSsd(Number(v))} disabled={!ram}>
+                    <Select 
+                      value={ssd ? String(ssd) : ''} 
+                      onValueChange={(v) => setSsd(Number(v))} 
+                      disabled={!ram || ssdOptions.length === 0}
+                    >
                       <SelectTrigger>
-                        <SelectValue placeholder="Выберите SSD" />
+                        <SelectValue placeholder={ssdOptions.length === 0 && ram ? "Нет данных" : "Выберите SSD"} />
                       </SelectTrigger>
                       <SelectContent>
-                        {ssds.map((s) => (
+                        {ssdOptions.map((s) => (
                           <SelectItem key={s} value={String(s)}>{formatSsd(s)}</SelectItem>
                         ))}
                       </SelectContent>
@@ -258,7 +322,7 @@ const Sell = () => {
                   {/* Состояние */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">5</span>
+                      <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">4</span>
                       <Shield className="w-4 h-4" />
                       Состояние
                     </label>
@@ -268,7 +332,12 @@ const Sell = () => {
                       </SelectTrigger>
                       <SelectContent>
                         {CONDITIONS.map((c) => (
-                          <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                          <SelectItem key={c.value} value={c.value}>
+                            <div className="flex flex-col">
+                              <span>{c.label}</span>
+                              <span className="text-xs text-muted-foreground">{c.description}</span>
+                            </div>
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -332,6 +401,16 @@ const Sell = () => {
                       transition={{ duration: 0.3 }}
                       className="space-y-6"
                     >
+                      {/* Выбранная модель */}
+                      {modelName && (
+                        <div className="text-center p-3 bg-muted/50 rounded-lg">
+                          <p className="font-medium">{modelName}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {ram} GB RAM / {formatSsd(Number(ssd))}
+                          </p>
+                        </div>
+                      )}
+                      
                       {/* Рыночная цена */}
                       <div className="text-center p-6 bg-muted/30 rounded-xl border">
                         <p className="text-sm text-muted-foreground mb-2">Рыночная цена сейчас</p>
@@ -393,101 +472,113 @@ const Sell = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <h2 className="text-2xl font-bold text-center mb-8">Как это работает?</h2>
+            <h2 className="text-2xl font-bold text-center mb-8">Как мы рассчитываем цену</h2>
+            
             <div className="grid md:grid-cols-3 gap-6">
-              <Card className="text-center">
-                <CardContent className="pt-6">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <BarChart3 className="w-6 h-6 text-primary" />
+              <Card>
+                <CardHeader>
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                    <BarChart3 className="w-5 h-5 text-primary" />
                   </div>
-                  <h3 className="font-semibold mb-2">Анализ рынка</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Ежедневно собираем данные о ценах на MacBook с открытого рынка
+                  <CardTitle className="text-lg">Анализ рынка</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground text-sm">
+                    Каждый день мы анализируем сотни объявлений о продаже MacBook 
+                    на открытом рынке.
                   </p>
                 </CardContent>
               </Card>
               
-              <Card className="text-center">
-                <CardContent className="pt-6">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <TrendingUp className="w-6 h-6 text-primary" />
+              <Card>
+                <CardHeader>
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                    <TrendingUp className="w-5 h-5 text-primary" />
                   </div>
-                  <h3 className="font-semibold mb-2">Расчет медианы</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Удаляем выбросы и рассчитываем справедливую рыночную цену
+                  <CardTitle className="text-lg">Умная фильтрация</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground text-sm">
+                    Отсеиваем завышенные и заниженные цены, оставляя только 
+                    актуальные предложения за последние 30 дней.
                   </p>
                 </CardContent>
               </Card>
               
-              <Card className="text-center">
-                <CardContent className="pt-6">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Wallet className="w-6 h-6 text-primary" />
+              <Card>
+                <CardHeader>
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                    <Shield className="w-5 h-5 text-primary" />
                   </div>
-                  <h3 className="font-semibold mb-2">Честная цена выкупа</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Предлагаем до 90% от рыночной стоимости с мгновенной выплатой
+                  <CardTitle className="text-lg">Честная оценка</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground text-sm">
+                    Цена выкупа учитывает состояние устройства и включает 
+                    нашу комиссию за быструю сделку.
                   </p>
                 </CardContent>
               </Card>
             </div>
           </motion.section>
 
-          {/* Преимущества */}
-          <motion.section 
-            className="mb-16"
+          {/* FAQ */}
+          <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            <h2 className="text-2xl font-bold text-center mb-8">Почему выбирают нас</h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="text-center p-6 bg-card rounded-xl border">
-                <Clock className="w-8 h-8 mx-auto mb-3 text-primary" />
-                <p className="font-semibold">Быстрая оценка</p>
-                <p className="text-sm text-muted-foreground">30 секунд онлайн</p>
-              </div>
-              <div className="text-center p-6 bg-card rounded-xl border">
-                <Wallet className="w-8 h-8 mx-auto mb-3 text-primary" />
-                <p className="font-semibold">Оплата сразу</p>
-                <p className="text-sm text-muted-foreground">Наличные или перевод</p>
-              </div>
-              <div className="text-center p-6 bg-card rounded-xl border">
-                <TrendingUp className="w-8 h-8 mx-auto mb-3 text-primary" />
-                <p className="font-semibold">Честная цена</p>
-                <p className="text-sm text-muted-foreground">До 90% от рынка</p>
-              </div>
-              <div className="text-center p-6 bg-card rounded-xl border">
-                <Shield className="w-8 h-8 mx-auto mb-3 text-primary" />
-                <p className="font-semibold">Безопасно</p>
-                <p className="text-sm text-muted-foreground">Официальная сделка</p>
-              </div>
+            <h2 className="text-2xl font-bold text-center mb-8">Частые вопросы</h2>
+            
+            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Откуда берутся цены?</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    Мы анализируем актуальные объявления на открытом рынке. Цены обновляются ежедневно и отражают реальную ситуацию.
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Почему цена выкупа ниже рыночной?</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    Мы предлагаем быструю сделку без рисков. Вы получаете деньги сразу, без ожидания покупателя и торга.
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Как быстро вы выкупаете?</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    Выкуп занимает от 15 минут. Встречаемся в удобном месте, проверяем устройство и сразу переводим деньги.
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Что влияет на цену?</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    Модель, конфигурация, состояние корпуса и экрана, циклы батареи, комплектация и наличие коробки.
+                  </p>
+                </CardContent>
+              </Card>
             </div>
-          </motion.section>
-
-          {/* CTA */}
-          <motion.section 
-            className="text-center py-12 px-6 bg-primary/5 rounded-2xl border"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-          >
-            <h2 className="text-2xl md:text-3xl font-bold mb-4">
-              Готовы продать MacBook?
-            </h2>
-            <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-              Свяжитесь с нами для точной оценки и быстрой сделки. 
-              Выезд специалиста по Москве бесплатно.
-            </p>
-            <Button size="lg" asChild>
-              <a href="https://t.me/romanmanro" target="_blank" rel="noopener noreferrer">
-                Написать в Telegram
-              </a>
-            </Button>
           </motion.section>
         </div>
       </div>
-
+      
       <Footer />
     </div>
   );
