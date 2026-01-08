@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-01-08T12:32:52.255650",
-  "total_listings": 100,
+  "generated_at": "2026-01-08T20:22:45.749873",
+  "total_listings": 150,
   "models": [
     "MacBook Air 13 (2020, M1)"
   ],
@@ -10,36 +10,36 @@
       "ram": 8,
       "ssd": 256,
       "region": "Москва",
-      "median_price": 39949,
-      "min_price": 33000,
-      "max_price": 53000,
-      "buyout_price": 35954,
-      "samples_count": 84,
-      "updated_at": "2026-01-08T12:32:15.795617"
+      "median_price": 37000,
+      "min_price": 30000,
+      "max_price": 50000,
+      "buyout_price": 33300,
+      "samples_count": 129,
+      "updated_at": "2026-01-08T20:22:28.590905"
     },
     {
       "model_name": "MacBook Air 13 (2020, M1)",
-      "ram": 16,
+      "ram": 24,
       "ssd": 256,
       "region": "Москва",
-      "median_price": 41499,
-      "min_price": 36000,
-      "max_price": 49000,
-      "buyout_price": 37349,
-      "samples_count": 8,
-      "updated_at": "2026-01-08T12:32:15.795636"
+      "median_price": 55490,
+      "min_price": 52990,
+      "max_price": 57990,
+      "buyout_price": 49941,
+      "samples_count": 2,
+      "updated_at": "2026-01-08T20:22:28.590926"
     },
     {
       "model_name": "MacBook Air 13 (2020, M1)",
       "ram": 8,
       "ssd": 512,
       "region": "Москва",
-      "median_price": 38495,
-      "min_price": 34990,
-      "max_price": 43990,
-      "buyout_price": 34645,
+      "median_price": 42450,
+      "min_price": 35000,
+      "max_price": 54000,
+      "buyout_price": 38205,
       "samples_count": 4,
-      "updated_at": "2026-01-08T12:32:15.795641"
+      "updated_at": "2026-01-08T20:22:28.590931"
     },
     {
       "model_name": "MacBook Air 13 (2020, M1)",
@@ -51,7 +51,19 @@
       "max_price": 52990,
       "buyout_price": 38699,
       "samples_count": 3,
-      "updated_at": "2026-01-08T12:32:15.795645"
+      "updated_at": "2026-01-08T20:22:28.590934"
+    },
+    {
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "ram": 16,
+      "ssd": 256,
+      "region": "Москва",
+      "median_price": 42500,
+      "min_price": 37000,
+      "max_price": 49000,
+      "buyout_price": 38250,
+      "samples_count": 11,
+      "updated_at": "2026-01-08T20:22:28.590940"
     }
   ]
 }
