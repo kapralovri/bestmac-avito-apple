@@ -76,42 +76,33 @@ REGIONS = {
 }
 
 # Каталог моделей Авито - полный список для поиска
-# Формат: (поисковый запрос, размер экрана, год, процессор)
+# Формат: (поисковый запрос, размер экрана, год, процессор или None для Pro без процессора)
 AVITO_MODELS = [
     # MacBook Air 13"
     ("macbook air 13 m1 2020", 13, 2020, "M1"),
     ("macbook air 13 m2 2022", 13, 2022, "M2"),
     ("macbook air 13 m3 2024", 13, 2024, "M3"),
+    ("macbook air 13 m4 2025", 13, 2025, "M4"),
     
     # MacBook Air 15"
     ("macbook air 15 m2 2023", 15, 2023, "M2"),
     ("macbook air 15 m3 2024", 15, 2024, "M3"),
+    ("macbook air 15 m4 2025", 15, 2025, "M4"),
     
     # MacBook Pro 13"
     ("macbook pro 13 m1 2020", 13, 2020, "M1"),
     ("macbook pro 13 m2 2022", 13, 2022, "M2"),
     
-    # MacBook Pro 14"
-    ("macbook pro 14 m1 pro 2021", 14, 2021, "M1 Pro"),
-    ("macbook pro 14 m1 max 2021", 14, 2021, "M1 Max"),
-    ("macbook pro 14 m2 pro 2023", 14, 2023, "M2 Pro"),
-    ("macbook pro 14 m2 max 2023", 14, 2023, "M2 Max"),
-    ("macbook pro 14 m3 2023", 14, 2023, "M3"),
-    ("macbook pro 14 m3 pro 2023", 14, 2023, "M3 Pro"),
-    ("macbook pro 14 m3 max 2023", 14, 2023, "M3 Max"),
-    ("macbook pro 14 m4 2024", 14, 2024, "M4"),
-    ("macbook pro 14 m4 pro 2024", 14, 2024, "M4 Pro"),
-    ("macbook pro 14 m4 max 2024", 14, 2024, "M4 Max"),
+    # MacBook Pro 14" - обобщенные запросы для всех процессоров
+    ("macbook pro 14 2021", 14, 2021, None),
+    ("macbook pro 14 2023", 14, 2023, None),
+    ("macbook pro 14 2024", 14, 2024, None),
+    ("macbook pro 14 2025", 14, 2025, None),
     
-    # MacBook Pro 16"
-    ("macbook pro 16 m1 pro 2021", 16, 2021, "M1 Pro"),
-    ("macbook pro 16 m1 max 2021", 16, 2021, "M1 Max"),
-    ("macbook pro 16 m2 pro 2023", 16, 2023, "M2 Pro"),
-    ("macbook pro 16 m2 max 2023", 16, 2023, "M2 Max"),
-    ("macbook pro 16 m3 pro 2023", 16, 2023, "M3 Pro"),
-    ("macbook pro 16 m3 max 2023", 16, 2023, "M3 Max"),
-    ("macbook pro 16 m4 pro 2024", 16, 2024, "M4 Pro"),
-    ("macbook pro 16 m4 max 2024", 16, 2024, "M4 Max"),
+    # MacBook Pro 16" - обобщенные запросы для всех процессоров
+    ("macbook pro 16 2021", 16, 2021, None),
+    ("macbook pro 16 2023", 16, 2023, None),
+    ("macbook pro 16 2024", 16, 2024, None),
 ]
 
 # User-Agent для запросов
@@ -122,10 +113,13 @@ USER_AGENTS = [
 ]
 
 
-def format_model_name(screen_size: int, year: int, cpu: str, is_pro: bool = False) -> str:
+def format_model_name(screen_size: int, year: int, cpu: Optional[str] = None, is_pro: bool = False) -> str:
     """Форматирует название модели в стиле каталога Авито"""
     model_type = "MacBook Pro" if is_pro else "MacBook Air"
-    return f"{model_type} {screen_size} ({year}, {cpu})"
+    if cpu:
+        return f"{model_type} {screen_size} ({year}, {cpu})"
+    else:
+        return f"{model_type} {screen_size} ({year})"
 
 
 def parse_price(text: str) -> Optional[int]:
@@ -157,16 +151,19 @@ def parse_ssd(title: str) -> Optional[int]:
     """Извлечь SSD из заголовка"""
     title_lower = title.lower()
     
-    # Проверяем TB сначала
+    # Проверяем TB сначала (1tb, 2tb, 4tb, 8tb)
     tb_match = re.search(r'(\d)\s*(tb|тб)', title_lower)
     if tb_match:
-        return int(tb_match.group(1)) * 1024
+        tb_value = int(tb_match.group(1))
+        ssd_gb = tb_value * 1024
+        if ssd_gb in [1024, 2048, 4096, 8192]:  # 1TB, 2TB, 4TB, 8TB
+            return ssd_gb
     
-    # Затем GB
+    # Затем GB (256gb, 512gb)
     gb_match = re.search(r'(\d{3,4})\s*(gb|гб)\s*(ssd)?', title_lower)
     if gb_match:
         ssd = int(gb_match.group(1))
-        if ssd in [256, 512, 1024, 2048, 4096, 8192]:
+        if ssd in [256, 512]:  # только 256GB и 512GB
             return ssd
     
     return None
@@ -254,6 +251,7 @@ def aggregate_prices(listings: list[AvitoListing], model_info: tuple) -> list[Pr
     """Агрегировать цены по RAM и SSD для конкретной модели"""
     query, screen_size, year, cpu = model_info
     is_pro = 'pro' in query.lower() and 'air' not in query.lower()
+    # Для Pro без процессора передаем None, для Air - конкретный процессор
     model_name = format_model_name(screen_size, year, cpu, is_pro)
     
     # Группируем по RAM и SSD
