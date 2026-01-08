@@ -3,6 +3,10 @@
 Парсер цен MacBook с Авито для BestMac.ru
 Собирает данные о ценах и агрегирует статистику по моделям.
 
+Формат модели соответствует каталогу Авито:
+  "MacBook Air 13 (2020, M1)"
+  "MacBook Pro 14 (2023, M3 Pro)"
+
 Использование:
   python parser.py --output ../public/data/avito-prices.json
 
@@ -39,22 +43,20 @@ class AvitoListing:
 
 
 @dataclass
-class MacModel:
+class ParsedMacbook:
     """Распознанная модель MacBook"""
-    type: str  # "Air" | "Pro"
-    year: Optional[int] = None
-    cpu: Optional[str] = None  # "M1" | "M2" | "M3" | "M4" | "Intel"
+    model_name: str  # "MacBook Air 13 (2020, M1)"
+    screen_size: int  # 13, 14, 15, 16
+    year: int
+    cpu: str  # "M1", "M2", "M3 Pro", "M4 Max", etc.
     ram: Optional[int] = None  # GB
     ssd: Optional[int] = None  # GB
-    screen: Optional[float] = None  # 13.3, 14, 15, 16
 
 
 @dataclass
 class PriceStats:
     """Статистика цен для модели"""
-    model: str
-    cpu: str
-    year: int
+    model_name: str      # "MacBook Air 13 (2020, M1)" - формат каталога Авито
     ram: int
     ssd: int
     region: str
@@ -73,17 +75,43 @@ REGIONS = {
     "sankt-peterburg": "Санкт-Петербург",
 }
 
-# Модели для поиска
-SEARCH_QUERIES = [
-    "macbook air m1",
-    "macbook air m2", 
-    "macbook air m3",
-    "macbook pro m1",
-    "macbook pro m2",
-    "macbook pro m3",
-    "macbook pro m4",
-    "macbook pro 14",
-    "macbook pro 16",
+# Каталог моделей Авито - полный список для поиска
+# Формат: (поисковый запрос, размер экрана, год, процессор)
+AVITO_MODELS = [
+    # MacBook Air 13"
+    ("macbook air 13 m1 2020", 13, 2020, "M1"),
+    ("macbook air 13 m2 2022", 13, 2022, "M2"),
+    ("macbook air 13 m3 2024", 13, 2024, "M3"),
+    
+    # MacBook Air 15"
+    ("macbook air 15 m2 2023", 15, 2023, "M2"),
+    ("macbook air 15 m3 2024", 15, 2024, "M3"),
+    
+    # MacBook Pro 13"
+    ("macbook pro 13 m1 2020", 13, 2020, "M1"),
+    ("macbook pro 13 m2 2022", 13, 2022, "M2"),
+    
+    # MacBook Pro 14"
+    ("macbook pro 14 m1 pro 2021", 14, 2021, "M1 Pro"),
+    ("macbook pro 14 m1 max 2021", 14, 2021, "M1 Max"),
+    ("macbook pro 14 m2 pro 2023", 14, 2023, "M2 Pro"),
+    ("macbook pro 14 m2 max 2023", 14, 2023, "M2 Max"),
+    ("macbook pro 14 m3 2023", 14, 2023, "M3"),
+    ("macbook pro 14 m3 pro 2023", 14, 2023, "M3 Pro"),
+    ("macbook pro 14 m3 max 2023", 14, 2023, "M3 Max"),
+    ("macbook pro 14 m4 2024", 14, 2024, "M4"),
+    ("macbook pro 14 m4 pro 2024", 14, 2024, "M4 Pro"),
+    ("macbook pro 14 m4 max 2024", 14, 2024, "M4 Max"),
+    
+    # MacBook Pro 16"
+    ("macbook pro 16 m1 pro 2021", 16, 2021, "M1 Pro"),
+    ("macbook pro 16 m1 max 2021", 16, 2021, "M1 Max"),
+    ("macbook pro 16 m2 pro 2023", 16, 2023, "M2 Pro"),
+    ("macbook pro 16 m2 max 2023", 16, 2023, "M2 Max"),
+    ("macbook pro 16 m3 pro 2023", 16, 2023, "M3 Pro"),
+    ("macbook pro 16 m3 max 2023", 16, 2023, "M3 Max"),
+    ("macbook pro 16 m4 pro 2024", 16, 2024, "M4 Pro"),
+    ("macbook pro 16 m4 max 2024", 16, 2024, "M4 Max"),
 ]
 
 # User-Agent для запросов
@@ -92,6 +120,12 @@ USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
 ]
+
+
+def format_model_name(screen_size: int, year: int, cpu: str, is_pro: bool = False) -> str:
+    """Форматирует название модели в стиле каталога Авито"""
+    model_type = "MacBook Pro" if is_pro else "MacBook Air"
+    return f"{model_type} {screen_size} ({year}, {cpu})"
 
 
 def parse_price(text: str) -> Optional[int]:
@@ -108,64 +142,34 @@ def parse_price(text: str) -> Optional[int]:
     return None
 
 
-def parse_model(title: str) -> Optional[MacModel]:
-    """Распознать модель MacBook из заголовка"""
+def parse_ram(title: str) -> Optional[int]:
+    """Извлечь RAM из заголовка"""
     title_lower = title.lower()
-    
-    # Определяем тип
-    if 'air' in title_lower:
-        mac_type = 'Air'
-    elif 'pro' in title_lower:
-        mac_type = 'Pro'
-    else:
-        return None
-    
-    model = MacModel(type=mac_type)
-    
-    # Определяем процессор
-    cpu_patterns = [
-        (r'm4\s*(pro|max)?', 'M4'),
-        (r'm3\s*(pro|max)?', 'M3'),
-        (r'm2\s*(pro|max)?', 'M2'),
-        (r'm1\s*(pro|max)?', 'M1'),
-        (r'intel|i[579]', 'Intel'),
-    ]
-    for pattern, cpu in cpu_patterns:
-        if re.search(pattern, title_lower):
-            model.cpu = cpu
-            break
-    
-    # Год
-    year_match = re.search(r'20(1[89]|2[0-5])', title)
-    if year_match:
-        model.year = int(year_match.group())
-    
-    # RAM
     ram_match = re.search(r'(\d{1,2})\s*(gb|гб)\s*(ram|озу|память)?', title_lower)
     if ram_match:
         ram = int(ram_match.group(1))
         if ram in [8, 16, 18, 24, 32, 36, 48, 64, 96, 128]:
-            model.ram = ram
+            return ram
+    return None
+
+
+def parse_ssd(title: str) -> Optional[int]:
+    """Извлечь SSD из заголовка"""
+    title_lower = title.lower()
     
-    # SSD
-    ssd_patterns = [
-        (r'(\d{3,4})\s*(gb|гб)\s*(ssd)?', lambda m: int(m.group(1))),
-        (r'(\d)\s*(tb|тб)', lambda m: int(m.group(1)) * 1024),
-    ]
-    for pattern, extractor in ssd_patterns:
-        ssd_match = re.search(pattern, title_lower)
-        if ssd_match:
-            ssd = extractor(ssd_match)
-            if ssd in [256, 512, 1024, 2048, 4096, 8192]:
-                model.ssd = ssd
-                break
+    # Проверяем TB сначала
+    tb_match = re.search(r'(\d)\s*(tb|тб)', title_lower)
+    if tb_match:
+        return int(tb_match.group(1)) * 1024
     
-    # Размер экрана
-    screen_match = re.search(r'(13|14|15|16)["\']?[\s\-]?(дюйм)?', title_lower)
-    if screen_match:
-        model.screen = float(screen_match.group(1))
+    # Затем GB
+    gb_match = re.search(r'(\d{3,4})\s*(gb|гб)\s*(ssd)?', title_lower)
+    if gb_match:
+        ssd = int(gb_match.group(1))
+        if ssd in [256, 512, 1024, 2048, 4096, 8192]:
+            return ssd
     
-    return model
+    return None
 
 
 def fetch_avito_page(query: str, region: str, page: int = 1) -> list[AvitoListing]:
@@ -184,10 +188,11 @@ def fetch_avito_page(query: str, region: str, page: int = 1) -> list[AvitoListin
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
         'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
         'Connection': 'keep-alive',
+        'Cache-Control': 'no-cache',
     }
     
     try:
-        response = requests.get(base_url, params=params, headers=headers, timeout=10)
+        response = requests.get(base_url, params=params, headers=headers, timeout=15)
         response.raise_for_status()
         
         soup = BeautifulSoup(response.text, 'lxml')
@@ -245,25 +250,20 @@ def calculate_percentiles(prices: list[int], lower: float = 10, upper: float = 9
     return sorted_prices[lower_idx:upper_idx + 1]
 
 
-def aggregate_prices(listings: list[AvitoListing]) -> list[PriceStats]:
-    """Агрегировать цены по моделям"""
-    # Группируем по ключевым параметрам
+def aggregate_prices(listings: list[AvitoListing], model_info: tuple) -> list[PriceStats]:
+    """Агрегировать цены по RAM и SSD для конкретной модели"""
+    query, screen_size, year, cpu = model_info
+    is_pro = 'pro' in query.lower() and 'air' not in query.lower()
+    model_name = format_model_name(screen_size, year, cpu, is_pro)
+    
+    # Группируем по RAM и SSD
     groups: dict[tuple, list[int]] = {}
     
     for listing in listings:
-        model = parse_model(listing.title)
-        if not model or not model.cpu:
-            continue
+        ram = parse_ram(listing.title) or 8  # дефолт 8GB
+        ssd = parse_ssd(listing.title) or 256  # дефолт 256GB
         
-        # Ключ группировки
-        key = (
-            f"MacBook {model.type}",
-            model.cpu,
-            model.year or 2023,  # дефолтный год
-            model.ram or 8,  # дефолтный RAM
-            model.ssd or 256,  # дефолтный SSD
-            listing.region,
-        )
+        key = (model_name, ram, ssd, listing.region)
         
         if key not in groups:
             groups[key] = []
@@ -272,7 +272,7 @@ def aggregate_prices(listings: list[AvitoListing]) -> list[PriceStats]:
     # Рассчитываем статистику
     stats = []
     for key, prices in groups.items():
-        if len(prices) < 3:  # минимум 3 объявления
+        if len(prices) < 2:  # минимум 2 объявления
             continue
         
         # Очищаем выбросы
@@ -289,12 +289,10 @@ def aggregate_prices(listings: list[AvitoListing]) -> list[PriceStats]:
         buyout = int(median * 0.90)
         
         stats.append(PriceStats(
-            model=key[0],
-            cpu=key[1],
-            year=key[2],
-            ram=key[3],
-            ssd=key[4],
-            region=key[5],
+            model_name=key[0],
+            ram=key[1],
+            ssd=key[2],
+            region=key[3],
             median_price=median,
             min_price=min(clean_prices),
             max_price=max(clean_prices),
@@ -306,39 +304,43 @@ def aggregate_prices(listings: list[AvitoListing]) -> list[PriceStats]:
     return stats
 
 
-def run_parser(output_path: str, max_pages: int = 3):
+def run_parser(output_path: str, max_pages: int = 2):
     """Запустить парсер"""
-    print(f"Запуск парсера Авито...")
-    print(f"Регионы: {list(REGIONS.values())}")
-    print(f"Запросы: {SEARCH_QUERIES}")
+    print(f"🚀 Запуск парсера Авито...")
+    print(f"📍 Регионы: {list(REGIONS.values())}")
+    print(f"📱 Моделей в каталоге: {len(AVITO_MODELS)}")
     
-    all_listings = []
+    all_stats = []
+    total_listings = 0
     
     for region_key, region_name in REGIONS.items():
         print(f"\n📍 Регион: {region_name}")
         
-        for query in SEARCH_QUERIES:
-            print(f"  🔍 {query}...", end=" ")
+        for model_info in AVITO_MODELS:
+            query = model_info[0]
+            print(f"  🔍 {query}...", end=" ", flush=True)
             
-            query_listings = []
+            model_listings = []
             for page in range(1, max_pages + 1):
                 listings = fetch_avito_page(query, region_key, page)
-                query_listings.extend(listings)
+                model_listings.extend(listings)
                 
                 if not listings:
                     break
                 
-                # Пауза между запросами
-                time.sleep(random.uniform(2, 5))
+                # Пауза между запросами (3-7 сек чтобы не забанили)
+                time.sleep(random.uniform(3, 7))
             
-            print(f"найдено {len(query_listings)} объявлений")
-            all_listings.extend(query_listings)
+            if model_listings:
+                stats = aggregate_prices(model_listings, model_info)
+                all_stats.extend(stats)
+                total_listings += len(model_listings)
+                print(f"найдено {len(model_listings)} → {len(stats)} групп")
+            else:
+                print("0")
     
-    print(f"\n📊 Всего объявлений: {len(all_listings)}")
-    
-    # Агрегируем
-    stats = aggregate_prices(all_listings)
-    print(f"📈 Агрегированных моделей: {len(stats)}")
+    print(f"\n📊 Всего объявлений: {total_listings}")
+    print(f"📈 Агрегированных записей: {len(all_stats)}")
     
     # Сохраняем
     output = Path(output_path)
@@ -346,8 +348,9 @@ def run_parser(output_path: str, max_pages: int = 3):
     
     result = {
         "generated_at": datetime.now().isoformat(),
-        "total_listings": len(all_listings),
-        "stats": [asdict(s) for s in stats],
+        "total_listings": total_listings,
+        "models": sorted(list(set(s.model_name for s in all_stats))),  # список уникальных моделей
+        "stats": [asdict(s) for s in all_stats],
     }
     
     with open(output, 'w', encoding='utf-8') as f:
@@ -367,7 +370,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--pages",
         type=int,
-        default=3,
+        default=2,
         help="Максимум страниц для каждого запроса"
     )
     
