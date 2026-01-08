@@ -187,31 +187,72 @@ def parse_ssd(title: str) -> Optional[int]:
     return None
 
 
-def fetch_avito_catalog_page(model_name: str, region: str, page: int = 1) -> list[AvitoListing]:
+def get_catalog_id_from_search(model_name: str, region: str) -> Optional[str]:
+    """Получить catalog_id для модели из страницы поиска"""
+    catalog_slug = model_name_to_catalog_slug(model_name)
+    
+    # Делаем поиск "macbook" чтобы найти ссылки на каталоги
+    base_url = f"https://www.avito.ru/{region}/noutbuki"
+    params = {'q': 'macbook'}
+    
+    headers = {
+        'User-Agent': random.choice(USER_AGENTS),
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+    }
+    
+    try:
+        response = requests.get(base_url, params=params, headers=headers, timeout=15)
+        response.raise_for_status()
+        
+        soup = BeautifulSoup(response.text, 'lxml')
+        
+        # Ищем ссылки на каталоги моделей
+        # Формат: /moskva/noutbuki/noutbuki/applemacbook_air_13_2020_m1-{catalog_id}
+        links = soup.find_all('a', href=re.compile(r'/noutbuki/noutbuki/' + catalog_slug))
+        
+        for link in links:
+            href = link.get('href', '')
+            # Извлекаем catalog_id из URL
+            match = re.search(rf'{catalog_slug}-([A-Za-z0-9~_-]+)', href)
+            if match:
+                return match.group(1)
+        
+        return None
+    except:
+        return None
+
+
+def fetch_avito_catalog_page(model_name: str, region: str, page: int = 1, catalog_id: Optional[str] = None) -> list[AvitoListing]:
     """Получить страницу объявлений из каталога Авито
     
-    Использует каталог Авито вместо простого поиска для более точных результатов.
+    Использует каталог Авито с фильтрами для более точных результатов.
     Формат URL: /{region}/noutbuki/noutbuki/{catalog_slug}-{catalog_id}?q=macbook&p={page}
-    
-    Пробует использовать каталог напрямую, если не получается - использует поиск с фильтрацией.
     """
     listings = []
     
     # Преобразуем название модели в формат каталога
     catalog_slug = model_name_to_catalog_slug(model_name)
     
-    # Пробуем использовать прямой URL каталога
-    # Формат: /moskva/noutbuki/noutbuki/applemacbook_air_13_2020_m1-{catalog_id}?q=macbook&p=1
-    # Но catalog_id нам неизвестен, поэтому пробуем без него или используем поиск
+    # Если catalog_id не передан, пытаемся получить его
+    if not catalog_id:
+        catalog_id = get_catalog_id_from_search(model_name, region)
     
-    # Используем поиск "macbook" - это базовый запрос, как в примере пользователя
-    # Каталог будет использоваться через фильтры в параметрах
-    base_url = f"https://www.avito.ru/{region}/noutbuki"
-    
-    params = {
-        'q': 'macbook',  # Базовый поисковый запрос, как в примере
-        'p': page,
-    }
+    # Формируем URL каталога
+    if catalog_id:
+        # Используем прямой URL каталога
+        base_url = f"https://www.avito.ru/{region}/noutbuki/noutbuki/{catalog_slug}-{catalog_id}"
+        params = {
+            'q': 'macbook',
+            'p': page,
+        }
+    else:
+        # Если catalog_id не найден, используем простой поиск с фильтрацией
+        base_url = f"https://www.avito.ru/{region}/noutbuki"
+        params = {
+            'q': 'macbook',
+            'p': page,
+        }
     
     headers = {
         'User-Agent': random.choice(USER_AGENTS),
@@ -222,99 +263,123 @@ def fetch_avito_catalog_page(model_name: str, region: str, page: int = 1) -> lis
         'Referer': f'https://www.avito.ru/{region}/noutbuki',
     }
     
-    try:
-        response = requests.get(base_url, params=params, headers=headers, timeout=15)
-        response.raise_for_status()
-        
-        soup = BeautifulSoup(response.text, 'lxml')
-        
-        # Ищем карточки объявлений
-        items = soup.select('[data-marker="item"]')
-        
-        # Извлекаем параметры модели для фильтрации
-        is_air = 'air' in model_name.lower()
-        is_pro = 'pro' in model_name.lower()
-        
-        # Извлекаем размер экрана
-        screen_match = re.search(r'(\d+)', model_name)
-        screen_size = screen_match.group(1) if screen_match else None
-        
-        # Извлекаем год
-        year_match = re.search(r'\((\d{4})', model_name)
-        year = year_match.group(1) if year_match else None
-        
-        # Извлекаем процессор (если есть)
-        cpu_match = re.search(r',\s*([^)]+)', model_name)
-        cpu = cpu_match.group(1).lower() if cpu_match else None
-        
-        for item in items:
-            try:
-                # Заголовок
-                title_elem = item.select_one('[itemprop="name"]')
-                title = title_elem.get_text(strip=True) if title_elem else None
-                
-                if not title:
+    max_retries = 3
+    retry_delay = 15
+    
+    for attempt in range(max_retries):
+        try:
+            response = requests.get(base_url, params=params, headers=headers, timeout=15)
+            
+            # Если получили 429, ждем и повторяем
+            if response.status_code == 429:
+                if attempt < max_retries - 1:
+                    wait_time = retry_delay * (attempt + 1)
+                    print(f"429 ошибка, ждем {wait_time} сек...", end=" ", flush=True)
+                    time.sleep(wait_time)
                     continue
-                
-                title_lower = title.lower()
-                
-                # Фильтруем по модели
-                matches_model = False
-                
-                if is_air:
-                    # Для Air: проверяем "air", размер экрана, год и процессор
-                    if 'air' in title_lower and 'pro' not in title_lower:
-                        if screen_size and screen_size in title_lower:
-                            if year and year in title_lower:
-                                # Если есть процессор в модели, проверяем его
-                                if cpu:
-                                    # Проверяем наличие процессора (M1, M2, M3, M4)
-                                    cpu_short = cpu.replace(' ', '').replace('pro', '').replace('max', '').strip()
-                                    if cpu_short in title_lower or cpu in title_lower:
+                else:
+                    raise requests.RequestException(f"429 Client Error: Too Many Requests after {max_retries} attempts")
+            
+            response.raise_for_status()
+            
+            soup = BeautifulSoup(response.text, 'lxml')
+            
+            # Ищем карточки объявлений
+            items = soup.select('[data-marker="item"]')
+            
+            # Извлекаем параметры модели для фильтрации
+            is_air = 'air' in model_name.lower()
+            is_pro = 'pro' in model_name.lower()
+            
+            # Извлекаем размер экрана
+            screen_match = re.search(r'(\d+)', model_name)
+            screen_size = screen_match.group(1) if screen_match else None
+            
+            # Извлекаем год
+            year_match = re.search(r'\((\d{4})', model_name)
+            year = year_match.group(1) if year_match else None
+            
+            # Извлекаем процессор (если есть)
+            cpu_match = re.search(r',\s*([^)]+)', model_name)
+            cpu = cpu_match.group(1).lower() if cpu_match else None
+            
+            for item in items:
+                try:
+                    # Заголовок
+                    title_elem = item.select_one('[itemprop="name"]')
+                    title = title_elem.get_text(strip=True) if title_elem else None
+                    
+                    if not title:
+                        continue
+                    
+                    title_lower = title.lower()
+                    
+                    # Фильтруем по модели
+                    matches_model = False
+                    
+                    if is_air:
+                        # Для Air: проверяем "air", размер экрана, год и процессор
+                        if 'air' in title_lower and 'pro' not in title_lower:
+                            if screen_size and screen_size in title_lower:
+                                if year and year in title_lower:
+                                    # Если есть процессор в модели, проверяем его
+                                    if cpu:
+                                        # Проверяем наличие процессора (M1, M2, M3, M4)
+                                        cpu_short = cpu.replace(' ', '').replace('pro', '').replace('max', '').strip()
+                                        if cpu_short in title_lower or cpu in title_lower:
+                                            matches_model = True
+                                    else:
                                         matches_model = True
-                                else:
+                    
+                    elif is_pro:
+                        # Для Pro: проверяем "pro", размер экрана и год
+                        if 'pro' in title_lower and 'air' not in title_lower:
+                            if screen_size and screen_size in title_lower:
+                                if year and year in title_lower:
                                     matches_model = True
-                
-                elif is_pro:
-                    # Для Pro: проверяем "pro", размер экрана и год
-                    if 'pro' in title_lower and 'air' not in title_lower:
-                        if screen_size and screen_size in title_lower:
-                            if year and year in title_lower:
-                                matches_model = True
-                
-                if not matches_model:
+                    
+                    if not matches_model:
+                        continue
+                    
+                    # Цена
+                    price_elem = item.select_one('[itemprop="price"]')
+                    price = None
+                    if price_elem:
+                        price_content = price_elem.get('content')
+                        if price_content:
+                            price = int(price_content)
+                        else:
+                            price = parse_price(price_elem.get_text())
+                    
+                    if not price:
+                        continue
+                    
+                    # Ссылка
+                    link_elem = item.select_one('a[itemprop="url"]')
+                    url = f"https://www.avito.ru{link_elem['href']}" if link_elem else None
+                    
+                    if title and price and url:
+                        listings.append(AvitoListing(
+                            title=title,
+                            price=price,
+                            url=url,
+                            region=REGIONS.get(region, region),
+                        ))
+                except Exception as e:
+                    # Тихо пропускаем ошибки парсинга отдельных карточек
                     continue
+            
+            # Если успешно получили данные, выходим из цикла повторов
+            break
                 
-                # Цена
-                price_elem = item.select_one('[itemprop="price"]')
-                price = None
-                if price_elem:
-                    price_content = price_elem.get('content')
-                    if price_content:
-                        price = int(price_content)
-                    else:
-                        price = parse_price(price_elem.get_text())
-                
-                if not price:
-                    continue
-                
-                # Ссылка
-                link_elem = item.select_one('a[itemprop="url"]')
-                url = f"https://www.avito.ru{link_elem['href']}" if link_elem else None
-                
-                if title and price and url:
-                    listings.append(AvitoListing(
-                        title=title,
-                        price=price,
-                        url=url,
-                        region=REGIONS.get(region, region),
-                    ))
-            except Exception as e:
-                # Тихо пропускаем ошибки парсинга отдельных карточек
-                continue
-                
-    except requests.RequestException as e:
-        print(f"Ошибка запроса для {model_name} в {region}: {e}")
+        except requests.RequestException as e:
+            if attempt < max_retries - 1:
+                wait_time = retry_delay * (attempt + 1)
+                print(f"Ошибка запроса, ждем {wait_time} сек...", end=" ", flush=True)
+                time.sleep(wait_time)
+            else:
+                print(f"Ошибка запроса для {model_name} в {region}: {e}")
+                return []
     
     return listings
 
@@ -396,6 +461,9 @@ def run_parser(output_path: str, max_pages: int = 2):
     all_stats = []
     total_listings = 0
     
+    # Кэш для catalog_id по модели и региону
+    catalog_id_cache = {}
+    
     for region_key, region_name in REGIONS.items():
         print(f"\n📍 Регион: {region_name}")
         
@@ -407,15 +475,27 @@ def run_parser(output_path: str, max_pages: int = 2):
             print(f"  🔍 {model_name}...", end=" ", flush=True)
             
             model_listings = []
+            # Получаем catalog_id один раз для модели (с кэшированием)
+            cache_key = f"{region_key}:{model_name}"
+            if cache_key not in catalog_id_cache:
+                catalog_id = get_catalog_id_from_search(model_name, region_key)
+                catalog_id_cache[cache_key] = catalog_id
+                # Пауза после получения catalog_id
+                time.sleep(random.uniform(5, 10))
+            else:
+                catalog_id = catalog_id_cache[cache_key]
+            
             for page in range(1, max_pages + 1):
-                listings = fetch_avito_catalog_page(model_name, region_key, page)
+                listings = fetch_avito_catalog_page(model_name, region_key, page, catalog_id)
                 model_listings.extend(listings)
                 
                 if not listings:
                     break
                 
-                # Пауза между запросами (5-10 сек чтобы не забанили)
-                time.sleep(random.uniform(5, 10))
+                # Увеличиваем паузу между запросами (15-25 сек чтобы не забанили)
+                if page < max_pages:
+                    wait_time = random.uniform(15, 25)
+                    time.sleep(wait_time)
             
             if model_listings:
                 stats = aggregate_prices(model_listings, model_info)
