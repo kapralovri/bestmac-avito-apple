@@ -1,6 +1,21 @@
 {
-  "generated_at": "2026-01-09T07:19:00.269995",
-  "total_listings": 0,
-  "models": [],
-  "stats": []
+  "generated_at": "2026-01-09T09:09:39.262412",
+  "total_listings": 50,
+  "models": [
+    "MacBook Air 13 (2020, M1)"
+  ],
+  "stats": [
+    {
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "ram": 8,
+      "ssd": 256,
+      "region": "Москва и МО",
+      "median_price": 37900,
+      "min_price": 29999,
+      "max_price": 53000,
+      "buyout_price": 34110,
+      "samples_count": 50,
+      "updated_at": "2026-01-09T09:07:16.694823"
+    }
+  ]
 }
