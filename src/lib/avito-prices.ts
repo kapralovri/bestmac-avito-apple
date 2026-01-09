@@ -41,28 +41,34 @@ export function getModels(data: AvitoPricesData): string[] {
 }
 
 /**
- * Получить уникальные RAM для модели
+ * Получить уникальные процессоры для модели
  */
-export function getRamOptions(stats: AvitoPriceStat[], modelName: string): number[] {
+export function getProcessorOptions(stats: AvitoPriceStat[], modelName: string): string[] {
   return [...new Set(
-    stats.filter(s => s.model_name === modelName).map(s => s.ram)
+    stats.filter(s => s.model_name === modelName).map(s => s.processor)
+  )].sort();
+}
+
+/**
+ * Получить уникальные RAM для модели и процессора
+ */
+export function getRamOptions(stats: AvitoPriceStat[], modelName: string, processor?: string): number[] {
+  return [...new Set(
+    stats
+      .filter(s => s.model_name === modelName && (!processor || s.processor === processor))
+      .map(s => s.ram)
   )].sort((a, b) => a - b);
 }
 
 /**
- * Получить уникальные SSD для модели и RAM
+ * Получить уникальные SSD для модели, процессора и RAM
  */
-export function getSsdOptions(stats: AvitoPriceStat[], modelName: string, ram: number): number[] {
+export function getSsdOptions(stats: AvitoPriceStat[], modelName: string, ram: number, processor?: string): number[] {
   return [...new Set(
-    stats.filter(s => s.model_name === modelName && s.ram === ram).map(s => s.ssd)
+    stats
+      .filter(s => s.model_name === modelName && s.ram === ram && (!processor || s.processor === processor))
+      .map(s => s.ssd)
   )].sort((a, b) => a - b);
-}
-
-/**
- * Получить уникальные регионы
- */
-export function getRegions(stats: AvitoPriceStat[]): string[] {
-  return [...new Set(stats.map(s => s.region))].sort();
 }
 
 /**
@@ -73,19 +79,13 @@ export function findPriceStat(
   modelName: string,
   ram: number,
   ssd: number,
-  region?: string
+  processor?: string
 ): AvitoPriceStat | undefined {
-  // Сначала ищем точное совпадение с регионом
-  if (region) {
-    const exact = stats.find(
-      s => s.model_name === modelName && s.ram === ram && s.ssd === ssd && s.region === region
-    );
-    if (exact) return exact;
-  }
-  
-  // Если не найдено, берем любой регион (Москва по умолчанию)
   return stats.find(
-    s => s.model_name === modelName && s.ram === ram && s.ssd === ssd
+    s => s.model_name === modelName && 
+         s.ram === ram && 
+         s.ssd === ssd && 
+         (!processor || s.processor === processor)
   );
 }
 
