@@ -3,6 +3,9 @@
 
 name: Avito Price Parser
 
+# Парсит цены MacBook с Авито по таблице URL из avito-urls.json
+# Запускается ежедневно в 09:00 МСК или вручную
+
 on:
   # Ежедневно в 6:00 UTC (9:00 MSK)
   schedule:
