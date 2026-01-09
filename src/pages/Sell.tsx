@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { 
   loadAvitoPrices, 
   getModels,
+  getProcessorOptions,
   getRamOptions, 
   getSsdOptions,
   findPriceStat,
@@ -11,8 +12,8 @@ import {
   formatPrice,
   filterModels
 } from '@/lib/avito-prices';
-import type { AvitoPriceStat, ConditionValue, AvitoPricesData } from '@/types/avito-prices';
-import { CONDITIONS, REGIONS } from '@/types/avito-prices';
+import type { ConditionValue, AvitoPricesData } from '@/types/avito-prices';
+import { CONDITIONS } from '@/types/avito-prices';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +22,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import SEOHead from '@/components/SEOHead';
-import { Clock, Wallet, TrendingUp, Shield, BarChart3, MapPin, HardDrive, MemoryStick, Sparkles, Search, X, Check } from 'lucide-react';
+import { Clock, Wallet, TrendingUp, Shield, BarChart3, Cpu, HardDrive, MemoryStick, Sparkles, Search, X, Check } from 'lucide-react';
 import { generateProductSchema } from '@/lib/structured-data';
 
 const Sell = () => {
@@ -33,9 +34,9 @@ const Sell = () => {
   const [modelName, setModelName] = useState('');
   const [modelSearch, setModelSearch] = useState('');
   const [isModelOpen, setIsModelOpen] = useState(false);
+  const [processor, setProcessor] = useState('');
   const [ram, setRam] = useState<number | ''>('');
   const [ssd, setSsd] = useState<number | ''>('');
-  const [region, setRegion] = useState('Москва');
   const [condition, setCondition] = useState<ConditionValue>('excellent');
   
   // Результат
@@ -70,23 +71,36 @@ const Sell = () => {
     return getModels(data);
   }, [data]);
   
+  // Опции процессоров
+  const processorOptions = useMemo(() => {
+    if (!data || !modelName) return [];
+    return getProcessorOptions(data.stats, modelName);
+  }, [data, modelName]);
+  
   // Опции RAM и SSD
   const ramOptions = useMemo(() => {
     if (!data || !modelName) return [];
-    return getRamOptions(data.stats, modelName);
-  }, [data, modelName]);
+    return getRamOptions(data.stats, modelName, processor || undefined);
+  }, [data, modelName, processor]);
   
   const ssdOptions = useMemo(() => {
     if (!data || !modelName || !ram) return [];
-    return getSsdOptions(data.stats, modelName, Number(ram));
-  }, [data, modelName, ram]);
+    return getSsdOptions(data.stats, modelName, Number(ram), processor || undefined);
+  }, [data, modelName, ram, processor]);
   
   // Сброс зависимых полей
   useEffect(() => {
+    setProcessor('');
     setRam('');
     setSsd('');
     setResult(null);
   }, [modelName]);
+  
+  useEffect(() => {
+    setRam('');
+    setSsd('');
+    setResult(null);
+  }, [processor]);
   
   useEffect(() => {
     setSsd('');
@@ -97,7 +111,7 @@ const Sell = () => {
   const handleCalculate = () => {
     if (!data || !modelName || !ram || !ssd) return;
     
-    const stat = findPriceStat(data.stats, modelName, Number(ram), Number(ssd), region);
+    const stat = findPriceStat(data.stats, modelName, Number(ram), Number(ssd), processor || undefined);
     if (!stat) {
       setResult(null);
       return;
@@ -273,20 +287,43 @@ const Sell = () => {
                     )}
                   </div>
                   
-                  {/* RAM */}
+                  {/* Процессор */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium flex items-center gap-2">
                       <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">2</span>
+                      <Cpu className="w-4 h-4" />
+                      Процессор
+                    </label>
+                    <Select 
+                      value={processor} 
+                      onValueChange={setProcessor} 
+                      disabled={!modelName || processorOptions.length === 0}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={processorOptions.length === 0 && modelName ? "Нет данных" : "Выберите процессор"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {processorOptions.map((p) => (
+                          <SelectItem key={p} value={p}>{p}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* RAM */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">3</span>
                       <MemoryStick className="w-4 h-4" />
                       Оперативная память
                     </label>
                     <Select 
                       value={ram ? String(ram) : ''} 
                       onValueChange={(v) => setRam(Number(v))} 
-                      disabled={!modelName || ramOptions.length === 0}
+                      disabled={!processor || ramOptions.length === 0}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder={ramOptions.length === 0 && modelName ? "Нет данных" : "Выберите RAM"} />
+                        <SelectValue placeholder={ramOptions.length === 0 && processor ? "Нет данных" : "Выберите RAM"} />
                       </SelectTrigger>
                       <SelectContent>
                         {ramOptions.map((r) => (
@@ -299,7 +336,7 @@ const Sell = () => {
                   {/* SSD */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">3</span>
+                      <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">4</span>
                       <HardDrive className="w-4 h-4" />
                       Накопитель SSD
                     </label>
@@ -322,7 +359,7 @@ const Sell = () => {
                   {/* Состояние */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">4</span>
+                      <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">5</span>
                       <Shield className="w-4 h-4" />
                       Состояние
                     </label>
@@ -338,24 +375,6 @@ const Sell = () => {
                               <span className="text-xs text-muted-foreground">{c.description}</span>
                             </div>
                           </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  {/* Город */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      Город
-                    </label>
-                    <Select value={region} onValueChange={setRegion}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {REGIONS.map((r) => (
-                          <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -406,7 +425,7 @@ const Sell = () => {
                         <div className="text-center p-3 bg-muted/50 rounded-lg">
                           <p className="font-medium">{modelName}</p>
                           <p className="text-sm text-muted-foreground">
-                            {ram} GB RAM / {formatSsd(Number(ssd))}
+                            {processor} / {ram} GB RAM / {formatSsd(Number(ssd))}
                           </p>
                         </div>
                       )}

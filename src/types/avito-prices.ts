@@ -8,9 +8,9 @@
 
 export interface AvitoPriceStat {
   model_name: string;      // "MacBook Air 13 (2020, M1)" - формат каталога Авито
+  processor: string;       // "Apple M1", "Apple M1 Pro", etc.
   ram: number;             // GB
   ssd: number;             // GB
-  region: string;          // "Москва" | "Санкт-Петербург" и т.д.
   median_price: number;    // Медианная цена рынка
   min_price: number;       // Минимальная цена (P10)
   max_price: number;       // Максимальная цена (P90)
@@ -35,15 +35,6 @@ export interface MarketPriceResult {
   samplesCount: number;
   updatedAt: string;
 }
-
-// Города для выбора
-export const REGIONS = [
-  { value: 'Москва', label: 'Москва' },
-  { value: 'Московская область', label: 'Московская область' },
-  { value: 'Санкт-Петербург', label: 'Санкт-Петербург' },
-] as const;
-
-export type Region = typeof REGIONS[number]['value'];
 
 // Состояния устройства
 export const CONDITIONS = [
