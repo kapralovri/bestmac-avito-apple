@@ -1,9 +1,10 @@
 # Ежедневный парсинг цен MacBook с Авито
-# Запускает парсер и коммитит обновленные данные
+# Сначала синхронизирует конфигурации из Google Sheets,
+# затем запускает парсер и коммитит обновленные данные
 
 name: Avito Price Parser
 
-# Парсит цены MacBook с Авито по таблице URL из avito-urls.json
+# Парсит цены MacBook с Авито по таблице URL
 # Запускается ежедневно в 09:00 МСК или вручную
 
 on:
@@ -43,23 +44,29 @@ jobs:
         run: |
           pip install -r scripts/avito-parser/requirements.txt
       
+      # Шаг 1: Синхронизация конфигураций из Google Sheets
+      - name: Sync config from Google Sheets
+        run: |
+          python scripts/sync-google-sheet.py
+      
+      # Шаг 2: Запуск парсера
       - name: Run parser
         env:
           PAGES: ${{ github.event.inputs.pages || '3' }}
         run: |
           cd scripts/avito-parser
-          python parser.py --output ../../public/data/avito-prices.json --pages $PAGES
+          python parser.py
       
       - name: Check for changes
         id: changes
         run: |
-          git diff --quiet public/data/avito-prices.json || echo "changed=true" >> $GITHUB_OUTPUT
+          git diff --quiet public/data/ || echo "changed=true" >> $GITHUB_OUTPUT
       
       - name: Commit and push
         if: steps.changes.outputs.changed == 'true'
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add public/data/avito-prices.json
-          git commit -m "chore: update avito prices [skip ci]"
+          git add public/data/avito-urls.json public/data/avito-prices.json
+          git commit -m "chore: sync config and update avito prices [skip ci]"
           git push
