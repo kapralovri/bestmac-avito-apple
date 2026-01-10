@@ -7,7 +7,39 @@
 import type { AvitoPricesData, AvitoPriceStat, MarketPriceResult, ConditionValue } from '@/types/avito-prices';
 import { CONDITIONS } from '@/types/avito-prices';
 
+interface AvitoUrlEntry {
+  model_name: string;
+  processor: string;
+  ram: number;
+  ssd: number;
+  url: string;
+}
+
+interface AvitoUrlsData {
+  description: string;
+  updated_at: string;
+  entries: AvitoUrlEntry[];
+}
+
 let cachedData: AvitoPricesData | null = null;
+let cachedUrls: AvitoUrlsData | null = null;
+
+/**
+ * Загрузить конфигурации URL (для получения доступных опций)
+ */
+export async function loadAvitoUrls(): Promise<AvitoUrlsData> {
+  if (cachedUrls) return cachedUrls;
+  
+  try {
+    const response = await fetch('/data/avito-urls.json');
+    if (!response.ok) throw new Error('URLs data not found');
+    cachedUrls = await response.json();
+    return cachedUrls!;
+  } catch (error) {
+    console.error('Error loading avito urls:', error);
+    return { description: '', updated_at: '', entries: [] };
+  }
+}
 
 /**
  * Загрузить данные о ценах
@@ -16,19 +48,52 @@ export async function loadAvitoPrices(): Promise<AvitoPricesData> {
   if (cachedData) return cachedData;
   
   try {
-    // Try to load local data first, fallback to mock if fails
     const response = await fetch('/data/avito-prices.json');
-    if (!response.ok) {
-      console.warn('Could not load real prices, trying to trigger parser...');
-      // In a real production app, we might trigger the parser here if authorized
-      throw new Error('Local data not found');
-    }
+    if (!response.ok) throw new Error('Local data not found');
     cachedData = await response.json();
     return cachedData!;
   } catch (error) {
     console.error('Error loading avito prices:', error);
     return { generated_at: new Date().toISOString(), total_listings: 0, models: [], stats: [] };
   }
+}
+
+/**
+ * Получить все доступные модели из конфигурации
+ */
+export function getModelsFromConfig(urls: AvitoUrlsData): string[] {
+  return [...new Set(urls.entries.map(e => e.model_name))].sort();
+}
+
+/**
+ * Получить процессоры для модели из конфигурации
+ */
+export function getProcessorsFromConfig(urls: AvitoUrlsData, modelName: string): string[] {
+  return [...new Set(
+    urls.entries.filter(e => e.model_name === modelName).map(e => e.processor)
+  )].sort();
+}
+
+/**
+ * Получить RAM для модели и процессора из конфигурации
+ */
+export function getRamFromConfig(urls: AvitoUrlsData, modelName: string, processor: string): number[] {
+  return [...new Set(
+    urls.entries
+      .filter(e => e.model_name === modelName && e.processor === processor)
+      .map(e => e.ram)
+  )].sort((a, b) => a - b);
+}
+
+/**
+ * Получить SSD для модели, процессора и RAM из конфигурации
+ */
+export function getSsdFromConfig(urls: AvitoUrlsData, modelName: string, processor: string, ram: number): number[] {
+  return [...new Set(
+    urls.entries
+      .filter(e => e.model_name === modelName && e.processor === processor && e.ram === ram)
+      .map(e => e.ssd)
+  )].sort((a, b) => a - b);
 }
 
 /**
