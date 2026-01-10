@@ -2,10 +2,11 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
   loadAvitoPrices, 
-  getModels,
-  getProcessorOptions,
-  getRamOptions, 
-  getSsdOptions,
+  loadAvitoUrls,
+  getModelsFromConfig,
+  getProcessorsFromConfig,
+  getRamFromConfig,
+  getSsdFromConfig,
   findPriceStat,
   calculateBuyoutPrice,
   formatSsd,
@@ -25,8 +26,21 @@ import SEOHead from '@/components/SEOHead';
 import { Clock, Wallet, TrendingUp, Shield, BarChart3, Cpu, HardDrive, MemoryStick, Sparkles, Search, X, Check } from 'lucide-react';
 import { generateProductSchema } from '@/lib/structured-data';
 
+interface AvitoUrlsData {
+  description: string;
+  updated_at: string;
+  entries: Array<{
+    model_name: string;
+    processor: string;
+    ram: number;
+    ssd: number;
+    url: string;
+  }>;
+}
+
 const Sell = () => {
   const [data, setData] = useState<AvitoPricesData | null>(null);
+  const [urlsData, setUrlsData] = useState<AvitoUrlsData | null>(null);
   const [totalListings, setTotalListings] = useState(0);
   const [lastUpdate, setLastUpdate] = useState<string>('');
   
@@ -50,6 +64,10 @@ const Sell = () => {
   
   // Загрузка данных
   useEffect(() => {
+    // Загружаем конфигурации URL (для опций формы)
+    loadAvitoUrls().then(setUrlsData);
+    
+    // Загружаем данные о ценах (результаты парсера)
     loadAvitoPrices().then((loadedData) => {
       setData(loadedData);
       setTotalListings(loadedData.total_listings);
@@ -60,33 +78,29 @@ const Sell = () => {
     });
   }, []);
   
-  // Список моделей с фильтрацией
+  // Список моделей из конфигурации
   const models = useMemo(() => {
-    if (!data) return [];
-    return filterModels(getModels(data), modelSearch);
-  }, [data, modelSearch]);
+    if (!urlsData) return [];
+    return filterModels(getModelsFromConfig(urlsData), modelSearch);
+  }, [urlsData, modelSearch]);
   
-  const allModels = useMemo(() => {
-    if (!data) return [];
-    return getModels(data);
-  }, [data]);
-  
-  // Опции процессоров
+  // Опции процессоров из конфигурации
   const processorOptions = useMemo(() => {
-    if (!data || !modelName) return [];
-    return getProcessorOptions(data.stats, modelName);
-  }, [data, modelName]);
+    if (!urlsData || !modelName) return [];
+    return getProcessorsFromConfig(urlsData, modelName);
+  }, [urlsData, modelName]);
   
-  // Опции RAM и SSD
+  // Опции RAM из конфигурации
   const ramOptions = useMemo(() => {
-    if (!data || !modelName) return [];
-    return getRamOptions(data.stats, modelName, processor || undefined);
-  }, [data, modelName, processor]);
+    if (!urlsData || !modelName || !processor) return [];
+    return getRamFromConfig(urlsData, modelName, processor);
+  }, [urlsData, modelName, processor]);
   
+  // Опции SSD из конфигурации
   const ssdOptions = useMemo(() => {
-    if (!data || !modelName || !ram) return [];
-    return getSsdOptions(data.stats, modelName, Number(ram), processor || undefined);
-  }, [data, modelName, ram, processor]);
+    if (!urlsData || !modelName || !processor || !ram) return [];
+    return getSsdFromConfig(urlsData, modelName, processor, Number(ram));
+  }, [urlsData, modelName, processor, ram]);
   
   // Сброс зависимых полей
   useEffect(() => {
@@ -109,9 +123,9 @@ const Sell = () => {
   
   // Расчет
   const handleCalculate = () => {
-    if (!data || !modelName || !ram || !ssd) return;
+    if (!data || !modelName || !processor || !ram || !ssd) return;
     
-    const stat = findPriceStat(data.stats, modelName, Number(ram), Number(ssd), processor || undefined);
+    const stat = findPriceStat(data.stats, modelName, Number(ram), Number(ssd), processor);
     if (!stat) {
       setResult(null);
       return;
@@ -127,7 +141,7 @@ const Sell = () => {
     });
   };
   
-  const isFormComplete = modelName && ram && ssd;
+  const isFormComplete = modelName && processor && ram && ssd;
   
   const productSchema = generateProductSchema({
     name: "Выкуп MacBook в Москве",

@@ -42,9 +42,9 @@ OUTPUT_FILE = SCRIPT_DIR / "../../public/data/avito-prices.json"
 class PriceStat:
     """Статистика цен для конкретной конфигурации"""
     model_name: str      # "MacBook Pro 14 (2021, M1 Pro)"
+    processor: str       # "Apple M1", "Apple M1 Pro"
     ram: int             # GB
     ssd: int             # GB
-    region: str          # "Москва и МО"
     median_price: int
     min_price: int
     max_price: int
@@ -190,16 +190,16 @@ def parse_avito_page(url: str, page: int = 1) -> list[int]:
 def parse_entry(entry: dict, pages_count: int = 3) -> Optional[PriceStat]:
     """Спарсить одну конфигурацию из таблицы"""
     model_name = entry.get("model_name", "")
+    processor = entry.get("processor", "")
     ram = entry.get("ram", 0)
     ssd = entry.get("ssd", 0)
-    region = entry.get("region", "Москва и МО")
     url = entry.get("url", "")
     
     if not url:
         print(f"  ⚠️ Пропуск {model_name} - нет URL")
         return None
     
-    print(f"\n🔍 {model_name} | {ram}GB RAM | {ssd}GB SSD | {region}")
+    print(f"\n🔍 {model_name} | {processor} | {ram}GB RAM | {ssd}GB SSD")
     
     all_prices = []
     
@@ -242,9 +242,9 @@ def parse_entry(entry: dict, pages_count: int = 3) -> Optional[PriceStat]:
     
     return PriceStat(
         model_name=model_name,
+        processor=processor,
         ram=ram,
         ssd=ssd,
-        region=region,
         median_price=median_price,
         min_price=min_price,
         max_price=max_price,
