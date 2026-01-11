@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-01-11T07:07:18.797611",
-  "total_listings": 100,
+  "generated_at": "2026-01-11T07:38:06.260807",
+  "total_listings": 99,
   "models": [
     "MacBook Air 13 (2020, M1)"
   ],
@@ -10,12 +10,12 @@
       "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
-      "median_price": 37000,
-      "min_price": 30000,
-      "max_price": 49990,
-      "buyout_price": 33300,
-      "samples_count": 100,
-      "updated_at": "2026-01-11T06:33:58.177922"
+      "median_price": 36000,
+      "min_price": 29999,
+      "max_price": 50500,
+      "buyout_price": 32400,
+      "samples_count": 99,
+      "updated_at": "2026-01-11T07:35:43.649628"
     }
   ]
 }
