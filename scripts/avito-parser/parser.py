@@ -80,16 +80,35 @@ AVITO_HOME_URL = "https://www.avito.ru/"
 
 # Прокси (берём из секретов, если есть)
 PROXY_URL = os.environ.get("PROXY_URL", "").strip()
+CHANGE_IP_URL = os.environ.get("CHANGE_IP_URL", "").strip()
+
+def rotate_ip():
+    """Смена IP для мобильных прокси"""
+    if CHANGE_IP_URL:
+        try:
+            print(f"🔄 Смена IP через {CHANGE_IP_URL}...")
+            resp = requests.get(CHANGE_IP_URL, timeout=15)
+            print(f"📡 Ответ сервиса: {resp.text.strip()}")
+            # Даем время на переключение
+            time.sleep(5)
+            return True
+        except Exception as e:
+            print(f"⚠️ Ошибка при смене IP: {e}")
+    return False
 
 # Форматирование прокси для requests
 if PROXY_URL:
-    # Если прокси в формате IP:PORT:USER:PASS
-    if len(PROXY_URL.split(':')) == 4:
-        ip, port, user, password = PROXY_URL.split(':')
-        PROXY_URL = f"http://{user}:{password}@{ip}:{port}"
     # Если прокси не начинается с протокола, добавляем http://
-    elif not PROXY_URL.startswith(("http://", "https://")):
-        PROXY_URL = f"http://{PROXY_URL}"
+    if not PROXY_URL.startswith(("http://", "https://")):
+        # Поддержка формата username:password@host:port
+        if "@" in PROXY_URL:
+            PROXY_URL = f"http://{PROXY_URL}"
+        # Поддержка формата IP:PORT:USER:PASS
+        elif len(PROXY_URL.split(':')) == 4:
+            ip, port, user, password = PROXY_URL.split(':')
+            PROXY_URL = f"http://{user}:{password}@{ip}:{port}"
+        else:
+            PROXY_URL = f"http://{PROXY_URL}"
 
 # Проверка формата прокси
 if PROXY_URL and not PROXY_URL.startswith(("http://", "https://")):
@@ -194,6 +213,9 @@ def parse_avito_page(url: str, page: int = 1) -> list[int]:
             
             # Если 429 (Too Many Requests), ждем и повторяем
             if response.status_code == 429:
+                if CHANGE_IP_URL:
+                    rotate_ip()
+                
                 if attempt < max_retries - 1:
                     retry_after = (response.headers.get("Retry-After") or "").strip()
                     if retry_after.isdigit():
@@ -402,7 +424,12 @@ def main():
 
     # Прогрев сессии (cookies). Если 429 приходит сразу — дальше в GitHub Actions обычно не имеет смысла ждать.
     if not warm_up_avito():
-        raise SystemExit(2)
+        if CHANGE_IP_URL:
+            rotate_ip()
+            if not warm_up_avito():
+                raise SystemExit(2)
+        else:
+            raise SystemExit(2)
 
     # Парсим каждую конфигурацию
     stats = []
