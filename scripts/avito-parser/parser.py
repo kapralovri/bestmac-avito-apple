@@ -98,21 +98,27 @@ def rotate_ip():
 
 # Форматирование прокси для requests
 if PROXY_URL:
-    # Если прокси не начинается с протокола, добавляем http://
-    if not PROXY_URL.startswith(("http://", "https://")):
-        # Поддержка формата username:password@host:port
-        if "@" in PROXY_URL:
-            PROXY_URL = f"http://{PROXY_URL}"
-        # Поддержка формата IP:PORT:USER:PASS
-        elif len(PROXY_URL.split(':')) == 4:
-            ip, port, user, password = PROXY_URL.split(':')
-            PROXY_URL = f"http://{user}:{password}@{ip}:{port}"
-        else:
-            PROXY_URL = f"http://{PROXY_URL}"
+    # Удаляем лишние пробелы и кавычки, если они есть
+    PROXY_URL = PROXY_URL.strip().strip('"').strip("'")
+    
+    # Если прокси уже содержит протокол, используем как есть
+    if PROXY_URL.startswith(("http://", "https://", "socks5://")):
+        pass
+    # Поддержка формата IP:PORT:USER:PASS
+    elif len(PROXY_URL.split(':')) == 4:
+        parts = PROXY_URL.split(':')
+        ip, port, user, password = parts
+        PROXY_URL = f"http://{user}:{password}@{ip}:{port}"
+    # Поддержка формата USER:PASS@IP:PORT (без протокола)
+    elif "@" in PROXY_URL:
+        PROXY_URL = f"http://{PROXY_URL}"
+    # Обычный IP:PORT
+    else:
+        PROXY_URL = f"http://{PROXY_URL}"
 
 # Проверка формата прокси
-if PROXY_URL and not PROXY_URL.startswith(("http://", "https://")):
-    print(f"⚠️ Формат PROXY_URL неверный. Текущее значение: {PROXY_URL}")
+if PROXY_URL and not PROXY_URL.startswith(("http://", "https://", "socks5://")):
+    print(f"⚠️ Формат PROXY_URL не опознан. Текущее значение: {PROXY_URL}")
     PROXY_URL = ""
 
 # Используем одну сессию на весь запуск (cookies + keep-alive)
@@ -121,10 +127,12 @@ SESSION.headers.update({
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
     "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
     "Cache-Control": "no-cache",
+    "Connection": "keep-alive",
     "Upgrade-Insecure-Requests": "1",
 })
 
 if PROXY_URL:
+    print(f"🌐 Используем прокси: {PROXY_URL.split('@')[-1] if '@' in PROXY_URL else PROXY_URL}")
     SESSION.proxies = {"http": PROXY_URL, "https": PROXY_URL}
 
 

@@ -42,4 +42,4 @@ externalPort = 80
 [userenv]
 
 [userenv.shared]
-PROXY_URL = "77.93.143.12:4129:sPG4mOVCCc:dEbvbnvDg8"
+PROXY_URL = "46.161.28.47:33348:s2CLdF5uXB:dCYAAdWF7Y"
