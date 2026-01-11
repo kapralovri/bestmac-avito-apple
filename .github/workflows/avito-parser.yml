@@ -59,7 +59,7 @@ jobs:
       # Шаг 2: Запуск парсера
       - name: Run parser
         env:
-          PAGES: ${{ github.event.inputs.pages || '3' }}
+          PAGES: ${{ github.event.inputs.pages || '2' }}
         run: |
           cd scripts/avito-parser
           python parser.py
