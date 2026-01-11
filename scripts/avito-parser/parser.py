@@ -81,9 +81,19 @@ AVITO_HOME_URL = "https://www.avito.ru/"
 # Прокси (берём из секретов, если есть)
 PROXY_URL = os.environ.get("PROXY_URL", "").strip()
 
+# Форматирование прокси для requests
+if PROXY_URL:
+    # Если прокси в формате IP:PORT:USER:PASS
+    if len(PROXY_URL.split(':')) == 4:
+        ip, port, user, password = PROXY_URL.split(':')
+        PROXY_URL = f"http://{user}:{password}@{ip}:{port}"
+    # Если прокси не начинается с протокола, добавляем http://
+    elif not PROXY_URL.startswith(("http://", "https://")):
+        PROXY_URL = f"http://{PROXY_URL}"
+
 # Проверка формата прокси
 if PROXY_URL and not PROXY_URL.startswith(("http://", "https://")):
-    print(f"⚠️ Формат PROXY_URL неверный (должен начинаться с http:// или https://). Текущее значение: {PROXY_URL}")
+    print(f"⚠️ Формат PROXY_URL неверный. Текущее значение: {PROXY_URL}")
     PROXY_URL = ""
 
 # Используем одну сессию на весь запуск (cookies + keep-alive)
