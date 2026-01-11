@@ -37,9 +37,7 @@ const ShatterText = ({ text, className }: ShatterTextProps) => {
   const words = text.split(/(\s+)/);
   const letters = text.replace(/\s+/g, "").split("");
   const [shattered, setShattered] = useState(false);
-  const [targets, setTargets] = useState<Transform[]>(
-    letters.map(() => createZeroTransform())
-  );
+  const [targets, setTargets] = useState<Transform[]>([]);
 
   useEffect(() => {
     if (shattered) {
@@ -47,7 +45,7 @@ const ShatterText = ({ text, className }: ShatterTextProps) => {
     } else {
       setTargets(letters.map(() => createZeroTransform()));
     }
-  }, [shattered, letters]);
+  }, [shattered, text]);
 
   let letterIndex = -1;
 

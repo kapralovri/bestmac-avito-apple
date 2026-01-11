@@ -78,8 +78,13 @@ USER_AGENTS = [
 
 AVITO_HOME_URL = "https://www.avito.ru/"
 
-# Прокси (берём из секретов GitHub Actions, если есть)
+# Прокси (берём из секретов, если есть)
 PROXY_URL = os.environ.get("PROXY_URL", "").strip()
+
+# Проверка формата прокси
+if PROXY_URL and not PROXY_URL.startswith(("http://", "https://")):
+    print(f"⚠️ Формат PROXY_URL неверный (должен начинаться с http:// или https://). Текущее значение: {PROXY_URL}")
+    PROXY_URL = ""
 
 # Используем одну сессию на весь запуск (cookies + keep-alive)
 SESSION = requests.Session()
@@ -217,8 +222,10 @@ def parse_avito_page(url: str, page: int = 1) -> list[int]:
                         price_content = price_elem.get('content')
                         if price_content:
                             try:
-                                price = int(float(price_content))
-                            except ValueError:
+                                if isinstance(price_content, list):
+                                    price_content = price_content[0]
+                                price = int(float(str(price_content)))
+                            except (ValueError, TypeError):
                                 pass
                         
                         # Если не получилось, парсим текст
