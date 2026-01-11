@@ -16,9 +16,16 @@ on:
   workflow_dispatch:
     inputs:
       pages:
-        description: 'Количество страниц для парсинга'
+        description: 'Количество страниц (1-5). Рекомендуется 2 для ~100 объявлений на конфигурацию. Больше страниц = дольше парсинг и выше риск 429.'
         required: false
-        default: '3'
+        default: '2'
+        type: choice
+        options:
+          - '1'
+          - '2'
+          - '3'
+          - '4'
+          - '5'
 
 jobs:
   parse:
