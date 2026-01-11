@@ -56,10 +56,11 @@ jobs:
         run: |
           python scripts/sync-google-sheet.py
       
-      # Шаг 2: Запуск парсера
+      # Шаг 2: Запуск парсера (прокси опционально через PROXY_URL secret)
       - name: Run parser
         env:
           PAGES: ${{ github.event.inputs.pages || '2' }}
+          PROXY_URL: ${{ secrets.PROXY_URL }}
         run: |
           cd scripts/avito-parser
           python parser.py

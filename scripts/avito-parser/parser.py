@@ -78,6 +78,9 @@ USER_AGENTS = [
 
 AVITO_HOME_URL = "https://www.avito.ru/"
 
+# Прокси (берём из секретов GitHub Actions, если есть)
+PROXY_URL = os.environ.get("PROXY_URL", "").strip()
+
 # Используем одну сессию на весь запуск (cookies + keep-alive)
 SESSION = requests.Session()
 SESSION.headers.update({
@@ -86,6 +89,9 @@ SESSION.headers.update({
     "Cache-Control": "no-cache",
     "Upgrade-Insecure-Requests": "1",
 })
+
+if PROXY_URL:
+    SESSION.proxies = {"http": PROXY_URL, "https": PROXY_URL}
 
 
 def warm_up_avito() -> bool:
