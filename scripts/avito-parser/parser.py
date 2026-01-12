@@ -37,6 +37,10 @@ except ImportError:
 SCRIPT_DIR = Path(__file__).parent
 URLS_FILE = SCRIPT_DIR / "../../public/data/avito-urls.json"
 OUTPUT_FILE = SCRIPT_DIR / "../../public/data/avito-prices.json"
+BUYOUT_FILE = SCRIPT_DIR / "../../public/data/buyout.json"
+
+# Минимальное количество объявлений для анализа
+MIN_SAMPLES_FOR_ANALYSIS = 10
 
 # Настройки парсера для обхода rate limiting
 # Задержка между запросами страниц (секунды)
@@ -298,7 +302,101 @@ def parse_avito_page(url: str, page: int = 1) -> list[int]:
     return prices
 
 
-def parse_entry(entry: dict, pages_count: int = DEFAULT_PAGES) -> Optional[PriceStat]:
+def load_fallback_buyout() -> dict:
+    """Загрузить таблицу Модельный ряд для fallback"""
+    if not BUYOUT_FILE.exists():
+        return {}
+    
+    try:
+        with open(BUYOUT_FILE, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        # Создаем словарь для быстрого поиска: (model, ram, storage) -> basePrice
+        lookup = {}
+        for item in data:
+            model = item.get("model", "")
+            ram = str(item.get("ram", ""))
+            storage = str(item.get("storage", ""))
+            base_price = item.get("basePrice", 0)
+            if model and base_price:
+                key = (model.lower(), ram, storage)
+                # Берем максимальную цену если есть дубли
+                lookup[key] = max(lookup.get(key, 0), base_price)
+        
+        return lookup
+    except Exception as e:
+        print(f"⚠️ Ошибка загрузки buyout.json: {e}")
+        return {}
+
+
+def find_fallback_price(lookup: dict, model_name: str, ram: int, ssd: int) -> Optional[int]:
+    """Найти цену в таблице Модельный ряд"""
+    key = (model_name.lower(), str(ram), str(ssd))
+    return lookup.get(key)
+
+
+def analyze_prices_iqr(prices: list[int]) -> tuple[int, int, int, int]:
+    """
+    Анализ цен с фокусом на плотность (IQR).
+    
+    Алгоритм:
+    1. Убираем крайние 10% (выбросы)
+    2. Находим IQR (25-75 перцентиль) - зону максимальной плотности
+    3. Минимальная цена - Q1 (25 перцентиль) из этой зоны
+    4. Максимальная цена - Q3 (75 перцентиль)
+    5. Медиана берется с уклоном в сторону минимума
+    
+    Возвращает: (min_price, max_price, median_price, dense_median)
+    """
+    prices_sorted = sorted(prices)
+    n = len(prices_sorted)
+    
+    if n < 5:
+        median = int(statistics.median(prices_sorted))
+        return min(prices_sorted), max(prices_sorted), median, median
+    
+    # Шаг 1: Убираем 10% крайних значений (P10-P90)
+    p10_idx = int(n * 0.10)
+    p90_idx = max(p10_idx + 1, int(n * 0.90))
+    filtered = prices_sorted[p10_idx:p90_idx + 1]
+    
+    if len(filtered) < 3:
+        filtered = prices_sorted
+    
+    # Шаг 2: Находим IQR (зона максимальной плотности 50%)
+    fn = len(filtered)
+    q1_idx = int(fn * 0.25)
+    q3_idx = int(fn * 0.75)
+    
+    q1_price = filtered[q1_idx]  # 25 перцентиль - нижняя граница плотной зоны
+    q3_price = filtered[q3_idx]  # 75 перцентиль - верхняя граница плотной зоны
+    
+    # Шаг 3: Медиана с уклоном к минимуму (ближе к Q1)
+    # Берем среднее между Q1 и медианой
+    true_median = int(statistics.median(filtered))
+    dense_median = int((q1_price + true_median) / 2)
+    
+    print(f"     📈 Анализ плотности:")
+    print(f"        • Всего цен: {n}, после P10-P90: {len(filtered)}")
+    print(f"        • Полный диапазон: {prices_sorted[0]:,} - {prices_sorted[-1]:,} ₽")
+    print(f"        • Зона плотности (IQR): {q1_price:,} - {q3_price:,} ₽")
+    print(f"        • Медиана рынка: {true_median:,} ₽")
+    print(f"        • Рабочая цена (уклон к мин): {dense_median:,} ₽")
+    
+    return q1_price, q3_price, true_median, dense_median
+
+
+def calculate_buyout_price(market_price: int) -> int:
+    """
+    Расчет цены выкупа: -20% от рыночной, округление до 1000₽
+    """
+    raw_price = market_price * 0.80
+    rounded_price = round(raw_price / 1000) * 1000
+    return int(rounded_price)
+
+
+def parse_entry(entry: dict, pages_count: int = DEFAULT_PAGES, 
+                fallback_lookup: Optional[dict] = None) -> Optional[PriceStat]:
     """Спарсить одну конфигурацию из таблицы"""
     model_name = entry.get("model_name", "")
     processor = entry.get("processor", "")
@@ -328,42 +426,49 @@ def parse_entry(entry: dict, pages_count: int = DEFAULT_PAGES) -> Optional[Price
             print(f"  ℹ️ Мало объявлений на странице, прекращаем")
             break
     
-    if len(all_prices) < 3:
-        print(f"  ❌ Недостаточно данных ({len(all_prices)} объявлений)")
+    # Проверка: достаточно ли данных для анализа?
+    if len(all_prices) < MIN_SAMPLES_FOR_ANALYSIS:
+        print(f"  ⚠️ Мало данных ({len(all_prices)} < {MIN_SAMPLES_FOR_ANALYSIS})")
+        
+        # Пробуем fallback на таблицу "Модельный ряд"
+        if fallback_lookup:
+            fallback_price = find_fallback_price(fallback_lookup, model_name, ram, ssd)
+            if fallback_price:
+                print(f"  📋 Используем цену из таблицы Модельный ряд: {fallback_price:,} ₽")
+                return PriceStat(
+                    model_name=model_name,
+                    processor=processor,
+                    ram=ram,
+                    ssd=ssd,
+                    median_price=fallback_price,
+                    min_price=fallback_price,
+                    max_price=fallback_price,
+                    buyout_price=fallback_price,  # Уже готовая цена выкупа
+                    samples_count=0,  # 0 = данные из fallback
+                    updated_at=datetime.now().isoformat()
+                )
+        
+        print(f"  ❌ Нет fallback данных, пропускаем")
         return None
     
-    # Фильтруем выбросы по перцентилям (P10-P90)
-    all_prices.sort()
-    n = len(all_prices)
+    # Анализ цен с фокусом на плотность (IQR)
+    min_price, max_price, median_price, dense_median = analyze_prices_iqr(all_prices)
     
-    if n >= 5:
-        p10_idx = int(n * 0.10)
-        p90_idx = int(n * 0.90)
-        filtered_prices = all_prices[p10_idx:p90_idx + 1]
-    else:
-        filtered_prices = all_prices
-    
-    if not filtered_prices:
-        filtered_prices = all_prices
-    
-    # Расчет статистики
-    median_price = int(statistics.median(filtered_prices))
-    min_price = min(filtered_prices)
-    max_price = max(filtered_prices)
-    buyout_price = int(median_price * 0.90)  # 90% от медианы
+    # Расчет цены выкупа: -20% от плотной медианы, округление до 1000₽
+    buyout_price = calculate_buyout_price(dense_median)
     
     print(f"\n  📊 Результаты:")
-    print(f"     • Собрано: {len(all_prices)} цен (после фильтрации: {len(filtered_prices)})")
-    print(f"     • Диапазон: {min_price:,} - {max_price:,} ₽")
-    print(f"     • Медиана: {median_price:,} ₽")
-    print(f"     • Цена выкупа: {buyout_price:,} ₽")
+    print(f"     • Собрано: {len(all_prices)} объявлений")
+    print(f"     • Диапазон плотности: {min_price:,} - {max_price:,} ₽")
+    print(f"     • Рыночная цена: {dense_median:,} ₽")
+    print(f"     • 💰 Цена выкупа (-20%): {buyout_price:,} ₽")
     
     return PriceStat(
         model_name=model_name,
         processor=processor,
         ram=ram,
         ssd=ssd,
-        median_price=median_price,
+        median_price=dense_median,  # Используем плотную медиану
         min_price=min_price,
         max_price=max_price,
         buyout_price=buyout_price,
@@ -430,6 +535,13 @@ def main():
     estimated_time = len(entries) * (pages_count * (PAGE_DELAY_MIN + PAGE_DELAY_MAX) / 2 + (CONFIG_DELAY_MIN + CONFIG_DELAY_MAX) / 2)
     print(f"⏱️ Примерное время: {estimated_time / 60:.0f} минут")
 
+    # Загружаем fallback таблицу "Модельный ряд"
+    fallback_lookup = load_fallback_buyout()
+    if fallback_lookup:
+        print(f"📋 Загружена таблица Модельный ряд: {len(fallback_lookup)} конфигураций для fallback")
+    else:
+        print("⚠️ Таблица Модельный ряд не найдена, fallback недоступен")
+
     # Прогрев сессии (cookies). Если 429 приходит сразу — дальше в GitHub Actions обычно не имеет смысла ждать.
     if not warm_up_avito():
         if CHANGE_IP_URL:
@@ -442,16 +554,20 @@ def main():
     # Парсим каждую конфигурацию
     stats = []
     total_listings = 0
+    fallback_count = 0
     
     for i, entry in enumerate(entries, 1):
         print(f"\n\n{'#'*70}")
         print(f"# [{i}/{len(entries)}] Конфигурация")
         print(f"{'#'*70}")
         
-        stat = parse_entry(entry, pages_count=pages_count)
+        stat = parse_entry(entry, pages_count=pages_count, fallback_lookup=fallback_lookup)
         if stat:
             stats.append(asdict(stat))
-            total_listings += stat.samples_count
+            if stat.samples_count == 0:
+                fallback_count += 1
+            else:
+                total_listings += stat.samples_count
         
         # Большая пауза между конфигурациями (кроме последней)
         if i < len(entries):
@@ -478,7 +594,8 @@ def main():
     print("✅ ГОТОВО!")
     print("=" * 70)
     print(f"   📊 Обработано конфигураций: {len(stats)}/{len(entries)}")
-    print(f"   📈 Всего объявлений: {total_listings:,}")
+    print(f"   📈 Всего объявлений (Avito): {total_listings:,}")
+    print(f"   📋 Из таблицы Модельный ряд: {fallback_count}")
     print(f"   🏷️ Уникальных моделей: {len(unique_models)}")
     print(f"   💾 Сохранено в: {OUTPUT_FILE}")
     print("=" * 70)
