@@ -145,19 +145,29 @@ def warm_up_avito() -> bool:
 
     Если GitHub Actions IP заблокирован, часто 429 приходит уже тут.
     """
+    if not PROXY_URL:
+        print("\n⚠️ ВНИМАНИЕ: PROXY_URL не задан. Без прокси вероятность 429 крайне высока.")
+    
     try:
         headers = {
             "User-Agent": random.choice(USER_AGENTS),
-            "Referer": AVITO_HOME_URL,
+            "Referer": "https://www.google.com/",
         }
+        # Пытаемся зайти на главную через прокси
         resp = SESSION.get(AVITO_HOME_URL, headers=headers, timeout=30)
+        
         if resp.status_code == 429:
-            print("\n❌ Avito вернул 429 даже на главной странице — похоже, IP среды выполнения ограничен.")
+            print(f"\n❌ Avito вернул 429 даже на главной странице.")
+            if CHANGE_IP_URL:
+                rotate_ip()
+                # Повторная попытка после смены IP
+                resp = SESSION.get(AVITO_HOME_URL, headers=headers, timeout=30)
+                if resp.status_code != 429:
+                    return True
             return False
         return True
     except requests.RequestException as e:
         print(f"\n⚠️ Не удалось прогреть сессию Avito: {e}")
-        # Не блокируем запуск полностью из-за сетевой ошибки
         return True
 
 
