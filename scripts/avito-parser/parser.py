@@ -151,7 +151,7 @@ def warm_up_avito() -> bool:
     try:
         headers = {
             "User-Agent": random.choice(USER_AGENTS),
-            "Referer": "https://www.google.com/",
+            "Referer": AVITO_HOME_URL,
         }
         # Пытаемся зайти на главную через прокси
         resp = SESSION.get(AVITO_HOME_URL, headers=headers, timeout=30)
@@ -224,7 +224,7 @@ def parse_avito_page(url: str, page: int = 1) -> list[int]:
             # Заголовки строим на каждый запрос/повтор (UA ротуем)
             headers = {
                 "User-Agent": random.choice(USER_AGENTS),
-                "Referer": "https://www.google.com/",  # Ротируем Referer
+                "Referer": AVITO_HOME_URL,
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
                 "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
                 "Cache-Control": "no-cache",
