@@ -44,12 +44,12 @@ MIN_SAMPLES_FOR_ANALYSIS = 10
 
 # Настройки парсера для обхода rate limiting
 # Задержка между запросами страниц (секунды)
-PAGE_DELAY_MIN = 8.0
-PAGE_DELAY_MAX = 15.0
+PAGE_DELAY_MIN = 12.0
+PAGE_DELAY_MAX = 20.0
 
 # Задержка между конфигурациями (секунды) - важно для избежания 429!
-CONFIG_DELAY_MIN = 30.0
-CONFIG_DELAY_MAX = 60.0
+CONFIG_DELAY_MIN = 45.0
+CONFIG_DELAY_MAX = 90.0
 
 # Количество страниц по умолчанию (2 достаточно для ~100 объявлений)
 DEFAULT_PAGES = 2
@@ -200,9 +200,9 @@ def parse_avito_page(url: str, page: int = 1) -> list[int]:
         separator = '&' if '?' in url else '?'
         page_url = f"{url}{separator}p={page}"
     
-    max_retries = 3
-    base_retry_delay = 15  # базовая задержка при 429
-    retry_delay_cap = 90   # верхний предел ожидания, чтобы не "висеть" десятки минут
+    max_retries = 1
+    base_retry_delay = 10  # базовая задержка при 429
+    retry_delay_cap = 60   # верхний предел ожидания, чтобы не "висеть" десятки минут
     
     for attempt in range(max_retries):
         try:
@@ -214,14 +214,18 @@ def parse_avito_page(url: str, page: int = 1) -> list[int]:
             # Заголовки строим на каждый запрос/повтор (UA ротуем)
             headers = {
                 "User-Agent": random.choice(USER_AGENTS),
-                "Referer": AVITO_HOME_URL,
+                "Referer": "https://www.google.com/",  # Ротируем Referer
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
                 "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
                 "Cache-Control": "no-cache",
                 "Upgrade-Insecure-Requests": "1",
             }
 
-            response = SESSION.get(page_url, headers=headers, timeout=30)
+            # Добавляем случайные параметры в URL для обхода кеша и детектирования паттернов
+            separator = '&' if '?' in page_url else '?'
+            no_cache_url = f"{page_url}{separator}_={int(time.time())}"
+
+            response = SESSION.get(no_cache_url, headers=headers, timeout=30)
             
             # Если 429 (Too Many Requests), ждем и повторяем
             if response.status_code == 429:
