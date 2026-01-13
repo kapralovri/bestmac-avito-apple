@@ -60,6 +60,7 @@ const Sell = () => {
     marketMedian: number;
     buyoutPrice: number;
     samplesCount: number;
+    isRareModel?: boolean;
   } | null>(null);
   
   // Загрузка данных
@@ -131,6 +132,19 @@ const Sell = () => {
       return;
     }
     
+    // Проверка на редкую модель (менее 2 объявлений)
+    if (stat.samples_count < 2) {
+      setResult({
+        marketMin: 0,
+        marketMax: 0,
+        marketMedian: 0,
+        buyoutPrice: 0,
+        samplesCount: stat.samples_count,
+        isRareModel: true,
+      });
+      return;
+    }
+    
     const priceResult = calculateBuyoutPrice(stat, condition);
     setResult({
       marketMin: priceResult.marketMin,
@@ -138,6 +152,7 @@ const Sell = () => {
       marketMedian: priceResult.marketMedian,
       buyoutPrice: priceResult.buyoutPrice,
       samplesCount: priceResult.samplesCount,
+      isRareModel: false,
     });
   };
   
@@ -403,6 +418,19 @@ const Sell = () => {
                     <TrendingUp className="w-4 h-4 mr-2" />
                     Узнать стоимость
                   </Button>
+                  
+                  {/* Ссылка на TG для ненайденных моделей */}
+                  <p className="text-xs text-muted-foreground text-center mt-3">
+                    Не нашли свою модель?{' '}
+                    <a 
+                      href="https://t.me/romanmanro" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Напишите мне в Telegram
+                    </a>
+                  </p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -427,6 +455,47 @@ const Sell = () => {
                       <p>Заполните параметры устройства</p>
                       <p className="text-sm">и нажмите «Узнать стоимость»</p>
                     </div>
+                  ) : result.isRareModel ? (
+                    /* Редкая модель - мало объявлений */
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className="space-y-6"
+                    >
+                      {/* Выбранная модель */}
+                      {modelName && (
+                        <div className="text-center p-3 bg-muted/50 rounded-lg">
+                          <p className="font-medium">{modelName}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {processor} / {ram} GB RAM / {formatSsd(Number(ssd))}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {/* Сообщение о редкой модели */}
+                      <div className="text-center p-6 bg-amber-500/10 rounded-xl border-2 border-amber-500/30">
+                        <p className="text-2xl md:text-3xl font-bold text-amber-600 mb-3">
+                          🔮 У вас редкая модель!
+                        </p>
+                        <p className="text-muted-foreground">
+                          Свяжитесь со мной и предложите вашу цену на данную модель
+                        </p>
+                      </div>
+                      
+                      {/* CTA */}
+                      <Button 
+                        variant="default" 
+                        size="lg" 
+                        className="w-full"
+                        asChild
+                      >
+                        <a href="https://t.me/romanmanro" target="_blank" rel="noopener noreferrer">
+                          <Wallet className="w-4 h-4 mr-2" />
+                          Написать в Telegram
+                        </a>
+                      </Button>
+                    </motion.div>
                   ) : (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.95 }}
