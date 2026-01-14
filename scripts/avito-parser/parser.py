@@ -48,8 +48,14 @@ PAGE_DELAY_MIN = 12.0
 PAGE_DELAY_MAX = 20.0
 
 # Задержка между конфигурациями (секунды) - важно для избежания 429!
-CONFIG_DELAY_MIN = 45.0
-CONFIG_DELAY_MAX = 90.0
+CONFIG_DELAY_MIN = 60.0
+CONFIG_DELAY_MAX = 120.0
+
+# Дополнительная "остывающая" пауза каждые N конфигураций (секунды)
+# Полезно, когда 429 начинает появляться после нескольких конфигураций подряд.
+BATCH_COOLDOWN_EVERY = 3
+BATCH_COOLDOWN_MIN = 180.0
+BATCH_COOLDOWN_MAX = 300.0
 
 # Количество страниц по умолчанию (2 достаточно для ~100 объявлений)
 DEFAULT_PAGES = 2
@@ -588,6 +594,12 @@ def main():
             delay = random.uniform(CONFIG_DELAY_MIN, CONFIG_DELAY_MAX)
             print(f"\n⏸️ Пауза {delay:.0f}с перед следующей конфигурацией...")
             time.sleep(delay)
+
+        # Дополнительная пауза "на остывание" каждые N конфигураций
+        if BATCH_COOLDOWN_EVERY > 0 and i % BATCH_COOLDOWN_EVERY == 0 and i < len(entries):
+            cooldown = random.uniform(BATCH_COOLDOWN_MIN, BATCH_COOLDOWN_MAX)
+            print(f"\n🧊 Остывающая пауза {cooldown:.0f}с (каждые {BATCH_COOLDOWN_EVERY} конфигурации)...")
+            time.sleep(cooldown)
     
     # Формируем уникальные модели
     unique_models = sorted(set(s["model_name"] for s in stats))
