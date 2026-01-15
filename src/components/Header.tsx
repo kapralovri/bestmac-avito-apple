@@ -13,6 +13,7 @@ const Header = () => {
     { path: "/buy", label: "В продаже" },
     { path: "/sell", label: "Выкуп" },
     { path: "/selection", label: "Подбор" },
+    { path: "/service", label: "Сервис" },
     { path: "/business", label: "Для юр.лиц" }
   ];
 
