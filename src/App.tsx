@@ -31,6 +31,7 @@ import MacbookPro16M3Max from "./pages/longtail/MacbookPro16M3Max";
 import MacbookAirM3Students from "./pages/longtail/MacbookAirM3Students";
 import Comparison from "./pages/Comparison";
 import Pickup from "./pages/Pickup";
+import Service from "./pages/Service";
 import { initAnalytics } from "./components/Analytics";
 
 const queryClient = new QueryClient();
@@ -56,6 +57,7 @@ const App = () => {
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/pickup" element={<Pickup />} />
+            <Route path="/service" element={<Service />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
             {/* Blog routes */}
