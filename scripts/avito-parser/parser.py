@@ -8,7 +8,9 @@
 Формат модели: "MacBook Pro 14 (2021, M1 Pro)"
 
 Использование:
-  python parser.py [pages]  # pages = кол-во страниц (по умолчанию 2)
+  python parser.py [pages]                    # парсить всё (по умолчанию 2 страницы)
+  python parser.py --batch 1 --total-batches 3  # парсить только 1/3 конфигураций
+  python parser.py --batch 2 --total-batches 3  # парсить только 2/3 конфигураций
 
 Требования:
   pip install requests beautifulsoup4 lxml
@@ -497,40 +499,78 @@ def parse_entry(entry: dict, pages_count: int = DEFAULT_PAGES,
     )
 
 
+def parse_args():
+    """Парсинг аргументов командной строки"""
+    import argparse
+    parser = argparse.ArgumentParser(description="Парсер цен MacBook с Авито")
+    parser.add_argument("pages", nargs="?", type=int, default=None,
+                        help="Количество страниц (1-5)")
+    parser.add_argument("--batch", type=int, default=None,
+                        help="Номер батча (1, 2, 3...)")
+    parser.add_argument("--total-batches", type=int, default=3,
+                        help="Всего батчей (по умолчанию 3)")
+    return parser.parse_args()
+
+
+def get_batch_entries(entries: list, batch: int, total_batches: int) -> list:
+    """Получить подмножество конфигураций для конкретного батча"""
+    n = len(entries)
+    batch_size = n // total_batches
+    remainder = n % total_batches
+    
+    # Распределяем остаток равномерно
+    start = 0
+    for i in range(1, batch):
+        size = batch_size + (1 if i <= remainder else 0)
+        start += size
+    
+    size = batch_size + (1 if batch <= remainder else 0)
+    end = start + size
+    
+    return entries[start:end]
+
+
 def main():
     """Главная функция парсера"""
-    # Получаем количество страниц из аргументов или переменной окружения
-    import sys
-    pages_count = DEFAULT_PAGES
+    args = parse_args()
     
-    # Из аргументов командной строки
-    if len(sys.argv) > 1:
-        try:
-            pages_count = int(sys.argv[1])
-        except ValueError:
-            pass
+    # Количество страниц (из аргументов или env, по умолчанию 2)
+    pages_count = args.pages or DEFAULT_PAGES
+    pages_count = min(max(pages_count, 1), 5)  # 1-5 страниц
     
-    # Из переменной окружения (для GitHub Actions)
-    env_pages = os.environ.get('PAGES')
-    if env_pages:
-        try:
-            pages_count = int(env_pages)
-        except ValueError:
-            pass
+    # Также читаем из env (для GitHub Actions)
+    env_pages = os.environ.get("PAGES", "").strip()
+    if env_pages.isdigit():
+        pages_count = min(max(int(env_pages), 1), 5)
     
-    # Ограничиваем разумным диапазоном
-    pages_count = max(1, min(pages_count, 5))
+    # Батч из env или аргументов
+    batch = args.batch
+    total_batches = args.total_batches
+    env_batch = os.environ.get("BATCH", "").strip()
+    env_total = os.environ.get("TOTAL_BATCHES", "").strip()
+    if env_batch.isdigit():
+        batch = int(env_batch)
+    if env_total.isdigit():
+        total_batches = int(env_total)
     
-    print("=" * 70)
-    print("🚀 Парсер цен MacBook с Авито (на основе таблицы URL)")
+    print("\n" + "=" * 70)
+    print(f"🍎 BestMac.ru — Парсер цен MacBook с Авито")
     print(f"📅 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"📄 Страниц для парсинга: {pages_count}")
-    print(f"⏱️ Задержка между страницами: {PAGE_DELAY_MIN:.0f}-{PAGE_DELAY_MAX:.0f}с")
-    print(f"⏱️ Задержка между конфигурациями: {CONFIG_DELAY_MIN:.0f}-{CONFIG_DELAY_MAX:.0f}с")
+    print(f"📄 Страниц на конфигурацию: {pages_count}")
+    if batch:
+        print(f"📦 Батч: {batch}/{total_batches}")
     print("=" * 70)
     
     # Загружаем таблицу URL
     config = load_urls_config()
+    all_entries = config.get("entries", [])
+    
+    # Фильтруем по батчу если указан
+    if batch and 1 <= batch <= total_batches:
+        entries = get_batch_entries(all_entries, batch, total_batches)
+        print(f"\n📦 Батч {batch}/{total_batches}: конфигурации {len(entries)} из {len(all_entries)}")
+    else:
+        entries = all_entries
     entries = config.get("entries", [])
     
     if not entries:
