@@ -530,6 +530,61 @@ def get_batch_entries(entries: list, batch: int, total_batches: int) -> list:
     return entries[start:end]
 
 
+def load_existing_prices() -> dict:
+    """Загрузить существующие цены из avito-prices.json"""
+    if not OUTPUT_FILE.exists():
+        return {}
+    
+    try:
+        with open(OUTPUT_FILE, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        # Создаем словарь для быстрого поиска: (model, processor, ram, ssd) -> stat
+        lookup = {}
+        for stat in data.get("stats", []):
+            key = (
+                stat.get("model_name", ""),
+                stat.get("processor", ""),
+                stat.get("ram", 0),
+                stat.get("ssd", 0)
+            )
+            lookup[key] = stat
+        
+        return lookup
+    except Exception as e:
+        print(f"⚠️ Ошибка загрузки avito-prices.json: {e}")
+        return {}
+
+
+def prioritize_entries(entries: list, existing_prices: dict) -> list:
+    """
+    Сортировка: сначала модели БЕЗ данных (samples_count=0 или отсутствуют),
+    затем модели С данными.
+    """
+    no_data = []
+    has_data = []
+    
+    for entry in entries:
+        key = (
+            entry.get("model_name", ""),
+            entry.get("processor", ""),
+            entry.get("ram", 0),
+            entry.get("ssd", 0)
+        )
+        existing = existing_prices.get(key)
+        
+        # Нет данных или samples_count=0 (fallback) → приоритет
+        if not existing or existing.get("samples_count", 0) == 0:
+            no_data.append(entry)
+        else:
+            has_data.append(entry)
+    
+    print(f"   📊 Без данных (приоритет): {len(no_data)}")
+    print(f"   ✅ С данными: {len(has_data)}")
+    
+    return no_data + has_data
+
+
 def main():
     """Главная функция парсера"""
     args = parse_args()
@@ -565,13 +620,19 @@ def main():
     config = load_urls_config()
     all_entries = config.get("entries", [])
     
+    # Загружаем существующие цены для приоритизации и мержа
+    existing_prices = load_existing_prices()
+    print(f"\n📂 Загружено существующих цен: {len(existing_prices)}")
+    
     # Фильтруем по батчу если указан
     if batch and 1 <= batch <= total_batches:
         entries = get_batch_entries(all_entries, batch, total_batches)
         print(f"\n📦 Батч {batch}/{total_batches}: конфигурации {len(entries)} из {len(all_entries)}")
     else:
         entries = all_entries
-    entries = config.get("entries", [])
+    
+    # Приоритизация: сначала модели без данных
+    entries = prioritize_entries(entries, existing_prices)
     
     if not entries:
         print("\n❌ Нет записей для парсинга!")
@@ -641,28 +702,66 @@ def main():
             print(f"\n🧊 Остывающая пауза {cooldown:.0f}с (каждые {BATCH_COOLDOWN_EVERY} конфигурации)...")
             time.sleep(cooldown)
     
+    # Мержим новые данные с существующими
+    # Правило: обновляем только если получили реальные данные (samples_count > 0)
+    # или если записи не было вообще
+    merged_stats = dict(existing_prices)  # копия существующих
+    
+    new_success = 0
+    updated = 0
+    kept_old = 0
+    
+    for stat in stats:
+        key = (stat["model_name"], stat["processor"], stat["ram"], stat["ssd"])
+        existing = merged_stats.get(key)
+        
+        if stat["samples_count"] > 0:
+            # Успешный парсинг — обновляем
+            merged_stats[key] = stat
+            if existing and existing.get("samples_count", 0) > 0:
+                updated += 1
+            else:
+                new_success += 1
+        elif not existing:
+            # Нет существующих данных, сохраняем fallback
+            merged_stats[key] = stat
+        else:
+            # Парсинг провалился (429), но есть старые данные — сохраняем старые
+            kept_old += 1
+    
+    # Формируем финальный список
+    final_stats = list(merged_stats.values())
+    
     # Формируем уникальные модели
-    unique_models = sorted(set(s["model_name"] for s in stats))
+    unique_models = sorted(set(s["model_name"] for s in final_stats))
+    
+    # Считаем total_listings
+    total_listings_final = sum(s.get("samples_count", 0) for s in final_stats)
     
     # Сохраняем результат
     result = {
         "generated_at": datetime.now().isoformat(),
-        "total_listings": total_listings,
+        "total_listings": total_listings_final,
         "models": unique_models,
-        "stats": stats
+        "stats": final_stats
     }
     
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
     
+    print(f"\n   🔄 Мерж результатов:")
+    print(f"      • Новых успешных: {new_success}")
+    print(f"      • Обновлено: {updated}")
+    print(f"      • Сохранено старых (429): {kept_old}")
+    
     print("\n\n" + "=" * 70)
     print("✅ ГОТОВО!")
     print("=" * 70)
-    print(f"   📊 Обработано конфигураций: {len(stats)}/{len(entries)}")
-    print(f"   📈 Всего объявлений (Avito): {total_listings:,}")
-    print(f"   📋 Из таблицы Модельный ряд: {fallback_count}")
-    print(f"   🏷️ Уникальных моделей: {len(unique_models)}")
+    print(f"   📊 Обработано в этом запуске: {len(stats)}/{len(entries)}")
+    print(f"   📈 Всего объявлений в базе: {total_listings_final:,}")
+    print(f"   📋 Fallback в этом запуске: {fallback_count}")
+    print(f"   🏷️ Всего конфигураций в базе: {len(final_stats)}")
     print(f"   💾 Сохранено в: {OUTPUT_FILE}")
     print("=" * 70)
 
