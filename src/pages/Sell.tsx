@@ -127,19 +127,15 @@ const Sell = () => {
     if (!data || !modelName || !processor || !ram || !ssd) return;
     
     const stat = findPriceStat(data.stats, modelName, Number(ram), Number(ssd), processor);
-    if (!stat) {
-      setResult(null);
-      return;
-    }
     
-    // Проверка на редкую модель (менее 2 объявлений)
-    if (stat.samples_count < 2) {
+    // Если данных нет в базе или менее 2 объявлений — редкая модель
+    if (!stat || stat.samples_count < 2) {
       setResult({
         marketMin: 0,
         marketMax: 0,
         marketMedian: 0,
         buyoutPrice: 0,
-        samplesCount: stat.samples_count,
+        samplesCount: stat?.samples_count ?? 0,
         isRareModel: true,
       });
       return;
