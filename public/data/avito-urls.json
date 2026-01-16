@@ -1,6 +1,6 @@
 {
   "description": "Таблица ссылок для парсинга Авито. Синхронизируется из Google Sheets.",
-  "updated_at": "2026-01-14",
+  "updated_at": "2026-01-15",
   "source": "https://docs.google.com/spreadsheets/d/1hq9JqsWLyGVFVtzfWhZbwylSEkWLpSptWBirsh4zsy0",
   "entries": [
     {
@@ -22,7 +22,7 @@
       "processor": "Apple M1",
       "ram": 8,
       "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgECA0Se5A3WzK0QoOQNzrfrEajkDfTZZgJFnKEUEXsiZnJvbSI6OCwidG8iOjh9nqEUFXsiZnJvbSI6MjU2LCJ0byI6NTEyfQ&localPriority=0&q=macbook"
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgECA0Se5A3WzK0QoOQNzrfrEajkDfTZZgJFnKEUEXsiZnJvbSI6OCwidG8iOjh9nqEUFXsiZnJvbSI6NTAwLCJ0byI6NTEyfQ&localPriority=0&q=macbook"
     },
     {
       "model_name": "MacBook Air 13 (2020, M1)",
@@ -590,34 +590,6 @@
       "ram": 24,
       "ssd": 512,
       "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/rom512gb-ASgCAgECAUWeoRQVeyJmcm9tIjo1MTIsInRvIjo1MTJ9?cd=1&f=ASgBAgECA0Sg5A2m45cV1vIOvrGeFbCzFP6hjwMCRZyhFBN7ImZyb20iOjI0LCJ0byI6MjR9nqEUFXsiZnJvbSI6NTEyLCJ0byI6NTEyfQ&localPriority=1&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 15 (2025, M4)",
-      "processor": "Apple M4",
-      "ram": 24,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva/noutbuki/noutbuki/applemacbook_air_15_2025_m4-ASgBAgICAkSg5A3cwqYVqOQN9Nlm?cd=1&f=ASgBAgECA0Sg5A3cwqYVqOQN9NlmsLMU_qGPAwJFnKEUE3siZnJvbSI6MjQsInRvIjoyNH2eoRQVeyJmcm9tIjo1MTIsInRvIjo1MTJ9&localPriority=1&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 15 (2025, M4)",
-      "processor": "Apple M4",
-      "ram": 24,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva/noutbuki/noutbuki/applemacbook_air_15_2025_m4-ASgBAgICAkSg5A3cwqYVqOQN9Nlm?cd=1&f=ASgBAgECA0Sg5A3cwqYVqOQN9NlmsLMU_qGPAwJFnKEUE3siZnJvbSI6MjQsInRvIjoyNH2eoRQXeyJmcm9tIjoxMDI0LCJ0byI6MTAyNH0&localPriority=1&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 15 (2025, M4)",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva/noutbuki/noutbuki/applemacbook_air_15_2025_m4-ASgBAgICAkSg5A3cwqYVqOQN9Nlm?cd=1&f=ASgBAgECA0Sg5A3cwqYVqOQN9NlmsLMU_qGPAwJFnKEUE3siZnJvbSI6MTYsInRvIjoxNn2eoRQVeyJmcm9tIjo1MTIsInRvIjo1MTJ9&localPriority=1&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 15 (2025, M4)",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva/noutbuki/noutbuki/applemacbook_air_15_2025_m4-ASgBAgICAkSg5A3cwqYVqOQN9Nlm?cd=1&f=ASgBAgECA0Sg5A3cwqYVqOQN9NlmsLMU_qGPAwJFnKEUE3siZnJvbSI6MTYsInRvIjoxNn2eoRQVeyJmcm9tIjoyNTYsInRvIjoyNTZ9&localPriority=1&q=macbook"
     }
   ]
 }
