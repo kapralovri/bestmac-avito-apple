@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AvitoOffers from "@/components/AvitoOffers";
+import MarketTrends from "@/components/MarketTrends";
 import FAQ from "@/components/FAQ";
 import SEOHead from "@/components/SEOHead";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -47,6 +48,8 @@ const Buy = () => {
           <AvitoOffers />
         </section>
 
+        <MarketTrends />
+        
         <FAQ items={faqData.buy} title="Вопросы о покупке" />
       </main>
 
