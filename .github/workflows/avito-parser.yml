@@ -104,6 +104,7 @@ jobs:
           TOTAL_BATCHES: '3'
           PROXY_URL: ${{ secrets.PROXY_URL }}
           CHANGE_IP_URL: ${{ secrets.CHANGE_IP_URL }}
+          TELEGRAM_NOTIFY_URL: ${{ secrets.TELEGRAM_NOTIFY_URL }}
         run: |
           cd scripts/avito-parser
           if [ "$BATCH" = "all" ]; then
@@ -122,7 +123,7 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add public/data/avito-urls.json public/data/avito-prices.json
+          git add public/data/avito-urls.json public/data/avito-prices.json public/data/hot-deals.json
           BATCH_INFO="${{ steps.batch.outputs.batch }}"
           if [ "$BATCH_INFO" = "all" ]; then
             git commit -m "chore: update avito prices (full) [skip ci]"

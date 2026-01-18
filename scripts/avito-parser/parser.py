@@ -40,6 +40,13 @@ SCRIPT_DIR = Path(__file__).parent
 URLS_FILE = SCRIPT_DIR / "../../public/data/avito-urls.json"
 OUTPUT_FILE = SCRIPT_DIR / "../../public/data/avito-prices.json"
 BUYOUT_FILE = SCRIPT_DIR / "../../public/data/buyout.json"
+HOT_DEALS_FILE = SCRIPT_DIR / "../../public/data/hot-deals.json"
+
+# URL для отправки уведомлений в Telegram
+TELEGRAM_NOTIFY_URL = os.environ.get("TELEGRAM_NOTIFY_URL", "").strip()
+
+# Порог скидки для "горячих" предложений (15%)
+HOT_DEAL_DISCOUNT_THRESHOLD = 0.15
 
 # Минимальное количество объявлений для анализа
 MIN_SAMPLES_FOR_ANALYSIS = 10
@@ -76,6 +83,20 @@ class PriceStat:
     buyout_price: int
     samples_count: int
     updated_at: str
+
+
+@dataclass
+class HotDeal:
+    """Горячее предложение ниже рынка"""
+    model_name: str
+    processor: str
+    ram: int
+    ssd: int
+    price: int           # Цена объявления
+    median_price: int    # Медианная цена рынка
+    discount_percent: float  # Скидка от медианы (%)
+    url: str             # Ссылка на объявление
+    found_at: str        # Время обнаружения
 
 
 # User-Agent для запросов (разные браузеры)
@@ -210,7 +231,13 @@ def extract_price(price_text: str) -> Optional[int]:
 
 def parse_avito_page(url: str, page: int = 1) -> list[int]:
     """Спарсить одну страницу Avito и вернуть список цен"""
-    prices = []
+    listings = parse_avito_page_with_urls(url, page)
+    return [item["price"] for item in listings]
+
+
+def parse_avito_page_with_urls(url: str, page: int = 1) -> list[dict]:
+    """Спарсить одну страницу Avito и вернуть список объявлений с ценами и URL"""
+    listings = []
     
     # Добавляем номер страницы к URL
     page_url = url
@@ -264,7 +291,7 @@ def parse_avito_page(url: str, page: int = 1) -> list[int]:
                     continue
 
                 print(f"\n    ❌ 429 после {max_retries} попыток, пропускаем")
-                return prices
+                return listings
 
             response.raise_for_status()
             
@@ -304,8 +331,27 @@ def parse_avito_page(url: str, page: int = 1) -> list[int]:
                         if alt_price:
                             price = extract_price(alt_price.get_text())
                     
+                    # Ищем ссылку на объявление
+                    item_url = None
+                    link_elem = item.select_one('[data-marker="item-title"]')
+                    if link_elem:
+                        href = link_elem.get('href')
+                        if href:
+                            item_url = f"https://www.avito.ru{href}" if href.startswith('/') else href
+                    
+                    # Альтернативный поиск ссылки
+                    if not item_url:
+                        link_elem = item.select_one('a[itemprop="url"]')
+                        if link_elem:
+                            href = link_elem.get('href')
+                            if href:
+                                item_url = f"https://www.avito.ru{href}" if href.startswith('/') else href
+                    
                     if price:
-                        prices.append(price)
+                        listings.append({
+                            "price": price,
+                            "url": item_url or ""
+                        })
                         
                 except Exception:
                     continue
@@ -321,7 +367,7 @@ def parse_avito_page(url: str, page: int = 1) -> list[int]:
             else:
                 print(f"\n    ❌ Ошибка: {e}")
     
-    return prices
+    return listings
 
 
 def load_fallback_buyout() -> dict:
@@ -418,29 +464,38 @@ def calculate_buyout_price(market_price: int) -> int:
 
 
 def parse_entry(entry: dict, pages_count: int = DEFAULT_PAGES, 
-                fallback_lookup: Optional[dict] = None) -> Optional[PriceStat]:
-    """Спарсить одну конфигурацию из таблицы"""
+                fallback_lookup: Optional[dict] = None,
+                existing_prices: Optional[dict] = None) -> tuple[Optional[PriceStat], list[HotDeal]]:
+    """
+    Спарсить одну конфигурацию из таблицы.
+    Возвращает (PriceStat, list[HotDeal]) - статистику и найденные горячие сделки.
+    """
     model_name = entry.get("model_name", "")
     processor = entry.get("processor", "")
     ram = entry.get("ram", 0)
     ssd = entry.get("ssd", 0)
     url = entry.get("url", "")
     
+    hot_deals = []
+    
     if not url:
         print(f"  ⚠️ Пропуск {model_name} - нет URL")
-        return None
+        return None, hot_deals
     
     print(f"\n{'='*60}")
     print(f"🔍 {model_name} | {processor} | {ram}GB RAM | {ssd}GB SSD")
     print(f"{'='*60}")
     
+    all_listings = []
     all_prices = []
     
     # Парсим несколько страниц
     for page in range(1, pages_count + 1):
         print(f"  📄 Страница {page}/{pages_count}:", end=" ", flush=True)
-        page_prices = parse_avito_page(url, page)
+        page_listings = parse_avito_page_with_urls(url, page)
+        page_prices = [item["price"] for item in page_listings]
         print(f"✅ {len(page_prices)} цен")
+        all_listings.extend(page_listings)
         all_prices.extend(page_prices)
         
         # Если на странице мало объявлений, прекращаем
@@ -468,10 +523,10 @@ def parse_entry(entry: dict, pages_count: int = DEFAULT_PAGES,
                     buyout_price=fallback_price,  # Уже готовая цена выкупа
                     samples_count=0,  # 0 = данные из fallback
                     updated_at=datetime.now().isoformat()
-                )
+                ), hot_deals
         
         print(f"  ❌ Нет fallback данных, пропускаем")
-        return None
+        return None, hot_deals
     
     # Анализ цен с фокусом на плотность (IQR)
     min_price, max_price, median_price, dense_median = analyze_prices_iqr(all_prices)
@@ -479,11 +534,41 @@ def parse_entry(entry: dict, pages_count: int = DEFAULT_PAGES,
     # Расчет цены выкупа: -20% от плотной медианы, округление до 1000₽
     buyout_price = calculate_buyout_price(dense_median)
     
+    # Ищем горячие сделки (ниже медианы на 15%+)
+    # Используем существующую медиану, если есть (для стабильности)
+    key = (model_name, processor, ram, ssd)
+    reference_median = dense_median
+    if existing_prices and key in existing_prices:
+        existing_median = existing_prices[key].get("median_price", 0)
+        if existing_median > 0:
+            reference_median = existing_median
+    
+    threshold_price = reference_median * (1 - HOT_DEAL_DISCOUNT_THRESHOLD)
+    
+    for listing in all_listings:
+        if listing["price"] < threshold_price and listing["url"]:
+            discount = (reference_median - listing["price"]) / reference_median * 100
+            hot_deal = HotDeal(
+                model_name=model_name,
+                processor=processor,
+                ram=ram,
+                ssd=ssd,
+                price=listing["price"],
+                median_price=reference_median,
+                discount_percent=discount,
+                url=listing["url"],
+                found_at=datetime.now().isoformat()
+            )
+            hot_deals.append(hot_deal)
+            print(f"  🔥 Горячая сделка: {listing['price']:,} ₽ (-{discount:.1f}%)")
+    
     print(f"\n  📊 Результаты:")
     print(f"     • Собрано: {len(all_prices)} объявлений")
     print(f"     • Диапазон плотности: {min_price:,} - {max_price:,} ₽")
     print(f"     • Рыночная цена: {dense_median:,} ₽")
     print(f"     • 💰 Цена выкупа (-20%): {buyout_price:,} ₽")
+    if hot_deals:
+        print(f"     • 🔥 Горячих сделок: {len(hot_deals)}")
     
     return PriceStat(
         model_name=model_name,
@@ -496,7 +581,85 @@ def parse_entry(entry: dict, pages_count: int = DEFAULT_PAGES,
         buyout_price=buyout_price,
         samples_count=len(all_prices),
         updated_at=datetime.now().isoformat()
-    )
+    ), hot_deals
+
+
+def load_existing_hot_deals() -> set:
+    """Загрузить уже отправленные горячие сделки (по URL)"""
+    if not HOT_DEALS_FILE.exists():
+        return set()
+    
+    try:
+        with open(HOT_DEALS_FILE, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        return set(deal.get("url", "") for deal in data.get("deals", []))
+    except Exception as e:
+        print(f"⚠️ Ошибка загрузки hot-deals.json: {e}")
+        return set()
+
+
+def save_hot_deals(deals: list[HotDeal], existing_urls: set):
+    """Сохранить горячие сделки в JSON"""
+    # Загружаем существующие
+    existing_deals = []
+    if HOT_DEALS_FILE.exists():
+        try:
+            with open(HOT_DEALS_FILE, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                existing_deals = data.get("deals", [])
+        except Exception:
+            pass
+    
+    # Добавляем новые (только уникальные по URL)
+    new_deals = []
+    for deal in deals:
+        if deal.url not in existing_urls:
+            new_deals.append(asdict(deal))
+            existing_urls.add(deal.url)
+    
+    all_deals = existing_deals + new_deals
+    
+    # Храним только последние 100 сделок
+    all_deals = all_deals[-100:]
+    
+    result = {
+        "updated_at": datetime.now().isoformat(),
+        "deals": all_deals
+    }
+    
+    HOT_DEALS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with open(HOT_DEALS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(result, f, ensure_ascii=False, indent=2)
+    
+    return new_deals
+
+
+def send_telegram_notifications(deals: list[dict]):
+    """Отправить уведомления о горячих сделках в Telegram"""
+    if not TELEGRAM_NOTIFY_URL:
+        print("⚠️ TELEGRAM_NOTIFY_URL не настроен, пропускаем отправку")
+        return
+    
+    if not deals:
+        return
+    
+    print(f"\n📱 Отправка {len(deals)} уведомлений в Telegram...")
+    
+    try:
+        response = requests.post(
+            TELEGRAM_NOTIFY_URL,
+            json={"deals": deals},
+            headers={"Content-Type": "application/json"},
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            print(f"   ✅ Отправлено: {result.get('sent', 0)}/{result.get('total', 0)}")
+        else:
+            print(f"   ❌ Ошибка: {response.status_code} - {response.text}")
+    except Exception as e:
+        print(f"   ❌ Ошибка отправки: {e}")
 
 
 def parse_args():
@@ -672,8 +835,13 @@ def main():
         else:
             raise SystemExit(2)
 
+    # Загружаем уже отправленные горячие сделки (для дедупликации)
+    sent_hot_deal_urls = load_existing_hot_deals()
+    print(f"🔥 Уже отправленных горячих сделок: {len(sent_hot_deal_urls)}")
+
     # Парсим каждую конфигурацию
     stats = []
+    all_hot_deals = []
     total_listings = 0
     fallback_count = 0
     
@@ -682,13 +850,24 @@ def main():
         print(f"# [{i}/{len(entries)}] Конфигурация")
         print(f"{'#'*70}")
         
-        stat = parse_entry(entry, pages_count=pages_count, fallback_lookup=fallback_lookup)
+        stat, hot_deals = parse_entry(
+            entry, 
+            pages_count=pages_count, 
+            fallback_lookup=fallback_lookup,
+            existing_prices=existing_prices
+        )
+        
         if stat:
             stats.append(asdict(stat))
             if stat.samples_count == 0:
                 fallback_count += 1
             else:
                 total_listings += stat.samples_count
+        
+        # Собираем новые горячие сделки (не отправленные ранее)
+        for deal in hot_deals:
+            if deal.url not in sent_hot_deal_urls:
+                all_hot_deals.append(deal)
         
         # Большая пауза между конфигурациями (кроме последней)
         if i < len(entries):
@@ -755,6 +934,20 @@ def main():
     print(f"      • Обновлено: {updated}")
     print(f"      • Сохранено старых (429): {kept_old}")
     
+    # Обработка горячих сделок
+    if all_hot_deals:
+        print(f"\n🔥 Найдено горячих сделок: {len(all_hot_deals)}")
+        
+        # Сохраняем в JSON
+        new_deals = save_hot_deals(all_hot_deals, sent_hot_deal_urls)
+        print(f"   💾 Новых сохранено: {len(new_deals)}")
+        
+        # Отправляем уведомления в Telegram
+        if new_deals:
+            send_telegram_notifications(new_deals)
+    else:
+        print(f"\n🔥 Горячих сделок не найдено")
+    
     print("\n\n" + "=" * 70)
     print("✅ ГОТОВО!")
     print("=" * 70)
@@ -762,6 +955,7 @@ def main():
     print(f"   📈 Всего объявлений в базе: {total_listings_final:,}")
     print(f"   📋 Fallback в этом запуске: {fallback_count}")
     print(f"   🏷️ Всего конфигураций в базе: {len(final_stats)}")
+    print(f"   🔥 Горячих сделок: {len(all_hot_deals)}")
     print(f"   💾 Сохранено в: {OUTPUT_FILE}")
     print("=" * 70)
 
