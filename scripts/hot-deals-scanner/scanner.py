@@ -179,29 +179,73 @@ def extract_model_from_title(title: str) -> Optional[str]:
     return None
 
 
-def parse_listings(session: requests.Session) -> list[dict]:
-    """Парсит объявления со страницы Авито"""
+def parse_listings(session: requests.Session, max_retries: int = 3) -> list[dict]:
+    """Парсит объявления со страницы Авито с retry-логикой"""
     listings = []
     
+    for attempt in range(max_retries):
+        try:
+            print(f"🔍 Сканирую (попытка {attempt + 1}/{max_retries}): {SCAN_URL[:70]}...")
+            
+            # Добавляем рандомную задержку
+            time.sleep(random.uniform(3, 7))
+            
+            # Увеличиваем таймаут и добавляем connect timeout
+            response = session.get(SCAN_URL, timeout=(15, 45))
+            
+            if response.status_code == 429:
+                print("⚠️ Rate limit (429)! Меняю IP...")
+                change_ip()
+                time.sleep(random.uniform(5, 10))
+                continue
+            
+            if response.status_code == 403:
+                print("⚠️ Доступ запрещён (403)! Меняю IP...")
+                change_ip()
+                time.sleep(random.uniform(5, 10))
+                continue
+            
+            if response.status_code != 200:
+                print(f"❌ Ошибка HTTP: {response.status_code}")
+                if attempt < max_retries - 1:
+                    change_ip()
+                    time.sleep(random.uniform(5, 10))
+                    continue
+                return []
+            
+            html = response.text
+            break  # Успешный запрос, выходим из цикла
+            
+        except requests.exceptions.Timeout as e:
+            print(f"⏱️ Таймаут (попытка {attempt + 1}): {e}")
+            if attempt < max_retries - 1:
+                print("🔄 Меняю IP и повторяю...")
+                change_ip()
+                time.sleep(random.uniform(10, 20))
+                continue
+            print("❌ Все попытки исчерпаны (таймаут)")
+            return []
+            
+        except requests.exceptions.ConnectionError as e:
+            print(f"🔌 Ошибка соединения (попытка {attempt + 1}): {e}")
+            if attempt < max_retries - 1:
+                print("🔄 Меняю IP и повторяю...")
+                change_ip()
+                time.sleep(random.uniform(10, 20))
+                continue
+            print("❌ Все попытки исчерпаны (соединение)")
+            return []
+            
+        except Exception as e:
+            print(f"❌ Неожиданная ошибка: {e}")
+            return []
+    else:
+        # Цикл завершился без break — все попытки неудачны
+        print("❌ Все попытки исчерпаны")
+        return []
+    
+    # Парсим HTML
     try:
-        print(f"🔍 Сканирую: {SCAN_URL[:80]}...")
-        
-        # Добавляем рандомную задержку
-        time.sleep(random.uniform(2, 5))
-        
-        response = session.get(SCAN_URL, timeout=30)
-        
-        if response.status_code == 429:
-            print("⚠️ Rate limit! Меняю IP...")
-            change_ip()
-            return []
-        
-        if response.status_code != 200:
-            print(f"❌ Ошибка: {response.status_code}")
-            return []
-        
-        html = response.text
-        
         # Ищем JSON данные в HTML
         # Авито хранит данные в __initialData__
         json_match = re.search(r'window\.__initialData__\s*=\s*"(.+?)";', html)
@@ -274,7 +318,7 @@ def parse_listings(session: requests.Session) -> list[dict]:
         print(f"📦 Найдено {len(listings)} объявлений")
         
     except Exception as e:
-        print(f"❌ Ошибка парсинга: {e}")
+        print(f"❌ Ошибка парсинга HTML: {e}")
     
     return listings
 
