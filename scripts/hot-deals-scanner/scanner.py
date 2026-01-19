@@ -16,8 +16,10 @@ from typing import Optional
 from pathlib import Path
 
 # Конфигурация
-SCAN_URL = "https://www.avito.ru/moskva_i_mo/noutbuki/apple/b_u-ASgBAgICAkTwvA2I0jSo5A302WY?cd=1&f=ASgBAQICAkTwvA2I0jSo5A302WYBQJ7kDdTIn7YVvLGeFajjlxXCmZYVsNjvEdTY7xGc2O8RsqPEEZKjxBGOza0QmM2tEKaaxhDWzK0Q&localPriority=1&q=macbook&s=104"
-HOT_DEAL_THRESHOLD = 0.85  # 15% ниже медианы
+# URL можно переопределить через env переменную SCAN_URL
+DEFAULT_SCAN_URL = "https://www.avito.ru/moskva_i_mo/noutbuki/apple/b_u-ASgBAgICAkTwvA2I0jSo5A302WY?cd=1&f=ASgBAQICAkTwvA2I0jSo5A302WYBQJ7kDdTIn7YVvLGeFajjlxXCmZYVsNjvEdTY7xGc2O8RsqPEEZKjxBGOza0QmM2tEKaaxhDWzK0Q&localPriority=1&q=macbook&s=104"
+SCAN_URL = os.environ.get('SCAN_URL', DEFAULT_SCAN_URL)
+HOT_DEAL_THRESHOLD = 0.90  # 10% ниже медианы
 PRICES_FILE = Path("public/data/avito-prices.json")
 SEEN_DEALS_FILE = Path("public/data/seen-hot-deals.json")
 
@@ -43,14 +45,23 @@ def load_prices_database() -> dict:
     with open(PRICES_FILE, 'r', encoding='utf-8') as f:
         data = json.load(f)
     
-    # Создаём словарь model_name -> median_price
+    # Создаём словарь для поиска: model_name -> list of {ram, ssd, median_price}
+    # Также создаём упрощённый словарь model_name -> min median для сравнения
     prices = {}
-    for stat in data.get('statistics', []):
-        key = stat.get('model_name', '')
-        if key and stat.get('median'):
-            prices[key] = stat['median']
+    
+    # Поле называется 'stats', не 'statistics'
+    for stat in data.get('stats', []):
+        model_name = stat.get('model_name', '')
+        median = stat.get('median_price')  # Поле median_price, не median
+        
+        if model_name and median and median > 0:
+            # Сохраняем минимальную медиану для модели (базовая конфигурация)
+            if model_name not in prices or median < prices[model_name]:
+                prices[model_name] = median
     
     print(f"📊 Загружено {len(prices)} моделей из базы цен")
+    if prices:
+        print(f"   Примеры: {list(prices.items())[:3]}")
     return prices
 
 
@@ -297,10 +308,11 @@ def find_hot_deals(listings: list[dict], prices_db: dict, seen_urls: set) -> lis
         if not median_price:
             continue
         
-        # Проверяем скидку
+        # Проверяем скидку (цена должна быть ниже порога от медианы)
+        threshold_price = median_price * HOT_DEAL_THRESHOLD
         discount = 1 - (price / median_price)
         
-        if discount >= (1 - HOT_DEAL_THRESHOLD):  # >= 15%
+        if price <= threshold_price:  # цена <= 90% от медианы (скидка >= 10%)
             hot_deal = HotDeal(
                 url=url,
                 title=title,

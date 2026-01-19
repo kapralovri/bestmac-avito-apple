@@ -1,5 +1,5 @@
 # Сканер горячих предложений MacBook с Авито
-# Запускается каждые 15 минут, ищет объявления ниже медианы на 15%+
+# Запускается каждые 15 минут, ищет объявления ниже медианы на 10%+
 
 name: Hot Deals Scanner
 
@@ -45,6 +45,7 @@ jobs:
           PROXY_URL: ${{ secrets.PROXY_URL }}
           CHANGE_IP_URL: ${{ secrets.CHANGE_IP_URL }}
           TELEGRAM_NOTIFY_URL: ${{ secrets.TELEGRAM_NOTIFY_URL }}
+          SCAN_URL: ${{ secrets.SCAN_URL }}  # Опционально: можно переопределить URL для сканирования
         run: |
           python scripts/hot-deals-scanner/scanner.py
       
