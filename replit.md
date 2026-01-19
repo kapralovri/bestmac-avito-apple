@@ -36,6 +36,14 @@ src/
 - Corporate sales (Для юр.лиц)
 
 ## Recent Changes
+- 2026-01-19: Completed migration to Replit environment
+  - Removed unused Supabase integration (was set up but never used)
+  - Removed @supabase/supabase-js package
+  - PostgreSQL database available via DATABASE_URL if needed
 - 2026-01-09: Migrated from Lovable to Replit environment
   - Updated Vite config to use port 5000
   - Configured allowedHosts for Replit proxy support
+
+## Notes
+- The frontend fetches Avito listings from an external Vercel backend (bestmac-avito-back.vercel.app)
+- CORS is configured for production domain (bestmac.ru), so dev environment shows CORS errors for Avito data - this is expected
