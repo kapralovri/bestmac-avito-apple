@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-01-19T06:14:16.682796",
-  "total_listings": 2277,
+  "generated_at": "2026-01-19T23:51:27.038093",
+  "total_listings": 2227,
   "models": [
     "MacBook Air 13 (2020, M1)",
     "MacBook Air 13 (2022, M2)",
@@ -312,12 +312,12 @@
       "processor": "Apple M3",
       "ram": 16,
       "ssd": 256,
-      "median_price": 85590,
-      "min_price": 84190,
-      "max_price": 91900,
-      "buyout_price": 68000,
-      "samples_count": 100,
-      "updated_at": "2026-01-17T23:20:21.022322"
+      "median_price": 85750,
+      "min_price": 83500,
+      "max_price": 91990,
+      "buyout_price": 69000,
+      "samples_count": 50,
+      "updated_at": "2026-01-19T23:39:59.093833"
     },
     {
       "model_name": "MacBook Air 15 (2024, M3)",

@@ -1,6 +1,6 @@
 {
   "description": "Таблица ссылок для парсинга Авито. Синхронизируется из Google Sheets.",
-  "updated_at": "2026-01-17",
+  "updated_at": "2026-01-19",
   "source": "https://docs.google.com/spreadsheets/d/1hq9JqsWLyGVFVtzfWhZbwylSEkWLpSptWBirsh4zsy0",
   "entries": [
     {
@@ -29,14 +29,14 @@
       "processor": "Apple M1",
       "ram": 16,
       "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgECA0Se5A3WzK0QoOQNzrfrEajkDfTZZgJFnKEUE3siZnJvbSI6MTYsInRvIjoxNn2eoRQVeyJmcm9tIjo1MTIsInRvIjo1MTJ9&localPriority=0&q=macbook"
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgECA0Se5A3WzK0QoOQNzrfrEajkDfTZZgJFnKEUE3siZnJvbSI6MTYsInRvIjoxNn2eoRQVeyJmcm9tIjo1MDAsInRvIjo1MTJ9&localPriority=0&q=macbook"
     },
     {
       "model_name": "MacBook Air 13 (2020, M1)",
       "processor": "Apple M1",
       "ram": 16,
       "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgECA0Se5A3WzK0QoOQNzrfrEajkDfTZZgJFnKEUE3siZnJvbSI6MTYsInRvIjoxNn2eoRQXeyJmcm9tIjoxMDI0LCJ0byI6MTAyNH0&localPriority=0&q=macbook"
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgECA0Se5A3WzK0QoOQNzrfrEajkDfTZZgJFnKEUE3siZnJvbSI6MTYsInRvIjoxNn2eoRQXeyJmcm9tIjoxMDAwLCJ0byI6MTAyNH0&localPriority=0&q=macbook"
     },
     {
       "model_name": "MacBook Air 13 (2022, M2)",
@@ -218,7 +218,7 @@
       "processor": "Apple M4",
       "ram": 24,
       "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_15_2025_m4-ASgBAgICAkSg5A3cwqYVqOQN9Nlm?cd=1&f=ASgBAgECAkSg5A3cwqYVqOQN9NlmAkWcoRQTeyJmcm9tIjoyNCwidG8iOjI0fZ6hFBd7ImZyb20iOjEwMjQsInRvIjoxMDI0fQ&localPriority=1&q=macbook"
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_15_2025_m4-ASgBAgICAkSg5A3cwqYVqOQN9Nlm?cd=1&f=ASgBAgECAkSg5A3cwqYVqOQN9NlmAkWcoRQTeyJmcm9tIjoyNCwidG8iOjI0fZ6hFBd7ImZyb20iOjEwMDAsInRvIjoxMDI0fQ&localPriority=1&q=macbook"
     },
     {
       "model_name": "MacBook Pro 13 (2020, M1)",
@@ -246,7 +246,7 @@
       "processor": "Apple M1",
       "ram": 16,
       "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/ram16gb-ASgCAgECAUWcoRQTeyJmcm9tIjoxNiwidG8iOjE2fQ?cd=1&f=ASgBAgECAkSg5A2QuOsRsLMU_qGPAwJFnKEUE3siZnJvbSI6MTYsInRvIjoxNn2eoRQXeyJmcm9tIjoxMDI0LCJ0byI6MTAyNH0&localPriority=1&q=macbook"
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/ram16gb-ASgCAgECAUWcoRQTeyJmcm9tIjoxNiwidG8iOjE2fQ?cd=1&f=ASgBAgECAkSg5A2QuOsRsLMU_qGPAwJFnKEUE3siZnJvbSI6MTYsInRvIjoxNn2eoRQXeyJmcm9tIjoxMDAwLCJ0byI6MTAyNH0&localPriority=1&q=macbook"
     },
     {
       "model_name": "MacBook Pro 13 (2020, M1)",
@@ -309,21 +309,21 @@
       "processor": "Apple M1 Pro",
       "ram": 16,
       "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_14_2021-ASgBAgICAkSg5A24uOsRqOQN9Nlm?cd=1&f=ASgBAgECA0Se5A2Oza0QoOQNuLjrEajkDfTZZgJFnKEUE3siZnJvbSI6MTYsInRvIjoxNn2eoRQXeyJmcm9tIjoxMDI0LCJ0byI6MTAyNH0&localPriority=1&q=macbook"
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_14_2021-ASgBAgICAkSg5A24uOsRqOQN9Nlm?cd=1&f=ASgBAgECA0Se5A2Oza0QoOQNuLjrEajkDfTZZgJFnKEUE3siZnJvbSI6MTYsInRvIjoxNn2eoRQXeyJmcm9tIjoxMDAwLCJ0byI6MTAyNH0&localPriority=1&q=macbook"
     },
     {
       "model_name": "MacBook Pro 14 (2021)",
       "processor": "Apple M1 Pro",
       "ram": 32,
       "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki?cd=1&f=ASgBAQECAUSwsxT~oY8DAUCg5A0kuLjrEb656xECRZyhFBN7ImZyb20iOjMyLCJ0byI6MzJ9nqEUF3siZnJvbSI6MTAyNCwidG8iOjEwMjR9&localPriority=1&q=macbook"
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki?cd=1&f=ASgBAgECAkSg5A24uOsRsLMU_qGPAwJFnKEUE3siZnJvbSI6MzIsInRvIjozMn2eoRQXeyJmcm9tIjoxMDAwLCJ0byI6MTAyNH0&localPriority=1&q=macbook"
     },
     {
       "model_name": "MacBook Pro 14 (2021)",
       "processor": "Apple M1 Max",
       "ram": 64,
       "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki?cd=1&f=ASgBAQECAUSwsxT~oY8DAUCg5A0kuLjrEb656xECRZyhFBN7ImZyb20iOjY0LCJ0byI6NjR9nqEUF3siZnJvbSI6MTAyNCwidG8iOjEwMjR9&localPriority=1&q=macbook"
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki?cd=1&f=ASgBAgECAkSg5A24uOsRsLMU_qGPAwJFnKEUE3siZnJvbSI6NjQsInRvIjo2NH2eoRQXeyJmcm9tIjoxMDAwLCJ0byI6MTAyNH0&localPriority=1&q=macbook"
     },
     {
       "model_name": "MacBook Pro 14 (2023)",

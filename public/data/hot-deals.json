@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-01-18T18:23:29.874652",
+  "updated_at": "2026-01-19T23:51:27.039536",
   "deals": [
     {
       "model_name": "MacBook Pro 14 (2023)",
@@ -583,6 +583,50 @@
       "discount_percent": 19.985228042100083,
       "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_65_tsiklov1_tb_m4_max_40c_48_gb_7855055152?context=H4sIAAAAAAAA_wE_AMD_YToyOntzOjEzOiJsb2NhbFByaW9yaXR5IjtiOjE7czoxOiJ4IjtzOjE2OiIxeUpMWExaeVE0amo5RVdXIjt9s32r4T8AAAA",
       "found_at": "2026-01-18T18:07:16.374554"
+    },
+    {
+      "model_name": "MacBook Air 15 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 256,
+      "price": 72000,
+      "median_price": 85590,
+      "discount_percent": 15.878023133543639,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_15_2024_m3_256_gb_m3_8-core_ram_16_gb_gpu_10-core_7793121771?context=H4sIAAAAAAAA_wE_AMD_YToyOntzOjEzOiJsb2NhbFByaW9yaXR5IjtiOjE7czoxOiJ4IjtzOjE2OiJXU05Zc2xHMks1aGR0bWVKIjt9BVqXsT8AAAA",
+      "found_at": "2026-01-19T23:39:59.093785"
+    },
+    {
+      "model_name": "MacBook Air 15 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 256,
+      "price": 69000,
+      "median_price": 85590,
+      "discount_percent": 19.38310550297932,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_15_m3_16256_space_gray_7904494010?context=H4sIAAAAAAAA_wE_AMD_YToyOntzOjEzOiJsb2NhbFByaW9yaXR5IjtiOjE7czoxOiJ4IjtzOjE2OiJXU05Zc2xHMks1aGR0bWVKIjt9BVqXsT8AAAA",
+      "found_at": "2026-01-19T23:39:59.093811"
+    },
+    {
+      "model_name": "MacBook Air 15 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 256,
+      "price": 70000,
+      "median_price": 85590,
+      "discount_percent": 18.214744713167427,
+      "url": "https://www.avito.ru/volgogradskaya_oblast_volzhskiy/noutbuki/macbook_air_136_m3_16256_7815243984?slocation=107620&context=H4sIAAAAAAAA_wE_AMD_YToyOntzOjEzOiJsb2NhbFByaW9yaXR5IjtiOjE7czoxOiJ4IjtzOjE2OiJXU05Zc2xHMks1aGR0bWVKIjt9BVqXsT8AAAA",
+      "found_at": "2026-01-19T23:39:59.093817"
+    },
+    {
+      "model_name": "MacBook Air 15 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 256,
+      "price": 65000,
+      "median_price": 85590,
+      "discount_percent": 24.056548662226895,
+      "url": "https://www.avito.ru/krasnoyarsk/noutbuki/prodaetsya_mak_buk_air_na_m3_chipe_7907374808?context=H4sIAAAAAAAA_wE_AMD_YToyOntzOjEzOiJsb2NhbFByaW9yaXR5IjtiOjE7czoxOiJ4IjtzOjE2OiJXU05Zc2xHMks1aGR0bWVKIjt9BVqXsT8AAAA",
+      "found_at": "2026-01-19T23:39:59.093822"
     }
   ]
 }
