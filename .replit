@@ -24,6 +24,10 @@ author = "agent"
 task = "workflow.run"
 args = "Start application"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Avito Scanner Task"
+
 [[workflows.workflow]]
 name = "Start application"
 author = "agent"
@@ -35,6 +39,17 @@ outputType = "webview"
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Avito Scanner Task"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "while true; do python3 scripts/hot-deals-scanner/scanner.py; sleep 900; done"
+
+[workflows.workflow.metadata]
+outputType = "console"
 
 [[ports]]
 localPort = 5000

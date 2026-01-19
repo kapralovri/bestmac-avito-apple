@@ -96,26 +96,32 @@ def get_session() -> requests.Session:
     
     proxy_url = os.environ.get('PROXY_URL', '')
     if proxy_url:
+        if '@' not in proxy_url and ':' in proxy_url:
+            parts = proxy_url.split(':')
+            if len(parts) == 4:
+                ip, port, user, password = parts
+                proxy_url = f"{user}:{password}@{ip}:{port}"
+        
         proxies = {
             'http': f'http://{proxy_url}',
             'https': f'http://{proxy_url}'
         }
         session.proxies.update(proxies)
-        print(f"🔒 Прокси настроен")
+        print(f"🔒 Прокси настроен: {proxy_url.split('@')[-1]}")
     
     session.headers.update({
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'User-Agent': random.choice([
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0'
+        ]),
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
         'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-        'Accept-Encoding': 'gzip, deflate, br',
+        'Referer': 'https://www.google.com/',
         'DNT': '1',
         'Connection': 'keep-alive',
         'Upgrade-Insecure-Requests': '1',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'none',
-        'Sec-Fetch-User': '?1',
-        'Cache-Control': 'max-age=0',
     })
     
     return session
@@ -179,7 +185,7 @@ def extract_model_from_title(title: str) -> Optional[str]:
     return None
 
 
-def parse_listings(session: requests.Session, max_retries: int = 3) -> list[dict]:
+def parse_listings(session: requests.Session, max_retries: int = 5) -> list[dict]:
     """Парсит объявления со страницы Авито с retry-логикой"""
     listings = []
     
@@ -191,7 +197,7 @@ def parse_listings(session: requests.Session, max_retries: int = 3) -> list[dict
             time.sleep(random.uniform(3, 7))
             
             # Увеличиваем таймаут и добавляем connect timeout
-            response = session.get(SCAN_URL, timeout=(15, 45))
+            response = session.get(SCAN_URL, timeout=(20, 60))
             
             if response.status_code == 429:
                 print("⚠️ Rate limit (429)! Меняю IP...")
