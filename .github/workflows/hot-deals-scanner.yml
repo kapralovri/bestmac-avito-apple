@@ -1,0 +1,63 @@
+# Сканер горячих предложений MacBook с Авито
+# Запускается каждые 15 минут, ищет объявления ниже медианы на 15%+
+
+name: Hot Deals Scanner
+
+on:
+  schedule:
+    # Каждые 15 минут
+    - cron: '*/15 * * * *'
+  
+  # Ручной запуск
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+      
+      - name: Pull latest changes
+        run: |
+          git pull --rebase origin main || true
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: scripts/hot-deals-scanner/requirements.txt
+      
+      - name: Install dependencies
+        run: |
+          pip install -r scripts/hot-deals-scanner/requirements.txt
+      
+      - name: Run hot deals scanner
+        env:
+          PROXY_URL: ${{ secrets.PROXY_URL }}
+          CHANGE_IP_URL: ${{ secrets.CHANGE_IP_URL }}
+          TELEGRAM_NOTIFY_URL: ${{ secrets.TELEGRAM_NOTIFY_URL }}
+        run: |
+          python scripts/hot-deals-scanner/scanner.py
+      
+      - name: Check for changes
+        id: changes
+        run: |
+          git diff --quiet public/data/seen-hot-deals.json 2>/dev/null || echo "changed=true" >> $GITHUB_OUTPUT
+      
+      - name: Commit and push
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add public/data/seen-hot-deals.json
+          git commit -m "chore: update seen hot deals [skip ci]"
+          git push

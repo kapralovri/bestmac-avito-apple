@@ -1,15 +1,18 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 interface HotDeal {
-  model_name: string;
-  processor: string;
-  ram: number;
-  ssd: number;
+  // From main parser
+  model_name?: string;
+  processor?: string;
+  ram?: number;
+  ssd?: number;
+  // From hot deals scanner
+  model?: string;
+  title?: string;
+  // Common fields
   price: number;
   median_price: number;
   discount_percent: number;
@@ -57,7 +60,7 @@ async function sendTelegramMessage(botToken: string, chatId: string, text: strin
   }
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -91,16 +94,38 @@ serve(async (req) => {
     for (const deal of deals) {
       const discountText = deal.discount_percent.toFixed(0);
       
-      const message = `🔥 <b>Горячее предложение!</b>
+      // Determine model name (from scanner or main parser)
+      const modelName = deal.model || deal.model_name || "MacBook";
+      const hasSpecs = deal.processor && deal.ram && deal.ssd;
+      
+      let message: string;
+      
+      if (hasSpecs) {
+        // Full specs from main parser
+        message = `🔥 <b>Горячее предложение!</b>
 
-📱 <b>${deal.model_name}</b>
-⚙️ ${deal.processor} / ${deal.ram}GB / ${formatSsd(deal.ssd)}
+📱 <b>${modelName}</b>
+⚙️ ${deal.processor} / ${deal.ram}GB / ${formatSsd(deal.ssd!)}
 
 💰 Цена: <b>${formatPrice(deal.price)}</b>
 📊 Медиана рынка: ${formatPrice(deal.median_price)}
 📉 Скидка: <b>-${discountText}%</b>
 
 🏷 Выгода: ${formatPrice(deal.median_price - deal.price)}`;
+      } else {
+        // From hot deals scanner (less details)
+        const title = deal.title || modelName;
+        message = `🔥 <b>Горячее предложение!</b>
+
+📱 <b>${modelName}</b>
+📝 ${title.length > 60 ? title.substring(0, 60) + '...' : title}
+
+💰 Цена: <b>${formatPrice(deal.price)}</b>
+📊 Медиана рынка: ${formatPrice(deal.median_price)}
+📉 Скидка: <b>-${discountText}%</b>
+
+🏷 Выгода: ${formatPrice(deal.median_price - deal.price)}`;
+      }
 
       const inlineKeyboard = {
         inline_keyboard: [
@@ -112,9 +137,9 @@ serve(async (req) => {
       const sent = await sendTelegramMessage(botToken, chatId, message, inlineKeyboard);
       if (sent) {
         successCount++;
-        console.log(`✓ Sent notification for ${deal.model_name}`);
+        console.log(`✓ Sent notification for ${modelName}`);
       } else {
-        console.error(`✗ Failed to send notification for ${deal.model_name}`);
+        console.error(`✗ Failed to send notification for ${modelName}`);
       }
 
       // Delay between messages to avoid Telegram rate limits
@@ -134,8 +159,9 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Error in telegram-notify:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
