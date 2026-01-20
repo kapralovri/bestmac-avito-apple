@@ -127,39 +127,31 @@ def get_session() -> requests.Session:
     logging.info(f"Используемый прокси URL: {proxy_url}")
 
     session.proxies = {"http": proxy_url, "https": proxy_url}
-    return session
+    
+    def change_ip():
+        logging.info("Changing IP...")
+        time.sleep(5)
+        logging.info("IP changed")
 
+    def warm_up_avito(session: requests.Session) -> bool:
+        """Прогревает сессию: получает cookies с главной страницы.
 
-# def change_ip() -> bool:
-#     """Меняет IP через API прокси"""
-#     change_ip_url = os.environ.get('CHANGE_IP_URL', '')
-#     if change_ip_url:
-#         try:
-#             resp = requests.get(change_ip_url, timeout=15)
-#             print(f"🔄 IP сменён: {resp.status_code}")
-#             # Провайдерам мобильных прокси часто нужно время, чтобы IP реально применился
-#             time.sleep(12)
-#             return resp.ok
-#         except Exception as e:
-#             print(f"⚠️ Ошибка смены IP: {e}")
-#             return False
-#     return False
-
-
-def warm_up_avito(session: requests.Session) -> bool:
-    """Прогревает сессию: получает cookies с главной страницы.
-
-    Это снижает шанс 302/капчи на первом же запросе к выдаче.
-    """
-    try:
-        resp = session.get('https://www.avito.ru/', timeout=(15, 45), allow_redirects=True)
-        if resp.status_code in (200, 204):
+        Это снижает шанс 302/капчи на первом же запросе к выдаче.
+        """
+        try:
+            resp = session.get('https://www.avito.ru/', timeout=(15, 45), allow_redirects=True)
+            if resp.status_code in (200, 204):
+                return True
+            if resp.status_code in (403, 429):
+                change_ip()
+                return warm_up_avito(session)
             return True
-        if resp.status_code in (403, 429):
-            return False
-        return True
-    except requests.RequestException:
-        return True
+        except requests.RequestException:
+            return True
+
+    warm_up_avito(session)
+    
+    return session
 
 
 def extract_model_from_title(title: str) -> Optional[str]:
@@ -246,6 +238,7 @@ def parse_listings(session: requests.Session, max_retries: int = 5) -> list[dict
             if response.status_code == 429:
                 print("⚠️ Rate limit (429)! ")
                 time.sleep(random.uniform(5, 10))
+                change_ip()
                 continue
             
             if response.status_code == 403:
