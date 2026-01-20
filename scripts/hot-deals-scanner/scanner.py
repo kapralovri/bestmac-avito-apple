@@ -14,6 +14,9 @@ from dataclasses import dataclass, asdict
 from datetime import datetime
 from typing import Optional
 from pathlib import Path
+import logging
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Конфигурация
 # URL можно переопределить через env переменную SCAN_URL
@@ -93,53 +96,37 @@ def save_seen_deals(seen_urls: set):
 def get_session() -> requests.Session:
     """Создаёт сессию с прокси"""
     session = requests.Session()
-    
+    logging.debug("Создание сессии с прокси")
+
     def normalize_proxy_url(raw: str) -> str:
         raw = (raw or "").strip().strip('"').strip("'")
+        logging.debug(f"Исходный прокси URL: {raw}")
         if not raw:
+            logging.warning("Прокси URL пустой")
             return ""
 
-        # Поддержка форматов:
-        # - http://user:pass@host:port
-        # - user:pass@host:port
-        # - host:port:user:pass
-        # - host:port
+        # Поддержка форматов
         if raw.startswith(("http://", "https://", "socks5://")):
             return raw
         parts = raw.split(":")
         if len(parts) == 4 and "@" not in raw:
             host, port, user, password = parts
-            return f"http://{user}:{password}@{host}:{port}"
+            proxy_url = f"http://{user}:{password}@{host}:{port}"
+            logging.debug(f"Прокси URL после нормализации: {proxy_url}")
+            return proxy_url
         if "@" in raw:
-            return f"http://{raw}"
-        return f"http://{raw}"
+            proxy_url = f"http://{raw}"
+            logging.debug(f"Прокси URL после нормализации: {proxy_url}")
+            return proxy_url
+        proxy_url = f"http://{raw}"
+        logging.debug(f"Прокси URL после нормализации: {proxy_url}")
+        return proxy_url
 
     proxy_url_raw = os.environ.get('PROXY_URL', '')
     proxy_url = normalize_proxy_url(proxy_url_raw)
-    if proxy_url:
-        session.proxies.update({'http': proxy_url, 'https': proxy_url})
-        # Печатаем только host:port (без кредов)
-        printable = proxy_url.split('@')[-1].replace('http://', '').replace('https://', '')
-        print(f"🔒 Прокси настроен: {printable}")
-    else:
-        print("⚠️ PROXY_URL не задан — без прокси Авито часто отдаёт 429/блок")
-    
-    session.headers.update({
-        'User-Agent': random.choice([
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0'
-        ]),
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-        'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-        'Referer': 'https://www.avito.ru/',
-        'DNT': '1',
-        # Прокси часто рвёт keep-alive соединения; для стабильности проще закрывать.
-        'Connection': 'close',
-        'Upgrade-Insecure-Requests': '1',
-    })
-    
+    logging.info(f"Используемый прокси URL: {proxy_url}")
+
+    session.proxies = {"http": proxy_url, "https": proxy_url}
     return session
 
 
@@ -257,13 +244,13 @@ def parse_listings(session: requests.Session, max_retries: int = 5) -> list[dict
             response = session.get(scan_url, timeout=(15, 75), allow_redirects=True)
             
             if response.status_code == 429:
-                print("⚠️ Rate limit (429)! Меняю IP...")
+                print("⚠️ Rate limit (429)! Меняя IP...")
                 change_ip()
                 time.sleep(random.uniform(5, 10))
                 continue
             
             if response.status_code == 403:
-                print("⚠️ Доступ запрещён (403)! Меняю IP...")
+                print("⚠️ Доступ запрещён (403)! Меняя IP...")
                 change_ip()
                 time.sleep(random.uniform(5, 10))
                 try:
@@ -278,7 +265,7 @@ def parse_listings(session: requests.Session, max_retries: int = 5) -> list[dict
             # но на Авито иногда прилетает 302 без нормального завершения.
             if response.status_code in (301, 302, 303, 307, 308):
                 location = response.headers.get('Location', '')
-                print(f"⚠️ Редирект {response.status_code} -> {location[:60]}... Меняю IP...")
+                print(f"⚠️ Редирект {response.status_code} -> {location[:60]}... Меняя IP...")
                 change_ip()
                 time.sleep(random.uniform(8, 15))
                 try:
@@ -307,7 +294,7 @@ def parse_listings(session: requests.Session, max_retries: int = 5) -> list[dict
 
             # Детект антибот страницы по содержимому
             if looks_like_block(html):
-                print("⚠️ Похоже на антибот/капчу по содержимому. Меняю IP...")
+                print("⚠️ Похоже на антибот/капчу по содержимому. Меняя IP...")
                 if attempt < max_retries - 1:
                     change_ip()
                     time.sleep(random.uniform(10, 20))
@@ -325,7 +312,7 @@ def parse_listings(session: requests.Session, max_retries: int = 5) -> list[dict
         except requests.exceptions.Timeout as e:
             print(f"⏱️ Таймаут (попытка {attempt + 1}): {e}")
             if attempt < max_retries - 1:
-                print("🔄 Меняю IP и повторяю...")
+                print("🔄 Меняя IP и повторяю...")
                 change_ip()
                 time.sleep(random.uniform(10, 20))
                 try:
@@ -341,7 +328,7 @@ def parse_listings(session: requests.Session, max_retries: int = 5) -> list[dict
         except requests.exceptions.ConnectionError as e:
             print(f"🔌 Ошибка соединения (попытка {attempt + 1}): {e}")
             if attempt < max_retries - 1:
-                print("🔄 Меняю IP и повторяю...")
+                print("🔄 Меняя IP и повторяю...")
                 change_ip()
                 time.sleep(random.uniform(10, 20))
                 try:

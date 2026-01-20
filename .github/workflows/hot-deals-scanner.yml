@@ -4,12 +4,16 @@
 name: Hot Deals Scanner
 
 on:
+  push:
+    branches:
+      - main
   schedule:
-    # Каждые 15 минут
-    - cron: '*/15 * * * *'
-  
-  # Ручной запуск
-  workflow_dispatch:
+    - cron: '0 0 * * *' # Запуск каждый день в полночь
+  workflow_dispatch: # Вручную
+  issues:
+    types: [opened, edited]
+  pull_request:
+    types: [opened, synchronize]
 
 jobs:
   scan:
