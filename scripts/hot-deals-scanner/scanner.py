@@ -122,7 +122,7 @@ def get_session() -> requests.Session:
         logging.debug(f"Прокси URL после нормализации: {proxy_url}")
         return proxy_url
 
-    proxy_url_raw = os.environ.get('PROXY_URL', '')
+    proxy_url_raw = os.environ.get('PROXY_URL', '45.153.73.189:11223:DalSdwuMhy:ebjGk5Zwxz')
     proxy_url = normalize_proxy_url(proxy_url_raw)
     logging.info(f"Используемый прокси URL: {proxy_url}")
 
@@ -130,20 +130,20 @@ def get_session() -> requests.Session:
     return session
 
 
-def change_ip() -> bool:
-    """Меняет IP через API прокси"""
-    change_ip_url = os.environ.get('CHANGE_IP_URL', '')
-    if change_ip_url:
-        try:
-            resp = requests.get(change_ip_url, timeout=15)
-            print(f"🔄 IP сменён: {resp.status_code}")
-            # Провайдерам мобильных прокси часто нужно время, чтобы IP реально применился
-            time.sleep(12)
-            return resp.ok
-        except Exception as e:
-            print(f"⚠️ Ошибка смены IP: {e}")
-            return False
-    return False
+# def change_ip() -> bool:
+#     """Меняет IP через API прокси"""
+#     change_ip_url = os.environ.get('CHANGE_IP_URL', '')
+#     if change_ip_url:
+#         try:
+#             resp = requests.get(change_ip_url, timeout=15)
+#             print(f"🔄 IP сменён: {resp.status_code}")
+#             # Провайдерам мобильных прокси часто нужно время, чтобы IP реально применился
+#             time.sleep(12)
+#             return resp.ok
+#         except Exception as e:
+#             print(f"⚠️ Ошибка смены IP: {e}")
+#             return False
+#     return False
 
 
 def warm_up_avito(session: requests.Session) -> bool:
@@ -244,14 +244,12 @@ def parse_listings(session: requests.Session, max_retries: int = 5) -> list[dict
             response = session.get(scan_url, timeout=(15, 75), allow_redirects=True)
             
             if response.status_code == 429:
-                print("⚠️ Rate limit (429)! Меняя IP...")
-                change_ip()
+                print("⚠️ Rate limit (429)! ")
                 time.sleep(random.uniform(5, 10))
                 continue
             
             if response.status_code == 403:
-                print("⚠️ Доступ запрещён (403)! Меняя IP...")
-                change_ip()
+                print("⚠️ Доступ запрещён (403)! ")
                 time.sleep(random.uniform(5, 10))
                 try:
                     session.close()
@@ -265,8 +263,7 @@ def parse_listings(session: requests.Session, max_retries: int = 5) -> list[dict
             # но на Авито иногда прилетает 302 без нормального завершения.
             if response.status_code in (301, 302, 303, 307, 308):
                 location = response.headers.get('Location', '')
-                print(f"⚠️ Редирект {response.status_code} -> {location[:60]}... Меняя IP...")
-                change_ip()
+                print(f"⚠️ Редирект {response.status_code} -> {location[:60]}... ")
                 time.sleep(random.uniform(8, 15))
                 try:
                     session.close()
@@ -279,7 +276,6 @@ def parse_listings(session: requests.Session, max_retries: int = 5) -> list[dict
             if response.status_code != 200:
                 print(f"❌ Ошибка HTTP: {response.status_code}")
                 if attempt < max_retries - 1:
-                    change_ip()
                     time.sleep(random.uniform(5, 10))
                     try:
                         session.close()
@@ -294,9 +290,8 @@ def parse_listings(session: requests.Session, max_retries: int = 5) -> list[dict
 
             # Детект антибот страницы по содержимому
             if looks_like_block(html):
-                print("⚠️ Похоже на антибот/капчу по содержимому. Меняя IP...")
+                print("⚠️ Похоже на антибот/капчу по содержимому. ")
                 if attempt < max_retries - 1:
-                    change_ip()
                     time.sleep(random.uniform(10, 20))
                     try:
                         session.close()
@@ -312,8 +307,7 @@ def parse_listings(session: requests.Session, max_retries: int = 5) -> list[dict
         except requests.exceptions.Timeout as e:
             print(f"⏱️ Таймаут (попытка {attempt + 1}): {e}")
             if attempt < max_retries - 1:
-                print("🔄 Меняя IP и повторяю...")
-                change_ip()
+                print("🔄 ")
                 time.sleep(random.uniform(10, 20))
                 try:
                     session.close()
@@ -328,8 +322,7 @@ def parse_listings(session: requests.Session, max_retries: int = 5) -> list[dict
         except requests.exceptions.ConnectionError as e:
             print(f"🔌 Ошибка соединения (попытка {attempt + 1}): {e}")
             if attempt < max_retries - 1:
-                print("🔄 Меняя IP и повторяю...")
-                change_ip()
+                print("🔄 ")
                 time.sleep(random.uniform(10, 20))
                 try:
                     session.close()
