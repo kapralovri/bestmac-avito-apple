@@ -220,22 +220,26 @@ def get_session() -> requests.Session:
 
 
 def looks_like_block(html_text: str) -> bool:
-    """Проверяет, похож ли HTML на страницу блокировки/капчи"""
+    """Проверяет, похож ли HTML на страницу реальной блокировки/капчи"""
     if not html_text:
         return False
 
-    text_lower = html_text.lower()
+    # Берём только содержимое body, чтобы не ловить слова в скриптах
+    body_match = re.search(r'<body[^>]*>(.*)</body>', html_text, re.IGNORECASE | re.DOTALL)
+    text = body_match.group(1) if body_match else html_text
+    text_lower = text.lower()
+
     block_keywords = [
-        "captcha",
+        "я не робот",
         "не робот",
-        "подтвердите",
         "доступ ограничен",
-        "blocked",
-        "security check",
-        "проверка безопасности"
+        "слишком много запросов",
+        "попробуйте позже",
+        "подтвердите, что вы человек",
     ]
 
     return any(keyword in text_lower for keyword in block_keywords)
+
 
 
 def extract_model_from_title(title: str) -> Optional[str]:
@@ -281,10 +285,14 @@ def extract_model_from_title(title: str) -> Optional[str]:
         (r'macbook\s*air.*m1', 'MacBook Air 13 (2020, M1)'),
     ]
 
-    for pattern, model in patterns:
-        if re.search(pattern, title_lower):
-            logger.debug("Найдена модель '%s' в заголовке: %s", model, title[:50])
-            return model
+for pattern, model in patterns:
+    if re.search(pattern, title_lower):
+        logger.debug("Найдена модель '%s' в заголовке: %s", model, title[:50])
+        return model
+
+logger.debug("Модель не определена для: %s", title[:50])
+return None
+
 
     logger.debug("Модель не определена для: %s", title[:50])
     return None
@@ -308,7 +316,7 @@ def parse_listings(session: requests.Session, max_retries: int = MAX_RETRIES) ->
 
             # Cache-busting для избежания кеша прокси
             separator = '&' if '?' in SCAN_URL else '?'
-            scan_url = f"{SCAN_URL}{separator}_={int(time.time())}"
+            scan_url = f"{SCAN_URL}{separator}_={int(time.time())}&r={random.randint(1_000_000, 9_999_999)}"
             response = session.get(scan_url, timeout=REQUEST_TIMEOUT, allow_redirects=True)
 
             # Обработка различных статусов
@@ -343,23 +351,30 @@ def parse_listings(session: requests.Session, max_retries: int = MAX_RETRIES) ->
 
             html = response.text
 
-            # Детект антибот страницы по содержимому
-            if looks_like_block(html):
-                logger.warning("⚠️ Похоже на антибот/капчу по содержимому")
-                if attempt < max_retries - 1:
-                    time.sleep(random.uniform(10, 20))
-                    session = get_session()
-                    continue
-                return []
+          # Детект антибот страницы по содержимому
+if looks_like_block(html):
+    logger.warning("⚠️ Похоже на антибот/капчу по содержимому, сохраняю HTML")
+
+    try:
+        with open("avito_block.html", "w", encoding="utf-8") as f:
+            f.write(html)
+        logger.info("HTML страницы блокировки сохранён в avito_block.html")
+    except Exception as e:
+        logger.warning("Не удалось сохранить avito_block.html: %s", e)
+
+    # На время отладки всё равно пробуем распарсить страницу
+    logger.warning("⚠️ Продолжаю парсинг несмотря на подозрение на блокировку")
+    # не делаем return/continue — пусть дойдёт до _parse_html
 
             # Успешный запрос
             break
 
         except requests.exceptions.Timeout as e:
             logger.error("⏱️ Таймаут (попытка %d): %s", attempt + 1, e)
-            if attempt < max_retries - 1:
-                logger.info("🔄 Повторная попытка...")
-                time.sleep(random.uniform(10, 20))
+           if attempt > 0:
+            time.sleep(random.uniform(15, 30))
+            else:
+            time.sleep(random.uniform(5, 10))
                 session = get_session()
                 continue
             logger.error("❌ Все попытки исчерпаны (таймаут)")
