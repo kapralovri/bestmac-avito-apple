@@ -31,7 +31,6 @@ logger = logging.getLogger("AvitoScanner")
 SCAN_URL = os.environ.get('SCAN_URL')
 TELEGRAM_URL = os.environ.get('TELEGRAM_NOTIFY_URL')
 PROXY_URL = os.environ.get('PROXY_URL')
-# ИСПРАВЛЕНО: теперь берем CHANGE_IP_URL из YML
 PROXY_CHANGE_IP_URL = os.environ.get('CHANGE_IP_URL') 
 
 HOT_DEAL_THRESHOLD = 0.90
@@ -82,39 +81,40 @@ class AvitoScanner:
             return set()
         try:
             with open(SEEN_DEALS_FILE, 'r', encoding='utf-8') as f:
-                return set(json.load(f).get('seen_urls', []))
+                content = json.load(f)
+                return set(content.get('seen_urls', []))
         except Exception:
             return set()
 
     def _save_seen(self):
         try:
             SEEN_DEALS_FILE.parent.mkdir(parents=True, exist_ok=True)
-            keep_urls = list(self.seen_deals)[-2000:]
+            # Оставляем последние 2000 ссылок
+            list_urls = list(self.seen_deals)
+            keep_urls = list_urls[-2000:]
             with open(SEEN_DEALS_FILE, 'w', encoding='utf-8') as f:
-                json.dump({'updated_at': datetime.now().isoformat(), 'seen_urls': keep_urls}, f)
+                json.dump({
+                    'updated_at': datetime.now().isoformat(), 
+                    'seen_urls': keep_urls
+                }, f, ensure_ascii=False, indent=2)
         except Exception as e:
-            logger.error(f"Ошибка сохранения seen_deals: {e}")
+            logger.error(f"Ошибка сохранения истории: {e}")
 
     def _rotate_ip(self):
-        """Логика смены IP"""
         if PROXY_CHANGE_IP_URL:
             try:
-                logger.info("🔄 Вызов API смены IP (aproxy.site)...")
-                # Для смены IP прокси использовать не нужно, делаем прямой запрос
-                if HAS_CFFI:
-                    cffi_requests.get(PROXY_CHANGE_IP_URL, timeout=15)
-                else:
-                    import requests
-                    requests.get(PROXY_CHANGE_IP_URL, timeout=15)
-                
-                logger.info("⏳ Ожидание 15 сек для активации нового IP...")
+                logger.info("🔄 Вызов API смены IP...")
+                import requests
+                # Смена IP делается без прокси прямым запросом
+                requests.get(PROXY_CHANGE_IP_URL, timeout=15)
+                logger.info("⏳ Пауза 15 сек для смены IP...")
                 time.sleep(15) 
             except Exception as e:
-                logger.error(f"Ошибка смены IP: {e}")
+                logger.error(f"Ошибка при смене IP: {e}")
                 time.sleep(10)
         else:
-            logger.warning("⚠️ Ссылка для смены IP не настроена. Ждем 30 сек...")
-            time.sleep(30)
+            logger.warning("⏳ Ссылка для смены IP не задана, просто ждем...")
+            time.sleep(20)
 
     def get_page(self, url: str) -> Optional[str]:
         proxies = {"http": PROXY_URL, "https": PROXY_URL} if PROXY_URL else None
@@ -132,14 +132,13 @@ class AvitoScanner:
                 else:
                     headers = {
                         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-                        'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+                        'Accept-Language': 'ru-RU,ru;q=0.9',
                     }
                     resp = self.session.get(url, headers=headers, proxies=proxies, timeout=TIMEOUT)
 
                 if resp.status_code == 200:
                     if "firewall" in resp.text.lower() or "доступ ограничен" in resp.text.lower():
-                        logger.warning("⚠️ Обнаружена защита Avito. Меняем IP...")
+                        logger.warning("⚠️ Капча/Блок обнаружен. Меняем IP...")
                         self._rotate_ip()
                         continue
                     return resp.text
@@ -149,11 +148,11 @@ class AvitoScanner:
                     self._rotate_ip()
                     continue
                 else:
-                    logger.error(f"Ошибка HTTP {resp.status_code}")
+                    logger.error(f"HTTP Error {resp.status_code}")
                     self._rotate_ip()
             
             except Exception as e:
-                logger.error(f"Ошибка сети: {e}")
+                logger.error(f"Сетевая ошибка: {e}")
                 self._rotate_ip()
         
         return None
@@ -233,55 +232,62 @@ class AvitoScanner:
                 ))
         return deals
 
-def send_notifications(self, deals: List[HotDeal]):
+    def send_notifications(self, deals: List[HotDeal]):
+        """Отправка уведомлений в Telegram"""
         if not deals or not TELEGRAM_URL: 
-            logger.warning("⚠️ Список сделок пуст или TELEGRAM_NOTIFY_URL не задан")
+            logger.warning("⚠️ Нет уведомлений для отправки или URL пуст")
             return
 
         import requests
         for deal in deals:
             try:
+                # Экранируем спецсимволы, чтобы HTML не ломался
+                safe_title = deal.title.replace('<', '&lt;').replace('>', '&gt;').replace('&', '&amp;')
+                
                 text = (
                     f"🔥 <b>HOT DEAL: {deal.model}</b>\n"
                     f"💰 Цена: <b>{deal.price:,} ₽</b>\n"
-                    f"📉 Медиана: {deal.median_price:,} ₽ (-{deal.discount_percent}%)\n"
-                    f"🔗 <a href='{deal.url}'>Открыть на Avito</a>"
+                    f"📉 Медиана: {deal.median_price:,} ₽ (Выгода {deal.discount_percent}%)\n"
+                    f"🔗 <a href='{deal.url}'>Открыть объявление</a>"
                 )
+                
                 payload = {
-                    "text": text, 
-                    "parse_mode": "HTML", 
+                    "text": text,
+                    "parse_mode": "HTML",
                     "disable_web_page_preview": False
                 }
                 
-                # Отправляем запрос
                 resp = requests.post(TELEGRAM_URL, json=payload, timeout=15)
                 
-                # ПРОВЕРКА: если Telegram вернул ошибку, это вызовет исключение и попадет в лог
                 if resp.status_code != 200:
-                    logger.error(f"❌ Ошибка Telegram API: {resp.status_code} - {resp.text}")
+                    logger.error(f"❌ Telegram Error {resp.status_code}: {resp.text}")
                 else:
-                    logger.info(f"✅ Уведомление успешно доставлено: {deal.title[:30]}")
+                    logger.info(f"✅ Доставлено: {deal.model}")
                 
             except Exception as e:
-                logger.error(f"❌ Критическая ошибка при отправке в Telegram: {e}")
+                logger.error(f"❌ Ошибка отправки: {e}")
 
     def run(self):
         if not self.prices_db:
-            logger.error("❌ База цен пуста.")
+            logger.error("❌ База цен пуста. Скрипт остановлен.")
             return
 
+        logger.info("🎬 Запуск сканирования...")
         html = self.get_page(SCAN_URL)
         if html:
             listings = self.parse_listings(html)
             hot_deals = self.find_deals(listings)
+            
             if hot_deals:
+                logger.info(f"🔥 Найдено новых сделок: {len(hot_deals)}")
                 self.send_notifications(hot_deals)
-                for d in hot_deals: self.seen_deals.add(d.url)
+                for d in hot_deals:
+                    self.seen_deals.add(d.url)
                 self._save_seen()
             else:
-                logger.info("🤷 Ничего нового")
+                logger.info("🤷 Ничего интересного не найдено")
         else:
-            logger.error("❌ Не удалось загрузить данные")
+            logger.error("❌ Не удалось получить данные с Avito")
 
 if __name__ == "__main__":
     AvitoScanner().run()
