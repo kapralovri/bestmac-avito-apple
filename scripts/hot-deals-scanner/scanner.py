@@ -12,17 +12,25 @@ from typing import Optional, List, Set, Dict
 from pathlib import Path
 from urllib.parse import urljoin
 
+# Отключаем ворнинги SSL
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+# Пытаемся импортировать библиотеки
+try:
+    import requests
+except ImportError:
+    requests = None
 
 try:
     from curl_cffi import requests as cffi_requests
     HAS_CFFI = True
 except ImportError:
-    import requests as cffi_requests
+    cffi_requests = requests
     HAS_CFFI = False
 
 from bs4 import BeautifulSoup
 
+# Настройка логирования
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("AvitoScanner")
 
@@ -37,8 +45,8 @@ PRICES_FILE = Path("public/data/avito-prices.json")
 SEEN_DEALS_FILE = Path("public/data/seen-hot-deals.json")
 
 # Ключевые слова
-URGENT_KEYWORDS = ['срочно', 'торг', 'сегодня', 'переезд', 'отдаю', 'дешево']
-BAD_KEYWORDS = ['icloud', 'запчасти', 'битый', 'разбит', 'блокиров', 'экран', 'дефект', 'mdm', 'аккаунт']
+URGENT_KEYWORDS = ['срочно', 'торг', 'сегодня', 'переезд', 'отдаю', 'дешево', 'быстро']
+BAD_KEYWORDS = ['icloud', 'запчасти', 'битый', 'разбит', 'блокиров', 'экран', 'дефект', 'mdm', 'аккаунт', 'коробка', 'чехол']
 
 @dataclass
 class HotDeal:
@@ -54,19 +62,24 @@ class HotDeal:
 
 class AvitoScanner:
     def __init__(self):
-        self.session = cffi_requests.Session()
+        logger.info("🚀 Инициализация сканера...")
+        self.session = cffi_requests.Session() if HAS_CFFI else requests.Session()
         self.prices_db = self._load_prices()
         self.seen_deals = self._load_seen()
 
-    def _load_prices(self):
-        if not PRICES_FILE.exists(): return {}
+    def _load_prices(self) -> Dict[str, int]:
+        if not PRICES_FILE.exists():
+            logger.warning(f"⚠️ Файл цен не найден: {PRICES_FILE}")
+            return {}
         try:
             with open(PRICES_FILE, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 return {s['model_name']: s['median_price'] for s in data.get('stats', [])}
-        except: return {}
+        except Exception as e:
+            logger.error(f"❌ Ошибка загрузки цен: {e}")
+            return {}
 
-    def _load_seen(self):
+    def _load_seen(self) -> Set[str]:
         if not SEEN_DEALS_FILE.exists(): return set()
         try:
             with open(SEEN_DEALS_FILE, 'r', encoding='utf-8') as f:
@@ -74,131 +87,156 @@ class AvitoScanner:
         except: return set()
 
     def _save_seen(self):
-        SEEN_DEALS_FILE.parent.mkdir(parents=True, exist_ok=True)
-        keep_urls = list(self.seen_deals)[-3000:]
-        with open(SEEN_DEALS_FILE, 'w', encoding='utf-8') as f:
-            json.dump({'updated_at': datetime.now().isoformat(), 'seen_urls': keep_urls}, f)
+        try:
+            SEEN_DEALS_FILE.parent.mkdir(parents=True, exist_ok=True)
+            keep_urls = list(self.seen_deals)[-3000:]
+            with open(SEEN_DEALS_FILE, 'w', encoding='utf-8') as f:
+                json.dump({'updated_at': datetime.now().isoformat(), 'seen_urls': keep_urls}, f)
+        except Exception as e:
+            logger.error(f"❌ Ошибка сохранения истории: {e}")
 
     def _rotate_ip(self):
-        if PROXY_CHANGE_IP_URL:
+        if PROXY_CHANGE_IP_URL and requests:
             try:
-                import requests
+                logger.info("🔄 Запрос на смену IP...")
                 requests.get(PROXY_CHANGE_IP_URL, timeout=20, verify=False)
                 time.sleep(15)
-            except: pass
+            except Exception as e:
+                logger.error(f"⚠️ Не удалось сменить IP: {e}")
 
-    def get_page(self, url: str):
+    def get_page(self, url: str) -> Optional[str]:
         proxies = {"http": PROXY_URL, "https": PROXY_URL} if PROXY_URL else None
-        for _ in range(3):
+        for attempt in range(3):
             try:
-                # Используем impersonate для обхода защиты
-                resp = self.session.get(url, impersonate="chrome120", proxies=proxies, timeout=30)
-                if resp.status_code == 200: return resp.text
+                if HAS_CFFI:
+                    resp = self.session.get(url, impersonate="chrome120", proxies=proxies, timeout=30)
+                else:
+                    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+                    resp = self.session.get(url, headers=headers, proxies=proxies, timeout=30)
+                
+                if resp.status_code == 200 and "доступ ограничен" not in resp.text.lower():
+                    return resp.text
+                
+                logger.warning(f"⚠️ Код {resp.status_code} или блок на попытке {attempt+1}")
                 self._rotate_ip()
-            except: self._rotate_ip()
+            except Exception as e:
+                logger.error(f"⚠️ Ошибка запроса: {e}")
+                self._rotate_ip()
         return None
 
-    def analyze_description(self, url: str):
-        """Заходит внутй объявления для поиска АКБ и Срочности"""
+    def analyze_details(self, url: str):
+        """Парсинг страницы объявления для поиска циклов АКБ"""
         html = self.get_page(url)
         if not html: return None, False
         
         soup = BeautifulSoup(html, 'lxml')
-        desc = soup.find('div', attrs={'data-marker': 'item-description'})
-        text = desc.get_text().lower() if desc else ""
+        desc_block = soup.find('div', attrs={'data-marker': 'item-description'})
+        text = desc_block.get_text().lower() if desc_block else ""
         
-        # Поиск циклов АКБ (ищем цифры рядом со словами цикл, cycle, акб)
+        # Поиск циклов
         cycles = None
-        cycles_match = re.search(r'(\d+)\s*(?:цикл|cycle|ц\.|cyc)', text)
-        if cycles_match:
-            cycles = int(cycles_match.group(1))
+        match = re.search(r'(\d+)\s*(?:цикл|cycle|ц\.|cyc)', text)
+        if match:
+            try:
+                cycles = int(match.group(1))
+            except: pass
             
-        # Проверка на срочность в описании
-        is_urgent = any(word in text for word in URGENT_KEYWORDS)
-        
-        return cycles, is_urgent
+        urgent = any(word in text for word in URGENT_KEYWORDS)
+        return cycles, urgent
 
-    def extract_model(self, title: str):
+    def extract_model(self, title: str) -> Optional[str]:
         t = title.lower()
         if any(word in t for word in BAD_KEYWORDS): return None
-        patterns = [
-            (r'16.*m([1-4])\s*(max|pro)?', 'MacBook Pro 16'),
-            (r'14.*m([1-4])\s*(max|pro)?', 'MacBook Pro 14'),
-            (r'15.*m([2-3])', 'MacBook Air 15'),
-            (r'13.*m([1-3])', 'MacBook Air 13'),
-            (r'air.*m1', 'MacBook Air 13 (2020, M1)'),
-        ]
-        # Для простоты вернем упрощенную модель или полную из твоего списка
-        for pattern, model in patterns:
-            if re.search(pattern, t): return model
+        
+        # Сначала ищем точное совпадение из базы цен
+        for model_name in self.prices_db.keys():
+            # Очищаем название модели для поиска в заголовке
+            clean_name = model_name.split('(')[0].strip().lower()
+            if clean_name in t:
+                return model_name
         return None
 
     def run(self):
+        logger.info("🎬 Начало сканирования...")
         html = self.get_page(SCAN_URL)
-        if not html: return
+        if not html:
+            logger.error("❌ Не удалось получить главную страницу")
+            return
         
         soup = BeautifulSoup(html, 'lxml')
         blocks = soup.find_all('div', attrs={'data-marker': 'item'})
+        logger.info(f"📦 Найдено блоков на странице: {len(blocks)}")
         
         for block in blocks:
             try:
                 link_tag = block.find('a', attrs={'data-marker': 'item-title'})
+                if not link_tag: continue
+                
                 url = urljoin("https://www.avito.ru", link_tag.get('href', ''))
                 if url in self.seen_deals: continue
 
                 title = link_tag.get('title', '').strip()
                 model = self.extract_model(title)
+                
                 if not model: continue
-
+                
                 price_tag = block.find('meta', attrs={'itemprop': 'price'})
                 price = int(price_tag.get('content', 0)) if price_tag else 0
                 
-                # Проверяем медиану
-                median = None
-                # Ищем точное совпадение модели в БД цен
-                for m_name, m_price in self.prices_db.items():
-                    if m_name.lower() in title.lower():
-                        median = m_price
-                        model = m_name
-                        break
-                
-                if median and price > (median * 0.4) and price <= (median * HOT_DEAL_THRESHOLD):
-                    # ГОРЯЧО! Делаем детальный анализ
-                    logger.info(f"🔎 Глубокий анализ: {title}")
-                    cycles, is_urgent_desc = self.analyze_description(url)
+                median = self.prices_db.get(model)
+                if median and price > (median * 0.3) and price <= (median * HOT_DEAL_THRESHOLD):
+                    logger.info(f"🎯 Найдено интересное: {title} за {price}")
                     
-                    is_urgent_title = any(word in title.lower() for word in URGENT_KEYWORDS)
-                    discount = round((1 - price / median) * 100, 1)
+                    # Глубокий анализ
+                    cycles, urgent_desc = self.analyze_details(url)
+                    urgent_title = any(word in title.lower() for word in URGENT_KEYWORDS)
                     
+                    # Дата
+                    date_tag = block.find('p', attrs={'data-marker': 'item-date'})
+                    date_str = date_tag.get_text().strip() if date_tag else "Недавно"
+
                     deal = HotDeal(
                         url=url, title=title, price=price, median_price=median,
-                        discount_percent=discount, model=model, date="Только что",
-                        battery_cycles=cycles, is_urgent=(is_urgent_title or is_urgent_desc)
+                        discount_percent=round((1 - price/median)*100, 1),
+                        model=model, date=date_str, battery_cycles=cycles,
+                        is_urgent=(urgent_title or urgent_desc)
                     )
+                    
                     self.notify(deal)
                     self.seen_deals.add(url)
+                    # Небольшая пауза чтобы не частить запросами вглубь
+                    time.sleep(random.uniform(2, 5))
             except Exception as e:
+                logger.error(f"⚠️ Ошибка при парсинге блока: {e}")
                 continue
+                
         self._save_seen()
+        logger.info("🏁 Сканирование завершено")
 
     def notify(self, d: HotDeal):
-        if not TELEGRAM_URL: return
+        if not TELEGRAM_URL or not requests: return
         
-        # Формируем значки
-        status_icons = ""
-        if d.is_urgent: status_icons += "🚨 СРОЧНО! "
-        if d.battery_cycles and d.battery_cycles < 100: status_icons += "🔋 АКБ ИДЕАЛ! "
+        icons = ""
+        if d.is_urgent: icons += "🚨 СРОЧНО! "
+        if d.battery_cycles and d.battery_cycles < 150: icons += "🔋 АКБ ХОРОШИЙ! "
         
         text = (
-            f"{status_icons}\n"
+            f"{icons}\n"
             f"🔥 <b>{d.model}</b>\n"
             f"💰 Цена: <b>{d.price:,} ₽</b>\n"
             f"📉 Выгода: {d.discount_percent}% (Рынок: {d.median_price:,})\n"
             f"⚡ АКБ: {f'{d.battery_cycles} циклов' if d.battery_cycles else 'не указано'}\n"
+            f"🕒 Опубликовано: {d.date}\n"
             f"🔗 <a href='{d.url}'>Открыть на Avito</a>"
         )
-        import requests
-        requests.post(TELEGRAM_URL, json={"text": text, "parse_mode": "HTML"})
+        try:
+            requests.post(TELEGRAM_URL, json={"text": text, "parse_mode": "HTML"}, timeout=10)
+        except Exception as e:
+            logger.error(f"❌ Ошибка отправки в TG: {e}")
 
 if __name__ == "__main__":
-    AvitoScanner().run()
+    try:
+        scanner = AvitoScanner()
+        scanner.run()
+    except Exception as e:
+        logger.error(f"💥 КРИТИЧЕСКАЯ ОШИБКА: {e}")
