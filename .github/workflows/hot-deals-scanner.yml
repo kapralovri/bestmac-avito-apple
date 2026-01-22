@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """ 
-Hot Deals Scanner v2 (Avito)
+name: Hot Deals Scanner v2 (Avito)
 Использует curl_cffi для обхода TLS-блокировок и API смены IP для мобильных прокси.
 """
 import json
