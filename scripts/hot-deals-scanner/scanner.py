@@ -1,36 +1,58 @@
 #!/usr/bin/env python3
 """ 
-Hot Deals Scanner - сканирует Авито каждые 15 минут на предмет горячих предложений
-Парсит новые объявления и сравнивает с медианными ценами из базы
+Hot Deals Scanner v2 (Avito)
+Использует curl_cffi для обхода TLS-блокировок и BeautifulSoup для надежного парсинга.
 """
 import json
 import os
 import re
 import time
 import random
-import requests
+import logging
 from dataclasses import dataclass, asdict
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Set, Dict
 from pathlib import Path
-import logging
+from urllib.parse import urljoin
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+# Сторонние библиотеки (нужно установить: pip install curl_cffi beautifulsoup4 lxml)
+try:
+    from curl_cffi import requests as cffi_requests
+    HAS_CFFI = True
+except ImportError:
+    import requests as cffi_requests # Fallback, но не рекомендуется для Авито
+    HAS_CFFI = False
+    print("⚠️ ВНИМАНИЕ: curl_cffi не найден. Используется обычный requests. Возможны блокировки 403/429.")
+    print("👉 Рекомендуется установить: pip install curl_cffi")
 
-# Конфигурация
+from bs4 import BeautifulSoup
+
+# Настройка логирования
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - [%(levelname)s] - %(message)s',
+    datefmt='%H:%M:%S'
+)
+logger = logging.getLogger("AvitoScanner")
+
+# --- КОНФИГУРАЦИЯ ---
 DEFAULT_SCAN_URL = "https://www.avito.ru/moskva_i_mo/noutbuki/apple/b_u-ASgBAgICAkTwvA2I0jSo5A302WY?cd=1&f=ASgBAQICAkTwvA2I0jSo5A302WYBQJ7kDdTIn7YVvLGeFajjlxXCmZYVsNjvEdTY7xGc2O8RsqPEEZKjxBGOza0QmM2tEKaaxhDWzK0Q&localPriority=1&q=macbook&s=104"
 SCAN_URL = os.environ.get('SCAN_URL', DEFAULT_SCAN_URL)
-HOT_DEAL_THRESHOLD = 0.90  # 10% ниже медианы
+TELEGRAM_URL = os.environ.get('TELEGRAM_NOTIFY_URL') # URL вебхука или API
+PROXY_URL = os.environ.get('PROXY_URL') # формат: http://user:pass@host:port
+PROXY_CHANGE_IP_URL = os.environ.get('PROXY_CHANGE_IP_URL') # Ссылка для ротации IP
+
+HOT_DEAL_THRESHOLD = 0.90  # Искать скидку 10% и более
 PRICES_FILE = Path("public/data/avito-prices.json")
 SEEN_DEALS_FILE = Path("public/data/seen-hot-deals.json")
-MAX_RETRIES = 5
-REQUEST_TIMEOUT = (15, 75)  # (connect, read)
 
+# Настройки запросов
+IMPERSONATE = "chrome120" # Маскировка под Chrome 120
+TIMEOUT = 30
+MAX_RETRIES = 3
 
 @dataclass
 class HotDeal:
-    """Горячее предложение"""
     url: str
     title: str
     price: int
@@ -39,622 +61,293 @@ class HotDeal:
     model: str
     found_at: str
 
-
-def load_prices_database() -> dict:
-    """Загружает базу медианных цен"""
-    if not PRICES_FILE.exists():
-        logger.warning("⚠️ База цен не найдена: %s", PRICES_FILE)
-        return {}
-
-    try:
-        with open(PRICES_FILE, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-
-        prices = {}
-        for stat in data.get('stats', []):
-            model_name = stat.get('model_name', '')
-            median = stat.get('median_price')
-
-            if model_name and median and median > 0:
-                # Сохраняем минимальную медиану для модели
-                if model_name not in prices or median < prices[model_name]:
-                    prices[model_name] = median
-
-        logger.info("📊 Загружено %d моделей из базы цен", len(prices))
-        if prices:
-            examples = list(prices.items())[:3]
-            logger.debug("Примеры: %s", examples)
-
-        return prices
-
-    except json.JSONDecodeError as e:
-        logger.error("❌ Ошибка чтения JSON из %s: %s", PRICES_FILE, e)
-        return {}
-    except Exception as e:
-        logger.error("❌ Неожиданная ошибка при загрузке цен: %s", e)
-        return {}
-
-
-def load_seen_deals() -> set:
-    """Загружает уже отправленные сделки"""
-    if not SEEN_DEALS_FILE.exists():
-        return set()
-
-    try:
-        with open(SEEN_DEALS_FILE, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        return set(data.get('seen_urls', []))
-    except Exception as e:
-        logger.warning("⚠️ Ошибка загрузки seen deals: %s", e)
-        return set()
-
-
-def save_seen_deals(seen_urls: set) -> None:
-    """Сохраняет отправленные сделки"""
-    try:
-        # Создаём директорию если не существует
-        SEEN_DEALS_FILE.parent.mkdir(parents=True, exist_ok=True)
-
-        # Храним только последние 1000 URL
-        urls_list = list(seen_urls)[-1000:]
-
-        with open(SEEN_DEALS_FILE, 'w', encoding='utf-8') as f:
-            json.dump({
-                'updated_at': datetime.now().isoformat(),
-                'seen_urls': urls_list
-            }, f, ensure_ascii=False, indent=2)
-
-        logger.debug("✅ Сохранено %d seen URLs", len(urls_list))
-
-    except Exception as e:
-        logger.error("❌ Ошибка сохранения seen deals: %s", e)
-
-
-def normalize_proxy_url(raw: str) -> str:
-    """Нормализует URL прокси в правильный формат"""
-    raw = (raw or "").strip().strip('"').strip("'")
-    logger.debug("Исходный прокси URL: %s", raw)
-
-    if not raw:
-        logger.warning("Прокси URL пустой")
-        return ""
-    # Если уже есть схема
-    if raw.startswith(("http://", "https://", "socks5://")):
-        return raw
-
-    # Формат: host:port:user:password
-    parts = raw.split(":")
-    if len(parts) == 4 and "@" not in raw:
-        host, port, user, password = parts
-        proxy_url = f"http://{user}:{password}@{host}:{port}"
-        logger.debug("Прокси URL после нормализации: %s", proxy_url)
-        return proxy_url
-
-    # Формат: user:password@host:port
-    if "@" in raw:
-        proxy_url = f"http://{raw}"
-        logger.debug("Прокси URL после нормализации: %s", proxy_url)
-        return proxy_url
-
-    # Формат по умолчанию: host:port
-    proxy_url = f"http://{raw}"
-    logger.debug("Прокси URL после нормализации: %s", proxy_url)
-    return proxy_url
-
-
-def change_ip() -> None:
-    """Меняет IP (задержка для ротации прокси)"""
-    logger.info("🔄 Смена IP...")
-    time.sleep(random.uniform(5, 8))
-    logger.info("✅ IP изменён")
-
-
-def warm_up_avito(session: requests.Session, max_attempts: int = 3) -> bool:
-    """Прогревает сессию: получает cookies с главной страницы."""
-    for attempt in range(max_attempts):
+class AvitoScanner:
+    def __init__(self):
+        self.session = cffi_requests.Session()
+        self.prices_db = self._load_prices()
+        self.seen_deals = self._load_seen()
+        
+    def _load_prices(self) -> Dict[str, int]:
+        """Загрузка базы цен"""
+        if not PRICES_FILE.exists():
+            logger.warning(f"⚠️ База цен не найдена: {PRICES_FILE}")
+            return {}
         try:
-            logger.debug("Прогрев сессии (попытка %d/%d)", attempt + 1, max_attempts)
-
-            resp = session.get(
-                'https://www.avito.ru/',
-                timeout=REQUEST_TIMEOUT,
-                allow_redirects=True
-            )
-
-            if resp.status_code in (200, 204):
-                logger.info("✅ Прогрев сессии успешен")
-                return True
-
-            if resp.status_code in (403, 429):
-                logger.warning("⚠️ Блокировка %d при прогреве, попытка %d/%d",
-                               resp.status_code, attempt + 1, max_attempts)
-                change_ip()
-                continue
-
-            logger.warning("⚠️ Неожиданный статус при прогреве: %d", resp.status_code)
-            return False
-
-        except requests.RequestException as e:
-            logger.error("❌ Ошибка при прогреве сессии: %s", e)
-            if attempt < max_attempts - 1:
-                time.sleep(random.uniform(3, 6))
-                continue
-            return False
-
-    logger.error("❌ Не удалось прогреть сессию за %d попыток", max_attempts)
-    return False
-
-
-def get_session() -> requests.Session:
-    """Создаёт сессию с прокси и headers"""
-    session = requests.Session()
-
-    # Настройка прокси
-    proxy_url_raw = os.environ.get('PROXY_URL', 'ez2TAT:Hap1cUu8Kax6@mproxy.site:15984')
-    proxy_url = normalize_proxy_url(proxy_url_raw)
-
-    if proxy_url:
-        session.proxies = {"http": proxy_url, "https": proxy_url}
-        logger.info("🌐 Используется прокси: %s",
-                    proxy_url.split('@')[1] if '@' in proxy_url else proxy_url)
-    else:
-        logger.warning("⚠️ Прокси не настроен")
-
-    # Устанавливаем реалистичные headers
-    session.headers.update({
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
-                      'AppleWebKit/537.36 (KHTML, like Gecko) '
-                      'Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'DNT': '1',
-        'Connection': 'keep-alive',
-        'Upgrade-Insecure-Requests': '1'
-    })
-
-    # Прогреваем сессию
-    warm_up_avito(session)
-
-    return session
-
-
-def looks_like_block(html_text: str) -> bool:
-    """Проверяет, похож ли HTML на страницу реальной блокировки/капчи"""
-    if not html_text:
-        return False
-
-    # Берём только содержимое body, чтобы не ловить слова в скриптах
-    body_match = re.search(r'<body[^>]*>(.*)</body>', html_text, re.IGNORECASE | re.DOTALL)
-    text = body_match.group(1) if body_match else html_text
-    text_lower = text.lower()
-
-    block_keywords = [
-        "я не робот",
-        "не робот",
-        "доступ ограничен",
-        "слишком много запросов",
-        "попробуйте позже",
-        "подтвердите, что вы человек",
-    ]
-
-    return any(keyword in text_lower for keyword in block_keywords)
-
-
-
-def extract_model_from_title(title: str) -> Optional[str]:
-    """Извлекает модель MacBook из заголовка"""
-    title_lower = title.lower()
-
-    # Паттерны для определения модели (от более специфичных к общим)
-    patterns = [
-        # MacBook Pro 16" с чипами M
-        (r'macbook\s*pro\s*16.*m4\s*max', 'MacBook Pro 16 (2024, M4 Max)'),
-        (r'macbook\s*pro\s*16.*m4\s*pro', 'MacBook Pro 16 (2024, M4 Pro)'),
-        (r'macbook\s*pro\s*16.*m4', 'MacBook Pro 16 (2024, M4 Pro)'),
-        (r'macbook\s*pro\s*16.*m3\s*max', 'MacBook Pro 16 (2023, M3 Max)'),
-        (r'macbook\s*pro\s*16.*m3\s*pro', 'MacBook Pro 16 (2023, M3 Pro)'),
-        (r'macbook\s*pro\s*16.*m2\s*max', 'MacBook Pro 16 (2023, M2 Max)'),
-        (r'macbook\s*pro\s*16.*m2\s*pro', 'MacBook Pro 16 (2023, M2 Pro)'),
-        (r'macbook\s*pro\s*16.*m1\s*max', 'MacBook Pro 16 (2021, M1 Max)'),
-        (r'macbook\s*pro\s*16.*m1\s*pro', 'MacBook Pro 16 (2021, M1 Pro)'),
-
-        # MacBook Pro 14" с чипами M
-        (r'macbook\s*pro\s*14.*m4\s*max', 'MacBook Pro 14 (2024, M4 Max)'),
-        (r'macbook\s*pro\s*14.*m4\s*pro', 'MacBook Pro 14 (2024, M4 Pro)'),
-        (r'macbook\s*pro\s*14.*m4', 'MacBook Pro 14 (2024, M4)'),
-        (r'macbook\s*pro\s*14.*m3\s*max', 'MacBook Pro 14 (2023, M3 Max)'),
-        (r'macbook\s*pro\s*14.*m3\s*pro', 'MacBook Pro 14 (2023, M3 Pro)'),
-        (r'macbook\s*pro\s*14.*m3', 'MacBook Pro 14 (2023, M3)'),
-        (r'macbook\s*pro\s*14.*m2\s*max', 'MacBook Pro 14 (2023, M2 Max)'),
-        (r'macbook\s*pro\s*14.*m2\s*pro', 'MacBook Pro 14 (2023, M2 Pro)'),
-        (r'macbook\s*pro\s*14.*m1\s*max', 'MacBook Pro 14 (2021, M1 Max)'),
-        (r'macbook\s*pro\s*14.*m1\s*pro', 'MacBook Pro 14 (2021, M1 Pro)'),
-
-        # MacBook Pro 13" с чипами M
-        (r'macbook\s*pro\s*13.*m2', 'MacBook Pro 13 (2022, M2)'),
-        (r'macbook\s*pro\s*13.*m1', 'MacBook Pro 13 (2020, M1)'),
-
-        # MacBook Air с чипами M
-        (r'macbook\s*air\s*15.*m4', 'MacBook Air 15 (2025, M4)'),
-        (r'macbook\s*air\s*13.*m4', 'MacBook Air 13 (2025, M4)'),
-        (r'macbook\s*air\s*15.*m3', 'MacBook Air 15 (2024, M3)'),
-        (r'macbook\s*air\s*13.*m3', 'MacBook Air 13 (2024, M3)'),
-        (r'macbook\s*air\s*15.*m2', 'MacBook Air 15 (2023, M2)'),
-        (r'macbook\s*air\s*13.*m2', 'MacBook Air 13 (2022, M2)'),
-        (r'macbook\s*air.*m1', 'MacBook Air 13 (2020, M1)'),
-    ]
-
-for pattern, model in patterns:
-    if re.search(pattern, title_lower):
-        logger.debug("Найдена модель '%s' в заголовке: %s", model, title[:50])
-        return model
-
-logger.debug("Модель не определена для: %s", title[:50])
-return None
-
-
-    logger.debug("Модель не определена для: %s", title[:50])
-    return None
-
-
-def parse_listings(session: requests.Session, max_retries: int = MAX_RETRIES) -> list[dict]:
-    """Парсит объявления со страницы Авито с retry-логикой"""
-    listings: list[dict] = []
-    html: str = ""
-
-    for attempt in range(max_retries):
-        try:
-            logger.info("🔍 Сканирую (попытка %d/%d): %s...",
-                        attempt + 1, max_retries, SCAN_URL[:70])
-
-            # Добавляем рандомную задержку между попытками
-            if attempt > 0:
-                time.sleep(random.uniform(5, 10))
-            else:
-                time.sleep(random.uniform(3, 7))
-
-            # Cache-busting для избежания кеша прокси
-            separator = '&' if '?' in SCAN_URL else '?'
-            scan_url = f"{SCAN_URL}{separator}_={int(time.time())}&r={random.randint(1_000_000, 9_999_999)}"
-            response = session.get(scan_url, timeout=REQUEST_TIMEOUT, allow_redirects=True)
-
-            # Обработка различных статусов
-            if response.status_code == 429:
-                logger.warning("⚠️ Rate limit (429)!")
-                time.sleep(random.uniform(5, 10))
-                change_ip()
-                continue
-
-            if response.status_code == 403:
-                logger.warning("⚠️ Доступ запрещён (403)!")
-                time.sleep(random.uniform(5, 10))
-                session = get_session()
-                continue
-
-            # Редиректы часто означают антибот/капчу
-            if response.status_code in (301, 302, 303, 307, 308):
-                location = response.headers.get('Location', '')
-                logger.warning("⚠️ Редирект %d -> %s...", response.status_code, location[:60])
-                time.sleep(random.uniform(8, 15))
-                session = get_session()
-                continue
-
-            if response.status_code != 200:
-                logger.error("❌ Ошибка HTTP: %d", response.status_code)
-                if attempt < max_retries - 1:
-                    time.sleep(random.uniform(5, 10))
-                    session = get_session()
-                    continue
-                # если это последняя попытка — выходим
-                return []
-
-            html = response.text
-
-          # Детект антибот страницы по содержимому
-if looks_like_block(html):
-    logger.warning("⚠️ Похоже на антибот/капчу по содержимому, сохраняю HTML")
-
-    try:
-        with open("avito_block.html", "w", encoding="utf-8") as f:
-            f.write(html)
-        logger.info("HTML страницы блокировки сохранён в avito_block.html")
-    except Exception as e:
-        logger.warning("Не удалось сохранить avito_block.html: %s", e)
-
-    # На время отладки всё равно пробуем распарсить страницу
-    logger.warning("⚠️ Продолжаю парсинг несмотря на подозрение на блокировку")
-    # не делаем return/continue — пусть дойдёт до _parse_html
-
-            # Успешный запрос
-            break
-
-        except requests.exceptions.Timeout as e:
-            logger.error("⏱️ Таймаут (попытка %d): %s", attempt + 1, e)
-           if attempt > 0:
-            time.sleep(random.uniform(15, 30))
-            else:
-            time.sleep(random.uniform(5, 10))
-                session = get_session()
-                continue
-            logger.error("❌ Все попытки исчерпаны (таймаут)")
-            return []
-
-        except requests.exceptions.ConnectionError as e:
-            logger.error("🔌 Ошибка соединения (попытка %d): %s", attempt + 1, e)
-            if attempt < max_retries - 1:
-                logger.info("🔄 Повторная попытка...")
-                time.sleep(random.uniform(10, 20))
-                session = get_session()
-                continue
-            logger.error("❌ Все попытки исчерпаны (соединение)")
-            return []
-
+            with open(PRICES_FILE, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            prices = {}
+            for stat in data.get('stats', []):
+                name = stat.get('model_name')
+                median = stat.get('median_price')
+                if name and median:
+                    # Логика: берем минимальную медиану, если модель дублируется
+                    if name not in prices or median < prices[name]:
+                        prices[name] = median
+            logger.info(f"📊 Загружено {len(prices)} моделей цен")
+            return prices
         except Exception as e:
-            logger.exception("❌ Неожиданная ошибка: %s", e)
-            return []
-    else:
-        # Цикл завершился без break
-        logger.error("❌ Все попытки исчерпаны")
-        return []
+            logger.error(f"❌ Ошибка чтения базы цен: {e}")
+            return {}
 
-    # Парсим HTML
-    try:
-        listings = _parse_html(html)
-        logger.info("📦 Найдено %d объявлений", len(listings))
-
-    except Exception as e:
-        logger.exception("❌ Ошибка парсинга HTML: %s", e)
-
-    return listings
-
-
-def _parse_html(html: str) -> list[dict]:
-    """Внутренняя функция для парсинга HTML"""
-    listings: list[dict] = []
-
-    # Метод 1: Ищем JSON данные в __initialData__
-    json_match = re.search(r'window\.__initialData__\s*=\s*"(.+?)";', html)
-
-    if json_match:
+    def _load_seen(self) -> Set[str]:
+        """Загрузка истории отправленных"""
+        if not SEEN_DEALS_FILE.exists():
+            return set()
         try:
-            # Декодируем escaped JSON
-            json_str = json_match.group(1)
-            json_str = json_str.encode().decode('unicode_escape')
-            data = json.loads(json_str)
+            with open(SEEN_DEALS_FILE, 'r', encoding='utf-8') as f:
+                return set(json.load(f).get('seen_urls', []))
+        except Exception:
+            return set()
 
-            # Рекурсивно ищем items в структуре данных
-            def find_items(obj):
-                if isinstance(obj, dict):
-                    if 'items' in obj and isinstance(obj['items'], list):
-                        return obj['items']
-                    for v in obj.values():
-                        result = find_items(v)
-                        if result:
-                            return result
-                elif isinstance(obj, list):
-                    for item in obj:
-                        result = find_items(item)
-                        if result:
-                            return result
-                return None
-
-            items = find_items(data) or []
-
-            for item in items:
-                if isinstance(item, dict) and 'id' in item:
-                    try:
-                        item_id = item.get('id')
-                        title = item.get('title', '')
-
-                        # Извлекаем цену
-                        price_val = item.get('priceDetailed', {}).get('value') or item.get('price', 0)
-                        if isinstance(price_val, str):
-                            price_val = int(re.sub(r'\D', '', price_val) or 0)
-
-                        # Формируем URL
-                        url_path = item.get('urlPath', '')
-                        url = (f"https://www.avito.ru{url_path}"
-                               if url_path
-                               else f"https://www.avito.ru/moskva/noutbuki/{item_id}")
-
-                        # Фильтруем по минимальной цене
-                        if title and price_val and price_val > 10000:
-                            listings.append({
-                                'url': url,
-                                'title': title,
-                                'price': int(price_val)
-                            })
-
-                    except Exception as e:
-                        logger.debug("Ошибка обработки item: %s", e)
-                        continue
-
-            logger.debug("Найдено %d объявлений через __initialData__", len(listings))
-
+    def _save_seen(self):
+        """Сохранение истории"""
+        try:
+            SEEN_DEALS_FILE.parent.mkdir(parents=True, exist_ok=True)
+            # Оставляем только последние 2000, чтобы файл не распухал
+            keep_urls = list(self.seen_deals)[-2000:]
+            with open(SEEN_DEALS_FILE, 'w', encoding='utf-8') as f:
+                json.dump({'updated_at': datetime.now().isoformat(), 'seen_urls': keep_urls}, f)
         except Exception as e:
-            logger.warning("Ошибка парсинга JSON: %s", e)
+            logger.error(f"Ошибка сохранения seen_deals: {e}")
 
-    # Метод 2 (Fallback): Парсим HTML напрямую
-    if not listings:
-        logger.debug("Используется fallback парсинг HTML")
-        item_pattern = r'data-marker="item"[^>]*>.*?href="([^"]+)"[^>]*.*?title="([^"]+)"[^>]*.*?data-marker="item-price"[^>]*>([^<]+)'
-        matches = re.findall(item_pattern, html, re.DOTALL)
-
-        for url_path, title, price_text in matches:
+    def _rotate_ip(self):
+        """Логика смены IP"""
+        if PROXY_CHANGE_IP_URL:
             try:
-                price = int(re.sub(r'\D', '', price_text) or 0)
-                if price > 10000:
-                    listings.append({
-                        'url': f'https://www.avito.ru{url_path}',
-                        'title': title.strip(),
-                        'price': price
-                    })
+                logger.info("🔄 Вызов API смены IP...")
+                cffi_requests.get(PROXY_CHANGE_IP_URL, timeout=10)
+                time.sleep(10) # Ждем применения
             except Exception as e:
-                logger.debug("Ошибка обработки fallback item: %s", e)
+                logger.error(f"Ошибка смены IP: {e}")
+        else:
+            logger.info("⏳ Пауза для 'остывания' (нет API смены IP)...")
+            time.sleep(random.uniform(20, 40))
+
+    def get_page(self, url: str) -> Optional[str]:
+        """Скачивание страницы с маскировкой"""
+        proxies = {"http": PROXY_URL, "https": PROXY_URL} if PROXY_URL else None
+        
+        for attempt in range(MAX_RETRIES):
+            try:
+                # Если используем curl_cffi
+                if HAS_CFFI:
+                    resp = self.session.get(
+                        url, 
+                        impersonate=IMPERSONATE, 
+                        proxies=proxies, 
+                        timeout=TIMEOUT,
+                        allow_redirects=True
+                    )
+                else:
+                    # Обычный requests (нужны заголовки)
+                    headers = {
+                        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                        'Accept-Language': 'ru-RU,ru;q=0.9',
+                    }
+                    resp = self.session.get(url, headers=headers, proxies=proxies, timeout=TIMEOUT)
+
+                if resp.status_code == 200:
+                    # Проверка на софт-бан (капчу в контенте)
+                    if "firewall" in resp.text.lower() or "доступ ограничен" in resp.text.lower():
+                        logger.warning("⚠️ Получена страница с капчей (Soft Block)")
+                        self._rotate_ip()
+                        continue
+                    return resp.text
+                
+                elif resp.status_code in [403, 429]:
+                    logger.warning(f"⚠️ Блокировка {resp.status_code}. Меняем IP...")
+                    self._rotate_ip()
+                    continue
+                else:
+                    logger.error(f"Ошибка HTTP {resp.status_code}")
+            
+            except Exception as e:
+                logger.error(f"Ошибка сети: {e}")
+                time.sleep(5)
+        
+        return None
+
+    def parse_listings(self, html: str) -> List[dict]:
+        """Парсинг через BeautifulSoup"""
+        soup = BeautifulSoup(html, 'lxml')
+        items = []
+        
+        # Авито использует атрибуты data-marker для элементов
+        # data-marker="item" - само объявление
+        listing_blocks = soup.find_all('div', attrs={'data-marker': 'item'})
+        
+        for block in listing_blocks:
+            try:
+                # Ссылка и название
+                link_tag = block.find('a', attrs={'data-marker': 'item-title'})
+                if not link_tag:
+                    continue
+                    
+                title = link_tag.get('title', '').strip()
+                href = link_tag.get('href', '')
+                url = urljoin("https://www.avito.ru", href)
+                
+                # Цена
+                price_meta = block.find('meta', attrs={'itemprop': 'price'})
+                if price_meta:
+                    price = int(price_meta.get('content', 0))
+                else:
+                    # Fallback поиск цены текстом
+                    price_tag = block.find('p', attrs={'data-marker': 'item-price'})
+                    if not price_tag:
+                        # Иногда цена в другом блоке
+                        price_tag = block.find('strong', class_=re.compile('styles-module-root'))
+                    
+                    price_text = price_tag.get_text() if price_tag else "0"
+                    price = int(re.sub(r'\D', '', price_text) or 0)
+
+                # Фильтр явного мусора
+                if price < 10000: 
+                    continue
+                    
+                items.append({
+                    'url': url,
+                    'title': title,
+                    'price': price
+                })
+                
+            except Exception as e:
                 continue
+                
+        logger.info(f"📦 Распарсено {len(items)} объявлений")
+        return items
 
-        logger.debug("Найдено %d объявлений через fallback", len(listings))
+    def extract_model(self, title: str) -> Optional[str]:
+        """Определение модели из заголовка"""
+        t = title.lower()
+        
+        # Словарь паттернов: (regex, model_name)
+        # Порядок важен: от более длинных/специфичных к коротким
+        patterns = [
+            (r'macbook\s*pro\s*16.*m4\s*max', 'MacBook Pro 16 (2024, M4 Max)'),
+            (r'macbook\s*pro\s*16.*m4\s*pro', 'MacBook Pro 16 (2024, M4 Pro)'),
+            (r'macbook\s*pro\s*16.*m3\s*max', 'MacBook Pro 16 (2023, M3 Max)'),
+            (r'macbook\s*pro\s*16.*m3\s*pro', 'MacBook Pro 16 (2023, M3 Pro)'),
+            (r'macbook\s*pro\s*16.*m2\s*max', 'MacBook Pro 16 (2023, M2 Max)'),
+            (r'macbook\s*pro\s*16.*m2\s*pro', 'MacBook Pro 16 (2023, M2 Pro)'),
+            (r'macbook\s*pro\s*16.*m1\s*max', 'MacBook Pro 16 (2021, M1 Max)'),
+            (r'macbook\s*pro\s*16.*m1\s*pro', 'MacBook Pro 16 (2021, M1 Pro)'),
+            
+            (r'macbook\s*pro\s*14.*m3\s*max', 'MacBook Pro 14 (2023, M3 Max)'),
+            (r'macbook\s*pro\s*14.*m3\s*pro', 'MacBook Pro 14 (2023, M3 Pro)'),
+            (r'macbook\s*pro\s*14.*m3', 'MacBook Pro 14 (2023, M3)'),
+            (r'macbook\s*pro\s*14.*m2', 'MacBook Pro 14 (2023, M2)'),
+            (r'macbook\s*pro\s*14.*m1', 'MacBook Pro 14 (2021, M1)'),
+            
+            (r'macbook\s*pro\s*13.*m2', 'MacBook Pro 13 (2022, M2)'),
+            (r'macbook\s*pro\s*13.*m1', 'MacBook Pro 13 (2020, M1)'),
+            
+            (r'macbook\s*air\s*15.*m3', 'MacBook Air 15 (2024, M3)'),
+            (r'macbook\s*air\s*15.*m2', 'MacBook Air 15 (2023, M2)'),
+            (r'macbook\s*air\s*13.*m3', 'MacBook Air 13 (2024, M3)'),
+            (r'macbook\s*air\s*13.*m2', 'MacBook Air 13 (2022, M2)'),
+            (r'macbook\s*air.*m1', 'MacBook Air 13 (2020, M1)'),
+        ]
+        
+        for pattern, model in patterns:
+            if re.search(pattern, t):
+                return model
+        return None
 
-    return listings
+    def find_deals(self, listings: List[dict]) -> List[HotDeal]:
+        deals = []
+        for item in listings:
+            if item['url'] in self.seen_deals:
+                continue
+                
+            model = self.extract_model(item['title'])
+            if not model:
+                continue
+                
+            median = self.prices_db.get(model)
+            if not median:
+                continue
+                
+            # Проверка цены
+            # Если цена слишком низкая (например, < 40% от медианы), это часто скам или запчасти
+            if item['price'] < (median * 0.4):
+                continue
+                
+            threshold = median * HOT_DEAL_THRESHOLD
+            
+            if item['price'] <= threshold:
+                discount = (1 - item['price'] / median) * 100
+                deals.append(HotDeal(
+                    url=item['url'],
+                    title=item['title'],
+                    price=item['price'],
+                    median_price=median,
+                    discount_percent=round(discount, 1),
+                    model=model,
+                    found_at=datetime.now().isoformat()
+                ))
+        return deals
 
-
-def find_hot_deals(listings: list[dict], prices_db: dict, seen_urls: set) -> list[HotDeal]:
-    """Находит горячие предложения"""
-    hot_deals: list[HotDeal] = []
-
-    for listing in listings:
-        url = listing['url']
-
-        # Пропускаем уже отправленные
-        if url in seen_urls:
-            continue
-
-        title = listing['title']
-        price = listing['price']
-
-        # Определяем модель
-        model = extract_model_from_title(title)
-        if not model:
-            continue
-
-        # Ищем медианную цену
-        median_price = _find_median_price(model, prices_db)
-        if not median_price:
-            logger.debug("Медианная цена не найдена для модели: %s", model)
-            continue
-
-        # Проверяем скидку
-        threshold_price = median_price * HOT_DEAL_THRESHOLD
-        discount = 1 - (price / median_price)
-
-        if price <= threshold_price:  # Скидка >= 10%
-            hot_deal = HotDeal(
-                url=url,
-                title=title,
-                price=price,
-                median_price=median_price,
-                discount_percent=round(discount * 100, 1),
-                model=model,
-                found_at=datetime.now().isoformat()
-            )
-            hot_deals.append(hot_deal)
-            logger.info(
-                "🔥 HOT DEAL: %s... — %s₽ (медиана: %s₽, скидка: %.1f%%)",
-                title[:50],
-                f"{price:,}",
-                f"{median_price:,}",
-                hot_deal.discount_percent
-            )
-
-    return hot_deals
-
-
-def _find_median_price(model: str, prices_db: dict) -> Optional[int]:
-    """Находит медианную цену для модели"""
-    model_lower = model.lower()
-
-    for db_model, db_median in prices_db.items():
-        db_model_lower = db_model.lower()
-        if model_lower in db_model_lower or db_model_lower in model_lower:
-            return db_median
-
-    return None
-
-
-def send_telegram_notification(deals: list[HotDeal]) -> None:
-    """Отправляет уведомления в Telegram"""
-    notify_url = os.environ.get('TELEGRAM_NOTIFY_URL', '')
-
-    if not notify_url:
-        logger.warning("⚠️ TELEGRAM_NOTIFY_URL не настроен")
-        return
-
-    success_count = 0
-
-    for deal in deals:
-        try:
-            payload = {
-                'deals': [asdict(deal)]
-            }
-
-            response = requests.post(
-                notify_url,
-                json=payload,
-                headers={'Content-Type': 'application/json'},
-                timeout=30
-            )
-
-            if response.status_code == 200:
-                logger.info("✅ Отправлено в Telegram: %s...", deal.title[:40])
-                success_count += 1
-            else:
-                logger.error("❌ Ошибка Telegram (статус %d): %s",
-                             response.status_code, response.text[:100])
-
-        except requests.Timeout:
-            logger.error("❌ Таймаут при отправке в Telegram")
-        except Exception as e:
-            logger.exception("❌ Ошибка отправки в Telegram: %s", e)
-
-    logger.info("📤 Отправлено уведомлений: %d/%d", success_count, len(deals))
-
-
-def main():
-    """Главная функция сканера"""
-    logger.info("=" * 60)
-    logger.info("🔍 HOT DEALS SCANNER — %s", datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-    logger.info("=" * 60)
-
-    # Загружаем данные
-    prices_db = load_prices_database()
-    if not prices_db:
-        logger.error("❌ Не удалось загрузить базу цен")
-        return
-
-    seen_urls = load_seen_deals()
-    logger.info("📝 Уже отправлено: %d сделок", len(seen_urls))
-
-    # Создаём сессию
-    session = get_session()
-
-    try:
-        # Парсим объявления
-        listings = parse_listings(session)
-
-        if not listings:
-            logger.warning("⚠️ Объявления не найдены")
+    def send_notifications(self, deals: List[HotDeal]):
+        if not deals:
             return
 
-        # Ищем горячие предложения
-        hot_deals = find_hot_deals(listings, prices_db, seen_urls)
+        logger.info(f"🚀 Отправка {len(deals)} уведомлений...")
+        
+        # Если URL телеграма не задан, просто выводим в консоль
+        if not TELEGRAM_URL:
+            for d in deals:
+                print(f"🔔 [SIMULATION] {d.model} за {d.price} (Скидка {d.discount_percent}%) -> {d.url}")
+            return
 
-        if hot_deals:
-            logger.info("\n🔥 Найдено %d горячих предложений!", len(hot_deals))
+        for deal in deals:
+            try:
+                # Формируем красивое сообщение
+                text = (
+                    f"🔥 <b>HOT DEAL: {deal.model}</b>\n"
+                    f"💰 Цена: <b>{deal.price:,} ₽</b>\n"
+                    f"📉 Медиана: {deal.median_price:,} ₽ (Выгода {deal.discount_percent}%)\n"
+                    f"🔗 <a href='{deal.url}'>{deal.title}</a>"
+                )
+                
+                payload = {
+                    "text": text,
+                    "parse_mode": "HTML",
+                    "disable_web_page_preview": True
+                }
+                
+                # Здесь можно использовать обычный requests, т.к. API Telegram не блочит
+                cffi_requests.post(TELEGRAM_URL, json=payload, timeout=10)
+                logger.info(f"✅ Отправлено: {deal.title[:30]}")
+                
+            except Exception as e:
+                logger.error(f"Ошибка отправки телеграм: {e}")
 
-            # Отправляем в Telegram
-            send_telegram_notification(hot_deals)
+    def run(self):
+        logger.info("🎬 Запуск сканера...")
+        if not self.prices_db:
+            logger.error("❌ База цен пуста, сканирование невозможно.")
+            return
 
-            # Сохраняем как отправленные
-            for deal in hot_deals:
-                seen_urls.add(deal.url)
-            save_seen_deals(seen_urls)
+        html = self.get_page(SCAN_URL)
+        if html:
+            listings = self.parse_listings(html)
+            hot_deals = self.find_deals(listings)
+            
+            if hot_deals:
+                logger.info(f"🔥 Найдено {len(hot_deals)} горячих предложений!")
+                self.send_notifications(hot_deals)
+                
+                # Добавляем в просмотренные
+                for d in hot_deals:
+                    self.seen_deals.add(d.url)
+                self._save_seen()
+            else:
+                logger.info("🤷 Горячих предложений не найдено")
         else:
-            logger.info("😔 Горячих предложений не найдено")
-
-        logger.info("\n✅ Сканирование завершено")
-
-    except KeyboardInterrupt:
-        logger.info("\n⚠️ Прервано пользователем")
-    except Exception as e:
-        logger.exception("❌ Критическая ошибка: %s", e)
-    finally:
-        # корректно закрываем сессию
-        try:
-            session.close()
-        except Exception:
-            pass
-
+            logger.error("❌ Не удалось получить страницу Avito")
 
 if __name__ == "__main__":
-    main()
+    scanner = AvitoScanner()
+    scanner.run()
