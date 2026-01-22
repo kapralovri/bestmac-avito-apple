@@ -44,8 +44,7 @@ jobs:
 
       - name: Check for changes
         id: changes
-        run: |
-          git diff --quiet public/data/seen-hot-deals.json || echo "changed=true" >> $GITHUB_OUTPUT
+        run: git diff --quiet public/data/seen-hot-deals.json 2>/dev/null || echo "changed=true" >> $GITHUB_OUTPUT
 
       - name: Commit and push
         if: steps.changes.outputs.changed == 'true'
