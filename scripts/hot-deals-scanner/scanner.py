@@ -233,8 +233,12 @@ class AvitoScanner:
                 ))
         return deals
 
-    def send_notifications(self, deals: List[HotDeal]):
-        if not deals or not TELEGRAM_URL: return
+def send_notifications(self, deals: List[HotDeal]):
+        if not deals or not TELEGRAM_URL: 
+            logger.warning("⚠️ Список сделок пуст или TELEGRAM_NOTIFY_URL не задан")
+            return
+
+        import requests
         for deal in deals:
             try:
                 text = (
@@ -243,13 +247,23 @@ class AvitoScanner:
                     f"📉 Медиана: {deal.median_price:,} ₽ (-{deal.discount_percent}%)\n"
                     f"🔗 <a href='{deal.url}'>Открыть на Avito</a>"
                 )
-                payload = {"text": text, "parse_mode": "HTML", "disable_web_page_preview": False}
-                # Используем обычный requests для Telegram
-                import requests
-                requests.post(TELEGRAM_URL, json=payload, timeout=10)
-                logger.info(f"✅ Уведомление отправлено: {deal.title[:30]}")
+                payload = {
+                    "text": text, 
+                    "parse_mode": "HTML", 
+                    "disable_web_page_preview": False
+                }
+                
+                # Отправляем запрос
+                resp = requests.post(TELEGRAM_URL, json=payload, timeout=15)
+                
+                # ПРОВЕРКА: если Telegram вернул ошибку, это вызовет исключение и попадет в лог
+                if resp.status_code != 200:
+                    logger.error(f"❌ Ошибка Telegram API: {resp.status_code} - {resp.text}")
+                else:
+                    logger.info(f"✅ Уведомление успешно доставлено: {deal.title[:30]}")
+                
             except Exception as e:
-                logger.error(f"Ошибка Telegram: {e}")
+                logger.error(f"❌ Критическая ошибка при отправке в Telegram: {e}")
 
     def run(self):
         if not self.prices_db:
