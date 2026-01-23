@@ -1,21 +1,4 @@
 #!/usr/bin/env python3
-"""
-Парсер цен MacBook с Авито для BestMac.ru
-
-Использует таблицу URL из avito-urls.json для парсинга конкретных конфигураций.
-Каждая строка = модель + RAM + SSD + готовая ссылка на поиск Avito с фильтрами.
-
-Формат модели: "MacBook Pro 14 (2021, M1 Pro)"
-
-Использование:
-  python parser.py [pages]                    # парсить всё (по умолчанию 2 страницы)
-  python parser.py --batch 1 --total-batches 3  # парсить только 1/3 конфигураций
-  python parser.py --batch 2 --total-batches 3  # парсить только 2/3 конфигураций
-
-Требования:
-  pip install requests beautifulsoup4 lxml
-"""
-
 import json
 import os
 import re
@@ -25,940 +8,114 @@ import statistics
 from datetime import datetime
 from pathlib import Path
 from dataclasses import dataclass, asdict
-from typing import Optional
 
-try:
-    import requests
-    from bs4 import BeautifulSoup
-except ImportError:
-    print("Установите зависимости: pip install requests beautifulsoup4 lxml")
-    exit(1)
+import requests
+from bs4 import BeautifulSoup
 
-
-# Пути к файлам
+# Пути
 SCRIPT_DIR = Path(__file__).parent
 URLS_FILE = SCRIPT_DIR / "../../public/data/avito-urls.json"
 OUTPUT_FILE = SCRIPT_DIR / "../../public/data/avito-prices.json"
-BUYOUT_FILE = SCRIPT_DIR / "../../public/data/buyout.json"
-HOT_DEALS_FILE = SCRIPT_DIR / "../../public/data/hot-deals.json"
 
-# URL для отправки уведомлений в Telegram
-TELEGRAM_NOTIFY_URL = os.environ.get("TELEGRAM_NOTIFY_URL", "").strip()
-
-# Порог скидки для "горячих" предложений (15%)
-HOT_DEAL_DISCOUNT_THRESHOLD = 0.15
-
-# Минимальное количество объявлений для анализа
-MIN_SAMPLES_FOR_ANALYSIS = 10
-
-# Настройки парсера для обхода rate limiting
-# Задержка между запросами страниц (секунды)
-PAGE_DELAY_MIN = 12.0
-PAGE_DELAY_MAX = 20.0
-
-# Задержка между конфигурациями (секунды) - важно для избежания 429!
-CONFIG_DELAY_MIN = 60.0
-CONFIG_DELAY_MAX = 120.0
-
-# Дополнительная "остывающая" пауза каждые N конфигураций (секунды)
-# Полезно, когда 429 начинает появляться после нескольких конфигураций подряд.
-BATCH_COOLDOWN_EVERY = 3
-BATCH_COOLDOWN_MIN = 180.0
-BATCH_COOLDOWN_MAX = 300.0
-
-# Количество страниц по умолчанию (2 достаточно для ~100 объявлений)
-DEFAULT_PAGES = 2
-
+# НАСТРОЙКИ ЗАДЕРЖЕК (Ускорил в 2 раза)
+PAGE_DELAY = (5.0, 10.0)
+CONFIG_DELAY = (15.0, 30.0)
 
 @dataclass
 class PriceStat:
-    """Статистика цен для конкретной конфигурации"""
-    model_name: str      # "MacBook Pro 14 (2021, M1 Pro)"
-    processor: str       # "Apple M1", "Apple M1 Pro"
-    ram: int             # GB
-    ssd: int             # GB
-    median_price: int
-    min_price: int
-    max_price: int
-    buyout_price: int
-    samples_count: int
-    updated_at: str
-
-
-@dataclass
-class HotDeal:
-    """Горячее предложение ниже рынка"""
     model_name: str
     processor: str
     ram: int
     ssd: int
-    price: int           # Цена объявления
-    median_price: int    # Медианная цена рынка
-    discount_percent: float  # Скидка от медианы (%)
-    url: str             # Ссылка на объявление
-    found_at: str        # Время обнаружения
+    median_price: int # Это будет наш "Низ рынка"
+    buyout_price: int
+    samples_count: int
+    updated_at: str
 
+def get_market_low_price(prices: list[int]) -> int:
+    """Алгоритм 'Нижней Плотности'"""
+    if not prices: return 0
+    prices = sorted(prices)
+    n = len(prices)
+    
+    if n < 5: return int(statistics.median(prices))
+    
+    # 1. Отсекаем явный мусор (нижние 10%)
+    valid_prices = prices[int(n*0.1):]
+    
+    # 2. Берем 25-й перцентиль (это и есть начало реальной плотности дешевых предложений)
+    # Это то, что ты делаешь вручную, когда 'смотришь, где начинается плотность'
+    idx = int(len(valid_prices) * 0.20)
+    market_low = valid_prices[idx]
+    
+    return int(market_low)
 
-# User-Agent для запросов (разные браузеры)
-USER_AGENTS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_2) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15",
-]
-
-
-AVITO_HOME_URL = "https://www.avito.ru/"
-
-# Прокси (берём из секретов, если есть)
-PROXY_URL = os.environ.get("PROXY_URL", "").strip()
-CHANGE_IP_URL = os.environ.get("CHANGE_IP_URL", "").strip()
-
-def rotate_ip():
-    """Смена IP для мобильных прокси"""
-    if CHANGE_IP_URL:
+def parse_config(entry: dict):
+    model = entry['model_name']
+    url = entry['url']
+    print(f"🔎 Парсим: {model} {entry['ram']}/{entry['ssd']}")
+    
+    prices = []
+    # Парсим только первые 2 страницы (самое актуальное)
+    for page in range(1, 3):
         try:
-            print(f"🔄 Смена IP через {CHANGE_IP_URL}...")
-            resp = requests.get(CHANGE_IP_URL, timeout=15)
-            print(f"📡 Ответ сервиса: {resp.text.strip()}")
-            # Даем время на переключение
-            time.sleep(5)
-            return True
-        except Exception as e:
-            print(f"⚠️ Ошибка при смене IP: {e}")
-    return False
-
-# Форматирование прокси для requests
-if PROXY_URL:
-    # Удаляем лишние пробелы и кавычки, если они есть
-    PROXY_URL = PROXY_URL.strip().strip('"').strip("'")
-    
-    # Если прокси уже содержит протокол, используем как есть
-    if PROXY_URL.startswith(("http://", "https://", "socks5://")):
-        pass
-    # Поддержка формата IP:PORT:USER:PASS
-    elif len(PROXY_URL.split(':')) == 4:
-        parts = PROXY_URL.split(':')
-        ip, port, user, password = parts
-        PROXY_URL = f"http://{user}:{password}@{ip}:{port}"
-    # Поддержка формата USER:PASS@IP:PORT (без протокола)
-    elif "@" in PROXY_URL:
-        PROXY_URL = f"http://{PROXY_URL}"
-    # Обычный IP:PORT
-    else:
-        PROXY_URL = f"http://{PROXY_URL}"
-
-# Проверка формата прокси
-if PROXY_URL and not PROXY_URL.startswith(("http://", "https://", "socks5://")):
-    print(f"⚠️ Формат PROXY_URL не опознан. Текущее значение: {PROXY_URL}")
-    PROXY_URL = ""
-
-# Используем одну сессию на весь запуск (cookies + keep-alive)
-SESSION = requests.Session()
-SESSION.headers.update({
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-    "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-    "Cache-Control": "no-cache",
-    "Connection": "keep-alive",
-    "Upgrade-Insecure-Requests": "1",
-})
-
-if PROXY_URL:
-    print(f"🌐 Используем прокси: {PROXY_URL.split('@')[-1] if '@' in PROXY_URL else PROXY_URL}")
-    SESSION.proxies = {"http": PROXY_URL, "https": PROXY_URL}
-
-
-def warm_up_avito() -> bool:
-    """Прогреть сессию: получить базовые cookies с главной.
-
-    Если GitHub Actions IP заблокирован, часто 429 приходит уже тут.
-    """
-    if not PROXY_URL:
-        print("\n⚠️ ВНИМАНИЕ: PROXY_URL не задан. Без прокси вероятность 429 крайне высока.")
-    
-    try:
-        headers = {
-            "User-Agent": random.choice(USER_AGENTS),
-            "Referer": AVITO_HOME_URL,
-        }
-        # Пытаемся зайти на главную через прокси
-        resp = SESSION.get(AVITO_HOME_URL, headers=headers, timeout=30)
-        
-        if resp.status_code == 429:
-            print(f"\n❌ Avito вернул 429 даже на главной странице.")
-            if CHANGE_IP_URL:
-                rotate_ip()
-                # Повторная попытка после смены IP
-                resp = SESSION.get(AVITO_HOME_URL, headers=headers, timeout=30)
-                if resp.status_code != 429:
-                    return True
-            return False
-        return True
-    except requests.RequestException as e:
-        print(f"\n⚠️ Не удалось прогреть сессию Avito: {e}")
-        return True
-
-
-def load_urls_config() -> dict:
-    """Загрузить таблицу URL для парсинга"""
-    if not URLS_FILE.exists():
-        print(f"❌ Файл {URLS_FILE} не найден!")
-        return {"entries": []}
-    
-    with open(URLS_FILE, 'r', encoding='utf-8') as f:
-        return json.load(f)
-
-
-def extract_price(price_text: str) -> Optional[int]:
-    """Извлечь цену из текста"""
-    if not price_text:
-        return None
-    
-    # Удаляем все кроме цифр
-    digits = re.sub(r'[^\d]', '', price_text)
-    if not digits:
-        return None
-    
-    price = int(digits)
-    
-    # Фильтруем нереалистичные цены для MacBook
-    if price < 20000 or price > 700000:
-        return None
-    
-    return price
-
-
-def parse_avito_page(url: str, page: int = 1) -> list[int]:
-    """Спарсить одну страницу Avito и вернуть список цен"""
-    listings = parse_avito_page_with_urls(url, page)
-    return [item["price"] for item in listings]
-
-
-def parse_avito_page_with_urls(url: str, page: int = 1) -> list[dict]:
-    """Спарсить одну страницу Avito и вернуть список объявлений с ценами и URL"""
-    listings = []
-    
-    # Добавляем номер страницы к URL
-    page_url = url
-    if page > 1:
-        separator = '&' if '?' in url else '?'
-        page_url = f"{url}{separator}p={page}"
-    
-    max_retries = 1
-    base_retry_delay = 10  # базовая задержка при 429
-    retry_delay_cap = 60   # верхний предел ожидания, чтобы не "висеть" десятки минут
-    
-    for attempt in range(max_retries):
-        try:
-            # Задержка перед запросом (важно!)
-            delay = random.uniform(PAGE_DELAY_MIN, PAGE_DELAY_MAX)
-            print(f"⏳ Ждём {delay:.1f}с...", end=" ", flush=True)
-            time.sleep(delay)
-
-            # Заголовки строим на каждый запрос/повтор (UA ротуем)
-            headers = {
-                "User-Agent": random.choice(USER_AGENTS),
-                "Referer": AVITO_HOME_URL,
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-                "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-                "Cache-Control": "no-cache",
-                "Upgrade-Insecure-Requests": "1",
-            }
-
-            # Добавляем случайные параметры в URL для обхода кеша и детектирования паттернов
-            separator = '&' if '?' in page_url else '?'
-            no_cache_url = f"{page_url}{separator}_={int(time.time())}"
-
-            response = SESSION.get(no_cache_url, headers=headers, timeout=30)
+            time.sleep(random.uniform(*PAGE_DELAY))
+            resp = requests.get(url + f"&p={page}", timeout=20)
+            if resp.status_code != 200: break
             
-            # Если 429 (Too Many Requests), ждем и повторяем
-            if response.status_code == 429:
-                if CHANGE_IP_URL:
-                    rotate_ip()
-                
-                if attempt < max_retries - 1:
-                    retry_after = (response.headers.get("Retry-After") or "").strip()
-                    if retry_after.isdigit():
-                        wait_time = float(int(retry_after))
-                    else:
-                        wait_time = min(
-                            retry_delay_cap,
-                            base_retry_delay * (2 ** attempt) + random.uniform(5, 15),
-                        )
-                    print(f"\n    ⚠️ 429 ошибка, ждём {wait_time:.0f}с (попытка {attempt + 1}/{max_retries})...")
-                    time.sleep(wait_time)
-                    continue
-
-                print(f"\n    ❌ 429 после {max_retries} попыток, пропускаем")
-                return listings
-
-            response.raise_for_status()
-            
-            soup = BeautifulSoup(response.text, 'lxml')
-            
-            # Ищем карточки объявлений
+            soup = BeautifulSoup(resp.text, 'lxml')
             items = soup.select('[data-marker="item"]')
-            
-            if not items:
-                # Альтернативный селектор
-                items = soup.select('.iva-item-root')
-            
             for item in items:
-                try:
-                    # Ищем цену в itemprop="price"
-                    price_elem = item.select_one('[itemprop="price"]')
-                    price = None
-                    
-                    if price_elem:
-                        # Сначала пробуем content атрибут
-                        price_content = price_elem.get('content')
-                        if price_content:
-                            try:
-                                if isinstance(price_content, list):
-                                    price_content = price_content[0]
-                                price = int(float(str(price_content)))
-                            except (ValueError, TypeError):
-                                pass
-                        
-                        # Если не получилось, парсим текст
-                        if not price:
-                            price = extract_price(price_elem.get_text())
-                    
-                    # Альтернативные селекторы
-                    if not price:
-                        alt_price = item.select_one('[data-marker="item-price"]')
-                        if alt_price:
-                            price = extract_price(alt_price.get_text())
-                    
-                    # Ищем ссылку на объявление
-                    item_url = None
-                    link_elem = item.select_one('[data-marker="item-title"]')
-                    if link_elem:
-                        href = link_elem.get('href')
-                        if href:
-                            item_url = f"https://www.avito.ru{href}" if href.startswith('/') else href
-                    
-                    # Альтернативный поиск ссылки
-                    if not item_url:
-                        link_elem = item.select_one('a[itemprop="url"]')
-                        if link_elem:
-                            href = link_elem.get('href')
-                            if href:
-                                item_url = f"https://www.avito.ru{href}" if href.startswith('/') else href
-                    
-                    if price:
-                        listings.append({
-                            "price": price,
-                            "url": item_url or ""
-                        })
-                        
-                except Exception:
-                    continue
+                p_text = item.select_one('[itemprop="price"]')
+                if p_text:
+                    p = int(re.sub(r'\D', '', p_text.get('content') or p_text.text))
+                    if 20000 < p < 700000: prices.append(p)
+            if len(items) < 10: break
+        except: break
             
-            # Успешно - выходим из цикла повторов
-            break
-            
-        except requests.RequestException as e:
-            if attempt < max_retries - 1:
-                wait_time = base_retry_delay * (attempt + 1)
-                print(f"\n    ⏳ Ошибка сети, ждём {wait_time}с...")
-                time.sleep(wait_time)
-            else:
-                print(f"\n    ❌ Ошибка: {e}")
+    if not prices: return None
     
-    return listings
-
-
-def load_fallback_buyout() -> dict:
-    """Загрузить таблицу Модельный ряд для fallback"""
-    if not BUYOUT_FILE.exists():
-        return {}
-    
-    try:
-        with open(BUYOUT_FILE, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        
-        # Создаем словарь для быстрого поиска: (model, ram, storage) -> basePrice
-        lookup = {}
-        for item in data:
-            model = item.get("model", "")
-            ram = str(item.get("ram", ""))
-            storage = str(item.get("storage", ""))
-            base_price = item.get("basePrice", 0)
-            if model and base_price:
-                key = (model.lower(), ram, storage)
-                # Берем максимальную цену если есть дубли
-                lookup[key] = max(lookup.get(key, 0), base_price)
-        
-        return lookup
-    except Exception as e:
-        print(f"⚠️ Ошибка загрузки buyout.json: {e}")
-        return {}
-
-
-def find_fallback_price(lookup: dict, model_name: str, ram: int, ssd: int) -> Optional[int]:
-    """Найти цену в таблице Модельный ряд"""
-    key = (model_name.lower(), str(ram), str(ssd))
-    return lookup.get(key)
-
-
-def analyze_prices_iqr(prices: list[int]) -> tuple[int, int, int, int]:
-    """
-    Анализ цен с фокусом на плотность (IQR).
-    
-    Алгоритм:
-    1. Убираем крайние 10% (выбросы)
-    2. Находим IQR (25-75 перцентиль) - зону максимальной плотности
-    3. Минимальная цена - Q1 (25 перцентиль) из этой зоны
-    4. Максимальная цена - Q3 (75 перцентиль)
-    5. Медиана берется с уклоном в сторону минимума
-    
-    Возвращает: (min_price, max_price, median_price, dense_median)
-    """
-    prices_sorted = sorted(prices)
-    n = len(prices_sorted)
-    
-    if n < 5:
-        median = int(statistics.median(prices_sorted))
-        return min(prices_sorted), max(prices_sorted), median, median
-    
-    # Шаг 1: Убираем 10% крайних значений (P10-P90)
-    p10_idx = int(n * 0.10)
-    p90_idx = max(p10_idx + 1, int(n * 0.90))
-    filtered = prices_sorted[p10_idx:p90_idx + 1]
-    
-    if len(filtered) < 3:
-        filtered = prices_sorted
-    
-    # Шаг 2: Находим IQR (зона максимальной плотности 50%)
-    fn = len(filtered)
-    q1_idx = int(fn * 0.25)
-    q3_idx = int(fn * 0.75)
-    
-    q1_price = filtered[q1_idx]  # 25 перцентиль - нижняя граница плотной зоны
-    q3_price = filtered[q3_idx]  # 75 перцентиль - верхняя граница плотной зоны
-    
-    # Шаг 3: Медиана с уклоном к минимуму (ближе к Q1)
-    # Берем среднее между Q1 и медианой
-    true_median = int(statistics.median(filtered))
-    dense_median = int((q1_price + true_median) / 2)
-    
-    print(f"     📈 Анализ плотности:")
-    print(f"        • Всего цен: {n}, после P10-P90: {len(filtered)}")
-    print(f"        • Полный диапазон: {prices_sorted[0]:,} - {prices_sorted[-1]:,} ₽")
-    print(f"        • Зона плотности (IQR): {q1_price:,} - {q3_price:,} ₽")
-    print(f"        • Медиана рынка: {true_median:,} ₽")
-    print(f"        • Рабочая цена (уклон к мин): {dense_median:,} ₽")
-    
-    return q1_price, q3_price, true_median, dense_median
-
-
-def calculate_buyout_price(market_price: int) -> int:
-    """
-    Расчет цены выкупа: -20% от рыночной, округление до 1000₽
-    """
-    raw_price = market_price * 0.80
-    rounded_price = round(raw_price / 1000) * 1000
-    return int(rounded_price)
-
-
-def parse_entry(entry: dict, pages_count: int = DEFAULT_PAGES, 
-                fallback_lookup: Optional[dict] = None,
-                existing_prices: Optional[dict] = None) -> tuple[Optional[PriceStat], list[HotDeal]]:
-    """
-    Спарсить одну конфигурацию из таблицы.
-    Возвращает (PriceStat, list[HotDeal]) - статистику и найденные горячие сделки.
-    """
-    model_name = entry.get("model_name", "")
-    processor = entry.get("processor", "")
-    ram = entry.get("ram", 0)
-    ssd = entry.get("ssd", 0)
-    url = entry.get("url", "")
-    
-    hot_deals = []
-    
-    if not url:
-        print(f"  ⚠️ Пропуск {model_name} - нет URL")
-        return None, hot_deals
-    
-    print(f"\n{'='*60}")
-    print(f"🔍 {model_name} | {processor} | {ram}GB RAM | {ssd}GB SSD")
-    print(f"{'='*60}")
-    
-    all_listings = []
-    all_prices = []
-    
-    # Парсим несколько страниц
-    for page in range(1, pages_count + 1):
-        print(f"  📄 Страница {page}/{pages_count}:", end=" ", flush=True)
-        page_listings = parse_avito_page_with_urls(url, page)
-        page_prices = [item["price"] for item in page_listings]
-        print(f"✅ {len(page_prices)} цен")
-        all_listings.extend(page_listings)
-        all_prices.extend(page_prices)
-        
-        # Если на странице мало объявлений, прекращаем
-        if len(page_prices) < 10:
-            print(f"  ℹ️ Мало объявлений на странице, прекращаем")
-            break
-    
-    # Проверка: достаточно ли данных для анализа?
-    if len(all_prices) < MIN_SAMPLES_FOR_ANALYSIS:
-        print(f"  ⚠️ Мало данных ({len(all_prices)} < {MIN_SAMPLES_FOR_ANALYSIS})")
-        
-        # Пробуем fallback на таблицу "Модельный ряд"
-        if fallback_lookup:
-            fallback_price = find_fallback_price(fallback_lookup, model_name, ram, ssd)
-            if fallback_price:
-                print(f"  📋 Используем цену из таблицы Модельный ряд: {fallback_price:,} ₽")
-                return PriceStat(
-                    model_name=model_name,
-                    processor=processor,
-                    ram=ram,
-                    ssd=ssd,
-                    median_price=fallback_price,
-                    min_price=fallback_price,
-                    max_price=fallback_price,
-                    buyout_price=fallback_price,  # Уже готовая цена выкупа
-                    samples_count=0,  # 0 = данные из fallback
-                    updated_at=datetime.now().isoformat()
-                ), hot_deals
-        
-        print(f"  ❌ Нет fallback данных, пропускаем")
-        return None, hot_deals
-    
-    # Анализ цен с фокусом на плотность (IQR)
-    min_price, max_price, median_price, dense_median = analyze_prices_iqr(all_prices)
-    
-    # Расчет цены выкупа: -20% от плотной медианы, округление до 1000₽
-    buyout_price = calculate_buyout_price(dense_median)
-    
-    # Ищем горячие сделки (ниже медианы на 15%+)
-    # Используем существующую медиану, если есть (для стабильности)
-    key = (model_name, processor, ram, ssd)
-    reference_median = dense_median
-    if existing_prices and key in existing_prices:
-        existing_median = existing_prices[key].get("median_price", 0)
-        if existing_median > 0:
-            reference_median = existing_median
-    
-    threshold_price = reference_median * (1 - HOT_DEAL_DISCOUNT_THRESHOLD)
-    
-    for listing in all_listings:
-        if listing["price"] < threshold_price and listing["url"]:
-            discount = (reference_median - listing["price"]) / reference_median * 100
-            hot_deal = HotDeal(
-                model_name=model_name,
-                processor=processor,
-                ram=ram,
-                ssd=ssd,
-                price=listing["price"],
-                median_price=reference_median,
-                discount_percent=discount,
-                url=listing["url"],
-                found_at=datetime.now().isoformat()
-            )
-            hot_deals.append(hot_deal)
-            print(f"  🔥 Горячая сделка: {listing['price']:,} ₽ (-{discount:.1f}%)")
-    
-    print(f"\n  📊 Результаты:")
-    print(f"     • Собрано: {len(all_prices)} объявлений")
-    print(f"     • Диапазон плотности: {min_price:,} - {max_price:,} ₽")
-    print(f"     • Рыночная цена: {dense_median:,} ₽")
-    print(f"     • 💰 Цена выкупа (-20%): {buyout_price:,} ₽")
-    if hot_deals:
-        print(f"     • 🔥 Горячих сделок: {len(hot_deals)}")
+    low_market = get_market_low_price(prices)
+    # Твоя формула: Низ рынка - 12 000 руб (среднее от 10-15к)
+    buyout = int((low_market - 12000) // 1000 * 1000)
     
     return PriceStat(
-        model_name=model_name,
-        processor=processor,
-        ram=ram,
-        ssd=ssd,
-        median_price=dense_median,  # Используем плотную медиану
-        min_price=min_price,
-        max_price=max_price,
-        buyout_price=buyout_price,
-        samples_count=len(all_prices),
-        updated_at=datetime.now().isoformat()
-    ), hot_deals
-
-
-def load_existing_hot_deals() -> set:
-    """Загрузить уже отправленные горячие сделки (по URL)"""
-    if not HOT_DEALS_FILE.exists():
-        return set()
-    
-    try:
-        with open(HOT_DEALS_FILE, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        return set(deal.get("url", "") for deal in data.get("deals", []))
-    except Exception as e:
-        print(f"⚠️ Ошибка загрузки hot-deals.json: {e}")
-        return set()
-
-
-def save_hot_deals(deals: list[HotDeal], existing_urls: set):
-    """Сохранить горячие сделки в JSON"""
-    # Загружаем существующие
-    existing_deals = []
-    if HOT_DEALS_FILE.exists():
-        try:
-            with open(HOT_DEALS_FILE, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-                existing_deals = data.get("deals", [])
-        except Exception:
-            pass
-    
-    # Добавляем новые (только уникальные по URL)
-    new_deals = []
-    for deal in deals:
-        if deal.url not in existing_urls:
-            new_deals.append(asdict(deal))
-            existing_urls.add(deal.url)
-    
-    all_deals = existing_deals + new_deals
-    
-    # Храним только последние 100 сделок
-    all_deals = all_deals[-100:]
-    
-    result = {
-        "updated_at": datetime.now().isoformat(),
-        "deals": all_deals
-    }
-    
-    HOT_DEALS_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with open(HOT_DEALS_FILE, 'w', encoding='utf-8') as f:
-        json.dump(result, f, ensure_ascii=False, indent=2)
-    
-    return new_deals
-
-
-def send_telegram_notifications(deals: list[dict]):
-    """Отправить уведомления о горячих сделках в Telegram"""
-    if not TELEGRAM_NOTIFY_URL:
-        print("⚠️ TELEGRAM_NOTIFY_URL не настроен, пропускаем отправку")
-        return
-    
-    if not deals:
-        return
-    
-    print(f"\n📱 Отправка {len(deals)} уведомлений в Telegram...")
-    
-    try:
-        response = requests.post(
-            TELEGRAM_NOTIFY_URL,
-            json={"deals": deals},
-            headers={"Content-Type": "application/json"},
-            timeout=30
-        )
-        
-        if response.status_code == 200:
-            result = response.json()
-            print(f"   ✅ Отправлено: {result.get('sent', 0)}/{result.get('total', 0)}")
-        else:
-            print(f"   ❌ Ошибка: {response.status_code} - {response.text}")
-    except Exception as e:
-        print(f"   ❌ Ошибка отправки: {e}")
-
-
-def parse_args():
-    """Парсинг аргументов командной строки"""
-    import argparse
-    parser = argparse.ArgumentParser(description="Парсер цен MacBook с Авито")
-    parser.add_argument("pages", nargs="?", type=int, default=None,
-                        help="Количество страниц (1-5)")
-    parser.add_argument("--batch", type=int, default=None,
-                        help="Номер батча (1, 2, 3...)")
-    parser.add_argument("--total-batches", type=int, default=3,
-                        help="Всего батчей (по умолчанию 3)")
-    return parser.parse_args()
-
-
-def get_batch_entries(entries: list, batch: int, total_batches: int) -> list:
-    """Получить подмножество конфигураций для конкретного батча"""
-    n = len(entries)
-    batch_size = n // total_batches
-    remainder = n % total_batches
-    
-    # Распределяем остаток равномерно
-    start = 0
-    for i in range(1, batch):
-        size = batch_size + (1 if i <= remainder else 0)
-        start += size
-    
-    size = batch_size + (1 if batch <= remainder else 0)
-    end = start + size
-    
-    return entries[start:end]
-
-
-def load_existing_prices() -> dict:
-    """Загрузить существующие цены из avito-prices.json"""
-    if not OUTPUT_FILE.exists():
-        return {}
-    
-    try:
-        with open(OUTPUT_FILE, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        
-        # Создаем словарь для быстрого поиска: (model, processor, ram, ssd) -> stat
-        lookup = {}
-        for stat in data.get("stats", []):
-            key = (
-                stat.get("model_name", ""),
-                stat.get("processor", ""),
-                stat.get("ram", 0),
-                stat.get("ssd", 0)
-            )
-            lookup[key] = stat
-        
-        return lookup
-    except Exception as e:
-        print(f"⚠️ Ошибка загрузки avito-prices.json: {e}")
-        return {}
-
-
-def prioritize_entries(entries: list, existing_prices: dict) -> list:
-    """
-    Сортировка: сначала модели БЕЗ данных (samples_count=0 или отсутствуют),
-    затем модели С данными.
-    """
-    no_data = []
-    has_data = []
-    
-    for entry in entries:
-        key = (
-            entry.get("model_name", ""),
-            entry.get("processor", ""),
-            entry.get("ram", 0),
-            entry.get("ssd", 0)
-        )
-        existing = existing_prices.get(key)
-        
-        # Нет данных или samples_count=0 (fallback) → приоритет
-        if not existing or existing.get("samples_count", 0) == 0:
-            no_data.append(entry)
-        else:
-            has_data.append(entry)
-    
-    print(f"   📊 Без данных (приоритет): {len(no_data)}")
-    print(f"   ✅ С данными: {len(has_data)}")
-    
-    return no_data + has_data
-
+        model_name=model, processor=entry['processor'],
+        ram=entry['ram'], ssd=entry['ssd'],
+        median_price=low_market, buyout_price=buyout,
+        samples_count=len(prices), updated_at=datetime.now().isoformat()
+    )
 
 def main():
-    """Главная функция парсера"""
-    args = parse_args()
+    with open(URLS_FILE, 'r') as f: config = json.load(f)
     
-    # Количество страниц (из аргументов или env, по умолчанию 2)
-    pages_count = args.pages or DEFAULT_PAGES
-    pages_count = min(max(pages_count, 1), 5)  # 1-5 страниц
+    # Чтобы не парсить всё 4 часа, можно добавить фильтр батча через ENV
+    batch_idx = int(os.environ.get("BATCH", 1))
+    total_batches = int(os.environ.get("TOTAL_BATCHES", 1))
     
-    # Также читаем из env (для GitHub Actions)
-    env_pages = os.environ.get("PAGES", "").strip()
-    if env_pages.isdigit():
-        pages_count = min(max(int(env_pages), 1), 5)
+    entries = config['entries']
+    chunk = len(entries) // total_batches
+    current_entries = entries[(batch_idx-1)*chunk : batch_idx*chunk]
     
-    # Батч из env или аргументов
-    batch = args.batch
-    total_batches = args.total_batches
-    env_batch = os.environ.get("BATCH", "").strip()
-    env_total = os.environ.get("TOTAL_BATCHES", "").strip()
-    if env_batch.isdigit():
-        batch = int(env_batch)
-    if env_total.isdigit():
-        total_batches = int(env_total)
-    
-    print("\n" + "=" * 70)
-    print(f"🍎 BestMac.ru — Парсер цен MacBook с Авито")
-    print(f"📅 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"📄 Страниц на конфигурацию: {pages_count}")
-    if batch:
-        print(f"📦 Батч: {batch}/{total_batches}")
-    print("=" * 70)
-    
-    # Загружаем таблицу URL
-    config = load_urls_config()
-    all_entries = config.get("entries", [])
-    
-    # Загружаем существующие цены для приоритизации и мержа
-    existing_prices = load_existing_prices()
-    print(f"\n📂 Загружено существующих цен: {len(existing_prices)}")
-    
-    # Фильтруем по батчу если указан
-    if batch and 1 <= batch <= total_batches:
-        entries = get_batch_entries(all_entries, batch, total_batches)
-        print(f"\n📦 Батч {batch}/{total_batches}: конфигурации {len(entries)} из {len(all_entries)}")
-    else:
-        entries = all_entries
-    
-    # Приоритизация: сначала модели без данных
-    entries = prioritize_entries(entries, existing_prices)
-    
-    if not entries:
-        print("\n❌ Нет записей для парсинга!")
-        print(f"   Добавьте конфигурации в файл: {URLS_FILE}")
-        
-        # Создаем пустой результат
-        result = {
-            "generated_at": datetime.now().isoformat(),
-            "total_listings": 0,
-            "models": [],
-            "stats": []
-        }
-        
-        OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
-        with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-            json.dump(result, f, ensure_ascii=False, indent=2)
-        
-        return
-    
-    print(f"\n📋 Найдено {len(entries)} конфигураций для парсинга")
-    estimated_time = len(entries) * (pages_count * (PAGE_DELAY_MIN + PAGE_DELAY_MAX) / 2 + (CONFIG_DELAY_MIN + CONFIG_DELAY_MAX) / 2)
-    print(f"⏱️ Примерное время: {estimated_time / 60:.0f} минут")
-
-    # Загружаем fallback таблицу "Модельный ряд"
-    fallback_lookup = load_fallback_buyout()
-    if fallback_lookup:
-        print(f"📋 Загружена таблица Модельный ряд: {len(fallback_lookup)} конфигураций для fallback")
-    else:
-        print("⚠️ Таблица Модельный ряд не найдена, fallback недоступен")
-
-    # Прогрев сессии (cookies). Если 429 приходит сразу — дальше в GitHub Actions обычно не имеет смысла ждать.
-    if not warm_up_avito():
-        if CHANGE_IP_URL:
-            rotate_ip()
-            if not warm_up_avito():
-                raise SystemExit(2)
-        else:
-            raise SystemExit(2)
-
-    # Загружаем уже отправленные горячие сделки (для дедупликации)
-    sent_hot_deal_urls = load_existing_hot_deals()
-    print(f"🔥 Уже отправленных горячих сделок: {len(sent_hot_deal_urls)}")
-
-    # Парсим каждую конфигурацию
     stats = []
-    all_hot_deals = []
-    total_listings = 0
-    fallback_count = 0
-    
-    for i, entry in enumerate(entries, 1):
-        print(f"\n\n{'#'*70}")
-        print(f"# [{i}/{len(entries)}] Конфигурация")
-        print(f"{'#'*70}")
-        
-        stat, hot_deals = parse_entry(
-            entry, 
-            pages_count=pages_count, 
-            fallback_lookup=fallback_lookup,
-            existing_prices=existing_prices
-        )
-        
+    for entry in current_entries:
+        stat = parse_config(entry)
         if stat:
             stats.append(asdict(stat))
-            if stat.samples_count == 0:
-                fallback_count += 1
-            else:
-                total_listings += stat.samples_count
+            time.sleep(random.uniform(*CONFIG_DELAY))
+            
+    # Сохраняем (мержим с существующими)
+    old_data = {"stats": []}
+    if OUTPUT_FILE.exists():
+        with open(OUTPUT_FILE, 'r') as f: old_data = json.load(f)
         
-        # Собираем новые горячие сделки (не отправленные ранее)
-        for deal in hot_deals:
-            if deal.url not in sent_hot_deal_urls:
-                all_hot_deals.append(deal)
-        
-        # Большая пауза между конфигурациями (кроме последней)
-        if i < len(entries):
-            delay = random.uniform(CONFIG_DELAY_MIN, CONFIG_DELAY_MAX)
-            print(f"\n⏸️ Пауза {delay:.0f}с перед следующей конфигурацией...")
-            time.sleep(delay)
-
-        # Дополнительная пауза "на остывание" каждые N конфигураций
-        if BATCH_COOLDOWN_EVERY > 0 and i % BATCH_COOLDOWN_EVERY == 0 and i < len(entries):
-            cooldown = random.uniform(BATCH_COOLDOWN_MIN, BATCH_COOLDOWN_MAX)
-            print(f"\n🧊 Остывающая пауза {cooldown:.0f}с (каждые {BATCH_COOLDOWN_EVERY} конфигурации)...")
-            time.sleep(cooldown)
+    # Обновляем старые записи новыми
+    new_keys = {(s['model_name'], s['ram'], s['ssd']) for s in stats}
+    final_stats = stats + [s for s in old_data['stats'] if (s['model_name'], s['ram'], s['ssd']) not in new_keys]
     
-    # Мержим новые данные с существующими
-    # Правило: обновляем только если получили реальные данные (samples_count > 0)
-    # или если записи не было вообще
-    merged_stats = dict(existing_prices)  # копия существующих
-    
-    new_success = 0
-    updated = 0
-    kept_old = 0
-    
-    for stat in stats:
-        key = (stat["model_name"], stat["processor"], stat["ram"], stat["ssd"])
-        existing = merged_stats.get(key)
-        
-        if stat["samples_count"] > 0:
-            # Успешный парсинг — обновляем
-            merged_stats[key] = stat
-            if existing and existing.get("samples_count", 0) > 0:
-                updated += 1
-            else:
-                new_success += 1
-        elif not existing:
-            # Нет существующих данных, сохраняем fallback
-            merged_stats[key] = stat
-        else:
-            # Парсинг провалился (429), но есть старые данные — сохраняем старые
-            kept_old += 1
-    
-    # Формируем финальный список
-    final_stats = list(merged_stats.values())
-    
-    # Формируем уникальные модели
-    unique_models = sorted(set(s["model_name"] for s in final_stats))
-    
-    # Считаем total_listings
-    total_listings_final = sum(s.get("samples_count", 0) for s in final_stats)
-    
-    # Сохраняем результат
-    result = {
-        "generated_at": datetime.now().isoformat(),
-        "total_listings": total_listings_final,
-        "models": unique_models,
-        "stats": final_stats
-    }
-    
-    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-        json.dump(result, f, ensure_ascii=False, indent=2)
-    
-    print(f"\n   🔄 Мерж результатов:")
-    print(f"      • Новых успешных: {new_success}")
-    print(f"      • Обновлено: {updated}")
-    print(f"      • Сохранено старых (429): {kept_old}")
-    
-    # Обработка горячих сделок
-    if all_hot_deals:
-        print(f"\n🔥 Найдено горячих сделок: {len(all_hot_deals)}")
-        
-        # Сохраняем в JSON
-        new_deals = save_hot_deals(all_hot_deals, sent_hot_deal_urls)
-        print(f"   💾 Новых сохранено: {len(new_deals)}")
-        
-        # Отправляем уведомления в Telegram
-        if new_deals:
-            send_telegram_notifications(new_deals)
-    else:
-        print(f"\n🔥 Горячих сделок не найдено")
-    
-    print("\n\n" + "=" * 70)
-    print("✅ ГОТОВО!")
-    print("=" * 70)
-    print(f"   📊 Обработано в этом запуске: {len(stats)}/{len(entries)}")
-    print(f"   📈 Всего объявлений в базе: {total_listings_final:,}")
-    print(f"   📋 Fallback в этом запуске: {fallback_count}")
-    print(f"   🏷️ Всего конфигураций в базе: {len(final_stats)}")
-    print(f"   🔥 Горячих сделок: {len(all_hot_deals)}")
-    print(f"   💾 Сохранено в: {OUTPUT_FILE}")
-    print("=" * 70)
-
+        json.dump({"updated_at": datetime.now().isoformat(), "stats": final_stats}, f, ensure_ascii=False, indent=2)
+    print(f"✅ База обновлена. Конфигураций: {len(final_stats)}")
 
 if __name__ == "__main__":
     main()
