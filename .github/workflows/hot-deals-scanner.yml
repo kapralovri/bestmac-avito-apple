@@ -1,16 +1,18 @@
 name: Hot Deals Scanner
 
 on:
-  push:
-    branches: [main]
   schedule:
-    # Запуск в 18 и 48 минут каждого часа (каждые 30 минут с отступом от начала часа)
-    - cron: '18,48 * * * *'
+    # Запуск в 18 и 48 минут каждого часа (раз в 30 минут)
+    - cron: "18,48 * * * *"
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
   scan:
     runs-on: ubuntu-latest
+    # Это важно: если запуск был по расписанию, GitHub должен иметь права на запись
     permissions:
       contents: write
 
