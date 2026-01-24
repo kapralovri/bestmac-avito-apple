@@ -1,13 +1,9 @@
 name: Hot Deals Scanner
 
+# Устанавливаем расписание
 on:
   schedule:
-    - cron: "18,48 * * * *"
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-
+    - cron: '0 6 * * *'
 jobs:
   scan:
     runs-on: ubuntu-latest
