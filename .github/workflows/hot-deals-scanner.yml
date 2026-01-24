@@ -2,10 +2,9 @@ name: Hot Deals Scanner
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: '*/30 * * * *' # Будет запускаться в 00 и 30 минут каждого часа
   workflow_dispatch:
 
 jobs:
