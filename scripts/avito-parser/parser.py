@@ -43,28 +43,22 @@ class PriceStat:
     processor: str
     ram: int
     ssd: int
-    min_price: int      # ВЕРНУЛИ ДЛЯ САЙТА
-    max_price: int      # ВЕРНУЛИ ДЛЯ САЙТА
+    min_price: int
+    max_price: int
     median_price: int
     buyout_price: int
     samples_count: int
     updated_at: str
 
 def get_market_analysis(prices: list[int]):
-    """Анализ цен: возвращает (мин, макс, медиана) для фронтенда"""
     if not prices: return 0, 0, 0
     prices = sorted(prices)
     n = len(prices)
-    
-    # Отсекаем мусор
     clean_prices = prices[int(n*0.1):int(n*0.9)] if n > 10 else prices
-    if not clean_prices: clean_prices = prices
     
-    # Твоя методика низа рынка
     low_idx = int(len(clean_prices) * 0.2)
     market_low = clean_prices[low_idx]
     
-    # Формируем диапазон для фронтенда (+/- 10% от медианы для красоты или реальные границы)
     median = int(statistics.median(clean_prices))
     high_idx = int(len(clean_prices) * 0.8)
     market_high = clean_prices[high_idx]
@@ -105,11 +99,8 @@ def parse_config(entry):
     return PriceStat(
         model_name=entry['model_name'], processor=entry['processor'],
         ram=entry['ram'], ssd=entry['ssd'],
-        min_price=low,        # Низ рынка для диапазона
-        max_price=high,       # Верх рынка для диапазона
-        median_price=median,  # Медиана для сайта
-        buyout_price=buyout,
-        samples_count=len(prices), updated_at=time.ctime()
+        min_price=low, max_price=high, median_price=median,
+        buyout_price=buyout, samples_count=len(prices), updated_at=time.ctime()
     )
 
 def main():
@@ -124,18 +115,26 @@ def main():
     batch_env = os.environ.get("BATCH", args.batch)
     if batch_env == "all":
         my_entries = all_entries
+        logger.info(f"📦 Режим: ВСЕ конфигурации ({len(my_entries)} шт)")
     else:
         b_idx = int(batch_env)
         chunk = len(all_entries) // args.total_batches
         start = (b_idx - 1) * chunk
         end = b_idx * chunk if b_idx < args.total_batches else len(all_entries)
         my_entries = all_entries[start:end]
+        logger.info(f"📦 Батч {b_idx}/{args.total_batches} ({len(my_entries)} шт)")
 
     new_results = []
+    failed_configs = []
+
     for entry in my_entries:
         res = parse_config(entry)
-        if res: new_results.append(asdict(res))
+        if res:
+            new_results.append(asdict(res))
+        else:
+            failed_configs.append(f"{entry['model_name']} {entry['ram']}/{entry['ssd']}")
     
+    # Загружаем старые данные
     data = {"stats": []}
     if OUTPUT_FILE.exists():
         try:
@@ -143,13 +142,42 @@ def main():
         except: pass
 
     db = {(s['model_name'], s['ram'], s['ssd']): s for s in data['stats']}
+    
+    repaired_count = 0
+    # 1. Авторемонт старых записей для фронтенда
+    for key, stat in db.items():
+        if 'min_price' not in stat or stat.get('min_price') == 0:
+            median = stat.get('median_price', 0)
+            stat['min_price'] = int(median * 0.9)
+            stat['max_price'] = int(median * 1.1)
+            if 'buyout_price' not in stat:
+                stat['buyout_price'] = int((stat['min_price'] - 12000) // 1000 * 1000)
+            repaired_count += 1
+
+    # 2. Вливаем свежие данные
     for s in new_results:
         db[(s['model_name'], s['ram'], s['ssd'])] = s
 
+    # Сохраняем
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump({"updated_at": time.ctime(), "stats": list(db.values())}, f, ensure_ascii=False, indent=2)
-    logger.info("✅ База обновлена. Фронтенд должен ожить.")
+
+    # --- ИТОГОВЫЙ ОТЧЕТ ---
+    print("\n" + "="*50)
+    print("📊 ИТОГИ ПАРСИНГА")
+    print("="*50)
+    print(f"✅ Обновлено успешно: {len(new_results)}")
+    print(f"🛠 Отремонтировано старых записей: {repaired_count}")
+    print(f"❌ Не удалось обновить (остались старые данные): {len(failed_configs)}")
+    
+    if failed_configs:
+        print("\nСписок не обновленных конфигураций:")
+        for cfg in failed_configs:
+            print(f"  - {cfg}")
+    
+    print("="*50)
+    logger.info("✅ Работа завершена.")
 
 if __name__ == "__main__":
     main()
