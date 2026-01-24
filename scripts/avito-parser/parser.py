@@ -78,29 +78,46 @@ def parse_config(entry):
     )
 
 def main():
-    if not URLS_FILE.exists(): return
-    with open(URLS_FILE, 'r') as f: entries = json.load(f)['entries']
+    if not URLS_FILE.exists(): 
+        print(f"❌ Файл не найден: {URLS_FILE}")
+        return
     
-    # Фильтрация батча (если нужно)
-    b_idx = int(os.environ.get("BATCH", 1))
-    t_batches = int(os.environ.get("TOTAL_BATCHES", 1))
-    chunk = len(entries) // t_batches
-    my_entries = entries[(b_idx-1)*chunk : b_idx*chunk]
+    with open(URLS_FILE, 'r') as f: 
+        entries = json.load(f)['entries']
     
+    # ИСПРАВЛЕННАЯ ЛОГИКА БАТЧЕЙ
+    batch_env = os.environ.get("BATCH", "1")
+    
+    if batch_env == "all":
+        print("📦 Режим: Парсим ВСЕ конфигурации сразу")
+        my_entries = entries
+    else:
+        try:
+            b_idx = int(batch_env)
+            t_batches = int(os.environ.get("TOTAL_BATCHES", 3))
+            chunk = len(entries) // t_batches
+            # Чтобы не было ошибок с индексами
+            start = (b_idx - 1) * chunk
+            end = b_idx * chunk if b_idx < t_batches else len(entries)
+            my_entries = entries[start:end]
+            print(f"📦 Режим: Батч {b_idx} из {t_batches} (записей: {len(my_entries)})")
+        except ValueError:
+            print(f"⚠️ Неверный формат BATCH ({batch_env}), парсим всё.")
+            my_entries = entries
+
     new_stats = []
     for entry in my_entries:
         res = parse_config(entry)
         if res: new_stats.append(asdict(res))
         time.sleep(random.uniform(*CONFIG_DELAY))
         
-    # Сохранение (слияние с текущей базой)
+    # Сохранение (слияние)
     data = {"stats": []}
     if OUTPUT_FILE.exists():
         try:
             with open(OUTPUT_FILE, 'r') as f: data = json.load(f)
         except: pass
         
-    # Обновляем записи
     current = { (s['model_name'], s['ram'], s['ssd']): s for s in data['stats'] }
     for s in new_stats:
         current[(s['model_name'], s['ram'], s['ssd'])] = s
@@ -108,7 +125,4 @@ def main():
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump({"updated_at": time.ctime(), "stats": list(current.values())}, f, ensure_ascii=False, indent=2)
-    print("✅ База цен обновлена.")
-
-if __name__ == "__main__":
-    main()
+    print(f"✅ База обновлена. Всего в базе: {len(current)} конфигураций.")
