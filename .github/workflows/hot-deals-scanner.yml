@@ -4,7 +4,8 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: '*/30 * * * *' # Будет запускаться в 00 и 30 минут каждого часа
+    # Запуск в 18 и 48 минут каждого часа (каждые 30 минут с отступом от начала часа)
+    - cron: '18,48 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -43,7 +44,8 @@ jobs:
 
       - name: Check for changes
         id: changes
-        run: git diff --quiet public/data/seen-hot-deals.json 2>/dev/null || echo "changed=true" >> $GITHUB_OUTPUT
+        run: |
+          git diff --quiet public/data/seen-hot-deals.json 2>/dev/null || echo "changed=true" >> $GITHUB_OUTPUT
 
       - name: Commit and push
         if: steps.changes.outputs.changed == 'true'
