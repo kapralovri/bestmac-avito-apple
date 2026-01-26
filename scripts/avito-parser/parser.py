@@ -27,6 +27,9 @@ SCRIPT_DIR = Path(__file__).parent
 URLS_FILE = SCRIPT_DIR / "../../public/data/avito-urls.json"
 OUTPUT_FILE = SCRIPT_DIR / "../../public/data/avito-prices.json"
 
+# Ключевые слова для исключения мусорных цен (запчасти, битые)
+JUNK_KEYWORDS = ['битый', 'разбит', 'экран', 'матриц', 'icloud', 'запчаст', 'дефект', 'не раб', 'аккаунт', 'mdm', 'коробка', 'чехол']
+
 RAW_PROXY = os.environ.get("PROXY_URL", "").strip().strip('"').strip("'")
 CHANGE_IP_URL = os.environ.get("CHANGE_IP_URL", "").strip().strip('"').strip("'")
 
@@ -51,17 +54,25 @@ class PriceStat:
     updated_at: str
 
 def get_market_analysis(prices: list[int]):
+    """Методика 'Живой рынок': убираем только явный шум снизу"""
     if not prices: return 0, 0, 0
     prices = sorted(prices)
     n = len(prices)
-    clean_prices = prices[int(n*0.1):int(n*0.9)] if n > 10 else prices
     
-    low_idx = int(len(clean_prices) * 0.2)
-    market_low = clean_prices[low_idx]
+    # 1. Отсекаем только самый низ (5%), где обычно лежат запчасти, которые не отфильтровались словами
+    # 2. Отсекаем верхние 10% (неадекватный оверпрайс)
+    start_idx = int(n * 0.05)
+    end_idx = int(n * 0.9)
+    clean_prices = prices[start_idx:end_idx]
     
+    if not clean_prices: clean_prices = prices
+    
+    # market_low — теперь это реально ПЕРВАЯ цена живого устройства
+    market_low = clean_prices[0]
+    # median — центральное значение
     median = int(statistics.median(clean_prices))
-    high_idx = int(len(clean_prices) * 0.8)
-    market_high = clean_prices[high_idx]
+    # market_high — граница адекватной цены
+    market_high = clean_prices[int(len(clean_prices)*0.8)] if len(clean_prices) > 5 else clean_prices[-1]
     
     return market_low, market_high, median
 
@@ -75,7 +86,7 @@ def parse_config(entry):
 
     for page in range(1, 3):
         try:
-            time.sleep(random.uniform(3, 6))
+            time.sleep(random.uniform(4, 7))
             resp = requests.get(f"{url.strip()}&p={page}", headers=headers, proxies=proxies, timeout=25, verify=False)
             if resp.status_code == 429:
                 if CHANGE_IP_URL: requests.get(CHANGE_IP_URL, timeout=10, verify=False)
@@ -85,8 +96,14 @@ def parse_config(entry):
             items = soup.select('[data-marker="item"]')
             for item in items:
                 try:
+                    title = item.select_one('[data-marker="item-title"]').get('title', '').lower()
+                    # ФИЛЬТР: если в заголовке есть 'битый', 'запчасти' и т.д. — игнорируем эту цену
+                    if any(word in title for word in JUNK_KEYWORDS):
+                        continue
+                        
                     p = int(item.select_one('[itemprop="price"]')['content'])
-                    if 15000 < p < 800000: prices.append(p)
+                    if 15000 < p < 850000: 
+                        prices.append(p)
                 except: continue
             if len(items) < 10: break
         except: break
@@ -94,6 +111,8 @@ def parse_config(entry):
     if len(prices) < 5: return None
     
     low, high, median = get_market_analysis(prices)
+    # Выкуп считаем от НИЗА РЫНКА минус 12-15% (или фиксированные 12к)
+    # Давай сделаем 12 000, как ты просил ранее
     buyout = int((low - 12000) // 1000 * 1000)
     
     return PriceStat(
@@ -113,28 +132,13 @@ def main():
     with open(URLS_FILE, 'r', encoding='utf-8') as f: all_entries = json.load(f)['entries']
 
     batch_env = os.environ.get("BATCH", args.batch)
-    if batch_env == "all":
-        my_entries = all_entries
-        logger.info(f"📦 Режим: ВСЕ конфигурации ({len(my_entries)} шт)")
-    else:
-        b_idx = int(batch_env)
-        chunk = len(all_entries) // args.total_batches
-        start = (b_idx - 1) * chunk
-        end = b_idx * chunk if b_idx < args.total_batches else len(all_entries)
-        my_entries = all_entries[start:end]
-        logger.info(f"📦 Батч {b_idx}/{args.total_batches} ({len(my_entries)} шт)")
+    my_entries = all_entries if batch_env == "all" else all_entries[(int(batch_env)-1)*(len(all_entries)//args.total_batches) : int(batch_env)*(len(all_entries)//args.total_batches)]
 
     new_results = []
-    failed_configs = []
-
     for entry in my_entries:
         res = parse_config(entry)
-        if res:
-            new_results.append(asdict(res))
-        else:
-            failed_configs.append(f"{entry['model_name']} {entry['ram']}/{entry['ssd']}")
+        if res: new_results.append(asdict(res))
     
-    # Загружаем старые данные
     data = {"stats": []}
     if OUTPUT_FILE.exists():
         try:
@@ -142,42 +146,13 @@ def main():
         except: pass
 
     db = {(s['model_name'], s['ram'], s['ssd']): s for s in data['stats']}
-    
-    repaired_count = 0
-    # 1. Авторемонт старых записей для фронтенда
-    for key, stat in db.items():
-        if 'min_price' not in stat or stat.get('min_price') == 0:
-            median = stat.get('median_price', 0)
-            stat['min_price'] = int(median * 0.9)
-            stat['max_price'] = int(median * 1.1)
-            if 'buyout_price' not in stat:
-                stat['buyout_price'] = int((stat['min_price'] - 12000) // 1000 * 1000)
-            repaired_count += 1
-
-    # 2. Вливаем свежие данные
     for s in new_results:
         db[(s['model_name'], s['ram'], s['ssd'])] = s
 
-    # Сохраняем
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump({"updated_at": time.ctime(), "stats": list(db.values())}, f, ensure_ascii=False, indent=2)
-
-    # --- ИТОГОВЫЙ ОТЧЕТ ---
-    print("\n" + "="*50)
-    print("📊 ИТОГИ ПАРСИНГА")
-    print("="*50)
-    print(f"✅ Обновлено успешно: {len(new_results)}")
-    print(f"🛠 Отремонтировано старых записей: {repaired_count}")
-    print(f"❌ Не удалось обновить (остались старые данные): {len(failed_configs)}")
-    
-    if failed_configs:
-        print("\nСписок не обновленных конфигураций:")
-        for cfg in failed_configs:
-            print(f"  - {cfg}")
-    
-    print("="*50)
-    logger.info("✅ Работа завершена.")
+    print(f"✅ База обновлена. Успешно: {len(new_results)}")
 
 if __name__ == "__main__":
     main()
