@@ -1,6 +1,6 @@
 {
   "description": "Таблица ссылок для парсинга Авито. Синхронизируется из Google Sheets.",
-  "updated_at": "2026-01-25",
+  "updated_at": "2026-01-26",
   "source": "https://docs.google.com/spreadsheets/d/1hq9JqsWLyGVFVtzfWhZbwylSEkWLpSptWBirsh4zsy0",
   "entries": [
     {
@@ -449,7 +449,7 @@
       "processor": "Apple M1 Pro",
       "ram": 16,
       "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_16_2021-ASgBAgICAkSg5A22uOsRqOQN9Nlm?cd=1&f=ASgBAgECA0Se5A2Oza0QoOQNtrjrEajkDfTZZgJFnKEUE3siZnJvbSI6MTYsInRvIjoxNn2eoRQVeyJmcm9tIjo1MTIsInRvIjo1MTJ9&localPriority=1&q=macbook"
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_16_2021-ASgBAgICAkSg5A22uOsRqOQN9Nlm?cd=1&f=ASgBAgECBESe5A2Oza0QoOQNtrjrEajkDfTZZrCzFP6hjwMDRcaaDBV7ImZyb20iOjUwMDAwLCJ0byI6MH2coRQTeyJmcm9tIjoxNiwidG8iOjE2fZ6hFBV7ImZyb20iOjUwMCwidG8iOjUxMn0&localPriority=1&q=macbook"
     },
     {
       "model_name": "MacBook Pro 16 (2021)",
