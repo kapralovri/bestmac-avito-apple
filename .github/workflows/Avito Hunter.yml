@@ -1,49 +1,62 @@
-name: Avito Hunter
+name: Avito Scanner Auto
 
 on:
   schedule:
-    # Запуск раз в 30 минут (на 10-й и 40-й минуте)
-    - cron: '10,40 * * * *'
-  workflow_dispatch:
+    # Запуск каждые 30 минут (в 12 и 42 минуты каждого часа)
+    - cron: "12,42 * * * *"
+  workflow_dispatch: # Возможность запустить вручную
   push:
     branches:
       - main
 
 jobs:
-  hunt:
+  scan:
     runs-on: ubuntu-latest
+    
+    # Даем права на запись, чтобы сохранять файл просмотренных объявлений
     permissions:
       contents: write
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
+          fetch-depth: 0 # Важно для корректного слияния изменений
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
           cache-dependency-path: scripts/hot-deals-scanner/requirements.txt
 
-      - name: Install
-        run: pip install -r scripts/hot-deals-scanner/requirements.txt
+      - name: Install dependencies
+        run: |
+          pip install -r scripts/hot-deals-scanner/requirements.txt
 
-      - name: Run Scanner
+      - name: Run scanner
         env:
           PROXY_URL: ${{ secrets.PROXY_URL }}
           CHANGE_IP_URL: ${{ secrets.CHANGE_IP_URL }}
           TELEGRAM_NOTIFY_URL: ${{ secrets.TELEGRAM_NOTIFY_URL }}
           SCAN_URL: ${{ secrets.SCAN_URL }}
-        run: python scripts/hot-deals-scanner/scanner.py
+        run: |
+          python scripts/hot-deals-scanner/scanner.py
 
-      - name: Push history
+      - name: Save History (Commit and Push)
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
+          
+          # Добавляем файл с историей просмотренных объявлений
           git add public/data/seen-hot-deals.json
-          git commit -m "chore: update seen deals [skip ci]" || echo "No changes"
-          git push origin main || echo "No changes to push"
+          
+          # Синхронизируемся с сервером (на случай, если парсер обновил цены в это же время)
+          git pull --rebase origin main
+          
+          # Делаем коммит, если файл изменился
+          git commit -m "chore: update seen hot deals [skip ci]" || echo "No changes to commit"
+          
+          # Отправляем изменения обратно в репозиторий
+          git push origin main
