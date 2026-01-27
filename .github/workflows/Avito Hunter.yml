@@ -49,14 +49,19 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           
-          # Добавляем файл с историей просмотренных объявлений
+          # Добавляем файл
           git add public/data/seen-hot-deals.json
           
-          # Синхронизируемся с сервером (на случай, если парсер обновил цены в это же время)
-          git pull --rebase origin main
-          
-          # Делаем коммит, если файл изменился
-          git commit -m "chore: update seen hot deals [skip ci]" || echo "No changes to commit"
-          
-          # Отправляем изменения обратно в репозиторий
-          git push origin main
+          # Проверяем, есть ли что коммитить, чтобы не было ошибки "nothing to commit"
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            # 1. Сначала коммитим локально
+            git commit -m "chore: update seen hot deals [skip ci]"
+            
+            # 2. Теперь стягиваем изменения из main, наш коммит встанет сверху
+            git pull --rebase origin main
+            
+            # 3. Отправляем в репозиторий
+            git push origin main
+          fi
