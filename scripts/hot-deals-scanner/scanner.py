@@ -6,6 +6,7 @@ import time
 import random
 import logging
 import urllib3
+from datetime import datetime  # Тот самый пропущенный импорт
 from pathlib import Path
 from urllib.parse import urljoin
 
@@ -74,11 +75,11 @@ class AvitoScanner:
             try:
                 logger.info("🔄 Смена IP...")
                 requests.get(CHANGE_IP_URL, timeout=15, verify=False)
-                time.sleep(12)
+                time.sleep(15)
             except: pass
 
     def get_with_retry(self, url, use_proxy=True):
-        headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"}
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
         proxies = self.proxies if use_proxy else None
         for attempt in range(2):
             try:
@@ -90,7 +91,6 @@ class AvitoScanner:
         return None
 
     def deep_analyze(self, url: str):
-        """Пытаемся вытащить циклы, но если не выходит — не тормозим весь скрипт"""
         resp = self.get_with_retry(url, use_proxy=True)
         if not resp: return None, False
         try:
@@ -120,7 +120,6 @@ class AvitoScanner:
             f"🔗 <a href='{url}'>Открыть на Avito</a>"
         )
         try:
-            # ВАЖНО: proxies=None чтобы уведомление ушло без помех
             requests.post(TELEGRAM_URL, json={"text": text, "parse_mode": "HTML"}, timeout=10, proxies=None)
             logger.info(f"✅ Уведомление отправлено: {price} руб.")
         except Exception as e:
@@ -147,9 +146,8 @@ class AvitoScanner:
                 price_tag = item.select_one('[itemprop="price"]')
                 price = int(price_tag['content']) if price_tag else 0
                 
-                # ФИЛЬТР МУСОРА: игнорируем подозрительно дешевые (меньше 15 000 руб)
                 if price < 15000:
-                    self.seen.add(url) # Чтобы больше не проверять
+                    self.seen.add(url)
                     continue
 
                 raw_title = link_tag.get('title', '')
@@ -166,7 +164,6 @@ class AvitoScanner:
                     market_low = matched_stat['min_price']
                     if price <= market_low * 1.03:
                         logger.info(f"🔥 Попадание: {price} руб. (Низ: {market_low})")
-                        # Если анализ виснет, notify всё равно должен сработать
                         cycles, urgent = self.deep_analyze(raw_url)
                         self.notify(raw_title, price, market_low, matched_stat['buyout_price'], ram, ssd, url, cycles, urgent)
                         self.seen.add(url)
