@@ -56,12 +56,14 @@ def get_market_analysis(prices: list[int]):
     if not prices: return 0, 0, 0
     prices = sorted(prices)
     n = len(prices)
+    # Отсекаем явные выбросы
     start_idx = int(n * 0.05)
-    end_idx = int(n * 0.9)
+    end_idx = int(n * 0.95)
     clean_prices = prices[start_idx:end_idx] if n > 5 else prices
+    
     market_low = clean_prices[0]
     median = int(statistics.median(clean_prices))
-    market_high = clean_prices[int(len(clean_prices)*0.8)] if len(clean_prices) > 5 else clean_prices[-1]
+    market_high = clean_prices[-1]
     return market_low, market_high, median
 
 def parse_config(entry):
@@ -70,6 +72,7 @@ def parse_config(entry):
     logger.info(f"🔎 Анализ: {entry['model_name']} {entry['ram']}/{entry['ssd']}...")
     proxies = {"http": PROXY_URL, "https": PROXY_URL} if PROXY_URL else None
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+    
     for page in range(1, 3):
         try:
             time.sleep(random.uniform(4, 7))
@@ -85,10 +88,11 @@ def parse_config(entry):
                     title = item.select_one('[data-marker="item-title"]').get('title', '').lower()
                     if any(word in title for word in JUNK_KEYWORDS): continue
                     p = int(item.select_one('[itemprop="price"]')['content'])
-                    if 15000 < p < 850000: prices.append(p)
+                    if 15000 < p < 900000: prices.append(p)
                 except: continue
             if len(items) < 10: break
         except: break
+    
     if len(prices) < 5: return None
     low, high, median = get_market_analysis(prices)
     buyout = int((low - 12000) // 1000 * 1000)
@@ -109,7 +113,8 @@ def main():
     with open(URLS_FILE, 'r', encoding='utf-8') as f: all_entries = json.load(f)['entries']
 
     batch_env = os.environ.get("BATCH", args.batch)
-    if batch_env == "all": my_entries = all_entries
+    if batch_env == "all":
+        my_entries = all_entries
     else:
         b_idx = int(batch_env)
         chunk = len(all_entries) // args.total_batches
@@ -122,49 +127,58 @@ def main():
         res = parse_config(entry)
         if res: new_results.append(asdict(res))
     
-    # --- БЕЗОПАСНЫЙ МЕРЖ И РЕМОНТ ---
-    data = {"stats": []}
+    # --- СТРОГАЯ ЧИСТКА БАЗЫ ---
+    existing_data = {"stats": []}
     if OUTPUT_FILE.exists():
         try:
-            with open(OUTPUT_FILE, 'r', encoding='utf-8') as f: data = json.load(f)
+            with open(OUTPUT_FILE, 'r', encoding='utf-8') as f: existing_data = json.load(f)
         except: pass
 
-    # Сначала создаем словарь из новой базы, чтобы ничего не потерять
-    db = {(s['model_name'], s['ram'], s['ssd']): s for s in data.get('stats', [])}
-    
-    # Обновляем базу свежими результатами
+    # Объединяем старое и новое
+    db = {(s['model_name'], s['ram'], s['ssd']): s for s in existing_data.get('stats', [])}
     for s in new_results:
         db[(s['model_name'], s['ram'], s['ssd'])] = s
 
     final_stats = []
-    # Проходим по всем записям и ГАРАНТИРУЕМ чистоту данных
     for key, stat in db.items():
+        # ПРОВЕРКА НА ВШИВОСТЬ: Каждая запись ДОЛЖНА иметь эти поля
         median = stat.get('median_price', 0)
         
-        # Если median отсутствует или равна 0 — это "битая" запись. 
-        # УДАЛЯЕМ её из базы, чтобы фронтенд не падал.
-        if not median or median == 0:
-            continue 
+        # Если записи не хватает данных или медиана 0 - УДАЛЯЕМ (чтобы фронт не падал)
+        if not median or median < 1000:
+            continue
 
-        # Принудительно заполняем поля, если их нет
+        # ПРИНУДИТЕЛЬНОЕ ЗАПОЛНЕНИЕ (Ремонт на лету)
+        if 'min_price' not in stat or not stat['min_price']:
+            stat['min_price'] = int(median * 0.85)
+        if 'max_price' not in stat or not stat['max_price']:
+            stat['max_price'] = int(median * 1.15)
+        if 'buyout_price' not in stat or not stat['buyout_price']:
+            stat['buyout_price'] = int((stat['min_price'] - 12000) // 1000 * 1000)
+        if 'processor' not in stat:
+            stat['processor'] = "Apple M-Series"
+        
+        # Гарантируем, что все числа - это числа, а не undefined/null
         try:
-            if 'min_price' not in stat or not stat['min_price']:
-                stat['min_price'] = int(median * 0.9)
-            if 'max_price' not in stat or not stat['max_price']:
-                stat['max_price'] = int(median * 1.1)
-            if 'buyout_price' not in stat or not stat['buyout_price']:
-                stat['buyout_price'] = int((stat['min_price'] - 12000) // 1000 * 1000)
-            
-            # Гарантируем, что все значения - ЦЕЛЫЕ ЧИСЛА (не строки, не None)
             stat['min_price'] = int(stat['min_price'])
             stat['max_price'] = int(stat['max_price'])
             stat['median_price'] = int(stat['median_price'])
             stat['buyout_price'] = int(stat['buyout_price'])
-            
+            stat['ram'] = int(stat['ram'])
+            stat['ssd'] = int(stat['ssd'])
             final_stats.append(stat)
-        except Exception:
-            continue # Если что-то пошло не так с этой моделью, просто не добавляем её
+        except:
+            continue
 
-    # Сохраняем ТОЛЬКО чистые данные
+    # Сохраняем итоговый файл
+    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-        json.dump({"updated_at": time.ctime(), "stats": final_stats}, f, ensure_ascii=False, indent=2)
+        json.dump({
+            "updated_at": time.ctime(),
+            "stats": final_stats
+        }, f, ensure_ascii=False, indent=2)
+    
+    logger.info(f"✅ База полностью пересобрана. Записей: {len(final_stats)}. Фронтенд будет работать.")
+
+if __name__ == "__main__":
+    main()
