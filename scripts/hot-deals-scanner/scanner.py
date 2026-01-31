@@ -6,7 +6,7 @@ import time
 import random
 import logging
 import urllib3
-from datetime import datetime  # Тот самый пропущенный импорт
+from datetime import datetime
 from pathlib import Path
 from urllib.parse import urljoin
 
@@ -29,6 +29,9 @@ TELEGRAM_URL = os.environ.get('TELEGRAM_NOTIFY_URL')
 SCAN_URL = os.environ.get('SCAN_URL')
 PROXY_URL = os.environ.get('PROXY_URL', '').strip().strip('"').strip("'")
 CHANGE_IP_URL = os.environ.get('CHANGE_IP_URL', '').strip().strip('"').strip("'")
+
+# ПОРОГ ЧУВСТВИТЕЛЬНОСТИ: 1.10 = цена может быть на 10% выше самого низа рынка
+PRICE_THRESHOLD_FACTOR = 1.10 
 
 def clean_url(url: str) -> str:
     return url.split('?')[0]
@@ -60,6 +63,7 @@ class AvitoScanner:
             with open(PRICES_FILE, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 for s in data.get('stats', []):
+                    # Ключ: (модель, ram, ssd)
                     self.prices[(s['model_name'].lower(), int(s['ram']), int(s['ssd']))] = s
 
         self.seen = set()
@@ -73,21 +77,21 @@ class AvitoScanner:
     def rotate_ip(self):
         if CHANGE_IP_URL:
             try:
-                logger.info("🔄 Смена IP...")
                 requests.get(CHANGE_IP_URL, timeout=15, verify=False)
-                time.sleep(15)
+                time.sleep(12)
             except: pass
 
     def get_with_retry(self, url, use_proxy=True):
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
         proxies = self.proxies if use_proxy else None
-        for attempt in range(2):
+        for attempt in range(3): # Увеличили количество попыток
             try:
-                resp = requests.get(url, headers=headers, proxies=proxies, timeout=25, verify=False)
+                resp = requests.get(url, headers=headers, proxies=proxies, timeout=30, verify=False)
                 if resp.status_code == 200: return resp
-                if resp.status_code in [403, 429] and use_proxy: self.rotate_ip()
+                if resp.status_code in [403, 429]: self.rotate_ip()
             except:
-                if use_proxy: self.rotate_ip()
+                self.rotate_ip()
+                time.sleep(5)
         return None
 
     def deep_analyze(self, url: str):
@@ -110,7 +114,7 @@ class AvitoScanner:
         if cycles and cycles < 150: status += "🔋 <b>АКБ ИДЕАЛ!</b>"
         
         text = (
-            f"🎯 <b>Нашел по НИЗУ рынка!</b>\n{status}\n\n"
+            f"🎯 <b>Нашел подходящий вариант!</b>\n{status}\n\n"
             f"💻 {title}\n"
             f"⚙️ Конфиг: <b>{ram}GB / {ssd}GB</b>\n"
             f"💰 Цена сейчас: <b>{price:,} ₽</b>\n"
@@ -122,8 +126,7 @@ class AvitoScanner:
         try:
             requests.post(TELEGRAM_URL, json={"text": text, "parse_mode": "HTML"}, timeout=10, proxies=None)
             logger.info(f"✅ Уведомление отправлено: {price} руб.")
-        except Exception as e:
-            logger.error(f"❌ Ошибка Telegram: {e}")
+        except: pass
 
     def run(self):
         if not SCAN_URL: return
@@ -145,10 +148,7 @@ class AvitoScanner:
                 
                 price_tag = item.select_one('[itemprop="price"]')
                 price = int(price_tag['content']) if price_tag else 0
-                
-                if price < 15000:
-                    self.seen.add(url)
-                    continue
+                if price < 15000: continue
 
                 raw_title = link_tag.get('title', '')
                 ram, ssd = extract_specs(raw_title.lower())
@@ -162,13 +162,13 @@ class AvitoScanner:
                 
                 if matched_stat:
                     market_low = matched_stat['min_price']
-                    if price <= market_low * 1.03:
-                        logger.info(f"🔥 Попадание: {price} руб. (Низ: {market_low})")
+                    # УСЛОВИЕ: Цена объявления должна быть <= Низ Рынка * 1.10
+                    if price <= int(market_low * PRICE_THRESHOLD_FACTOR):
+                        logger.info(f"🔥 MATCH: {price} руб. (Низ: {market_low})")
                         cycles, urgent = self.deep_analyze(raw_url)
                         self.notify(raw_title, price, market_low, matched_stat['buyout_price'], ram, ssd, url, cycles, urgent)
                         self.seen.add(url)
                         new_ads_found += 1
-                        time.sleep(1)
             except: continue
 
         if new_ads_found > 0:
