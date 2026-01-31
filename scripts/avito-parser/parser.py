@@ -137,35 +137,34 @@ def main():
         db[(s['model_name'], s['ram'], s['ssd'])] = s
 
     final_stats = []
-    repaired_count = 0
-
-    # Проходим по всем записям и ГАРАНТИРУЕМ наличие всех полей
+    # Проходим по всем записям и ГАРАНТИРУЕМ чистоту данных
     for key, stat in db.items():
-        # Если каких-то полей нет, заполняем их на основе median_price
         median = stat.get('median_price', 0)
         
-        # Если median вообще 0 или отсутствует, это критическая ошибка в записи, пропускаем её
-        if median == 0: continue 
+        # Если median отсутствует или равна 0 — это "битая" запись. 
+        # УДАЛЯЕМ её из базы, чтобы фронтенд не падал.
+        if not median or median == 0:
+            continue 
 
-        if 'min_price' not in stat or not stat['min_price']:
-            stat['min_price'] = int(median * 0.9)
-            repaired_count += 1
-        if 'max_price' not in stat or not stat['max_price']:
-            stat['max_price'] = int(median * 1.1)
-        if 'buyout_price' not in stat or not stat['buyout_price']:
-            stat['buyout_price'] = int((stat['min_price'] - 12000) // 1000 * 1000)
-        
-        # Убеждаемся, что остальные поля на месте (для Buy страницы)
-        if 'processor' not in stat: stat['processor'] = "Apple M-series"
-        if 'updated_at' not in stat: stat['updated_at'] = time.ctime()
-        
-        final_stats.append(stat)
+        # Принудительно заполняем поля, если их нет
+        try:
+            if 'min_price' not in stat or not stat['min_price']:
+                stat['min_price'] = int(median * 0.9)
+            if 'max_price' not in stat or not stat['max_price']:
+                stat['max_price'] = int(median * 1.1)
+            if 'buyout_price' not in stat or not stat['buyout_price']:
+                stat['buyout_price'] = int((stat['min_price'] - 12000) // 1000 * 1000)
+            
+            # Гарантируем, что все значения - ЦЕЛЫЕ ЧИСЛА (не строки, не None)
+            stat['min_price'] = int(stat['min_price'])
+            stat['max_price'] = int(stat['max_price'])
+            stat['median_price'] = int(stat['median_price'])
+            stat['buyout_price'] = int(stat['buyout_price'])
+            
+            final_stats.append(stat)
+        except Exception:
+            continue # Если что-то пошло не так с этой моделью, просто не добавляем её
 
-    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
+    # Сохраняем ТОЛЬКО чистые данные
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump({"updated_at": time.ctime(), "stats": final_stats}, f, ensure_ascii=False, indent=2)
-    
-    logger.info(f"✅ База очищена и обновлена. Отремонтировано: {repaired_count}. Всего записей: {len(final_stats)}")
-
-if __name__ == "__main__":
-    main()
