@@ -30,7 +30,7 @@ SCAN_URL = os.environ.get('SCAN_URL')
 PROXY_URL = os.environ.get('PROXY_URL', '').strip().strip('"').strip("'")
 CHANGE_IP_URL = os.environ.get('CHANGE_IP_URL', '').strip().strip('"').strip("'")
 
-# ПОРОГ ЧУВСТВИТЕЛЬНОСТИ: 1.10 = цена может быть на 10% выше самого низа рынка
+# Порог: 10% от низа рынка
 PRICE_THRESHOLD_FACTOR = 1.10 
 
 def clean_url(url: str) -> str:
@@ -63,9 +63,8 @@ class AvitoScanner:
             with open(PRICES_FILE, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 for s in data.get('stats', []):
-                    # Ключ: (модель, ram, ssd)
                     self.prices[(s['model_name'].lower(), int(s['ram']), int(s['ssd']))] = s
-
+        
         self.seen = set()
         if SEEN_FILE.exists():
             try:
@@ -77,16 +76,17 @@ class AvitoScanner:
     def rotate_ip(self):
         if CHANGE_IP_URL:
             try:
+                logger.info("🔄 Прокси тормозит. Смена IP...")
                 requests.get(CHANGE_IP_URL, timeout=15, verify=False)
-                time.sleep(12)
+                time.sleep(15)
             except: pass
 
     def get_with_retry(self, url, use_proxy=True):
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"}
         proxies = self.proxies if use_proxy else None
-        for attempt in range(3): # Увеличили количество попыток
+        for attempt in range(3):
             try:
-                resp = requests.get(url, headers=headers, proxies=proxies, timeout=30, verify=False)
+                resp = requests.get(url, headers=headers, proxies=proxies, timeout=25, verify=False)
                 if resp.status_code == 200: return resp
                 if resp.status_code in [403, 429]: self.rotate_ip()
             except:
@@ -112,9 +112,8 @@ class AvitoScanner:
         if not TELEGRAM_URL: return
         status = "🚨 <b>СРОЧНО!</b> " if urgent else ""
         if cycles and cycles < 150: status += "🔋 <b>АКБ ИДЕАЛ!</b>"
-        
         text = (
-            f"🎯 <b>Нашел подходящий вариант!</b>\n{status}\n\n"
+            f"🎯 <b>Нашел вариант!</b>\n{status}\n\n"
             f"💻 {title}\n"
             f"⚙️ Конфиг: <b>{ram}GB / {ssd}GB</b>\n"
             f"💰 Цена сейчас: <b>{price:,} ₽</b>\n"
@@ -125,7 +124,6 @@ class AvitoScanner:
         )
         try:
             requests.post(TELEGRAM_URL, json={"text": text, "parse_mode": "HTML"}, timeout=10, proxies=None)
-            logger.info(f"✅ Уведомление отправлено: {price} руб.")
         except: pass
 
     def run(self):
@@ -133,12 +131,18 @@ class AvitoScanner:
         logger.info("🎬 Запуск сканирования...")
         
         resp = self.get_with_retry(SCAN_URL)
-        if not resp: return
+        if not resp:
+            logger.error("❌ Не удалось загрузить SCAN_URL")
+            return
 
         soup = BeautifulSoup(resp.text, 'lxml')
         items = soup.select('[data-marker="item"]')
+        total_items = len(items)
+        logger.info(f"🔎 Найдено объявлений на странице: {total_items}")
         
         new_ads_found = 0
+        matches_count = 0
+
         for item in items:
             try:
                 link_tag = item.select_one('[data-marker="item-title"]')
@@ -162,17 +166,21 @@ class AvitoScanner:
                 
                 if matched_stat:
                     market_low = matched_stat['min_price']
-                    # УСЛОВИЕ: Цена объявления должна быть <= Низ Рынка * 1.10
                     if price <= int(market_low * PRICE_THRESHOLD_FACTOR):
-                        logger.info(f"🔥 MATCH: {price} руб. (Низ: {market_low})")
+                        logger.info(f"🔥 Нашел матч! {price} руб. (Низ: {market_low})")
                         cycles, urgent = self.deep_analyze(raw_url)
                         self.notify(raw_title, price, market_low, matched_stat['buyout_price'], ram, ssd, url, cycles, urgent)
                         self.seen.add(url)
+                        matches_count += 1
                         new_ads_found += 1
             except: continue
 
+        if matches_count == 0:
+            logger.info(f"🤷 Проверено {total_items} новинок, подходящих по цене нет.")
+        else:
+            logger.info(f"✅ Успех! Отправлено уведомлений: {matches_count}")
+
         if new_ads_found > 0:
-            SEEN_FILE.parent.mkdir(parents=True, exist_ok=True)
             with open(SEEN_FILE, 'w', encoding='utf-8') as f:
                 json.dump({"updated_at": datetime.now().isoformat(), "seen_urls": list(self.seen)[-4000:]}, f)
 
