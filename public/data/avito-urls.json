@@ -1,6 +1,6 @@
 {
   "description": "Таблица ссылок для парсинга Авито. Синхронизируется из Google Sheets.",
-  "updated_at": "2026-02-08",
+  "updated_at": "2026-02-09",
   "source": "https://docs.google.com/spreadsheets/d/1hq9JqsWLyGVFVtzfWhZbwylSEkWLpSptWBirsh4zsy0",
   "entries": [
     {
