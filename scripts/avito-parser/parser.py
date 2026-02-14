@@ -28,7 +28,11 @@ URLS_FILE = SCRIPT_DIR / "../../public/data/avito-urls.json"
 OUTPUT_FILE = SCRIPT_DIR / "../../public/data/avito-prices.json"
 
 # Твой новый список исключений
-JUNK_KEYWORDS = ['mdm', 'залочен', 'разбита', 'разбит', 'ремонт', 'не работает', 'icloud', 'запчаст', 'экран', 'матриц', 'дефект', 'аккаунт']
+JUNK_KEYWORDS = [
+    'под заказ', 'срок доставки', 'предоплата', 'доставка из европы', 'доставка из сша', 'доставка из дубая',
+    'mdm', 'залочен', 'разбита', 'разбит', 'ремонт', 'не работает', 'icloud', 
+    'запчаст', 'экран', 'матриц', 'дефект'
+]
 
 RAW_PROXY = os.environ.get("PROXY_URL", "").strip().strip('"').strip("'")
 CHANGE_IP_URL = os.environ.get("CHANGE_IP_URL", "").strip().strip('"').strip("'")
