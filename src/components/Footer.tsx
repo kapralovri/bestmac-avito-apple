@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Heart, MapPin, Phone, Mail } from "lucide-react";
 import { trackContactClick } from "@/components/Analytics";
 import { motion } from "framer-motion";
+import { POPULAR_MODELS, modelShortName } from "@/lib/model-slugs";
 
 const Footer = () => {
   const containerVariants = {
@@ -109,15 +110,17 @@ const Footer = () => {
             </ul>
           </motion.div>
           
-          {/* Категории */}
+          {/* Популярные модели для выкупа */}
           <motion.div variants={itemVariants}>
-            <h3 className="font-semibold mb-4">Категории</h3>
+            <h3 className="font-semibold mb-4">Популярные модели для выкупа</h3>
             <ul className="space-y-2 text-apple-gray">
-              <li><Link to="/buy" className="hover:text-primary transition-colors">MacBook</Link></li>
-              <li><Link to="/buy" className="hover:text-primary transition-colors">iMac</Link></li>
-              <li><Link to="/buy" className="hover:text-primary transition-colors">iPhone</Link></li>
-              <li><Link to="/buy" className="hover:text-primary transition-colors">iPad</Link></li>
-              <li><Link to="/buy" className="hover:text-primary transition-colors">Аксессуары</Link></li>
+              {POPULAR_MODELS.slice(0, 7).map(m => (
+                <li key={m.slug}>
+                  <Link to={`/sell/${m.slug}`} className="hover:text-primary transition-colors text-sm">
+                    {modelShortName(m.name)}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </motion.div>
         </div>

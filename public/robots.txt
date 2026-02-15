@@ -30,6 +30,10 @@ Allow: /buy/macbook-pro-16-m3-max
 Allow: /buy/macbook-air-m3-students
 Allow: /sell/macbook-broken-screen
 
+# Разрешаем индексацию динамических страниц выкупа
+Allow: /sell/macbook-air-*
+Allow: /sell/macbook-pro-*
+
 # Запрещаем служебные разделы
 Disallow: /api/
 Disallow: /admin/
@@ -41,7 +45,8 @@ Disallow: /*?*source=
 Disallow: /*?filter=
 Disallow: /*?sort=
 
-# Указываем путь к sitemap
+# Указываем путь к sitemap и хост
+Host: https://bestmac.ru
 Sitemap: https://bestmac.ru/sitemap.xml
 
 # Crawl-delay для вежливого краулинга
