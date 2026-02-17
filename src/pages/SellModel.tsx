@@ -51,6 +51,13 @@ const SellModel = () => {
   const [lastUpdate, setLastUpdate] = useState<string>('');
   const [resolvedModel, setResolvedModel] = useState<string>('');
 
+  // Стараемся резолвить модель синхронно (важно для SEO/валидаторов),
+  // чтобы мета-теги не были "пустыми" до загрузки JSON.
+  const popularModelName = useMemo(() => {
+    if (!model_slug) return '';
+    return POPULAR_MODELS.find((m) => m.slug === model_slug)?.name ?? '';
+  }, [model_slug]);
+
   // Форма
   const [modelName, setModelName] = useState('');
   const [modelSearch, setModelSearch] = useState('');
@@ -148,6 +155,25 @@ const SellModel = () => {
 
   const isFormComplete = modelName && processor && ram && ssd;
   const shortName = resolvedModel ? modelShortName(resolvedModel) : '';
+  const seoModelName = popularModelName || resolvedModel || '';
+
+  const seoTitle = useMemo(() => {
+    if (model_slug === 'macbook-air-13-2020-m1') {
+      return 'Выкуп MacBook Air 13 (2020, M1) в Москве дорого — BestMac';
+    }
+    if (seoModelName) return `Выкуп ${seoModelName} в Москве дорого — BestMac`;
+    return 'Выкуп MacBook в Москве дорого — BestMac';
+  }, [model_slug, seoModelName]);
+
+  const seoDescription = useMemo(() => {
+    if (model_slug === 'macbook-air-13-2020-m1') {
+      return 'Узнайте реальную стоимость выкупа вашего MacBook Air 13 (2020, M1). Прозрачная оценка, выплата до 80% от рынка, деньги сразу.';
+    }
+    if (seoModelName) {
+      return `Узнайте реальную стоимость выкупа вашего ${seoModelName}. Прозрачная оценка, выплата до 80% от рынка, деньги сразу.`;
+    }
+    return 'Узнайте реальную стоимость выкупа вашего MacBook. Прозрачная оценка, выплата до 80% от рынка, деньги сразу.';
+  }, [model_slug, seoModelName]);
 
   // SEO schemas
   const breadcrumbSchema = generateBreadcrumbSchema([
@@ -200,12 +226,16 @@ const SellModel = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title={`Выкуп ${shortName} в Москве дорого — Оценка за 10 секунд на BestMac.ru`}
-        description={`Узнайте реальную стоимость выкупа вашего ${shortName}. Прозрачная оценка на основе Big Data, выплата до 80% от рынка, деньги на карту в день обращения.`}
-        canonical={`/sell/${model_slug}`}
-        keywords={`продать ${shortName}, выкуп ${shortName}, цена ${shortName} б/у москва`}
+        title={seoTitle}
+        description={seoDescription}
+        canonical={model_slug ? `/sell/${model_slug}` : '/sell'}
+        keywords={
+          seoModelName
+            ? `продать ${seoModelName}, выкуп ${seoModelName}, цена ${seoModelName} б/у москва`
+            : 'продать macbook, выкуп macbook, цена macbook б/у москва'
+        }
         schema={combinedSchema}
-        ogImage={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/og-image?model=${encodeURIComponent(shortName || 'MacBook')}&subtitle=${encodeURIComponent('Узнайте рыночную стоимость за 10 секунд')}`}
+        ogImage="https://bestmac.ru/og-image.jpg"
       />
       <Header />
 

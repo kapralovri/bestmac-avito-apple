@@ -15,13 +15,16 @@ const SEOHead = ({
   description, 
   canonical, 
   schema, 
-  ogImage = "/og-image.jpg",
+  ogImage = "https://bestmac.ru/og-image.jpg",
   keywords 
 }: SEOHeadProps) => {
   const baseUrl = "https://bestmac.ru";
   const location = useLocation();
-  const fullCanonical = canonical ? `${baseUrl}${canonical}` : `${baseUrl}${location.pathname}`;
-  const ogUrl = fullCanonical;
+  const pathname = location?.pathname || '/';
+  const fullCanonical = `${baseUrl}${canonical ?? pathname}`;
+  // IMPORTANT: og:url должен отражать фактический URL страницы (pathname),
+  // а не только canonical проп, чтобы валидаторы корректно подхватывали значение.
+  const ogUrl = `${baseUrl}${pathname}`;
   
   // Detect 404 pages and add noindex
   const is404 = title?.includes('404') || title?.includes('не найдена');
@@ -39,7 +42,10 @@ const SEOHead = ({
       {description && <meta property="og:description" content={description} />}
       <meta property="og:type" content="website" />
       <meta property="og:url" content={ogUrl} />
-      <meta property="og:image" content={ogImage.startsWith('http') ? ogImage : `${baseUrl}${ogImage}`} />
+      <meta
+        property="og:image"
+        content={ogImage.startsWith('http') ? ogImage : `${baseUrl}${ogImage}`}
+      />
       <meta property="og:locale" content="ru_RU" />
       <meta property="og:site_name" content="BestMac" />
 
