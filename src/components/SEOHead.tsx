@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { useLocation } from 'react-router-dom';
 
 interface SEOHeadProps {
   title: string;
@@ -18,7 +19,9 @@ const SEOHead = ({
   keywords 
 }: SEOHeadProps) => {
   const baseUrl = "https://bestmac.ru";
-  const fullCanonical = canonical ? `${baseUrl}${canonical}` : undefined;
+  const location = useLocation();
+  const fullCanonical = canonical ? `${baseUrl}${canonical}` : `${baseUrl}${location.pathname}`;
+  const ogUrl = fullCanonical;
   
   // Detect 404 pages and add noindex
   const is404 = title?.includes('404') || title?.includes('не найдена');
@@ -29,13 +32,13 @@ const SEOHead = ({
       {description && <meta name="description" content={description} />}
       {keywords && <meta name="keywords" content={keywords} />}
       {is404 && <meta name="robots" content="noindex, nofollow" />}
-      {fullCanonical && <link rel="canonical" href={fullCanonical} />}
+      <link rel="canonical" href={fullCanonical} />
 
       {/* Open Graph */}
       {title && <meta property="og:title" content={title} />}
       {description && <meta property="og:description" content={description} />}
       <meta property="og:type" content="website" />
-      {fullCanonical && <meta property="og:url" content={fullCanonical} />}        
+      <meta property="og:url" content={ogUrl} />
       <meta property="og:image" content={ogImage.startsWith('http') ? ogImage : `${baseUrl}${ogImage}`} />
       <meta property="og:locale" content="ru_RU" />
       <meta property="og:site_name" content="BestMac" />

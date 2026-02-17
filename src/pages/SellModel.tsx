@@ -200,8 +200,8 @@ const SellModel = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title={`Выкуп ${shortName} в Москве дорого — Оценка за 10 секунд | BestMac`}
-        description={`Хотите продать ${shortName}? Узнайте реальную рыночную стоимость и наш оффер на выкуп прямо сейчас. Платим до 80% от рынка, деньги в день обращения!`}
+        title={`Выкуп ${shortName} в Москве дорого — Оценка за 10 секунд на BestMac.ru`}
+        description={`Узнайте реальную стоимость выкупа вашего ${shortName}. Прозрачная оценка на основе Big Data, выплата до 80% от рынка, деньги на карту в день обращения.`}
         canonical={`/sell/${model_slug}`}
         keywords={`продать ${shortName}, выкуп ${shortName}, цена ${shortName} б/у москва`}
         schema={combinedSchema}
