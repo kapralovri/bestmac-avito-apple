@@ -2,9 +2,9 @@ name: Avito Scanner Auto
 
 on:
   schedule:
-    # Запуск каждые 30 минут (в 12 и 42 минуты каждого часа)
-    - cron: "12,42 * * * *"
-  workflow_dispatch: # Возможность запустить вручную
+    # Запуск каждые 10 минут (в 5, 15, 25, 35, 45, 55 минут каждого часа)
+    - cron: '5,15,25,35,45,55 * * * *'
+  workflow_dispatch:
   push:
     branches:
       - main
