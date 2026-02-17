@@ -4,7 +4,7 @@ export const organizationSchema = {
   "@type": ["Organization", "LocalBusiness"],
   "name": "BestMac",
   "description": "Купить MacBook, продать MacBook, скупка MacBook в Москве. Продажа подержанной техники Apple с гарантией.",
-  "image": "https://bestmac.ru/favicon.png",
+  "image": "https://bestmac.ru/og-image.jpg",
   "url": "https://bestmac.ru",
   "telephone": "+7-903-299-00-29",
   "address": {
@@ -16,8 +16,8 @@ export const organizationSchema = {
   },
   "geo": {
     "@type": "GeoCoordinates",
-    "latitude": "55.739052",
-    "longitude": "37.519755"
+    "latitude": "55.7369",
+    "longitude": "37.5165"
   },
   "openingHoursSpecification": [
     {
@@ -42,7 +42,6 @@ export const organizationSchema = {
   },
   "priceRange": "$$",
   "sameAs": ["https://t.me/romanmanro"],
-  "serviceType": "Продажа и скупка техники Apple",
   "areaServed": {
     "@type": "City",
     "name": "Москва"
