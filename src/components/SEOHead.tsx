@@ -14,7 +14,7 @@ const SEOHead = ({
   description, 
   canonical, 
   schema, 
-  ogImage = "/favicon.png",
+  ogImage = "/og-image.jpg",
   keywords 
 }: SEOHeadProps) => {
   const baseUrl = "https://bestmac.ru";
