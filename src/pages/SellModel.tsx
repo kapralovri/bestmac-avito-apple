@@ -205,6 +205,7 @@ const SellModel = () => {
         canonical={`/sell/${model_slug}`}
         keywords={`продать ${shortName}, выкуп ${shortName}, цена ${shortName} б/у москва`}
         schema={combinedSchema}
+        ogImage={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/og-image?model=${encodeURIComponent(shortName || 'MacBook')}&subtitle=${encodeURIComponent('Узнайте рыночную стоимость за 10 секунд')}`}
       />
       <Header />
 

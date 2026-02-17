@@ -36,7 +36,7 @@ const SEOHead = ({
       {description && <meta property="og:description" content={description} />}
       <meta property="og:type" content="website" />
       {fullCanonical && <meta property="og:url" content={fullCanonical} />}        
-      <meta property="og:image" content={`${baseUrl}${ogImage}`} />
+      <meta property="og:image" content={ogImage.startsWith('http') ? ogImage : `${baseUrl}${ogImage}`} />
       <meta property="og:locale" content="ru_RU" />
       <meta property="og:site_name" content="BestMac" />
 
@@ -44,7 +44,7 @@ const SEOHead = ({
       <meta name="twitter:card" content="summary_large_image" />
       {title && <meta name="twitter:title" content={title} />}
       {description && <meta name="twitter:description" content={description} />}
-      <meta name="twitter:image" content={`${baseUrl}${ogImage}`} />
+      <meta name="twitter:image" content={ogImage.startsWith('http') ? ogImage : `${baseUrl}${ogImage}`} />
 
       {/* Schema.org */}
       {schema && (
