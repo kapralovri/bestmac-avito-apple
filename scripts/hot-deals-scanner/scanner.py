@@ -30,8 +30,10 @@ SCAN_URL = os.environ.get('SCAN_URL')
 PROXY_URL = os.environ.get('PROXY_URL', '').strip().strip('"').strip("'")
 CHANGE_IP_URL = os.environ.get('CHANGE_IP_URL', '').strip().strip('"').strip("'")
 
-# Порог: 10% от низа рынка
+# УСЛОВИЯ
 PRICE_THRESHOLD_FACTOR = 1.10 
+URGENT_KEYWORDS = ['срочно', 'торг', 'уступлю', 'переезд', 'сегодня', 'быстро', 'дисконт', 'возможен торг', 'отдам за']
+BAD_KEYWORDS = ['icloud', 'запчасти', 'битый', 'разбит', 'блокиров', 'экран', 'дефект', 'mdm', 'аккаунт']
 
 def clean_url(url: str) -> str:
     return url.split('?')[0]
@@ -62,12 +64,8 @@ class AvitoScanner:
         if PRICES_FILE.exists():
             with open(PRICES_FILE, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-                stats = data.get('stats', [])
-                for s in stats:
+                for s in data.get('stats', []):
                     self.prices[(s['model_name'].lower(), int(s['ram']), int(s['ssd']))] = s
-                logger.info(f"📊 База цен загружена: {len(self.prices)} конфигураций")
-        else:
-            logger.error("❌ Файл avito-prices.json не найден!")
 
         self.seen = set()
         if SEEN_FILE.exists():
@@ -80,109 +78,119 @@ class AvitoScanner:
     def rotate_ip(self):
         if CHANGE_IP_URL:
             try:
-                logger.info("🔄 Смена IP...")
                 requests.get(CHANGE_IP_URL, timeout=15, verify=False)
-                time.sleep(15)
+                time.sleep(12)
             except: pass
 
     def get_with_retry(self, url):
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
-        for attempt in range(3):
+        headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"}
+        for attempt in range(2):
             try:
-                resp = requests.get(url, headers=headers, proxies=self.proxies, timeout=30, verify=False)
+                resp = requests.get(url, headers=headers, proxies=self.proxies, timeout=25, verify=False)
                 if resp.status_code == 200: return resp
                 if resp.status_code in [403, 429]: self.rotate_ip()
-            except:
-                self.rotate_ip()
-                time.sleep(5)
+            except: self.rotate_ip()
         return None
+
+    def deep_analyze(self, url: str):
+        """Заходит в объявление: ищет АКБ и Срочность одновременно"""
+        resp = self.get_with_retry(url)
+        if not resp: return None, False
+        try:
+            soup = BeautifulSoup(resp.text, 'lxml')
+            desc = soup.find('div', attrs={'data-marker': 'item-description'})
+            text = desc.get_text().lower() if desc else ""
+            
+            # 1. Ищем циклы
+            cycles = None
+            c_match = re.search(r'(\d+)\s*(?:цикл|cycle|ц\.|cyc)', text)
+            if c_match: cycles = int(c_match.group(1))
+            
+            # 2. Ищем ключевые слова
+            is_urgent = any(word in text for word in URGENT_KEYWORDS)
+            
+            return cycles, is_urgent
+        except: return None, False
+
+    def notify(self, title, price, market_low, buyout, ram, ssd, url, cycles, is_urgent, is_avito_low):
+        if not TELEGRAM_URL: return
+        
+        badges = []
+        if is_urgent: badges.append("🚨 <b>СРОЧНО / ТОРГ</b>")
+        if is_avito_low: badges.append("📉 <b>НИЖЕ РЫНКА (АВИТО)</b>")
+        if cycles and cycles < 150: badges.append("🔋 <b>АКБ ИДЕАЛ</b>")
+        
+        status_line = " | ".join(badges) if badges else "🎯 <b>Нашел подходящий вариант!</b>"
+        
+        text = (
+            f"{status_line}\n\n"
+            f"💻 {title}\n"
+            f"⚙️ Конфиг: <b>{ram}GB / {ssd}GB</b>\n"
+            f"💰 Цена сейчас: <b>{price:,} ₽</b>\n"
+            f"📉 Низ рынка: {market_low:,} ₽\n"
+            f"🤝 Твой выкуп: {buyout:,} ₽\n"
+            f"⚡ Циклы: {cycles if cycles else 'не указано'}\n"
+            f"🔗 <a href='{url}'>Открыть на Avito</a>"
+        )
+        try:
+            requests.post(TELEGRAM_URL, json={"text": text, "parse_mode": "HTML"}, timeout=10, proxies=None)
+            logger.info(f"✅ Отправлено: {price} руб.")
+        except: pass
 
     def run(self):
         if not SCAN_URL: return
         logger.info("🎬 Запуск сканирования...")
-        
         resp = self.get_with_retry(SCAN_URL)
-        if not resp:
-            logger.error("❌ Не удалось получить SCAN_URL")
-            return
+        if not resp: return
 
         soup = BeautifulSoup(resp.text, 'lxml')
         items = soup.select('[data-marker="item"]')
         
-        total_found = len(items)
-        model_matches = 0
-        price_matches = 0
-        new_ads_saved = 0
-
+        found_matches = 0
         for item in items:
             try:
                 link_tag = item.select_one('[data-marker="item-title"]')
                 raw_url = urljoin("https://www.avito.ru", link_tag['href'])
                 url = clean_url(raw_url)
-                
-                # Проверка на дубли
                 if url in self.seen: continue
-
-                # Проверка на бейдж "Ниже рыночной" (ищем текст во всем блоке)
-                full_text = item.get_text().lower()
-                is_avito_low = any(x in full_text for x in ["ниже рыночной", "цена ниже", "хорошая цена"])
 
                 price_tag = item.select_one('[itemprop="price"]')
                 price = int(price_tag['content']) if price_tag else 0
                 if price < 15000: continue
 
                 raw_title = link_tag.get('title', '')
-                ram, ssd = extract_specs(raw_title.lower())
+                title_low = raw_title.lower()
+                if any(word in title_low for word in BAD_KEYWORDS): continue
+
+                ram, ssd = extract_specs(title_low)
                 
-                # Ищем модель в базе
                 matched_stat = None
                 for (m_name, m_ram, m_ssd), stat in self.prices.items():
                     keywords = re.findall(r'[a-z0-9]+', m_name)
-                    if all(word in raw_title.lower() for word in keywords) and m_ram == ram and m_ssd == ssd:
+                    if all(word in title_low for word in keywords) and m_ram == ram and m_ssd == ssd:
                         matched_stat = stat
                         break
                 
                 if matched_stat:
-                    model_matches += 1
                     market_low = matched_stat['min_price']
+                    badge_text = item.get_text().lower()
+                    is_avito_low = "ниже рыночной" in badge_text or "цена ниже" in badge_text
                     
-                    # Логика уведомления
-                    is_match = False
-                    if price <= int(market_low * PRICE_THRESHOLD_FACTOR): is_match = True
-                    if is_avito_low: is_match = True # Бейдж Авито — приоритет
-
-                    if is_match:
-                        price_matches += 1
-                        logger.info(f"🔥 Попадание! {price} руб. (Badge: {is_avito_low})")
-                        
-                        # Сообщение в TG
-                        badge_status = "📉 <b>Авито: Ниже рынка!</b>\n" if is_avito_low else ""
-                        text = (
-                            f"🎯 <b>Нашел вариант!</b>\n{badge_status}\n"
-                            f"💻 {raw_title}\n"
-                            f"⚙️ Конфиг: <b>{ram}GB / {ssd}GB</b>\n"
-                            f"💰 Цена: <b>{price:,} ₽</b>\n"
-                            f"📉 Низ рынка: {market_low:,} ₽\n"
-                            f"🤝 Твой выкуп: {matched_stat['buyout_price']:,} ₽\n"
-                            f"🔗 <a href='{url}'>Открыть на Avito</a>"
-                        )
-                        requests.post(TELEGRAM_URL, json={"text": text, "parse_mode": "HTML"}, timeout=10, proxies=None)
-                        
+                    # Глубокий анализ
+                    cycles, is_urgent = self.deep_analyze(raw_url)
+                    
+                    # УСЛОВИЯ ОТПРАВКИ: 
+                    # 1. Цена низкая ИЛИ 2. Бейдж Авито ИЛИ 3. Ключевые слова
+                    if price <= int(market_low * PRICE_THRESHOLD_FACTOR) or is_avito_low or is_urgent:
+                        self.notify(raw_title, price, market_low, matched_stat['buyout_price'], ram, ssd, url, cycles, is_urgent, is_avito_low)
                         self.seen.add(url)
-                        new_ads_saved += 1
+                        found_matches += 1
+                        time.sleep(random.uniform(2, 4))
             except: continue
 
-        # ИТОГОВЫЙ ОТЧЕТ В ЛОГИ
-        logger.info(f"🏁 Итог: Проверено {total_found} объявлений.")
-        logger.info(f"   - Совпало моделей: {model_matches}")
-        logger.info(f"   - Подошло по цене: {price_matches}")
-
-        if price_matches == 0:
-            logger.info("🤷 Ничего интересного в этом запуске не найдено.")
-
-        if new_ads_saved > 0:
+        if found_matches > 0:
             with open(SEEN_FILE, 'w', encoding='utf-8') as f:
-                json.dump({"updated_at": datetime.now().isoformat(), "seen_urls": list(self.seen)[-4000:]}, f)
+                json.dump({"updated_at": datetime.now().isoformat(), "seen_urls": list(self.seen)[-4500:]}, f)
 
 if __name__ == "__main__":
     AvitoScanner().run()
