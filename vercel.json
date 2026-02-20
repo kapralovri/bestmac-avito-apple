@@ -10,12 +10,12 @@
       "destination": "/favicon.png"
     },
     {
-      "source": "/:path*",
+      "source": "/:path((?!api|_vercel|assets).*)*",
       "has": [
         {
           "type": "header",
           "key": "user-agent",
-          "value": "(?i).*(yandexbot|googlebot|bingbot|baiduspider|duckduckbot|facebookexternalhit|twitterbot|linkedinbot|slackbot|telegrambot|whatsapp|viber|pinterestbot|mail\\.ru_bot|applebot|semrushbot|ahrefsbot|mj12bot|petalbot|seznambot|sogou|ia_archiver|rogerbot|dotbot|screaming frog|megaindex).*"
+          "value": ".*(bot|spider|google|yandex|facebook|twitter|slack|telegram|whatsapp|viber|apple|semrush|ahrefs|mj12|petal|seznam|sogou|ia_archiver|roger|dot|screaming|megaindex).*"
         }
       ],
       "destination": "/api/prerender?__path=/:path*"
