@@ -18,23 +18,9 @@ export default async function handler(request: Request): Promise<Response> {
 
     const prerenderToken = process.env.PRERENDER_TOKEN;
 
-    // Режим диагностики — вызов через ?__debug=1
-    if (url.searchParams.get('__debug') === '1') {
-        return new Response(JSON.stringify({
-            hasToken: !!prerenderToken,
-            tokenLength: prerenderToken ? prerenderToken.length : 0,
-            originalPath,
-            targetUrl,
-            userAgent: request.headers.get('user-agent'),
-            // Получаем список всех ключей переменных окружения (безопасно)
-            envKeys: Object.keys(process.env).sort(),
-        }, null, 2), {
-            headers: { 'Content-Type': 'application/json' },
-        });
-    }
-
     if (!prerenderToken) {
         console.warn('[Prerender] PRERENDER_TOKEN не задан');
+        // Если токена нет, возвращаем пустую страницу с комментарием для отладки
         return new Response('<!-- prerender: no token -->', {
             status: 200,
             headers: {
