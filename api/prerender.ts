@@ -26,6 +26,8 @@ export default async function handler(request: Request): Promise<Response> {
             originalPath,
             targetUrl,
             userAgent: request.headers.get('user-agent'),
+            // Получаем список всех ключей переменных окружения (безопасно)
+            envKeys: Object.keys(process.env).sort(),
         }, null, 2), {
             headers: { 'Content-Type': 'application/json' },
         });
