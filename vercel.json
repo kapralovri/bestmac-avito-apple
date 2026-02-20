@@ -1,16 +1,28 @@
 {
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/sell", "destination": "/api/sell" },
-    { "source": "/sell/", "destination": "/api/sell" },
-    { "source": "/api/buyout/estimate", "destination": "/api/buyout/estimate" },
-    { "source": "/favicon.ico", "destination": "/favicon.png" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/api/buyout/estimate",
+      "destination": "/api/buyout/estimate"
+    },
+    {
+      "source": "/favicon.ico",
+      "destination": "/favicon.png"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ],
   "redirects": [
     {
       "source": "/:path*",
-      "has": [{ "type": "host", "value": "www.bestmac.ru" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "www.bestmac.ru"
+        }
+      ],
       "destination": "https://bestmac.ru/:path*",
       "permanent": true
     }
@@ -19,7 +31,27 @@
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains; preload" }
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains; preload"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     }
   ]

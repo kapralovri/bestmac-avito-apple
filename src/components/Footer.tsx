@@ -27,7 +27,7 @@ const Footer = () => {
   };
 
   return (
-    <motion.footer 
+    <motion.footer
       className="bg-card border-t border-border"
       variants={containerVariants}
       initial="hidden"
@@ -39,7 +39,7 @@ const Footer = () => {
           {/* Логотип и описание */}
           <motion.div className="col-span-1 md:col-span-2" variants={itemVariants}>
             <div className="flex items-center space-x-2 mb-4">
-              <motion.div 
+              <motion.div
                 className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center"
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 transition={{ duration: 0.2 }}
@@ -52,26 +52,26 @@ const Footer = () => {
               </div>
             </div>
             <p className="text-apple-gray mb-4 max-w-md">
-              Надежный партнер в мире техники Apple. Продаем качественные устройства 
+              Надежный партнер в мире техники Apple. Продаем качественные устройства
               с гарантией и полным сервисом поддержки.
             </p>
-            
+
             {/* NAP разметка */}
             <div itemScope itemType="https://schema.org/Organization" className="space-y-2">
               <p className="text-sm text-apple-gray">
-                <span itemProp="name">BestMac</span> | ИП Капралов Р.И. | ИНН: 123456789012
+                <span itemProp="name">BestMac</span> | ИП Капралов Р.И. | ИНН: 774385099608
               </p>
               <div itemProp="address" itemScope itemType="https://schema.org/PostalAddress" className="flex items-start space-x-2">
                 <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                 <p className="text-sm text-apple-gray">
-                  <span itemProp="streetAddress">ул. Дениса Давыдова 3</span>, 
+                  <span itemProp="streetAddress">ул. Дениса Давыдова 3</span>,
                   <span itemProp="addressLocality"> Москва</span>, Дорогомилово, ЦАО, м. Киевская
                 </p>
               </div>
               <div className="flex items-center space-x-2">
                 <Phone className="w-4 h-4 text-muted-foreground" />
-                <a 
-                  href="tel:+79032990029" 
+                <a
+                  href="tel:+79032990029"
                   itemProp="telephone"
                   className="text-sm text-primary hover:underline"
                   onClick={() => trackContactClick('phone')}
@@ -81,8 +81,8 @@ const Footer = () => {
               </div>
               <div className="flex items-center space-x-2">
                 <Mail className="w-4 h-4 text-muted-foreground" />
-                <a 
-                  href="mailto:info@bestmac.ru" 
+                <a
+                  href="mailto:info@bestmac.ru"
                   itemProp="email"
                   className="text-sm text-primary hover:underline"
                   onClick={() => trackContactClick('email')}
@@ -97,7 +97,7 @@ const Footer = () => {
               </p>
             </div>
           </motion.div>
-          
+
           {/* Услуги */}
           <motion.div variants={itemVariants}>
             <h3 className="font-semibold mb-4">Услуги</h3>
@@ -109,7 +109,7 @@ const Footer = () => {
               <li><Link to="/business" className="hover:text-primary transition-colors">Для бизнеса</Link></li>
             </ul>
           </motion.div>
-          
+
           {/* Популярные модели для выкупа */}
           <motion.div variants={itemVariants}>
             <h3 className="font-semibold mb-4">Популярные модели для выкупа</h3>
@@ -124,21 +124,21 @@ const Footer = () => {
             </ul>
           </motion.div>
         </div>
-        
-        <motion.div 
+
+        <motion.div
           className="border-t border-border mt-8 pt-8 flex flex-col md:flex-row justify-between items-center"
           variants={itemVariants}
         >
           <p className="text-apple-gray text-sm">
-            © 2025 BestMac. Все права защищены.
+            © {new Date().getFullYear()} BestMac. Все права защищены.
           </p>
           <div className="flex items-center space-x-4 text-sm text-apple-gray mt-4 md:mt-0">
             <Link to="/privacy" className="hover:text-primary transition-colors">Политика конфиденциальности</Link>
             <Link to="/terms" className="hover:text-primary transition-colors">Условия использования</Link>
           </div>
         </motion.div>
-        
-        <motion.div 
+
+        <motion.div
           className="text-center mt-4"
           variants={itemVariants}
         >
