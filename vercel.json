@@ -10,6 +10,17 @@
       "destination": "/favicon.png"
     },
     {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(yandexbot|googlebot|bingbot|baiduspider|duckduckbot|facebookexternalhit|twitterbot|linkedinbot|slackbot|telegrambot|whatsapp|viber|pinterestbot|mail\\.ru_bot|applebot|semrushbot|ahrefsbot|mj12bot|petalbot|seznambot|sogou|ia_archiver|rogerbot|dotbot|screaming frog|megaindex).*"
+        }
+      ],
+      "destination": "/api/prerender?__path=/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
