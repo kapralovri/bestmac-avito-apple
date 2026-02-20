@@ -12,8 +12,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let data: any[] = [];
   try {
     const r = await fetch(`${proto}://${host}/data/buyout.json`);
-    if (r.ok) data = await r.json();
-  } catch {}
+    if (r.ok) data = await r.json() as any[];
+  } catch { }
   const result = estimatePrice(req.body || {}, data || []);
   res.status(200).json(result);
 }
