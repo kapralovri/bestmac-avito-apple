@@ -15,7 +15,7 @@
         {
           "type": "header",
           "key": "user-agent",
-          "value": ".*(bot|spider|google|yandex|facebook|twitter|slack|telegram|whatsapp|viber|apple|semrush|ahrefs|mj12|petal|seznam|sogou|ia_archiver|roger|dot|screaming|megaindex).*"
+          "value": ".*(googlebot|yandexbot|bingbot|baiduspider|facebookexternalhit|twitterbot|rogerbot|linkedinbot|embedly|quora\\ link\\ preview|showyoubot|outbrain|pinterest\\/0\\.|slackbot|vkShare|W3C_Validator|whatsapp|telegrambot|applebot).*"
         }
       ],
       "destination": "/api/prerender?__path=/"
@@ -26,7 +26,7 @@
         {
           "type": "header",
           "key": "user-agent",
-          "value": ".*(bot|spider|google|yandex|facebook|twitter|slack|telegram|whatsapp|viber|apple|semrush|ahrefs|mj12|petal|seznam|sogou|ia_archiver|roger|dot|screaming|megaindex).*"
+          "value": ".*(googlebot|yandexbot|bingbot|baiduspider|facebookexternalhit|twitterbot|rogerbot|linkedinbot|embedly|quora\\ link\\ preview|showyoubot|outbrain|pinterest\\/0\\.|slackbot|vkShare|W3C_Validator|whatsapp|telegrambot|applebot).*"
         }
       ],
       "destination": "/api/prerender?__path=/:path*"
