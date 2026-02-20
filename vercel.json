@@ -10,6 +10,17 @@
       "destination": "/favicon.png"
     },
     {
+      "source": "/",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(bot|spider|google|yandex|facebook|twitter|slack|telegram|whatsapp|viber|apple|semrush|ahrefs|mj12|petal|seznam|sogou|ia_archiver|roger|dot|screaming|megaindex).*"
+        }
+      ],
+      "destination": "/api/prerender?__path=/"
+    },
+    {
       "source": "/:path((?!api|_vercel|assets).*)*",
       "has": [
         {
