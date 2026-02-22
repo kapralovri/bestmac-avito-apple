@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/build-buyout-data.mjs || echo 'skip buyout build'",
+    "prebuild": "node scripts/build-buyout-data.mjs && (node scripts/build-avito-offers.mjs || echo 'Scraping skipped') || echo 'Data builds skipped'",
     "build": "vite build && (npm run prerender || echo 'Prerender skipped or failed')",
     "build:dev": "vite build --mode development",
     "export:buyout": "node scripts/export-macbook-csv.mjs",
