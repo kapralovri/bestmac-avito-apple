@@ -24,7 +24,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import SEOHead from '@/components/SEOHead';
-import { Clock, Wallet, TrendingUp, Shield, BarChart3, Cpu, HardDrive, MemoryStick, Sparkles, Search, X, Check, CheckCircle2, MapPin, Truck, RefreshCw } from 'lucide-react';
+import { Clock, Wallet, TrendingUp, Shield, BarChart3, Cpu, HardDrive, MemoryStick, Sparkles, Search, X, Check, CheckCircle2, MapPin, Truck, RefreshCw, Monitor, Laptop } from 'lucide-react';
 import { generateProductSchema, generateLocalBusinessSchema } from '@/lib/structured-data';
 
 interface AvitoUrlsData {
@@ -182,8 +182,18 @@ const Sell = () => {
     setModelSearch('');
   };
 
+  // Рендер компонента
+  if (!urlsData || !data) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <p className="mt-4 text-muted-foreground">Загрузка данных...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SEOHead
         title="Продать MacBook в Москве дорого | Скупка макбуков б/у — BestMac"
         description="Выкуп Apple MacBook (Pro, Air) за 30 минут. Онлайн-калькулятор оценки стоимости по рынку. Платим наличными или на карту. Скупка старых и сломанных макбуков в Москве."
@@ -230,6 +240,38 @@ const Sell = () => {
                 <span>Обновление ежедневно</span>
               </div>
             </div>
+          </motion.div>
+
+          {/* Кросс-навигация по сериям MacBook */}
+          <motion.div
+            className="grid md:grid-cols-2 gap-4 mb-12 max-w-4xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <Link to="/sell/macbook-pro" className="block group">
+              <div className="bg-gradient-to-br from-card to-muted border p-6 rounded-2xl flex items-center gap-4 transition-all duration-300 group-hover:border-primary/50 group-hover:shadow-md">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                  <Monitor className="w-8 h-8 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg leading-tight group-hover:text-primary transition-colors">Скупка MacBook Pro</h3>
+                  <p className="text-sm text-muted-foreground mt-1">Профессиональные модели 13", 14", 16"</p>
+                </div>
+              </div>
+            </Link>
+
+            <Link to="/sell/macbook-air" className="block group">
+              <div className="bg-gradient-to-br from-card to-muted border p-6 rounded-2xl flex items-center gap-4 transition-all duration-300 group-hover:border-primary/50 group-hover:shadow-md">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                  <Laptop className="w-8 h-8 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg leading-tight group-hover:text-primary transition-colors">Скупка MacBook Air</h3>
+                  <p className="text-sm text-muted-foreground mt-1">Легкие ультрабуки 13" и 15"</p>
+                </div>
+              </div>
+            </Link>
           </motion.div>
 
           {/* Калькулятор */}

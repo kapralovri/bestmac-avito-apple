@@ -15,7 +15,7 @@ interface AvitoUrlEntry {
   url: string;
 }
 
-interface AvitoUrlsData {
+export interface AvitoUrlsData {
   description: string;
   updated_at: string;
   entries: AvitoUrlEntry[];
@@ -29,7 +29,7 @@ let cachedUrls: AvitoUrlsData | null = null;
  */
 export async function loadAvitoUrls(): Promise<AvitoUrlsData> {
   if (cachedUrls) return cachedUrls;
-  
+
   try {
     const response = await fetch('/data/avito-urls.json');
     if (!response.ok) throw new Error('URLs data not found');
@@ -46,7 +46,7 @@ export async function loadAvitoUrls(): Promise<AvitoUrlsData> {
  */
 export async function loadAvitoPrices(): Promise<AvitoPricesData> {
   if (cachedData) return cachedData;
-  
+
   try {
     const response = await fetch('/data/avito-prices.json');
     if (!response.ok) throw new Error('Local data not found');
@@ -102,7 +102,7 @@ export function getSsdFromConfig(urls: AvitoUrlsData, modelName: string, process
  */
 export function getModels(data: AvitoPricesData): string[] {
   if (!data.stats || data.stats.length === 0) return [];
-  
+
   // Берем уникальные модели только из stats (реальные данные парсинга)
   const uniqueModels = [...new Set(data.stats.map(s => s.model_name))];
   return uniqueModels.sort();
@@ -150,10 +150,10 @@ export function findPriceStat(
   processor?: string
 ): AvitoPriceStat | undefined {
   return stats.find(
-    s => s.model_name === modelName && 
-         s.ram === ram && 
-         s.ssd === ssd && 
-         (!processor || s.processor === processor)
+    s => s.model_name === modelName &&
+      s.ram === ram &&
+      s.ssd === ssd &&
+      (!processor || s.processor === processor)
   );
 }
 
@@ -166,10 +166,10 @@ export function calculateBuyoutPrice(
 ): MarketPriceResult {
   const conditionData = CONDITIONS.find(c => c.value === condition);
   const coefficient = conditionData?.coefficient ?? 0.90;
-  
+
   // Применяем коэффициент состояния к цене выкупа
   const adjustedBuyout = Math.round(stat.buyout_price * coefficient);
-  
+
   return {
     found: true,
     marketMin: stat.min_price,
