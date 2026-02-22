@@ -27,10 +27,32 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
+            // Group ALL core React and tightly coupled libraries together.
+            // This prevents circular dependencies and ensure correct execution order.
+            if (
+              id.includes('node_modules/react/') ||
+              id.includes('node_modules/react-dom/') ||
+              id.includes('node_modules/scheduler/') ||
+              id.includes('node_modules/react-router/') ||
+              id.includes('node_modules/react-router-dom/') ||
+              id.includes('node_modules/clsx/') ||
+              id.includes('node_modules/tailwind-merge/')
+            ) {
+              return 'vendor-core';
+            }
+
+            // Separate icons as they are usually independent and large.
             if (id.includes('node_modules/lucide-react/')) {
               return 'vendor-icons';
             }
-            return 'vendor-main';
+
+            // Separate animations as they are also large and somewhat independent.
+            if (id.includes('node_modules/framer-motion/')) {
+              return 'vendor-framer';
+            }
+
+            // Everything else into a general libs chunk.
+            return 'vendor-libs';
           }
         },
         assetFileNames: (assetInfo) => {
