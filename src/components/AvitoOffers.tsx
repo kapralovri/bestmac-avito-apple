@@ -30,7 +30,7 @@ const AvitoOffers = ({ limit }: AvitoOffersProps = {}) => {
         throw new Error(`Ошибка сети: ${response.status}`);
       }
       const data = await response.json();
-      
+
       // Фильтруем только активные объявления
       const activeOffers = data.filter((offer: AvitoOffer) => offer.status === 'active');
       setOffers(activeOffers);
@@ -44,7 +44,7 @@ const AvitoOffers = ({ limit }: AvitoOffersProps = {}) => {
 
   const createOfferCard = (offer: AvitoOffer) => {
     const formattedPrice = new Intl.NumberFormat('ru-RU').format(offer.price);
-    
+
     return (
       <motion.div
         key={offer.id}
@@ -55,9 +55,9 @@ const AvitoOffers = ({ limit }: AvitoOffersProps = {}) => {
         whileHover={{ y: -5 }}
       >
         <a href={offer.url} target="_blank" rel="noopener noreferrer" className="block">
-          <img 
+          <img
             className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
-            src={offer.imageUrl || ''} 
+            src={offer.imageUrl || ''}
             alt={`${offer.title} - MacBook или техника Apple по цене ${formattedPrice} ₽ на Avito`}
             loading="lazy"
             onError={(e) => {
@@ -66,24 +66,24 @@ const AvitoOffers = ({ limit }: AvitoOffersProps = {}) => {
             }}
           />
         </a>
-        
+
         <div className="p-6">
-          <a 
-            href={offer.url} 
-            target="_blank" 
+          <a
+            href={offer.url}
+            target="_blank"
             rel="noopener noreferrer"
             className="block text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors duration-200 mb-2 line-clamp-2"
           >
             {offer.title}
           </a>
-          
+
           <div className="text-2xl font-bold text-blue-600 mb-4">
             {formattedPrice} ₽
           </div>
-          
-          <a 
-            href={offer.url} 
-            target="_blank" 
+
+          <a
+            href={offer.url}
+            target="_blank"
             rel="noopener noreferrer"
             className="inline-block w-full bg-blue-600 text-white text-center py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium"
           >
@@ -107,7 +107,7 @@ const AvitoOffers = ({ limit }: AvitoOffersProps = {}) => {
     return (
       <div className="text-center py-12">
         <p className="text-red-600 mb-4">{error}</p>
-        <button 
+        <button
           onClick={loadAvitoOffers}
           className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200"
         >
