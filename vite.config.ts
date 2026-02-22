@@ -23,36 +23,18 @@ export default defineConfig(({ mode }) => ({
     cssCodeSplit: true,
     minify: 'esbuild',
     target: 'es2015',
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            // Group ALL core React and tightly coupled libraries together.
-            // This prevents circular dependencies and ensure correct execution order.
-            if (
-              id.includes('node_modules/react/') ||
-              id.includes('node_modules/react-dom/') ||
-              id.includes('node_modules/scheduler/') ||
-              id.includes('node_modules/react-router/') ||
-              id.includes('node_modules/react-router-dom/') ||
-              id.includes('node_modules/clsx/') ||
-              id.includes('node_modules/tailwind-merge/')
-            ) {
-              return 'vendor-core';
-            }
-
-            // Separate icons as they are usually independent and large.
+            // Group icons separate as they are large and mostly leaf nodes
             if (id.includes('node_modules/lucide-react/')) {
               return 'vendor-icons';
             }
 
-            // Separate animations as they are also large and somewhat independent.
-            if (id.includes('node_modules/framer-motion/')) {
-              return 'vendor-framer';
-            }
-
-            // Everything else into a general libs chunk.
-            return 'vendor-libs';
+            // Consolidate everything else to ensure React context and forwardRef consistency
+            return 'vendor-main';
           }
         },
         assetFileNames: (assetInfo) => {
