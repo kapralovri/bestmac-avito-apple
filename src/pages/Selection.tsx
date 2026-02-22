@@ -16,6 +16,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import FAQ from "@/components/FAQ";
 import { faqData } from "@/lib/schema";
 import { trackFormSubmit } from "@/components/Analytics";
+import MacbookQuiz from "@/components/MacbookQuiz";
 
 const Selection = () => {
   const [budget, setBudget] = useState([100000]);
@@ -77,6 +78,9 @@ const Selection = () => {
             под ваши задачи и бюджет. Персональные консультации и рекомендации от экспертов.
           </p>
         </div>
+
+        {/* MacBook Quiz */}
+        <MacbookQuiz />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
           {/* Process Description */}
