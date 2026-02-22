@@ -27,26 +27,10 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            // Group core React libraries to avoid circular dependencies and execution order issues
-            if (id.includes('react/') || id.includes('react-dom') || id.includes('scheduler') || id.includes('react-router') || id.includes('react-router-dom')) {
-              return 'vendor-core';
+            if (id.includes('node_modules/lucide-react/')) {
+              return 'vendor-icons';
             }
-            if (id.includes('@supabase')) {
-              return 'vendor-supabase';
-            }
-            if (id.includes('@tanstack')) {
-              return 'vendor-tanstack';
-            }
-            if (id.includes('framer-motion')) {
-              return 'animations';
-            }
-            if (id.includes('lucide-react')) {
-              return 'icons';
-            }
-            if (id.includes('@radix-ui')) {
-              return 'ui-kit';
-            }
-            return 'vendor-libs';
+            return 'vendor-main';
           }
         },
         assetFileNames: (assetInfo) => {
