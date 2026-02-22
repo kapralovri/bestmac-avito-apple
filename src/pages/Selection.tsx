@@ -17,6 +17,7 @@ import FAQ from "@/components/FAQ";
 import { faqData } from "@/lib/schema";
 import { trackFormSubmit } from "@/components/Analytics";
 import MacbookQuiz from "@/components/MacbookQuiz";
+import TopDevicesByRole from "@/components/TopDevicesByRole";
 
 const Selection = () => {
   const [budget, setBudget] = useState([100000]);
@@ -81,6 +82,9 @@ const Selection = () => {
 
         {/* MacBook Quiz */}
         <MacbookQuiz />
+
+        {/* Top Devices by Role */}
+        <TopDevicesByRole />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
           {/* Process Description */}
@@ -153,7 +157,7 @@ const Selection = () => {
               <CardContent>
                 {isSubmitted ? (
                   <div className="text-center py-8">
-                    <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
+                    <CheckCircle className="w-16 h-16 text-apple-green mx-auto mb-4" />
                     <h3 className="text-xl font-semibold mb-2">Заявка отправлена!</h3>
                     <p className="text-muted-foreground">
                       Мы получили вашу заявку и свяжемся с вами в ближайшее время.

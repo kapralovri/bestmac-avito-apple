@@ -19,30 +19,31 @@ import {
   ArrowLeft,
   Sparkles,
   CheckCircle,
-  ExternalLink,
   MessageCircle,
+  HardDrive,
 } from "lucide-react";
 import { loadAvitoPrices, formatPrice, formatSsd } from "@/lib/avito-prices";
 import type { AvitoPriceStat } from "@/types/avito-prices";
 
 /* ─── Types ─── */
 type Mobility = "portable" | "home" | "any";
+type ScreenPref = "13" | "14-15" | "16" | "any";
+type SsdPref = "256" | "512" | "1024" | "any";
 
 interface TaskOption {
   id: string;
   label: string;
   icon: React.ReactNode;
   minRam: number;
-  prefPro: boolean; // prefer Pro line
-  weight: number;   // performance weight 1-3
+  prefPro: boolean;
+  weight: number;
 }
-
-type ScreenPref = "13" | "14-15" | "16" | "any";
 
 interface QuizAnswers {
   mobility: Mobility | null;
   tasks: string[];
   screen: ScreenPref | null;
+  ssd: SsdPref | null;
   budget: number[];
 }
 
@@ -77,6 +78,13 @@ const SCREEN_OPTIONS: { value: ScreenPref; label: string; desc: string }[] = [
   { value: "any", label: "Без разницы", desc: "Любой размер" },
 ];
 
+const SSD_OPTIONS: { value: SsdPref; label: string; desc: string }[] = [
+  { value: "256", label: "256 ГБ", desc: "Базовый" },
+  { value: "512", label: "512 ГБ", desc: "Оптимальный" },
+  { value: "1024", label: "1 ТБ+", desc: "Много файлов" },
+  { value: "any", label: "Без разницы", desc: "Любой объём" },
+];
+
 /* ─── Helpers ─── */
 function getScreenSize(modelName: string): number {
   const m = modelName.match(/(\d{2})/);
@@ -91,6 +99,8 @@ function getChipGen(processor: string): number {
   const m = processor.match(/M(\d)/);
   return m ? parseInt(m[1]) : 1;
 }
+
+const MIN_PRICE_M1 = 70000;
 
 function scoreModel(stat: AvitoPriceStat, answers: QuizAnswers): { score: number; reasons: string[] } {
   let score = 0;
@@ -112,6 +122,17 @@ function scoreModel(stat: AvitoPriceStat, answers: QuizAnswers): { score: number
     score -= 10;
   }
 
+  // SSD preference
+  if (answers.ssd && answers.ssd !== "any") {
+    const prefSsd = parseInt(answers.ssd);
+    if (stat.ssd >= prefSsd) {
+      score += 15;
+      reasons.push(`${formatSsd(stat.ssd)} — подходящий объём накопителя`);
+    } else {
+      score -= 10;
+    }
+  }
+
   // Pro preference
   if (needsPro && pro) {
     score += 15;
@@ -123,8 +144,8 @@ function scoreModel(stat: AvitoPriceStat, answers: QuizAnswers): { score: number
 
   // Mobility
   if (answers.mobility === "portable") {
-    if (screen <= 14 && !pro) { score += 10; }
-    else if (screen <= 14) { score += 5; }
+    if (screen <= 14 && !pro) score += 10;
+    else if (screen <= 14) score += 5;
     if (screen <= 13) reasons.push("Компактный — удобно носить с собой");
   } else if (answers.mobility === "home") {
     if (screen >= 15) { score += 10; reasons.push("Большой экран для стационарного использования"); }
@@ -146,16 +167,21 @@ function scoreModel(stat: AvitoPriceStat, answers: QuizAnswers): { score: number
   }
 
   // SSD bonus
-  if (stat.ssd >= 512) {
-    score += 3;
-  }
+  if (stat.ssd >= 512) score += 3;
   if (stat.ssd >= 1024) {
     score += 2;
-    reasons.push(`${formatSsd(stat.ssd)} накопитель — много места для файлов`);
+    if (!reasons.some(r => r.includes("накопитель"))) {
+      reasons.push(`${formatSsd(stat.ssd)} накопитель — много места для файлов`);
+    }
   }
 
   // Freshness bonus
   score += gen * 2;
+
+  // PRICE bonus: cheaper = better (prioritize affordable)
+  // Normalize: lower median → higher bonus (max ~15 points)
+  const priceBonus = Math.max(0, 15 - Math.floor(stat.median_price / 30000));
+  score += priceBonus;
 
   return { score, reasons: reasons.slice(0, 3) };
 }
@@ -163,10 +189,13 @@ function scoreModel(stat: AvitoPriceStat, answers: QuizAnswers): { score: number
 function recommend(stats: AvitoPriceStat[], answers: QuizAnswers): Recommendation[] {
   const budget = answers.budget[0];
 
-  // Deduplicate by model+processor+ram+ssd, keep freshest
+  // Filter out models below MIN_PRICE_M1
+  const filtered = stats.filter(s => s.median_price >= MIN_PRICE_M1);
+
+  // Deduplicate by model+processor+ram+ssd
   const uniqueKey = (s: AvitoPriceStat) => `${s.model_name}|${s.processor}|${s.ram}|${s.ssd}`;
   const map = new Map<string, AvitoPriceStat>();
-  for (const s of stats) {
+  for (const s of filtered) {
     const key = uniqueKey(s);
     if (!map.has(key) || s.samples_count > (map.get(key)!.samples_count)) {
       map.set(key, s);
@@ -180,14 +209,20 @@ function recommend(stats: AvitoPriceStat[], answers: QuizAnswers): Recommendatio
     return { stat, score: inBudget ? score + 10 : score, reasons, inBudget };
   });
 
-  scored.sort((a, b) => b.score - a.score);
+  // Sort: prioritize cheapest matching model within budget
+  scored.sort((a, b) => {
+    // First by budget fit
+    if (a.inBudget !== b.inBudget) return a.inBudget ? -1 : 1;
+    // Then by score
+    if (b.score !== a.score) return b.score - a.score;
+    // Then cheapest first
+    return a.stat.median_price - b.stat.median_price;
+  });
 
-  // Take top 3 in budget, + 1 out of budget if available
   const inBudget = scored.filter(r => r.inBudget).slice(0, 3);
   const outBudget = scored.filter(r => !r.inBudget).slice(0, 1);
 
   if (inBudget.length === 0) {
-    // Nothing in budget — show top 3 overall
     return scored.slice(0, 3).map(r => ({ ...r, inBudget: false }));
   }
 
@@ -195,7 +230,7 @@ function recommend(stats: AvitoPriceStat[], answers: QuizAnswers): Recommendatio
 }
 
 /* ─── Component ─── */
-const STEPS = ["mobility", "tasks", "screen", "budget"] as const;
+const STEPS = ["mobility", "tasks", "screen", "ssd", "budget"] as const;
 type Step = typeof STEPS[number];
 
 const MacbookQuiz = () => {
@@ -204,6 +239,7 @@ const MacbookQuiz = () => {
     mobility: null,
     tasks: [],
     screen: null,
+    ssd: null,
     budget: [80000],
   });
   const [results, setResults] = useState<Recommendation[] | null>(null);
@@ -221,6 +257,7 @@ const MacbookQuiz = () => {
       case "mobility": return answers.mobility !== null;
       case "tasks": return answers.tasks.length > 0;
       case "screen": return answers.screen !== null;
+      case "ssd": return answers.ssd !== null;
       case "budget": return true;
       default: return false;
     }
@@ -230,7 +267,6 @@ const MacbookQuiz = () => {
     if (step < STEPS.length - 1) {
       setStep(s => s + 1);
     } else {
-      // Calculate results
       setLoading(true);
       setTimeout(() => {
         const recs = recommend(allStats, answers);
@@ -241,16 +277,13 @@ const MacbookQuiz = () => {
   };
 
   const handleBack = () => {
-    if (results) {
-      setResults(null);
-      return;
-    }
+    if (results) { setResults(null); return; }
     if (step > 0) setStep(s => s - 1);
   };
 
   const handleReset = () => {
     setStep(0);
-    setAnswers({ mobility: null, tasks: [], screen: null, budget: [80000] });
+    setAnswers({ mobility: null, tasks: [], screen: null, ssd: null, budget: [80000] });
     setResults(null);
   };
 
@@ -267,6 +300,7 @@ const MacbookQuiz = () => {
     mobility: "Нужна ли мобильность?",
     tasks: "Для каких задач?",
     screen: "Предпочтения по диагонали?",
+    ssd: "Сколько памяти нужно?",
     budget: "Желаемый бюджет",
   };
 
@@ -275,10 +309,10 @@ const MacbookQuiz = () => {
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold font-apple mb-3">
           <Sparkles className="inline w-7 h-7 mr-2 text-primary" />
-          Какой MacBook подходит именно вам?
+          Мы подберем для тебя подходящий макбук
         </h2>
         <p className="text-muted-foreground text-lg">
-          Ответьте на 4 вопроса — мы подберём оптимальную модель
+          Ответьте на 5 вопросов — мы подберём оптимальную модель
         </p>
       </div>
 
@@ -362,8 +396,7 @@ const MacbookQuiz = () => {
                                 {r}
                               </span>
                             ))}
-
-                        </div>
+                          </div>
                         )}
                       </motion.div>
                     ))}
@@ -377,9 +410,7 @@ const MacbookQuiz = () => {
                   </Button>
                   <Button
                     className="flex-1 bg-gradient-primary hover:opacity-90"
-                    onClick={() => {
-                      window.open("https://t.me/romanmanro", "_blank");
-                    }}
+                    onClick={() => window.open("https://t.me/romanmanro", "_blank")}
                   >
                     <MessageCircle className="w-4 h-4 mr-2" />
                     Обсудить в Telegram
@@ -468,6 +499,29 @@ const MacbookQuiz = () => {
                         }`}
                       >
                         <p className="font-bold text-lg">{opt.label}</p>
+                        <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* SSD */}
+                {currentStep === "ssd" && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {SSD_OPTIONS.map(opt => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setAnswers(prev => ({ ...prev, ssd: opt.value }))}
+                        className={`p-4 rounded-xl border-2 text-center transition-all ${
+                          answers.ssd === opt.value
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/40"
+                        }`}
+                      >
+                        <div className="mb-1 text-primary flex justify-center">
+                          <HardDrive className="w-5 h-5" />
+                        </div>
+                        <p className="font-bold text-base">{opt.label}</p>
                         <p className="text-xs text-muted-foreground">{opt.desc}</p>
                       </button>
                     ))}
