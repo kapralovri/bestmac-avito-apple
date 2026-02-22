@@ -110,3 +110,24 @@ export const generateArticleSchema = (article: {
     "@id": `https://bestmac.ru${article.url}`
   }
 });
+
+export const generateLocalBusinessSchema = () => ({
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "BestMac",
+  "image": "https://bestmac.ru/og-image.jpg",
+  "url": "https://bestmac.ru",
+  "telephone": "+7(000)000-00-00", // Замените на реальный при необходимости или оставьте TG/WA
+  "priceRange": "$$$",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Москва",
+    "addressCountry": "RU"
+  },
+  "description": "Скупка техники Apple в Москве. Выкуп MacBook Pro, Air, Mac Mini, iMac дорого и быстро. Оценка онлайн за 5 минут, оплата наличными.",
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.9",
+    "reviewCount": "156"
+  }
+});

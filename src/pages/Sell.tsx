@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  loadAvitoPrices, 
+import {
+  loadAvitoPrices,
   loadAvitoUrls,
   getModelsFromConfig,
   getProcessorsFromConfig,
@@ -23,8 +23,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import SEOHead from '@/components/SEOHead';
-import { Clock, Wallet, TrendingUp, Shield, BarChart3, Cpu, HardDrive, MemoryStick, Sparkles, Search, X, Check } from 'lucide-react';
-import { generateProductSchema } from '@/lib/structured-data';
+import { Clock, Wallet, TrendingUp, Shield, BarChart3, Cpu, HardDrive, MemoryStick, Sparkles, Search, X, Check, CheckCircle2, MapPin, Truck, RefreshCw } from 'lucide-react';
+import { generateProductSchema, generateLocalBusinessSchema } from '@/lib/structured-data';
 
 interface AvitoUrlsData {
   description: string;
@@ -43,7 +43,7 @@ const Sell = () => {
   const [urlsData, setUrlsData] = useState<AvitoUrlsData | null>(null);
   const [totalListings, setTotalListings] = useState(0);
   const [lastUpdate, setLastUpdate] = useState<string>('');
-  
+
   // Форма
   const [modelName, setModelName] = useState('');
   const [modelSearch, setModelSearch] = useState('');
@@ -52,7 +52,7 @@ const Sell = () => {
   const [ram, setRam] = useState<number | ''>('');
   const [ssd, setSsd] = useState<number | ''>('');
   const [condition, setCondition] = useState<ConditionValue>('excellent');
-  
+
   // Результат
   const [result, setResult] = useState<{
     marketMin: number;
@@ -62,12 +62,12 @@ const Sell = () => {
     samplesCount: number;
     isRareModel?: boolean;
   } | null>(null);
-  
+
   // Загрузка данных
   useEffect(() => {
     // Загружаем конфигурации URL (для опций формы)
     loadAvitoUrls().then(setUrlsData);
-    
+
     // Загружаем данные о ценах (результаты парсера)
     loadAvitoPrices().then((loadedData) => {
       setData(loadedData);
@@ -78,31 +78,31 @@ const Sell = () => {
       }
     });
   }, []);
-  
+
   // Список моделей из конфигурации
   const models = useMemo(() => {
     if (!urlsData) return [];
     return filterModels(getModelsFromConfig(urlsData), modelSearch);
   }, [urlsData, modelSearch]);
-  
+
   // Опции процессоров из конфигурации
   const processorOptions = useMemo(() => {
     if (!urlsData || !modelName) return [];
     return getProcessorsFromConfig(urlsData, modelName);
   }, [urlsData, modelName]);
-  
+
   // Опции RAM из конфигурации
   const ramOptions = useMemo(() => {
     if (!urlsData || !modelName || !processor) return [];
     return getRamFromConfig(urlsData, modelName, processor);
   }, [urlsData, modelName, processor]);
-  
+
   // Опции SSD из конфигурации
   const ssdOptions = useMemo(() => {
     if (!urlsData || !modelName || !processor || !ram) return [];
     return getSsdFromConfig(urlsData, modelName, processor, Number(ram));
   }, [urlsData, modelName, processor, ram]);
-  
+
   // Сброс зависимых полей
   useEffect(() => {
     setProcessor('');
@@ -110,24 +110,24 @@ const Sell = () => {
     setSsd('');
     setResult(null);
   }, [modelName]);
-  
+
   useEffect(() => {
     setRam('');
     setSsd('');
     setResult(null);
   }, [processor]);
-  
+
   useEffect(() => {
     setSsd('');
     setResult(null);
   }, [ram]);
-  
+
   // Расчет
   const handleCalculate = () => {
     if (!data || !modelName || !processor || !ram || !ssd) return;
-    
+
     const stat = findPriceStat(data.stats, modelName, Number(ram), Number(ssd), processor);
-    
+
     // Если данных нет в базе или менее 2 объявлений — редкая модель
     if (!stat || stat.samples_count < 2) {
       setResult({
@@ -140,7 +140,7 @@ const Sell = () => {
       });
       return;
     }
-    
+
     const priceResult = calculateBuyoutPrice(stat, condition);
     setResult({
       marketMin: priceResult.marketMin,
@@ -151,15 +151,23 @@ const Sell = () => {
       isRareModel: false,
     });
   };
-  
+
   const isFormComplete = modelName && processor && ram && ssd;
-  
+
   const productSchema = generateProductSchema({
     name: "Выкуп MacBook в Москве",
     price: 50000,
     condition: "UsedCondition",
     description: "Узнайте реальную рыночную стоимость вашего MacBook. Оценка на основе анализа открытого рынка."
   });
+
+  const localBusinessSchema = generateLocalBusinessSchema();
+
+  // Объединенная схема
+  const schemaGraph = {
+    "@context": "https://schema.org",
+    "@graph": [productSchema, localBusinessSchema]
+  };
 
   // Обработка выбора модели
   const handleModelSelect = (model: string) => {
@@ -175,15 +183,15 @@ const Sell = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEOHead 
-        title="Сколько стоит ваш MacBook? Калькулятор рыночной цены | BestMac"
-        description="Узнайте реальную рыночную стоимость вашего MacBook за 30 секунд. Оценка на основе анализа открытого рынка. Актуальные цены на MacBook Air, Pro, M1, M2, M3, M4."
+      <SEOHead
+        title="Продать MacBook в Москве дорого | Скупка макбуков б/у — BestMac"
+        description="Выкуп Apple MacBook (Pro, Air) за 30 минут. Онлайн-калькулятор оценки стоимости по рынку. Платим наличными или на карту. Скупка старых и сломанных макбуков в Москве."
         canonical="/sell"
-        keywords="сколько стоит macbook, цена macbook бу, продать macbook цена, оценка macbook, калькулятор цены macbook"
-        schema={productSchema}
+        keywords="продать macbook, скупка macbook москва, продать макбук дорого, скупка apple macbook, где продать macbook, выкуп macbook бу, сдать macbook на запчасти"
+        schema={schemaGraph}
       />
       <Header />
-      
+
       <div className="container mx-auto px-4 py-8">
         <Breadcrumbs items={[
           { name: 'Главная', url: '/' },
@@ -192,20 +200,20 @@ const Sell = () => {
 
         <div className="max-w-5xl mx-auto">
           {/* Hero */}
-          <motion.div 
+          <motion.div
             className="text-center mb-12"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Сколько стоит ваш MacBook?
+              Скупка MacBook в Москве дорого
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
-              Узнайте реальную рыночную стоимость прямо сейчас. 
-              Оценка на основе анализа {totalListings > 0 ? totalListings.toLocaleString('ru-RU') : '800+'} объявлений.
+              Узнайте реальную рыночную стоимость в онлайн-калькуляторе.
+              Оценка на основе анализа {totalListings > 0 ? totalListings.toLocaleString('ru-RU') : '800+'} предложений.
             </p>
-            
+
             {/* Преимущества */}
             <div className="flex flex-wrap justify-center gap-4 text-sm">
               <div className="flex items-center gap-2 bg-muted/50 px-4 py-2 rounded-full">
@@ -250,7 +258,7 @@ const Sell = () => {
                         Модель
                       </label>
                       {modelName && (
-                        <button 
+                        <button
                           onClick={clearModel}
                           className="text-xs text-primary hover:underline"
                         >
@@ -258,7 +266,7 @@ const Sell = () => {
                         </button>
                       )}
                     </div>
-                    
+
                     <div className="relative">
                       <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -273,7 +281,7 @@ const Sell = () => {
                           className="pl-10 pr-10"
                         />
                         {(modelSearch || modelName) && (
-                          <button 
+                          <button
                             onClick={clearModel}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                           >
@@ -281,7 +289,7 @@ const Sell = () => {
                           </button>
                         )}
                       </div>
-                      
+
                       {/* Dropdown с моделями */}
                       {isModelOpen && models.length > 0 && (
                         <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-64 overflow-auto">
@@ -289,9 +297,8 @@ const Sell = () => {
                             <button
                               key={model}
                               onClick={() => handleModelSelect(model)}
-                              className={`w-full px-4 py-2.5 text-left text-sm hover:bg-accent flex items-center justify-between ${
-                                modelName === model ? 'bg-accent' : ''
-                              }`}
+                              className={`w-full px-4 py-2.5 text-left text-sm hover:bg-accent flex items-center justify-between ${modelName === model ? 'bg-accent' : ''
+                                }`}
                             >
                               <span>{model}</span>
                               {modelName === model && (
@@ -302,7 +309,7 @@ const Sell = () => {
                         </div>
                       )}
                     </div>
-                    
+
                     {/* Выбранная модель */}
                     {modelName && !isModelOpen && (
                       <div className="flex items-center gap-2 p-2 bg-primary/5 rounded-md border border-primary/20">
@@ -311,7 +318,7 @@ const Sell = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Процессор */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium flex items-center gap-2">
@@ -319,9 +326,9 @@ const Sell = () => {
                       <Cpu className="w-4 h-4" />
                       Процессор
                     </label>
-                    <Select 
-                      value={processor} 
-                      onValueChange={setProcessor} 
+                    <Select
+                      value={processor}
+                      onValueChange={setProcessor}
                       disabled={!modelName || processorOptions.length === 0}
                     >
                       <SelectTrigger>
@@ -334,7 +341,7 @@ const Sell = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   {/* RAM */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium flex items-center gap-2">
@@ -342,9 +349,9 @@ const Sell = () => {
                       <MemoryStick className="w-4 h-4" />
                       Оперативная память
                     </label>
-                    <Select 
-                      value={ram ? String(ram) : ''} 
-                      onValueChange={(v) => setRam(Number(v))} 
+                    <Select
+                      value={ram ? String(ram) : ''}
+                      onValueChange={(v) => setRam(Number(v))}
                       disabled={!processor || ramOptions.length === 0}
                     >
                       <SelectTrigger>
@@ -357,7 +364,7 @@ const Sell = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   {/* SSD */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium flex items-center gap-2">
@@ -365,9 +372,9 @@ const Sell = () => {
                       <HardDrive className="w-4 h-4" />
                       Накопитель SSD
                     </label>
-                    <Select 
-                      value={ssd ? String(ssd) : ''} 
-                      onValueChange={(v) => setSsd(Number(v))} 
+                    <Select
+                      value={ssd ? String(ssd) : ''}
+                      onValueChange={(v) => setSsd(Number(v))}
                       disabled={!ram || ssdOptions.length === 0}
                     >
                       <SelectTrigger>
@@ -380,7 +387,7 @@ const Sell = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   {/* Состояние */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium flex items-center gap-2">
@@ -404,8 +411,8 @@ const Sell = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  
-                  <Button 
+
+                  <Button
                     onClick={handleCalculate}
                     className="w-full"
                     size="lg"
@@ -414,13 +421,13 @@ const Sell = () => {
                     <TrendingUp className="w-4 h-4 mr-2" />
                     Узнать стоимость
                   </Button>
-                  
+
                   {/* Ссылка на TG для ненайденных моделей */}
                   <p className="text-xs text-muted-foreground text-center mt-3">
                     Не нашли свою модель?{' '}
-                    <a 
-                      href="https://t.me/romanmanro" 
-                      target="_blank" 
+                    <a
+                      href="https://t.me/romanmanro"
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="text-primary hover:underline"
                     >
@@ -468,7 +475,7 @@ const Sell = () => {
                           </p>
                         </div>
                       )}
-                      
+
                       {/* Сообщение о редкой модели */}
                       <div className="text-center p-6 bg-amber-500/10 rounded-xl border-2 border-amber-500/30">
                         <p className="text-2xl md:text-3xl font-bold text-amber-600 mb-3">
@@ -478,11 +485,11 @@ const Sell = () => {
                           Свяжитесь со мной и предложите вашу цену на данную модель
                         </p>
                       </div>
-                      
+
                       {/* CTA */}
-                      <Button 
-                        variant="default" 
-                        size="lg" 
+                      <Button
+                        variant="default"
+                        size="lg"
                         className="w-full"
                         asChild
                       >
@@ -508,7 +515,7 @@ const Sell = () => {
                           </p>
                         </div>
                       )}
-                      
+
                       {/* Рыночная цена */}
                       <div className="text-center p-6 bg-muted/30 rounded-xl border">
                         <p className="text-sm text-muted-foreground mb-2">Рыночная цена сейчас</p>
@@ -519,7 +526,7 @@ const Sell = () => {
                           Медиана: {formatPrice(result.marketMedian)}
                         </p>
                       </div>
-                      
+
                       {/* Цена выкупа */}
                       <div className="text-center p-6 bg-primary/5 rounded-xl border-2 border-primary/20">
                         <p className="text-sm font-medium text-primary mb-2">
@@ -529,25 +536,25 @@ const Sell = () => {
                           ≈ {formatPrice(result.buyoutPrice)}
                         </p>
                       </div>
-                      
+
                       {/* Статистика */}
                       <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                         <BarChart3 className="w-4 h-4" />
                         <span>На основе {result.samplesCount} объявлений за последние 30 дней</span>
                       </div>
-                      
+
                       {/* Дисклеймер */}
                       <div className="bg-muted/50 p-4 rounded-lg text-xs text-muted-foreground">
                         <p>
-                          ⚠️ Оценка на основе анализа открытого рынка. Итоговая цена может отличаться 
+                          ⚠️ Оценка на основе анализа открытого рынка. Итоговая цена может отличаться
                           в зависимости от комплектации, циклов батареи и состояния устройства.
                         </p>
                       </div>
-                      
+
                       {/* CTA */}
-                      <Button 
-                        variant="default" 
-                        size="lg" 
+                      <Button
+                        variant="default"
+                        size="lg"
                         className="w-full"
                         asChild
                       >
@@ -563,31 +570,123 @@ const Sell = () => {
             </motion.div>
           </div>
 
-          {/* Как это работает */}
-          <motion.section 
+          {/* SEO Block: LSI Тексты и Описание */}
+          <motion.section
+            className="mb-16 grid lg:grid-cols-2 gap-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.25 }}
+          >
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold mb-4">Какие MacBook мы выкупаем?</h2>
+                <p className="text-muted-foreground mb-4">
+                  Мы занимаемся узкоспециализированной скупкой ноутбуков Apple в Москве.
+                  Благодаря фокусу только на макбуках, мы предлагаем цену выше, чем в Trade-In или обычных ломбардах.
+                </p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <span><strong>MacBook Pro</strong> (13", 14", 16") с 2016 по 2024 год. На процессорах Intel и <strong>Apple Silicon (M1, M2, M3, M4)</strong>.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <span><strong>MacBook Air</strong> (13", 15") от старых моделей до последних релизов на <strong>M2 и M3</strong>.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <span><strong>Любое состояние:</strong> б/у, идеальное, как новые, с коробкой и без.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <span><strong>Проблемные:</strong> выкупаем сломанные макбуки, залитые водой, разбитые (на запчасти).</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="space-y-6 bg-muted/30 p-6 md:p-8 rounded-2xl border">
+              <h3 className="text-xl font-bold mb-4">Продать макбук за 4 шага:</h3>
+
+              <div className="space-y-6 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-muted-foreground/20 before:to-transparent hidden sm:block">
+                {/* Steps implemented below in normal flow for mobile, styled differently */}
+              </div>
+
+              <div className="space-y-6 relative">
+                {/* Step 1 */}
+                <div className="relative flex items-center md:items-start gap-4 z-10">
+                  <div className="w-10 h-10 rounded-full bg-background border-2 border-primary flex items-center justify-center shrink-0 shadow-sm">
+                    <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-base font-bold">Оценка стоимости онлайн</h4>
+                    <p className="text-sm text-muted-foreground mt-1">Воспользуйтесь калькулятором выше или напишите нам в Telegram для точной оценки.</p>
+                  </div>
+                </div>
+
+                {/* Step 2 */}
+                <div className="relative flex items-center md:items-start gap-4 z-10">
+                  <div className="w-10 h-10 rounded-full bg-background border-2 border-primary flex items-center justify-center shrink-0 shadow-sm">
+                    <MapPin className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-bold">Договариваемся о встрече</h4>
+                    <p className="text-sm text-muted-foreground mt-1">Приезжайте к нам в офис в Москве или вызовите оценщика в удобное для вас место (кафе, метро).</p>
+                  </div>
+                </div>
+
+                {/* Step 3 */}
+                <div className="relative flex items-center md:items-start gap-4 z-10">
+                  <div className="w-10 h-10 rounded-full bg-background border-2 border-primary flex items-center justify-center shrink-0 shadow-sm">
+                    <RefreshCw className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-bold">Быстрая диагностика</h4>
+                    <p className="text-sm text-muted-foreground mt-1">Проверяем экран, батарею, порты и отвязываем ваш iCloud. Занимает ровно 15 минут.</p>
+                  </div>
+                </div>
+
+                {/* Step 4 */}
+                <div className="relative flex items-center md:items-start gap-4 z-10">
+                  <div className="w-10 h-10 rounded-full bg-background border-2 border-primary flex items-center justify-center shrink-0 shadow-sm">
+                    <Wallet className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-bold">Выплата наличными или на карту</h4>
+                    <p className="text-sm text-muted-foreground mt-1">Отдаем деньги сразу на месте. Сумма точно соответствует оговоренной после диагностики.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.section>
+
+          {/* Как это работает (Старый блок, оставляем как "Как мы рассчитываем цену") */}
+          <motion.section
             className="mb-16"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <h2 className="text-2xl font-bold text-center mb-8">Как мы рассчитываем цену</h2>
-            
+            <h2 className="text-2xl font-bold text-center mb-8">Откуда берется смета онлайн-оценки</h2>
+
             <div className="grid md:grid-cols-3 gap-6">
               <Card>
                 <CardHeader>
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
                     <BarChart3 className="w-5 h-5 text-primary" />
                   </div>
-                  <CardTitle className="text-lg">Анализ рынка</CardTitle>
+                  <CardTitle className="text-lg">Анализ рынка в реальном времени</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground text-sm">
-                    Каждый день мы анализируем сотни объявлений о продаже MacBook 
-                    на открытом рынке.
+                    Каждый день мы парсим сотни объявлений о продаже б/у MacBook
+                    на открытом рынке Авито и других площадок.
                   </p>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader>
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
@@ -597,12 +696,12 @@ const Sell = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground text-sm">
-                    Отсеиваем завышенные и заниженные цены, оставляя только 
+                    Отсеиваем завышенные и заниженные цены, оставляя только
                     актуальные предложения за последние 30 дней.
                   </p>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader>
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
@@ -612,7 +711,7 @@ const Sell = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground text-sm">
-                    Цена выкупа учитывает состояние устройства и включает 
+                    Цена выкупа учитывает состояние устройства и включает
                     нашу комиссию за быструю сделку.
                   </p>
                 </CardContent>
@@ -627,7 +726,7 @@ const Sell = () => {
             transition={{ duration: 0.5, delay: 0.4 }}
           >
             <h2 className="text-2xl font-bold text-center mb-8">Частые вопросы</h2>
-            
+
             <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
               <Card>
                 <CardHeader>
@@ -639,7 +738,7 @@ const Sell = () => {
                   </p>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">Почему цена выкупа ниже рыночной?</CardTitle>
@@ -650,7 +749,7 @@ const Sell = () => {
                   </p>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">Как быстро вы выкупаете?</CardTitle>
@@ -661,7 +760,7 @@ const Sell = () => {
                   </p>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">Что влияет на цену?</CardTitle>
@@ -676,7 +775,7 @@ const Sell = () => {
           </motion.section>
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );
