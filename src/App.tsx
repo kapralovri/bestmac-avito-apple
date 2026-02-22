@@ -15,6 +15,7 @@ import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
+import BlogIndex from "./pages/blog/BlogIndex";
 import KakVybratMacbook2024 from "./pages/blog/KakVybratMacbook2024";
 import ProverkaMacbookPeredPokupkoi from "./pages/blog/ProverkaMacbookPeredPokupkoi";
 import MacbookAirM2vsM3 from "./pages/blog/MacbookAirM2vsM3";
@@ -43,49 +44,50 @@ const App = () => {
   }, []);
 
   return (
-  <HelmetProvider>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/buy" element={<Buy />} />
-            <Route path="/sell" element={<Sell />} />
-            <Route path="/selection" element={<Selection />} />
-            <Route path="/business" element={<Business />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/pickup" element={<Pickup />} />
-            <Route path="/service" element={<Service />} />
-            <Route path="/sell/:model_slug" element={<SellModel />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/terms" element={<Terms />} />
-            {/* Blog routes */}
-            <Route path="/blog/kak-vybrat-macbook-2024" element={<KakVybratMacbook2024 />} />
-            <Route path="/blog/proverka-macbook-pered-pokupkoi" element={<ProverkaMacbookPeredPokupkoi />} />
-            <Route path="/blog/macbook-air-m2-vs-m3" element={<MacbookAirM2vsM3 />} />
-            <Route path="/blog/kak-prodat-macbook-vygodno" element={<KakProdatMacbookVygodno />} />
-            <Route path="/blog/macbook-m4-obzor" element={<MacbookM4Obzor />} />
-            <Route path="/blog/macbook-vs-windows" element={<MacbookVsWindows />} />
-            <Route path="/blog/macbook-bu-podvodnye" element={<MacbookBuPodvodnye />} />
-            <Route path="/blog/macbook-dlia-studenta" element={<MacbookDliaStudenta />} />
-            <Route path="/blog/macbook-apgreid" element={<MacbookApgreid />} />
-            {/* Long-tail landing pages */}
-            <Route path="/buy/macbook-air-m2-16gb" element={<MacbookAirM2Buy />} />
-            <Route path="/sell/macbook-broken-screen" element={<MacbookBrokenScreen />} />
-            <Route path="/buy/macbook-pro-14-m3" element={<MacbookPro14M3 />} />
-            <Route path="/buy/macbook-pro-16-m3-max" element={<MacbookPro16M3Max />} />
-            <Route path="/buy/macbook-air-m3-students" element={<MacbookAirM3Students />} />
-            <Route path="/comparison" element={<Comparison />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </HelmetProvider>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/buy" element={<Buy />} />
+              <Route path="/sell" element={<Sell />} />
+              <Route path="/selection" element={<Selection />} />
+              <Route path="/business" element={<Business />} />
+              <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/pickup" element={<Pickup />} />
+              <Route path="/service" element={<Service />} />
+              <Route path="/sell/:model_slug" element={<SellModel />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
+              {/* Blog routes */}
+              <Route path="/blog" element={<BlogIndex />} />
+              <Route path="/blog/kak-vybrat-macbook-2024" element={<KakVybratMacbook2024 />} />
+              <Route path="/blog/proverka-macbook-pered-pokupkoi" element={<ProverkaMacbookPeredPokupkoi />} />
+              <Route path="/blog/macbook-air-m2-vs-m3" element={<MacbookAirM2vsM3 />} />
+              <Route path="/blog/kak-prodat-macbook-vygodno" element={<KakProdatMacbookVygodno />} />
+              <Route path="/blog/macbook-m4-obzor" element={<MacbookM4Obzor />} />
+              <Route path="/blog/macbook-vs-windows" element={<MacbookVsWindows />} />
+              <Route path="/blog/macbook-bu-podvodnye" element={<MacbookBuPodvodnye />} />
+              <Route path="/blog/macbook-dlia-studenta" element={<MacbookDliaStudenta />} />
+              <Route path="/blog/macbook-apgreid" element={<MacbookApgreid />} />
+              {/* Long-tail landing pages */}
+              <Route path="/buy/macbook-air-m2-16gb" element={<MacbookAirM2Buy />} />
+              <Route path="/sell/macbook-broken-screen" element={<MacbookBrokenScreen />} />
+              <Route path="/buy/macbook-pro-14-m3" element={<MacbookPro14M3 />} />
+              <Route path="/buy/macbook-pro-16-m3-max" element={<MacbookPro16M3Max />} />
+              <Route path="/buy/macbook-air-m3-students" element={<MacbookAirM3Students />} />
+              <Route path="/comparison" element={<Comparison />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
   );
 };
 

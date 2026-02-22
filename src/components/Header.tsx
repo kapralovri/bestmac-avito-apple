@@ -14,11 +14,12 @@ const Header = () => {
     { path: "/sell", label: "Выкуп" },
     { path: "/selection", label: "Подбор" },
     { path: "/service", label: "Сервис" },
+    { path: "/blog", label: "Блог" },
     { path: "/business", label: "Для юр.лиц" }
   ];
 
   return (
-    <motion.header 
+    <motion.header
       className="bg-background/80 backdrop-blur-md border-b border-border sticky top-0 z-50"
       initial={{ y: -100 }}
       animate={{ y: 0 }}
@@ -26,7 +27,7 @@ const Header = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <motion.div 
+          <motion.div
             className="flex items-center space-x-2"
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.2 }}
@@ -41,7 +42,7 @@ const Header = () => {
               </div>
             </Link>
           </motion.div>
-          
+
           <nav className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
               <motion.div
@@ -49,13 +50,12 @@ const Header = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Link 
+                <Link
                   to={item.path}
-                  className={`transition-colors duration-300 ${
-                    location.pathname === item.path 
-                      ? 'text-primary font-semibold' 
+                  className={`transition-colors duration-300 ${location.pathname === item.path
+                      ? 'text-primary font-semibold'
                       : 'text-foreground hover:text-primary'
-                  }`}
+                    }`}
                 >
                   {item.label}
                 </Link>
@@ -64,8 +64,8 @@ const Header = () => {
           </nav>
 
           <div className="flex items-center space-x-4">
-            <motion.a 
-              href="tel:+79032990029" 
+            <motion.a
+              href="tel:+79032990029"
               className="hidden sm:flex items-center space-x-2 text-foreground hover:text-primary transition-colors"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -84,7 +84,7 @@ const Header = () => {
                 </Link>
               </Button>
             </motion.div>
-            
+
             {/* Mobile Menu Button */}
             <button
               className="md:hidden p-2"
@@ -115,11 +115,10 @@ const Header = () => {
                     key={item.path}
                     to={item.path}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`transition-colors duration-300 py-2 ${
-                      location.pathname === item.path
+                    className={`transition-colors duration-300 py-2 ${location.pathname === item.path
                         ? 'text-primary font-semibold'
                         : 'text-foreground hover:text-primary'
-                    }`}
+                      }`}
                   >
                     {item.label}
                   </Link>
