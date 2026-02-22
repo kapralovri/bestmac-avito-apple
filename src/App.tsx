@@ -16,9 +16,9 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 import BlogIndex from "./pages/blog/BlogIndex";
-import SellIphone from "./pages/sell/SellIphone";
-import SellIpad from "./pages/sell/SellIpad";
-import SellWatch from "./pages/sell/SellWatch";
+import SellImac from "./pages/sell/SellImac";
+import SellMacPro from "./pages/sell/SellMacPro";
+import SellMacMini from "./pages/sell/SellMacMini";
 import SellSeries from "./pages/sell/SellSeries";
 import SellBroken from "./pages/sell/SellBroken";
 import KakVybratMacbook2024 from "./pages/blog/KakVybratMacbook2024";
@@ -65,9 +65,9 @@ const App = () => {
               <Route path="/contact" element={<Contact />} />
               <Route path="/pickup" element={<Pickup />} />
               <Route path="/service" element={<Service />} />
-              <Route path="/sell/iphone" element={<SellIphone />} />
-              <Route path="/sell/ipad" element={<SellIpad />} />
-              <Route path="/sell/watch" element={<SellWatch />} />
+              <Route path="/sell/imac" element={<SellImac />} />
+              <Route path="/sell/mac-pro" element={<SellMacPro />} />
+              <Route path="/sell/mac-mini" element={<SellMacMini />} />
               <Route path="/sell/macbook-pro" element={<SellSeries series="pro" />} />
               <Route path="/sell/macbook-air" element={<SellSeries series="air" />} />
               <Route path="/sell/broken" element={<SellBroken />} />

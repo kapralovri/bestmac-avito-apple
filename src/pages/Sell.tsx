@@ -242,57 +242,7 @@ const Sell = () => {
             </div>
           </motion.div>
 
-          {/* Кросс-навигация по сериям MacBook */}
-          <motion.div
-            className="grid md:grid-cols-2 gap-4 mb-12 max-w-4xl mx-auto"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <Link to="/sell/macbook-pro" className="block group">
-              <div className="bg-gradient-to-br from-card to-muted border p-6 rounded-2xl flex items-center gap-4 transition-all duration-300 group-hover:border-primary/50 group-hover:shadow-md">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                  <Monitor className="w-8 h-8 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg leading-tight group-hover:text-primary transition-colors">Скупка MacBook Pro</h3>
-                  <p className="text-sm text-muted-foreground mt-1">Профессиональные модели 13", 14", 16"</p>
-                </div>
-              </div>
-            </Link>
-
-            <Link to="/sell/macbook-air" className="block group">
-              <div className="bg-gradient-to-br from-card to-muted border p-6 rounded-2xl flex items-center gap-4 transition-all duration-300 group-hover:border-primary/50 group-hover:shadow-md">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                  <Laptop className="w-8 h-8 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg leading-tight group-hover:text-primary transition-colors">Скупка MacBook Air</h3>
-                  <p className="text-sm text-muted-foreground mt-1">Легкие ультрабуки 13" и 15"</p>
-                </div>
-              </div>
-            </Link>
-          </motion.div>
-
-          {/* Banner for broken devices */}
-          <motion.div
-            className="max-w-4xl mx-auto mb-12"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <Link to="/sell/broken" className="block w-full">
-              <div className="bg-gradient-to-r from-destructive/10 to-orange-500/10 border-2 border-destructive/20 hover:border-destructive/40 p-4 rounded-xl flex items-center gap-4 transition-colors">
-                <div className="bg-destructive/10 p-2 rounded-full hidden sm:block">
-                  <AlertTriangle className="w-6 h-6 text-destructive" />
-                </div>
-                <div>
-                  <p className="font-bold text-foreground">Сломался MacBook? Залит водой или заблокирован?</p>
-                  <p className="text-sm text-muted-foreground mt-0.5">Оценим на запчасти по фото за 5 минут. Нажмите здесь →</p>
-                </div>
-              </div>
-            </Link>
-          </motion.div>
+          {/* Карта Pro/Air перенесена ниже калькулятора */}
 
           {/* Калькулятор */}
           <div className="grid lg:grid-cols-2 gap-8 mb-16">
@@ -633,58 +583,100 @@ const Sell = () => {
             </motion.div>
           </div>
 
-          {/* Cross navigation for other devices */}
-          <motion.section
-            className="mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <h2 className="text-2xl font-bold mb-6 text-center">Мы выкупаем не только MacBook</h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              <Link to="/sell/iphone" className="block group">
-                <div className="bg-card hover:bg-muted/50 transition-colors border p-6 rounded-2xl flex flex-col items-center text-center h-full">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
-                      <path d="M12 18h.01"></path>
-                    </svg>
+          <div className="max-w-4xl mx-auto space-y-16 mb-16">
+
+            {/* Кросс-навигация по сериям MacBook */}
+            <motion.div
+              className="grid md:grid-cols-2 gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <Link to="/sell/macbook-pro" className="block group">
+                <div className="bg-gradient-to-br from-card to-muted border p-6 rounded-2xl flex items-center gap-4 transition-all duration-300 group-hover:border-primary/50 group-hover:shadow-md">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                    <Monitor className="w-8 h-8 text-primary" />
                   </div>
-                  <h3 className="font-bold text-lg mb-2">Скупка iPhone</h3>
-                  <p className="text-sm text-muted-foreground">Оценка от 11 до 16 Pro Max за 5 минут</p>
+                  <div>
+                    <h3 className="font-bold text-lg leading-tight group-hover:text-primary transition-colors">Скупка MacBook Pro</h3>
+                    <p className="text-sm text-muted-foreground mt-1">Профессиональные модели 13", 14", 16"</p>
+                  </div>
                 </div>
               </Link>
 
-              <Link to="/sell/ipad" className="block group">
-                <div className="bg-card hover:bg-muted/50 transition-colors border p-6 rounded-2xl flex flex-col items-center text-center h-full">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
-                      <path d="M12 18h.01"></path>
-                    </svg>
+              <Link to="/sell/macbook-air" className="block group">
+                <div className="bg-gradient-to-br from-card to-muted border p-6 rounded-2xl flex items-center gap-4 transition-all duration-300 group-hover:border-primary/50 group-hover:shadow-md">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                    <Laptop className="w-8 h-8 text-primary" />
                   </div>
-                  <h3 className="font-bold text-lg mb-2">Скупка iPad</h3>
-                  <p className="text-sm text-muted-foreground">Планшеты Pro, Air, Mini и стилусы</p>
+                  <div>
+                    <h3 className="font-bold text-lg leading-tight group-hover:text-primary transition-colors">Скупка MacBook Air</h3>
+                    <p className="text-sm text-muted-foreground mt-1">Легкие ультрабуки 13" и 15"</p>
+                  </div>
                 </div>
               </Link>
+            </motion.div>
 
-              <Link to="/sell/watch" className="block group">
-                <div className="bg-card hover:bg-muted/50 transition-colors border p-6 rounded-2xl flex flex-col items-center text-center h-full">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="6" y="4" width="12" height="16" rx="3" ry="3"></rect>
-                      <path d="M8 2v2"></path>
-                      <path d="M16 2v2"></path>
-                      <path d="M8 20v2"></path>
-                      <path d="M16 20v2"></path>
-                    </svg>
+            {/* Banner for broken devices */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <Link to="/sell/broken" className="block w-full">
+                <div className="bg-gradient-to-r from-destructive/10 to-orange-500/10 border-2 border-destructive/20 hover:border-destructive/40 p-4 rounded-xl flex items-center gap-4 transition-colors">
+                  <div className="bg-destructive/10 p-2 rounded-full hidden sm:block">
+                    <AlertTriangle className="w-6 h-6 text-destructive" />
                   </div>
-                  <h3 className="font-bold text-lg mb-2">Скупка Apple Watch</h3>
-                  <p className="text-sm text-muted-foreground">Series 7-10, Ultra и SE поколения</p>
+                  <div>
+                    <p className="font-bold text-foreground">Сломался MacBook? Залит водой или заблокирован?</p>
+                    <p className="text-sm text-muted-foreground mt-0.5">Оценим на запчасти по фото за 5 минут. Нажмите здесь →</p>
+                  </div>
                 </div>
               </Link>
-            </div>
-          </motion.section>
+            </motion.div>
+
+            {/* Cross navigation for other computers */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <h2 className="text-2xl font-bold mb-6 text-center">Выкупаем другие компьютеры Apple</h2>
+              <div className="grid md:grid-cols-3 gap-6">
+                <Link to="/sell/imac" className="block group">
+                  <div className="bg-card hover:bg-muted/50 transition-colors border p-6 rounded-2xl flex flex-col items-center text-center h-full">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                      <Monitor className="w-8 h-8 text-primary" />
+                    </div>
+                    <h3 className="font-bold text-lg mb-2">Скупка iMac</h3>
+                    <p className="text-sm text-muted-foreground">Моноблоки 21.5", 27", 24" M1/M3</p>
+                  </div>
+                </Link>
+
+                <Link to="/sell/mac-pro" className="block group">
+                  <div className="bg-card hover:bg-muted/50 transition-colors border p-6 rounded-2xl flex flex-col items-center text-center h-full">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                      <HardDrive className="w-8 h-8 text-primary" />
+                    </div>
+                    <h3 className="font-bold text-lg mb-2">Скупка Mac Pro</h3>
+                    <p className="text-sm text-muted-foreground">Профессиональные станции Apple</p>
+                  </div>
+                </Link>
+
+                <Link to="/sell/mac-mini" className="block group">
+                  <div className="bg-card hover:bg-muted/50 transition-colors border p-6 rounded-2xl flex flex-col items-center text-center h-full">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                      <Cpu className="w-8 h-8 text-primary" />
+                    </div>
+                    <h3 className="font-bold text-lg mb-2">Скупка Mac mini</h3>
+                    <p className="text-sm text-muted-foreground">Компактные десктопы на Intel и M-чипах</p>
+                  </div>
+                </Link>
+              </div>
+            </motion.section>
+
+          </div>
 
           {/* SEO Block: LSI Тексты и Описание */}
           <motion.section

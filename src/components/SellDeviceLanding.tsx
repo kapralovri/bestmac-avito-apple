@@ -10,7 +10,7 @@ import { trackContactClick } from "@/components/Analytics";
 import { generateLocalBusinessSchema, generateProductSchema } from "@/lib/structured-data";
 
 interface SellDeviceLandingProps {
-    deviceType: "iPhone" | "iPad" | "Apple Watch";
+    deviceType: string;
     title: string;
     h1: string;
     description: string;

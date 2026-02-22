@@ -78,11 +78,6 @@ const SellBroken = () => {
                                         Оценить в Telegram
                                     </a>
                                 </Button>
-                                <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 text-lg border-[#25D366] text-[#25D366] hover:bg-[#25D366]/10" asChild>
-                                    <a href="https://wa.me/79851722830" target="_blank" rel="noopener noreferrer">
-                                        Оценить в WhatsApp
-                                    </a>
-                                </Button>
                             </div>
 
                             <div className="flex items-center gap-4 text-sm text-muted-foreground opacity-80 pt-4">
@@ -170,7 +165,7 @@ const SellBroken = () => {
                                     <li>Сфотографируйте повреждения (например, разбитый экран или погнутый корпус).</li>
                                     <li>Если макбук включается, сфотографируйте экран об этом маке или назовите серийный номер с нижней крышки.</li>
                                     <li>Опишите, что произошло (упал, залили, перестал заряжаться).</li>
-                                    <li>Отправьте эти данные нам в Telegram или WhatsApp. В течение 5 минут мы назовем окончательную цену, которую готовы заплатить.</li>
+                                    <li>Отправьте эти данные нам в Telegram. В течение 5 минут мы назовем окончательную цену, которую готовы заплатить.</li>
                                 </ol>
                             </div>
 
