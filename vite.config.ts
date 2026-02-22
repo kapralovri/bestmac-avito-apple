@@ -27,11 +27,9 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            if (id.includes('react/') || id.includes('react-dom') || id.includes('scheduler')) {
-              return 'vendor-react';
-            }
-            if (id.includes('react-router')) {
-              return 'vendor-router';
+            // Group core React libraries to avoid circular dependencies and execution order issues
+            if (id.includes('react/') || id.includes('react-dom') || id.includes('scheduler') || id.includes('react-router') || id.includes('react-router-dom')) {
+              return 'vendor-core';
             }
             if (id.includes('@supabase')) {
               return 'vendor-supabase';

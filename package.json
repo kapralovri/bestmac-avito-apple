@@ -13,6 +13,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "generate-sitemap": "node scripts/generate-sitemap.js",
+    "prerender": "node scripts/prerender.mjs",
     "build:seo": "npm run generate-sitemap && vite build"
   },
   "dependencies": {

@@ -8,7 +8,7 @@ export const config = {
 
 export default async function handler(request: Request): Promise<Response> {
     const url = new URL(request.url);
-    const originalPath = url.searchParams.get('__path') || '/';
+    const originalPath = url.searchParams.get('__path') || url.searchParams.get('url') || '/';
     const targetUrl = `https://bestmac.ru${originalPath}`;
     const prerenderToken = process.env.PRERENDER_TOKEN;
 
