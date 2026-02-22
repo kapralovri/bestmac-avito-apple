@@ -37,7 +37,7 @@ const Header = () => {
             </Link>
             <Link to="/">
               <div>
-                <h1 className="text-xl font-bold font-apple">BestMac</h1>
+                <span className="text-xl font-bold font-apple block text-foreground">BestMac</span>
                 <p className="text-xs text-apple-gray">THE</p>
               </div>
             </Link>
@@ -53,8 +53,8 @@ const Header = () => {
                 <Link
                   to={item.path}
                   className={`transition-colors duration-300 ${location.pathname === item.path
-                      ? 'text-primary font-semibold'
-                      : 'text-foreground hover:text-primary'
+                    ? 'text-primary font-semibold'
+                    : 'text-foreground hover:text-primary'
                     }`}
                 >
                   {item.label}
@@ -116,8 +116,8 @@ const Header = () => {
                     to={item.path}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`transition-colors duration-300 py-2 ${location.pathname === item.path
-                        ? 'text-primary font-semibold'
-                        : 'text-foreground hover:text-primary'
+                      ? 'text-primary font-semibold'
+                      : 'text-foreground hover:text-primary'
                       }`}
                   >
                     {item.label}

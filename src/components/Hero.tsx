@@ -7,7 +7,7 @@ import ShatterText from "@/components/ShatterText";
 
 const Hero = () => {
   const navigate = useNavigate();
-  
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -70,16 +70,16 @@ const Hero = () => {
             <br />
             б/у в Москве выгодно
           </motion.h1>
-          
-          <motion.p 
+
+          <motion.p
             className="text-xl text-apple-gray-light mb-12 leading-relaxed"
             variants={itemVariants}
           >
-            Продажа подержанной техники Apple с гарантией 1 месяц. 
+            Продажа подержанной техники Apple с гарантией 1 месяц.
             Проверка перед покупкой, полный комплект документов, доставка по всей России.
           </motion.p>
 
-          <motion.div 
+          <motion.div
             className="flex flex-col sm:flex-row gap-4 mb-16"
             variants={itemVariants}
           >
@@ -88,8 +88,8 @@ const Hero = () => {
               whileTap={{ scale: 0.95 }}
               transition={{ duration: 0.2 }}
             >
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="bg-gradient-primary hover:opacity-90 shadow-elegant px-8 py-4 text-lg"
                 onClick={() => navigate('/buy')}
               >
@@ -102,8 +102,8 @@ const Hero = () => {
               whileTap={{ scale: 0.95 }}
               transition={{ duration: 0.2 }}
             >
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="lg"
                 className="border-border hover:bg-secondary px-8 py-4 text-lg"
                 onClick={() => navigate('/sell')}
@@ -113,7 +113,7 @@ const Hero = () => {
             </motion.div>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
             variants={itemVariants}
           >
@@ -139,12 +139,12 @@ const Hero = () => {
                 description: "На выгодных условиях"
               }
             ].map((feature, index) => (
-              <motion.div 
+              <motion.div
                 key={index}
                 className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-6 hover:bg-card/80 transition-all duration-300 cursor-pointer"
                 variants={featureVariants}
-                whileHover={{ 
-                  scale: 1.05, 
+                whileHover={{
+                  scale: 1.05,
                   y: -5,
                   boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
                 }}

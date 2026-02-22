@@ -47,7 +47,7 @@ const Footer = () => {
                 <span className="text-white font-bold text-lg">M</span>
               </motion.div>
               <div>
-                <h1 className="text-xl font-bold font-apple">BestMac</h1>
+                <span className="text-xl font-bold font-apple block">BestMac</span>
                 <p className="text-xs text-apple-gray">THE</p>
               </div>
             </div>
