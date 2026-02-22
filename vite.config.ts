@@ -25,11 +25,31 @@ export default defineConfig(({ mode }) => ({
     target: 'es2015',
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
-          animations: ['framer-motion'],
-          icons: ['lucide-react'],
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('react/') || id.includes('react-dom') || id.includes('scheduler')) {
+              return 'vendor-react';
+            }
+            if (id.includes('react-router')) {
+              return 'vendor-router';
+            }
+            if (id.includes('@supabase')) {
+              return 'vendor-supabase';
+            }
+            if (id.includes('@tanstack')) {
+              return 'vendor-tanstack';
+            }
+            if (id.includes('framer-motion')) {
+              return 'animations';
+            }
+            if (id.includes('lucide-react')) {
+              return 'icons';
+            }
+            if (id.includes('@radix-ui')) {
+              return 'ui-kit';
+            }
+            return 'vendor-libs';
+          }
         },
         assetFileNames: (assetInfo) => {
           if (!assetInfo.name) return `assets/[hash][extname]`;
