@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useMemo } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   loadAvitoPrices,
   loadAvitoUrls,
@@ -569,6 +570,59 @@ const Sell = () => {
               </Card>
             </motion.div>
           </div>
+
+          {/* Cross navigation for other devices */}
+          <motion.section
+            className="mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <h2 className="text-2xl font-bold mb-6 text-center">Мы выкупаем не только MacBook</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              <Link to="/sell/iphone" className="block group">
+                <div className="bg-card hover:bg-muted/50 transition-colors border p-6 rounded-2xl flex flex-col items-center text-center h-full">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                      <path d="M12 18h.01"></path>
+                    </svg>
+                  </div>
+                  <h3 className="font-bold text-lg mb-2">Скупка iPhone</h3>
+                  <p className="text-sm text-muted-foreground">Оценка от 11 до 16 Pro Max за 5 минут</p>
+                </div>
+              </Link>
+
+              <Link to="/sell/ipad" className="block group">
+                <div className="bg-card hover:bg-muted/50 transition-colors border p-6 rounded-2xl flex flex-col items-center text-center h-full">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                      <path d="M12 18h.01"></path>
+                    </svg>
+                  </div>
+                  <h3 className="font-bold text-lg mb-2">Скупка iPad</h3>
+                  <p className="text-sm text-muted-foreground">Планшеты Pro, Air, Mini и стилусы</p>
+                </div>
+              </Link>
+
+              <Link to="/sell/watch" className="block group">
+                <div className="bg-card hover:bg-muted/50 transition-colors border p-6 rounded-2xl flex flex-col items-center text-center h-full">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="6" y="4" width="12" height="16" rx="3" ry="3"></rect>
+                      <path d="M8 2v2"></path>
+                      <path d="M16 2v2"></path>
+                      <path d="M8 20v2"></path>
+                      <path d="M16 20v2"></path>
+                    </svg>
+                  </div>
+                  <h3 className="font-bold text-lg mb-2">Скупка Apple Watch</h3>
+                  <p className="text-sm text-muted-foreground">Series 7-10, Ultra и SE поколения</p>
+                </div>
+              </Link>
+            </div>
+          </motion.section>
 
           {/* SEO Block: LSI Тексты и Описание */}
           <motion.section
