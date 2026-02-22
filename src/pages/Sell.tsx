@@ -24,7 +24,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import SEOHead from '@/components/SEOHead';
-import { Clock, Wallet, TrendingUp, Shield, BarChart3, Cpu, HardDrive, MemoryStick, Sparkles, Search, X, Check, CheckCircle2, MapPin, Truck, RefreshCw, Monitor, Laptop } from 'lucide-react';
+import { Clock, Wallet, TrendingUp, Shield, BarChart3, Cpu, HardDrive, MemoryStick, Sparkles, Search, X, Check, CheckCircle2, MapPin, Truck, RefreshCw, Monitor, Laptop, AlertTriangle } from 'lucide-react';
 import { generateProductSchema, generateLocalBusinessSchema } from '@/lib/structured-data';
 
 interface AvitoUrlsData {
@@ -269,6 +269,26 @@ const Sell = () => {
                 <div>
                   <h3 className="font-bold text-lg leading-tight group-hover:text-primary transition-colors">Скупка MacBook Air</h3>
                   <p className="text-sm text-muted-foreground mt-1">Легкие ультрабуки 13" и 15"</p>
+                </div>
+              </div>
+            </Link>
+          </motion.div>
+
+          {/* Banner for broken devices */}
+          <motion.div
+            className="max-w-4xl mx-auto mb-12"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Link to="/sell/broken" className="block w-full">
+              <div className="bg-gradient-to-r from-destructive/10 to-orange-500/10 border-2 border-destructive/20 hover:border-destructive/40 p-4 rounded-xl flex items-center gap-4 transition-colors">
+                <div className="bg-destructive/10 p-2 rounded-full hidden sm:block">
+                  <AlertTriangle className="w-6 h-6 text-destructive" />
+                </div>
+                <div>
+                  <p className="font-bold text-foreground">Сломался MacBook? Залит водой или заблокирован?</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">Оценим на запчасти по фото за 5 минут. Нажмите здесь →</p>
                 </div>
               </div>
             </Link>

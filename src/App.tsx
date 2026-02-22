@@ -20,6 +20,7 @@ import SellIphone from "./pages/sell/SellIphone";
 import SellIpad from "./pages/sell/SellIpad";
 import SellWatch from "./pages/sell/SellWatch";
 import SellSeries from "./pages/sell/SellSeries";
+import SellBroken from "./pages/sell/SellBroken";
 import KakVybratMacbook2024 from "./pages/blog/KakVybratMacbook2024";
 import ProverkaMacbookPeredPokupkoi from "./pages/blog/ProverkaMacbookPeredPokupkoi";
 import MacbookAirM2vsM3 from "./pages/blog/MacbookAirM2vsM3";
@@ -69,6 +70,7 @@ const App = () => {
               <Route path="/sell/watch" element={<SellWatch />} />
               <Route path="/sell/macbook-pro" element={<SellSeries series="pro" />} />
               <Route path="/sell/macbook-air" element={<SellSeries series="air" />} />
+              <Route path="/sell/broken" element={<SellBroken />} />
               <Route path="/sell/:model_slug" element={<SellModel />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
