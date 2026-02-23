@@ -26,7 +26,8 @@ import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import SEOHead from '@/components/SEOHead';
 import { Clock, Wallet, TrendingUp, Shield, BarChart3, Cpu, HardDrive, MemoryStick, Sparkles, Search, X, Check, CheckCircle2, MapPin, RefreshCw, Monitor, Laptop, AlertTriangle } from 'lucide-react';
-import { generateProductSchema, generateLocalBusinessSchema } from '@/lib/structured-data';
+import { generateProductSchema } from '@/lib/structured-data';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 interface AvitoUrlsData {
   description: string;
@@ -152,6 +153,55 @@ const Sell = () => {
 
   const isFormComplete = modelName && processor && ram && ssd;
 
+  const sellFaqItems = [
+    { question: "Сколько стоит выкуп моего MacBook?", answer: "Цена зависит от модели, процессора, объема RAM и SSD, а также состояния устройства. Воспользуйтесь нашим онлайн-калькулятором — он покажет рыночную стоимость и рекомендуемую цену выкупа за 30 секунд. Мы платим до 80% от рыночной цены." },
+    { question: "Как быстро вы выкупаете MacBook?", answer: "Весь процесс занимает от 30 минут до часа. Вы получаете онлайн-оценку, приезжаете в офис на м. Киевская (или мы отправляем курьера), диагностика занимает 10–15 минут, после чего деньги сразу переводятся на карту или выдаются наличными." },
+    { question: "Принимаете ли вы сломанные MacBook?", answer: "Да, мы выкупаем MacBook в любом состоянии: залитые водой, с разбитым экраном, не включающиеся, заблокированные (MDM, EFI, iCloud). Оценку проблемных устройств проводим по фото за 5 минут — напишите в Telegram." },
+    { question: "Откуда берутся цены в калькуляторе?", answer: "Калькулятор анализирует реальные объявления на Авито в режиме реального времени. Мы обрабатываем более 800 предложений ежедневно и рассчитываем медианную рыночную цену для каждой конфигурации — модель, процессор, RAM и SSD." },
+    { question: "Чем вы лучше продажи на Авито?", answer: "При продаже на Авито вы тратите дни на общение с покупателями, рискуете нарваться на мошенников и вынуждены торговаться. У нас: прозрачная цена за 30 секунд, безопасная сделка в офисе, моментальная выплата. Экономия времени — до 2 недель." },
+    { question: "Нужны ли документы для продажи?", answer: "Для сделки достаточно паспорта. Коробка и чек — плюс, но не обязательны. Мы составляем договор купли-продажи, который защищает обе стороны." },
+    { question: "Вы работаете только в Москве?", answer: "Офис находится в Москве на м. Киевская (ул. Дениса Давыдова 3). Мы также отправляем курьера по Москве и МО бесплатно. Для регионов возможна отправка через СДЭК с предварительной оценкой по фото." },
+  ];
+
+  const localBusinessSchema = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "BestMac — скупка MacBook",
+    "url": "https://bestmac.ru",
+    "telephone": "+79032990029",
+    "image": "https://bestmac.ru/og-image.jpg",
+    "priceRange": "$$$",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "ул. Дениса Давыдова 3",
+      "addressLocality": "Москва",
+      "addressCountry": "RU"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 55.7369,
+      "longitude": 37.5165
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "reviewCount": "156"
+    }
+  };
+
+  const faqPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": sellFaqItems.map(item => ({
+      "@type": "Question",
+      "name": item.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": item.answer
+      }
+    }))
+  };
+
   const productSchema = generateProductSchema({
     name: "Выкуп MacBook в Москве",
     price: 50000,
@@ -159,11 +209,9 @@ const Sell = () => {
     description: "Узнайте реальную рыночную стоимость вашего MacBook. Оценка на основе анализа открытого рынка."
   });
 
-  const localBusinessSchema = generateLocalBusinessSchema();
-
   const schemaGraph = {
     "@context": "https://schema.org",
-    "@graph": [productSchema, localBusinessSchema]
+    "@graph": [productSchema, localBusinessSchema, faqPageSchema]
   };
 
   const handleModelSelect = (model: string) => {
@@ -586,6 +634,64 @@ const Sell = () => {
               </div>
             </TabsContent>
           </Tabs>
+
+          {/* SEO Content Block */}
+          <motion.section
+            className="mt-16 space-y-10"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="bg-muted/30 rounded-3xl p-8 md:p-12 border border-border space-y-6">
+              <h2 className="text-3xl font-bold">Скупка MacBook в Москве — BestMac</h2>
+              
+              <p className="text-muted-foreground leading-relaxed">
+                BestMac — это специализированный сервис по выкупу техники Apple в Москве. За время работы мы провели сотни сделок и заработали репутацию честного партнёра среди владельцев MacBook. Наш подход прост: мы анализируем реальный рынок Авито в режиме реального времени и предлагаем до 80% от актуальной рыночной цены. Никаких заниженных «оценок на глаз» — только данные, основанные на анализе более 800 объявлений ежедневно. Вы всегда знаете, почему мы предлагаем именно такую сумму.
+              </p>
+
+              <div>
+                <h3 className="text-xl font-bold mb-3">Как работает скупка MacBook?</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  <strong>Шаг 1 — Онлайн-оценка.</strong> Выберите модель, процессор, объём оперативной памяти и SSD в нашем калькуляторе. За 30 секунд вы получите рыночный диапазон цен и рекомендуемую цену выкупа. Можно также отправить фото и характеристики в Telegram — ответим за 5 минут.{' '}
+                  <strong>Шаг 2 — Встреча.</strong> Приезжайте в наш офис на м. Киевская (ул. Дениса Давыдова 3) или закажите бесплатный выезд курьера по Москве и МО.{' '}
+                  <strong>Шаг 3 — Диагностика и оплата.</strong> Проверка занимает 10–15 минут: мы смотрим экран, корпус, батарею и комплектацию. Если всё соответствует описанию — деньги переводятся на карту или выдаются наличными сразу.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-bold mb-3">Что влияет на цену выкупа MacBook?</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Основные факторы: модель и год выпуска, тип процессора (чипы M1–M4 ценятся выше Intel), объём оперативной памяти (8, 16, 24, 32, 36 или 64 ГБ) и накопитель SSD (256 ГБ – 8 ТБ). Состояние корпуса и экрана тоже играет роль: идеальный MacBook без царапин стоит на 10–15% дороже, чем устройство с заметными следами использования. Количество циклов перезарядки батареи, наличие оригинальной коробки и зарядки — дополнительные плюсы. Заблокированные устройства (MDM, EFI, iCloud) мы тоже принимаем, но цена будет ниже.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-bold mb-3">Почему BestMac лучше, чем продажа на Авито?</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Продажа на Авито — это в среднем 1–2 недели: создание объявления, фотографии, десятки сообщений от «интересующихся», торг, риск мошенничества и встречи с незнакомцами. В BestMac весь процесс занимает от 30 минут. Вы получаете прозрачную оценку, основанную на тех же данных Авито, безопасную сделку в офисе с договором и моментальную выплату. Мы берём на себя все риски и экономим ваше время. При этом наша цена выкупа конкурентна — мы платим до 80% от рыночной стоимости, что часто выгоднее с учётом затрат времени и нервов при самостоятельной продаже.
+                </p>
+              </div>
+            </div>
+
+            {/* FAQ Section */}
+            <div className="max-w-3xl mx-auto">
+              <h2 className="text-3xl font-bold text-center mb-8">Частые вопросы о скупке MacBook</h2>
+              <Accordion type="single" collapsible className="space-y-2">
+                {sellFaqItems.map((item, index) => (
+                  <AccordionItem key={index} value={`faq-${index}`} className="border border-border rounded-lg px-6 data-[state=open]:bg-muted/30">
+                    <AccordionTrigger className="text-left font-medium hover:no-underline">
+                      {item.question}
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      {item.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </div>
+          </motion.section>
+
         </div>
       </div>
       <Footer />
