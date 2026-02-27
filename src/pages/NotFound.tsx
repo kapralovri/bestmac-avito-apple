@@ -14,9 +14,10 @@ const NotFound = () => {
 
   return (
     <>
-      <SEOHead 
+      <SEOHead
         title="Страница не найдена 404 | BestMac"
         description="Запрашиваемая страница не найдена. Вернитесь на главную страницу BestMac для покупки и продажи техники Apple."
+        noindex={true}
       />
       <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground px-4">
         <div className="max-w-2xl w-full text-center">
@@ -25,7 +26,7 @@ const NotFound = () => {
           <p className="text-xl text-muted-foreground mb-8">
             К сожалению, страница, которую вы ищете, не существует или была перемещена.
           </p>
-          
+
           <div className="mb-12">
             <a href="/" className="inline-block px-8 py-4 rounded-lg bg-gradient-primary text-white font-semibold hover:opacity-90 transition-opacity">
               Вернуться на главную

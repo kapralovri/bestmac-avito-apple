@@ -25,6 +25,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import SEOHead from '@/components/SEOHead';
+import FAQ from '@/components/FAQ';
 import { Clock, Wallet, TrendingUp, Shield, BarChart3, Cpu, HardDrive, MemoryStick, Sparkles, Search, X, Check, CheckCircle2, MapPin, RefreshCw, Monitor, Laptop, AlertTriangle } from 'lucide-react';
 import { generateProductSchema } from '@/lib/structured-data';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -624,13 +625,24 @@ const Sell = () => {
                   </div>
                 </motion.section>
 
-                <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}>
-                  <h2 className="text-2xl font-bold text-center mb-8">Частые вопросы</h2>
-                  <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                    <Card><CardHeader><CardTitle className="text-base">Откуда берутся цены?</CardTitle></CardHeader><CardContent><p className="text-sm text-muted-foreground">Анализируем актуальный рынок Авито ежедневно.</p></CardContent></Card>
-                    <Card><CardHeader><CardTitle className="text-base">Как быстро вы выкупаете?</CardTitle></CardHeader><CardContent><p className="text-sm text-muted-foreground">От 15 минут до часа в зависимости от локации.</p></CardContent></Card>
-                  </div>
-                </motion.section>
+                <FAQ items={[
+                  {
+                    question: "Откуда берутся цены на выкуп Macbook?",
+                    answer: "Мы ежедневно анализируем актуальный рынок Авито, собирая данные по реальным сделкам и актуальным предложениям. Наша система рассчитывает медианную цену и формирует честное предложение, которое составляет до 95% от рыночной стоимости вашего устройства."
+                  },
+                  {
+                    question: "Как быстро вы выкупаете технику?",
+                    answer: "Обычно весь процесс от оценки до получения денег занимает не более часа. Диагностика устройства на месте длится около 15 минут, после чего мы сразу переводим деньги на карту или отдаем наличными."
+                  },
+                  {
+                    question: "Выезжаете ли вы на дом?",
+                    answer: "Да, у нас работает бесплатный выезд оценщика по Москве. Наш специалист может приехать к вам домой, в офис или кафе в удобное для вас время для проверки и выкупа MacBook."
+                  },
+                  {
+                    question: "Принимаете ли вы сломанные или залитые Макбуки?",
+                    answer: "Да, мы выкупаем MacBook в любом состоянии, в том числе залитые водой, с разбитым экраном, неисправной клавиатурой или заблокированные. Цена в таких случаях оценивается индивидуально на запчасти."
+                  }
+                ]} />
               </div>
             </TabsContent>
           </Tabs>

@@ -39,6 +39,14 @@ export default async function handler(request: Request): Promise<Response> {
         }
 
         const html = await response.text();
+
+        if (!html || html.trim() === '') {
+            return new Response('Not found', {
+                status: 404,
+                headers: { ...debugHeaders, 'Content-Type': 'text/plain' }
+            });
+        }
+
         return new Response(html, {
             headers: {
                 ...debugHeaders,

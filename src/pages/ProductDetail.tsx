@@ -4,12 +4,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { 
-  Smartphone, 
-  Laptop, 
-  Monitor, 
-  Tablet, 
-  ArrowLeft, 
+import {
+  Smartphone,
+  Laptop,
+  Monitor,
+  Tablet,
+  ArrowLeft,
   ExternalLink,
   Phone,
   MessageCircle,
@@ -102,21 +102,22 @@ const ProductDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEOHead 
+      <SEOHead
         title={`${product.title} — купить в Москве | BestMac`}
         description={`Купить ${product.title} в Москве. ${product.condition} состояние. Цена: ${product.price.toLocaleString('ru-RU')} ₽. Гарантия, проверка при покупке.`}
         canonical={`/product/${id}`}
+        noindex={true}
       />
       <Header />
-      
+
       <main className="pt-20 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Breadcrumbs items={breadcrumbItems} />
-          
+
           {/* Back Button */}
           <div className="mb-6">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               onClick={() => navigate(-1)}
               className="flex items-center space-x-2 text-apple-gray hover:text-primary"
             >
@@ -135,15 +136,14 @@ const ProductDetail = () => {
                   className="w-full h-96 object-cover rounded-lg border border-border"
                 />
               </div>
-              
+
               <div className="grid grid-cols-4 gap-2">
                 {product.images.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`relative rounded-lg overflow-hidden border-2 transition-all ${
-                      selectedImage === index ? 'border-primary' : 'border-border hover:border-apple-gray'
-                    }`}
+                    className={`relative rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index ? 'border-primary' : 'border-border hover:border-apple-gray'
+                      }`}
                   >
                     <img
                       src={image}
@@ -175,7 +175,7 @@ const ProductDetail = () => {
               </div>
 
               <h1 className="text-3xl font-bold font-apple mb-4">{product.title}</h1>
-              
+
               <div className="flex items-center space-x-4 mb-6">
                 <div className="text-4xl font-bold text-primary">
                   {product.price.toLocaleString('ru-RU')} ₽
@@ -206,14 +206,14 @@ const ProductDetail = () => {
 
               {/* Action Buttons */}
               <div className="space-y-3 mb-8">
-                <Button 
+                <Button
                   className="w-full bg-gradient-primary hover:opacity-90"
                   onClick={() => window.open(product.avitoUrl, '_blank')}
                 >
                   Смотреть на Avito
                   <ExternalLink className="ml-2 w-4 h-4" />
                 </Button>
-                
+
                 <div className="grid grid-cols-2 gap-3">
                   <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
                     <Phone className="mr-2 w-4 h-4" />
@@ -320,7 +320,7 @@ const ProductDetail = () => {
           </div>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );

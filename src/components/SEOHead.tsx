@@ -2,39 +2,46 @@ import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 
 interface SEOHeadProps {
-  title: string;
-  description: string;
+  title?: string;
+  description?: string;
   canonical?: string;
   schema?: object;
   ogImage?: string;
   keywords?: string;
+  noindex?: boolean;
 }
 
-const SEOHead = ({ 
-  title, 
-  description, 
-  canonical, 
-  schema, 
+const SEOHead = ({
+  title,
+  description,
+  canonical,
+  schema,
   ogImage = "https://bestmac.ru/og-image.jpg",
-  keywords 
+  keywords,
+  noindex = false
 }: SEOHeadProps) => {
   const baseUrl = "https://bestmac.ru";
   const location = useLocation();
-  const pathname = location?.pathname || '/';
-  const fullCanonical = `${baseUrl}${canonical ?? pathname}`;
+  const pathname = (location?.pathname || '/').replace(/\/+$/, '') || '/';
+
+  // Normalize canonical: strip trailing slashes
+  const canonicalPath = (canonical ?? pathname).replace(/\/+$/, '') || '/';
+  const fullCanonical = `${baseUrl}${canonicalPath}`;
+
   // IMPORTANT: og:url должен отражать фактический URL страницы (pathname),
   // а не только canonical проп, чтобы валидаторы корректно подхватывали значение.
   const ogUrl = `${baseUrl}${pathname}`;
-  
+
   // Detect 404 pages and add noindex
   const is404 = title?.includes('404') || title?.includes('не найдена');
+  const shouldNoIndex = noindex || is404;
 
   return (
     <Helmet>
       {title && <title>{title}</title>}
       {description && <meta name="description" content={description} />}
       {keywords && <meta name="keywords" content={keywords} />}
-      {is404 && <meta name="robots" content="noindex, nofollow" />}
+      {shouldNoIndex && <meta name="robots" content="noindex, nofollow" />}
       <link rel="canonical" href={fullCanonical} />
 
       {/* Open Graph */}

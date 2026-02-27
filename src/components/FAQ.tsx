@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { faqSchema } from "@/lib/schema";
-import SEOHead from "./SEOHead";
+import { Helmet } from "react-helmet-async";
 
 interface FAQItem {
   question: string;
@@ -18,8 +18,8 @@ const FAQ = ({ items, title = "Часто задаваемые вопросы" }
   const schema = faqSchema(items);
 
   const toggleItem = (index: number) => {
-    setOpenItems(prev => 
-      prev.includes(index) 
+    setOpenItems(prev =>
+      prev.includes(index)
         ? prev.filter(i => i !== index)
         : [...prev, index]
     );
@@ -27,17 +27,19 @@ const FAQ = ({ items, title = "Часто задаваемые вопросы" }
 
   return (
     <>
-      <SEOHead 
-        title=""
-        description=""
-        schema={schema}
-      />
+      {schema && (
+        <Helmet>
+          <script type="application/ld+json">
+            {JSON.stringify(schema)}
+          </script>
+        </Helmet>
+      )}
       <section className="py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-8">{title}</h2>
           <div className="space-y-4">
             {items.map((item, index) => (
-              <div 
+              <div
                 key={index}
                 className="border border-border rounded-lg overflow-hidden"
               >

@@ -162,7 +162,7 @@ const SellModel = () => {
       return 'Выкуп MacBook Air 13 (2020, M1) в Москве дорого — BestMac';
     }
     if (seoModelName) return `Выкуп ${seoModelName} в Москве дорого — BestMac`;
-    return 'Выкуп MacBook в Москве дорого — BestMac';
+    return 'Выкуп MacBook конкретной модели в Москве — BestMac';
   }, [model_slug, seoModelName]);
 
   const seoDescription = useMemo(() => {
@@ -172,7 +172,7 @@ const SellModel = () => {
     if (seoModelName) {
       return `Узнайте реальную стоимость выкупа вашего ${seoModelName}. Прозрачная оценка, выплата до 80% от рынка, деньги сразу.`;
     }
-    return 'Узнайте реальную стоимость выкупа вашего MacBook. Прозрачная оценка, выплата до 80% от рынка, деньги сразу.';
+    return 'Онлайн-оценка стоимости выкупа вашей модели MacBook. Узнайте рыночную цену за 10 секунд и продайте выгодно в BestMac.';
   }, [model_slug, seoModelName]);
 
   // SEO schemas
