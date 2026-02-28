@@ -7,6 +7,7 @@
     "dev": "vite",
     "prebuild": "node scripts/build-buyout-data.mjs && (node scripts/build-avito-offers.mjs || echo 'Scraping skipped') || echo 'Data builds skipped'",
     "build": "vite build && (npm run prerender || echo 'Prerender skipped or failed')",
+    "vercel-build": "npm run build && npm run prerender",
     "build:dev": "vite build --mode development",
     "export:buyout": "node scripts/export-macbook-csv.mjs",
     "export:buyout:xlsx": "node scripts/export-macbook-xlsx.mjs",
