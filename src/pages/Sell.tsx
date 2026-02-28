@@ -28,7 +28,7 @@ import SEOHead from '@/components/SEOHead';
 import FAQ from '@/components/FAQ';
 import { Clock, Wallet, TrendingUp, Shield, BarChart3, Cpu, HardDrive, MemoryStick, Sparkles, Search, X, Check, CheckCircle2, MapPin, RefreshCw, Monitor, Laptop, AlertTriangle } from 'lucide-react';
 import { generateProductSchema } from '@/lib/structured-data';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+
 
 interface AvitoUrlsData {
   description: string;
@@ -657,7 +657,7 @@ const Sell = () => {
           >
             <div className="bg-muted/30 rounded-3xl p-8 md:p-12 border border-border space-y-6">
               <h2 className="text-3xl font-bold">Скупка MacBook в Москве — BestMac</h2>
-              
+
               <p className="text-muted-foreground leading-relaxed">
                 BestMac — это специализированный сервис по выкупу техники Apple в Москве. За время работы мы провели сотни сделок и заработали репутацию честного партнёра среди владельцев MacBook. Наш подход прост: мы анализируем реальный рынок Авито в режиме реального времени и предлагаем до 80% от актуальной рыночной цены. Никаких заниженных «оценок на глаз» — только данные, основанные на анализе более 800 объявлений ежедневно. Вы всегда знаете, почему мы предлагаем именно такую сумму.
               </p>
@@ -686,22 +686,8 @@ const Sell = () => {
               </div>
             </div>
 
-            {/* FAQ Section */}
-            <div className="max-w-3xl mx-auto">
-              <h2 className="text-3xl font-bold text-center mb-8">Частые вопросы о скупке MacBook</h2>
-              <Accordion type="single" collapsible className="space-y-2">
-                {sellFaqItems.map((item, index) => (
-                  <AccordionItem key={index} value={`faq-${index}`} className="border border-border rounded-lg px-6 data-[state=open]:bg-muted/30">
-                    <AccordionTrigger className="text-left font-medium hover:no-underline">
-                      {item.question}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground">
-                      {item.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </div>
+            {/* FAQ Section — все ответы всегда в DOM для SEO */}
+            <FAQ items={sellFaqItems} title="Частые вопросы о скупке MacBook" />
           </motion.section>
 
         </div>
