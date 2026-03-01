@@ -1,6 +1,6 @@
 {
-  "generated_at": "Sat Feb 28 22:59:32 2026",
-  "total_listings": 4324,
+  "generated_at": "Sun Mar  1 22:59:52 2026",
+  "total_listings": 4255,
   "stats": [
     {
       "model_name": "MacBook Air 13 (2020, M1)",
@@ -284,11 +284,11 @@
       "ram": 16,
       "ssd": 512,
       "min_price": 70000,
-      "max_price": 115890,
-      "median_price": 93000,
+      "max_price": 124890,
+      "median_price": 94500,
       "buyout_price": 58000,
-      "samples_count": 119,
-      "updated_at": "Wed Feb 25 22:58:14 2026"
+      "samples_count": 50,
+      "updated_at": "Sun Mar  1 22:36:29 2026"
     },
     {
       "model_name": "MacBook Air 15 (2024, M3)",
