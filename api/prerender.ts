@@ -1,63 +1,43 @@
-/**
- * Vercel Edge Function для pre-rendering SPA под поисковых ботов.
- */
+import { readFileSync, existsSync } from 'fs';
+import path from 'path';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-export const config = {
-    runtime: 'edge',
-};
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+    const originalPath = (req.query.__path as string) || (req.query.url as string) || '/';
 
-export default async function handler(request: Request): Promise<Response> {
-    const url = new URL(request.url);
-    const originalPath = url.searchParams.get('__path') || url.searchParams.get('url') || '/';
-    const targetUrl = `https://bestmac.ru${originalPath}`;
-    const prerenderToken = process.env.PRERENDER_TOKEN;
+    // Normalize path (remove trailing slash except for root)
+    const normalizedPath = originalPath === '/' ? '/' : originalPath.replace(/\/$/, '');
 
-    // ОБЯЗАТЕЛЬНЫЙ заголовок для отладки, чтобы мы видели, что попали сюда
+    // Map path to filename (same logic as in prerender.mjs)
+    let fileName = normalizedPath === '/' ? 'index.html' : `${normalizedPath.replace(/^\//, '').replace(/\//g, '-')}.html`;
+
+    const filePath = path.join(process.cwd(), 'api', 'prerendered', fileName);
+
+    // Debugging headers
     const debugHeaders = {
-        'X-BestMac-Edge': 'v2',
-        'X-Prerender-Token-Found': prerenderToken ? 'yes' : 'no'
+        'X-BestMac-Edge': 'v3-local',
+        'X-Resolved-Path': fileName
     };
 
-    if (!prerenderToken) {
-        return new Response('<!-- prerender: no token -->', {
-            headers: { ...debugHeaders, 'Content-Type': 'text/html' }
-        });
+    if (existsSync(filePath)) {
+        try {
+            const html = readFileSync(filePath, 'utf8');
+
+            // Add custom header to indicate local prerendering
+            res.setHeader('X-Prerendered-Local', 'true');
+            res.setHeader('Content-Type', 'text/html; charset=utf-8');
+            res.setHeader('Cache-Control', 'public, max-age=86400');
+
+            for (const [key, value] of Object.entries(debugHeaders)) {
+                res.setHeader(key, value);
+            }
+
+            return res.status(200).send(html);
+        } catch (error) {
+            console.error('Error reading prerendered file:', error);
+            return res.status(500).setHeader('Content-Type', 'text/plain').send('Internal Server Error');
+        }
     }
 
-    const prerenderUrl = `https://service.prerender.io/${targetUrl}`;
-
-    try {
-        const response = await fetch(prerenderUrl, {
-            headers: { 'X-Prerender-Token': prerenderToken },
-            redirect: 'follow',
-        });
-
-        if (!response.ok) {
-            return new Response(`<!-- prerender: error ${response.status} -->`, {
-                headers: { ...debugHeaders, 'Content-Type': 'text/html', 'X-Prerender-Status': String(response.status) }
-            });
-        }
-
-        const html = await response.text();
-
-        if (!html || html.trim() === '') {
-            return new Response('Not found', {
-                status: 404,
-                headers: { ...debugHeaders, 'Content-Type': 'text/plain' }
-            });
-        }
-
-        return new Response(html, {
-            headers: {
-                ...debugHeaders,
-                'Content-Type': 'text/html; charset=utf-8',
-                'Cache-Control': 'public, max-age=86400',
-                'X-Prerendered': 'true'
-            },
-        });
-    } catch (error) {
-        return new Response('<!-- prerender: fetch error -->', {
-            headers: { ...debugHeaders, 'Content-Type': 'text/html' }
-        });
-    }
+    return res.status(404).setHeader('Content-Type', 'text/plain').send(`Not found: ${fileName}`);
 }

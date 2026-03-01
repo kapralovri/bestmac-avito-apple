@@ -76,5 +76,10 @@
         }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/prerender.ts": {
+      "includeFiles": "api/prerendered/**"
+    }
+  }
 }

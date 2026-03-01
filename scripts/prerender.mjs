@@ -82,8 +82,20 @@ async function prerender() {
             console.log(`Rendering: ${url}`);
             await pageObj.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
 
-            // Ждем 2 секунды, чтобы React точно успел отрендерить весь контент
-            await setTimeout(2000);
+            // Ждем 5 секунд, чтобы React точно успел отрендерить весь контент
+            await setTimeout(5000);
+
+            await pageObj.waitForSelector('[data-state], details, .faq', { timeout: 8000 }).catch(() => { });
+            await pageObj.evaluate(() => {
+                document.querySelectorAll('details').forEach(d => d.open = true);
+                document.querySelectorAll('[data-state="closed"]').forEach(el => {
+                    el.setAttribute('data-state', 'open');
+                    el.style.display = 'block';
+                });
+                // Radix UI accordion
+                document.querySelectorAll('[data-radix-collection-item]').forEach(el => el.click());
+            });
+            await setTimeout(1000);
 
             let html = await pageObj.content();
 
