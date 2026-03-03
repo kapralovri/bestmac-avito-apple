@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import macbookHero from "@/assets/images/macbook-hero.jpg";
-import macbookSide from "@/assets/images/macbook-side.jpg";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
