@@ -22,6 +22,7 @@ export default {
 			fontFamily: {
 				'apple': 'var(--font-heading)',
 				'sans': 'var(--font-body)',
+				'heading': 'var(--font-heading)',
 			},
 			colors: {
 				border: 'hsl(var(--border))',

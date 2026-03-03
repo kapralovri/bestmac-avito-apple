@@ -15,7 +15,7 @@ import { organizationSchema, faqData } from "@/lib/schema";
 const Index = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <SEOHead 
+      <SEOHead
         title="BestMac — Честный выкуп и продажа MacBook в Москве с гарантией"
         description="Купить или продать MacBook б/у в Москве с гарантией 1 месяц. Официальная скупка MacBook, iMac, iPhone через ИП. Районы: Дорогомилово, Киевская, ЦАО. Онлайн-калькулятор оценки, выезд на дом, безналичный расчет."
         canonical="/"
@@ -25,57 +25,37 @@ const Index = () => {
       <Header />
       <Hero />
       <AboutSection />
-      
-      {/* Секция интеграции с Avito - ЗАКОММЕНТИРОВАНА */}
-      {/* <section className="py-20 bg-card/30">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold font-apple mb-4">
-              Подключение к Avito
-            </h2>
-            <p className="text-lg text-apple-gray">
-              Настройте интеграцию для отображения ваших объявлений
-            </p>
-          </div>
-          <AvitoAuth />
-        </div>
-      </section> */}
-      
-      {/* Секция Актуальные предложения */}
-      <section className="py-20 bg-card/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold font-apple mb-4">
+
+      {/* Актуальные предложения */}
+      <section className="apple-section bg-card/30">
+        <div className="apple-container-wide">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-gradient">
               Актуальные предложения
             </h2>
-            <p className="text-lg text-apple-gray">
-              Мои лучшие предложения с Avito
+            <p className="text-lg text-muted-foreground">
+              Лучшие предложения с Avito
             </p>
           </div>
-          
-          {/* Динамическая загрузка предложений */}
           <AvitoOffers />
         </div>
       </section>
 
       <Reviews />
-      
       <SEOContent />
-      
-      <section className="py-20 bg-card/30">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <LeadForm 
+
+      <section className="apple-section bg-card/30">
+        <div className="apple-container">
+          <LeadForm
             title="Получите бесплатную консультацию"
             subtitle="Ответим на все вопросы о покупке или продаже MacBook"
             formType="general"
           />
         </div>
       </section>
-      
+
       <BlogPreview />
-      
       <FAQ items={faqData.home} />
-      
       <ContactSection />
       <Footer />
     </div>
