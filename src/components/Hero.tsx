@@ -27,11 +27,6 @@ const Hero = () => {
   const imageOpacity = useTransform(smoothProgress, [0, 0.15, 0.5], [0.5, 0.7, 0]);
   const imageY = useTransform(smoothProgress, [0, 0.5], [0, -60]);
 
-  // Second image: parallax reveal from right
-  const sideImageX = useTransform(smoothProgress, [0.1, 0.45], [200, 0]);
-  const sideImageOpacity = useTransform(smoothProgress, [0.1, 0.3, 0.55], [0, 1, 0]);
-  const sideImageRotate = useTransform(smoothProgress, [0.1, 0.45], [15, 0]);
-
   // Glow effect intensifies on scroll
   const glowOpacity = useTransform(smoothProgress, [0, 0.3], [0.04, 0.12]);
 
@@ -65,23 +60,6 @@ const Hero = () => {
           />
           {/* Dramatic vignette */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_30%,_hsl(0_0%_0%)_100%)]" />
-        </motion.div>
-
-        {/* Side MacBook - parallax reveal */}
-        <motion.div
-          className="absolute right-[5%] top-1/2 -translate-y-1/2 w-[40vw] max-w-[600px] hidden lg:block"
-          style={{
-            x: sideImageX,
-            opacity: sideImageOpacity,
-            rotateY: sideImageRotate,
-          }}
-        >
-          <img
-            src={macbookSide}
-            alt="MacBook вид сбоку"
-            className="w-full rounded-2xl shadow-2xl"
-            loading="eager"
-          />
         </motion.div>
 
         {/* Content - scales and fades on scroll */}
