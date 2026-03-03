@@ -1,9 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Phone, Menu, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
-import logo from "@/assets/logo.png";
 
 const Header = () => {
   const location = useLocation();
@@ -15,125 +14,91 @@ const Header = () => {
     { path: "/selection", label: "Подбор" },
     { path: "/service", label: "Сервис" },
     { path: "/blog", label: "Блог" },
-    { path: "/business", label: "Для юр.лиц" }
+    { path: "/business", label: "Для юр.лиц" },
   ];
 
   return (
-    <motion.header
-      className="bg-background/80 backdrop-blur-md border-b border-border sticky top-0 z-50"
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <motion.div
-            className="flex items-center space-x-2"
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Link to="/">
-              <img src={logo} alt="BestMac logo" className="w-8 h-8" />
-            </Link>
-            <Link to="/">
-              <div>
-                <span className="text-xl font-bold font-apple block text-foreground">BestMac</span>
-                <p className="text-xs text-apple-gray">THE</p>
-              </div>
-            </Link>
-          </motion.div>
+    <header className="bg-background/80 backdrop-blur-xl border-b border-border/50 sticky top-0 z-50">
+      <div className="apple-container-wide">
+        <div className="flex items-center justify-between h-12">
+          <Link to="/" className="text-xl font-semibold tracking-tight text-foreground hover:opacity-80 transition-opacity">
+            BestMac
+          </Link>
 
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center gap-7">
             {navItems.map((item) => (
-              <motion.div
+              <Link
                 key={item.path}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                to={item.path}
+                className={`text-xs transition-opacity ${
+                  location.pathname === item.path
+                    ? "text-foreground opacity-100"
+                    : "text-muted-foreground hover:text-foreground opacity-80 hover:opacity-100"
+                }`}
               >
-                <Link
-                  to={item.path}
-                  className={`transition-colors duration-300 ${location.pathname === item.path
-                    ? 'text-primary font-semibold'
-                    : 'text-foreground hover:text-primary'
-                    }`}
-                >
-                  {item.label}
-                </Link>
-              </motion.div>
+                {item.label}
+              </Link>
             ))}
           </nav>
 
-          <div className="flex items-center space-x-4">
-            <motion.a
+          <div className="flex items-center gap-4">
+            <a
               href="tel:+79032990029"
-              className="hidden sm:flex items-center space-x-2 text-foreground hover:text-primary transition-colors"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Phone className="w-4 h-4" />
+              <Phone className="w-3 h-3" />
               <span>+7 903 299 00 29</span>
-            </motion.a>
-            <motion.div
-              className="hidden md:block"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button variant="default" className="bg-gradient-primary hover:opacity-90">
-                <Link to="/contact" className="text-inherit no-underline">
-                  Оставить заявку
-                </Link>
+            </a>
+            <Link to="/contact" className="hidden md:block">
+              <Button size="sm" className="h-7 text-xs rounded-full px-4 bg-primary hover:bg-primary/90">
+                Связаться
               </Button>
-            </motion.div>
+            </Link>
 
-            {/* Mobile Menu Button */}
             <button
-              className="md:hidden p-2"
+              className="md:hidden p-1.5"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Toggle menu"
             >
-              {isMobileMenuOpen ? (
-                <X className="w-6 h-6" />
-              ) : (
-                <Menu className="w-6 h-6" />
-              )}
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
         <AnimatePresence>
           {isMobileMenuOpen && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden border-t border-border"
+              className="md:hidden border-t border-border/50"
             >
-              <nav className="flex flex-col space-y-4 p-4">
+              <nav className="flex flex-col gap-1 py-3">
                 {navItems.map((item) => (
                   <Link
                     key={item.path}
                     to={item.path}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`transition-colors duration-300 py-2 ${location.pathname === item.path
-                      ? 'text-primary font-semibold'
-                      : 'text-foreground hover:text-primary'
-                      }`}
+                    className={`py-2 px-2 rounded-lg text-sm transition-colors ${
+                      location.pathname === item.path
+                        ? "text-primary bg-primary/5"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
                   >
                     {item.label}
                   </Link>
                 ))}
-                <Button variant="default" className="bg-gradient-primary hover:opacity-90 w-full">
-                  <Link to="/contact" className="text-inherit no-underline" onClick={() => setIsMobileMenuOpen(false)}>
-                    Оставить заявку
-                  </Link>
-                </Button>
+                <Link to="/contact" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button size="sm" className="w-full mt-2 rounded-full bg-primary hover:bg-primary/90">
+                    Связаться
+                  </Button>
+                </Link>
               </nav>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-    </motion.header>
+    </header>
   );
 };
 
