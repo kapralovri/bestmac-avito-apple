@@ -6,6 +6,7 @@ import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { initAnalytics } from "./components/Analytics";
+import CookieBanner from "./components/CookieBanner";
 
 // Lazy-loaded pages
 const Index = lazy(() => import("./pages/Index"));
@@ -63,6 +64,7 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <CookieBanner />
           <BrowserRouter>
             <Suspense fallback={<PageLoader />}>
               <Routes>

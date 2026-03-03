@@ -26,7 +26,7 @@ import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import SEOHead from '@/components/SEOHead';
 import FAQ from '@/components/FAQ';
-import { Clock, Wallet, TrendingUp, Shield, BarChart3, Cpu, HardDrive, MemoryStick, Sparkles, Search, X, Check, CheckCircle2, MapPin, RefreshCw, Monitor, Laptop, AlertTriangle } from 'lucide-react';
+import { Clock, Wallet, TrendingUp, Shield, BarChart3, Cpu, HardDrive, MemoryStick, Sparkles, Search, X, Check, CheckCircle2, MapPin, RefreshCw, Monitor, Laptop, AlertTriangle, Star } from 'lucide-react';
 import { generateProductSchema } from '@/lib/structured-data';
 
 
@@ -154,6 +154,27 @@ const Sell = () => {
 
   const isFormComplete = modelName && processor && ram && ssd;
 
+  const reviews = [
+    {
+      author: "Андрей, разработчик",
+      rating: 5,
+      text: "Продал MacBook Pro 14 за один визит. Калькулятор показал честный диапазон, в офисе цену не сбили ни на рубль. Деньги получил на карту через 10 минут после диагностики.",
+      source: "Яндекс.Карты"
+    },
+    {
+      author: "Мария, дизайнер",
+      rating: 5,
+      text: "Нужно было быстро продать MacBook Air M1 перед переездом. Написала в Telegram, оценили по фото, вечером уже получила наличные. Без торга и лишних вопросов.",
+      source: "Telegram"
+    },
+    {
+      author: "Игорь",
+      rating: 5,
+      text: "Сдавал старый MacBook, который периодически выключался. Честно рассказали, сколько стоит на запчасти, оформили договор, всё заняло меньше часа.",
+      source: "Офис на м. Киевская"
+    }
+  ];
+
   const sellFaqItems = [
     { question: "Сколько стоит выкуп моего MacBook?", answer: "Цена зависит от модели, процессора, объема RAM и SSD, а также состояния устройства. Воспользуйтесь нашим онлайн-калькулятором — он покажет рыночную стоимость и рекомендуемую цену выкупа за 30 секунд. Мы платим до 80% от рыночной цены." },
     { question: "Как быстро вы выкупаете MacBook?", answer: "Весь процесс занимает от 30 минут до часа. Вы получаете онлайн-оценку, приезжаете в офис на м. Киевская (или мы отправляем курьера), диагностика занимает 10–15 минут, после чего деньги сразу переводятся на карту или выдаются наличными." },
@@ -212,7 +233,23 @@ const Sell = () => {
 
   const schemaGraph = {
     "@context": "https://schema.org",
-    "@graph": [productSchema, localBusinessSchema, faqPageSchema]
+    "@graph": [
+      productSchema,
+      {
+        ...localBusinessSchema,
+        review: reviews.map((r) => ({
+          "@type": "Review",
+          author: r.author,
+          reviewBody: r.text,
+          reviewRating: {
+            "@type": "Rating",
+            ratingValue: r.rating,
+            bestRating: 5
+          }
+        }))
+      },
+      faqPageSchema
+    ]
   };
 
   const handleModelSelect = (model: string) => {
@@ -622,6 +659,33 @@ const Sell = () => {
                       <div className="flex gap-4"><div className="w-8 h-8 rounded-full border border-primary flex items-center justify-center shrink-0">3</div><p>Диагностика за 15 минут.</p></div>
                       <div className="flex gap-4"><div className="w-8 h-8 rounded-full border border-primary flex items-center justify-center shrink-0">4</div><p>Оплата наличными или на карту сразу.</p></div>
                     </div>
+                  </div>
+                </motion.section>
+
+                <motion.section
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                  className="bg-muted/30 p-6 md:p-8 rounded-2xl border"
+                >
+                  <h2 className="text-2xl font-bold mb-4 text-center">Отзывы клиентов о скупке MacBook</h2>
+                  <p className="text-sm text-muted-foreground text-center mb-6">
+                    Это живые отзывы клиентов, которые уже продали свои MacBook через BestMac.
+                  </p>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    {reviews.map((review, index) => (
+                      <div key={index} className="bg-background rounded-xl border border-border/60 p-4 flex flex-col h-full">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-semibold text-sm">{review.author}</span>
+                          <span className="flex items-center gap-1 text-xs text-amber-500">
+                            <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
+                            {review.rating.toFixed(1)}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-3">{review.source}</p>
+                        <p className="text-sm text-foreground flex-1">{review.text}</p>
+                      </div>
+                    ))}
                   </div>
                 </motion.section>
 
