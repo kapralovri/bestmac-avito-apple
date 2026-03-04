@@ -3,7 +3,7 @@ import Hero from "@/components/Hero";
 import AboutSection from "@/components/AboutSection";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
-import AvitoOffers from "@/components/AvitoOffers";
+import OffersSection from "@/components/OffersSection";
 import Reviews from "@/components/Reviews";
 import FAQ from "@/components/FAQ";
 import BlogPreview from "@/components/BlogPreview";
@@ -27,19 +27,7 @@ const Index = () => {
       <AboutSection />
 
       {/* Актуальные предложения */}
-      <section className="apple-section bg-card/30">
-        <div className="apple-container-wide">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-gradient">
-              Актуальные предложения
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Лучшие предложения с Avito
-            </p>
-          </div>
-          <AvitoOffers />
-        </div>
-      </section>
+      <OffersSection />
 
       <Reviews />
       <SEOContent />
