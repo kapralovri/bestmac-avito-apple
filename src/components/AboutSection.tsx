@@ -1,11 +1,28 @@
 import { ShieldCheck, Award, Handshake, HeartHandshake } from "lucide-react";
 import { motion } from "framer-motion";
 import romanPhoto from "@/assets/about-me.png";
+import aboutBgVideo from "@/assets/videos/about-bg.mp4";
 
 const AboutSection = () => {
   return (
-    <section className="apple-section bg-background">
-      <div className="apple-container">
+    <section className="apple-section bg-background relative overflow-hidden">
+      {/* Video Background */}
+      <div className="absolute inset-0 z-0">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover opacity-20"
+        >
+          <source src={aboutBgVideo} type="video/mp4" />
+        </video>
+        {/* Gradient overlays for readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/70 to-background" />
+        <div className="absolute inset-0 bg-background/40" />
+      </div>
+
+      <div className="apple-container relative z-10">
         <motion.div
           className="text-center mb-16"
           initial={{ opacity: 0, y: 30 }}
@@ -55,7 +72,7 @@ const AboutSection = () => {
           ].map((f, i) => (
             <motion.div
               key={i}
-              className="text-center p-8 rounded-2xl bg-card border border-border/50 hover:border-border transition-all duration-300"
+              className="text-center p-8 rounded-2xl bg-card/80 backdrop-blur-sm border border-border/50 hover:border-border transition-all duration-300"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
