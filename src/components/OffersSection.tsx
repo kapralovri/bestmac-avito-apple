@@ -1,23 +1,13 @@
 import { motion } from "framer-motion";
 import AvitoOffers from "@/components/AvitoOffers";
-import offersBgVideo from "@/assets/videos/offers-bg.mp4";
 
 const OffersSection = () => {
   return (
     <section className="apple-section relative overflow-hidden">
-      {/* Video Background */}
+      {/* Abstract gradient background */}
       <div className="absolute inset-0 z-0">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-full object-cover opacity-15"
-        >
-          <source src={offersBgVideo} type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/60 to-background" />
-        <div className="absolute inset-0 bg-background/50" />
+        <div className="absolute top-1/3 left-1/4 w-[700px] h-[500px] rounded-full bg-[radial-gradient(ellipse_at_center,_hsl(260_80%_60%_/_0.05)_0%,_hsl(212_100%_48%_/_0.03)_40%,_transparent_70%)] blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[400px] rounded-full bg-[radial-gradient(ellipse_at_center,_hsl(212_100%_50%_/_0.04)_0%,_transparent_70%)] blur-3xl" />
       </div>
 
       <div className="apple-container-wide relative z-10">
