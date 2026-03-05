@@ -7,8 +7,8 @@ const AboutSection = () => {
     <section className="apple-section bg-background relative overflow-hidden">
       {/* Abstract gradient background */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] rounded-full bg-[radial-gradient(ellipse_at_center,_hsl(260_80%_60%_/_0.06)_0%,_hsl(212_100%_48%_/_0.03)_40%,_transparent_70%)] blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-[600px] h-[400px] rounded-full bg-[radial-gradient(ellipse_at_center,_hsl(212_100%_48%_/_0.04)_0%,_transparent_70%)] blur-3xl" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] rounded-full bg-[radial-gradient(ellipse_at_center,_hsl(260_80%_60%_/_0.25)_0%,_hsl(212_100%_48%_/_0.12)_40%,_transparent_70%)] blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-[600px] h-[400px] rounded-full bg-[radial-gradient(ellipse_at_center,_hsl(212_100%_48%_/_0.15)_0%,_transparent_70%)] blur-3xl" />
       </div>
 
       <div className="apple-container relative z-10">
