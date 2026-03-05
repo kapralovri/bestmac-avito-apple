@@ -1,25 +1,14 @@
 import { ShieldCheck, Award, Handshake, HeartHandshake } from "lucide-react";
 import { motion } from "framer-motion";
 import romanPhoto from "@/assets/about-me.png";
-import aboutBgVideo from "@/assets/videos/about-bg.mp4";
 
 const AboutSection = () => {
   return (
     <section className="apple-section bg-background relative overflow-hidden">
-      {/* Video Background */}
+      {/* Abstract gradient background */}
       <div className="absolute inset-0 z-0">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-full object-cover opacity-20"
-        >
-          <source src={aboutBgVideo} type="video/mp4" />
-        </video>
-        {/* Gradient overlays for readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/70 to-background" />
-        <div className="absolute inset-0 bg-background/40" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] rounded-full bg-[radial-gradient(ellipse_at_center,_hsl(260_80%_60%_/_0.06)_0%,_hsl(212_100%_48%_/_0.03)_40%,_transparent_70%)] blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-[600px] h-[400px] rounded-full bg-[radial-gradient(ellipse_at_center,_hsl(212_100%_48%_/_0.04)_0%,_transparent_70%)] blur-3xl" />
       </div>
 
       <div className="apple-container relative z-10">
