@@ -1,14 +1,38 @@
 import { ShieldCheck, Award, Handshake, HeartHandshake } from "lucide-react";
 import { motion } from "framer-motion";
+import { useRef, useCallback, useState } from "react";
 import romanPhoto from "@/assets/about-me.png";
 
 const AboutSection = () => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMousePos({
+      x: ((e.clientX - rect.left) / rect.width) * 100,
+      y: ((e.clientY - rect.top) / rect.height) * 100,
+    });
+  }, []);
+
   return (
-    <section className="apple-section bg-background relative overflow-hidden">
-      {/* Abstract gradient background */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] rounded-full bg-[radial-gradient(ellipse_at_center,_hsl(260_80%_60%_/_0.25)_0%,_hsl(212_100%_48%_/_0.12)_40%,_transparent_70%)] blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-[600px] h-[400px] rounded-full bg-[radial-gradient(ellipse_at_center,_hsl(212_100%_48%_/_0.15)_0%,_transparent_70%)] blur-3xl" />
+    <section
+      ref={sectionRef}
+      onMouseMove={handleMouseMove}
+      className="apple-section bg-background relative overflow-hidden"
+    >
+      {/* Mouse-following gradient */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div
+          className="absolute w-[800px] h-[600px] rounded-full blur-3xl transition-transform duration-700 ease-out"
+          style={{
+            left: `${mousePos.x}%`,
+            top: `${mousePos.y}%`,
+            transform: 'translate(-50%, -50%)',
+            background: 'radial-gradient(ellipse at center, hsl(260 80% 60% / 0.28) 0%, hsl(212 100% 48% / 0.15) 40%, transparent 70%)',
+          }}
+        />
+        <div className="absolute bottom-0 right-0 w-[600px] h-[400px] rounded-full bg-[radial-gradient(ellipse_at_center,_hsl(212_100%_48%_/_0.2)_0%,_transparent_70%)] blur-3xl" />
       </div>
 
       <div className="apple-container relative z-10">
