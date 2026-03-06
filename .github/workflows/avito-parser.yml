@@ -2,11 +2,17 @@ name: Avito Price Parser
 
 on:
   schedule:
-    - cron: '0 22 * * *' # 01:00 МСК
+    # Батч 1: 22:00 UTC = 01:00 МСК
+    - cron: '0 22 * * *'
+    # Батч 2: 01:00 UTC = 04:00 МСК
+    - cron: '0 1 * * *'
+    # Батч 3: 04:00 UTC = 07:00 МСК
+    - cron: '0 4 * * *'
+  
   workflow_dispatch:
     inputs:
       batch:
-        description: 'Батч'
+        description: 'Батч (1-3) или "all"'
         default: 'all'
         type: choice
         options: ['all', '1', '2', '3']
@@ -16,7 +22,21 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    
     steps:
+      - name: Determine batch
+        id: batch_step
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "batch=${{ github.event.inputs.batch }}" >> $GITHUB_OUTPUT
+          else
+            HOUR=$(date -u +%H)
+            if [ "$HOUR" = "22" ]; then echo "batch=1" >> $GITHUB_OUTPUT;
+            elif [ "$HOUR" = "01" ]; then echo "batch=2" >> $GITHUB_OUTPUT;
+            elif [ "$HOUR" = "04" ]; then echo "batch=3" >> $GITHUB_OUTPUT;
+            else echo "batch=all" >> $GITHUB_OUTPUT; fi
+          fi
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -38,25 +58,18 @@ jobs:
 
       - name: Run parser
         env:
-          BATCH: ${{ github.event.inputs.batch || 'all' }}
+          BATCH: ${{ steps.batch_step.outputs.batch }}
           PROXY_URL: ${{ secrets.PROXY_URL }}
           CHANGE_IP_URL: ${{ secrets.CHANGE_IP_URL }}
         run: |
           cd scripts/avito-parser
-          python parser.py --batch $BATCH
-
-      - name: Check for changes
-        id: changes
-        run: |
-          git add public/data/
-          git diff --quiet HEAD public/data/ || echo "changed=true" >> $GITHUB_OUTPUT
+          python parser.py --batch $BATCH --total-batches 3
 
       - name: Commit and push
-        if: steps.changes.outputs.changed == 'true'
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add public/data/avito-urls.json public/data/avito-prices.json
-          git commit -m "chore: daily avito price update [skip ci]"
+          git commit -m "chore: update prices batch ${{ steps.batch_step.outputs.batch }} [skip ci]" || echo "No changes"
           git pull --rebase origin main
           git push origin main
