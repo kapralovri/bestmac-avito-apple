@@ -43,6 +43,11 @@ const Comparison = lazy(() => import("./pages/Comparison"));
 const Pickup = lazy(() => import("./pages/Pickup"));
 const Service = lazy(() => import("./pages/Service"));
 const SellModel = lazy(() => import("./pages/SellModel"));
+const MoskvaIndex = lazy(() => import("./pages/geo/MoskvaIndex"));
+const GeoKievskaya = lazy(() => import("./pages/geo/Kievskaya"));
+const GeoDorogomilovo = lazy(() => import("./pages/geo/Dorogomilovo"));
+const GeoArbat = lazy(() => import("./pages/geo/Arbat"));
+const GeoHamovniki = lazy(() => import("./pages/geo/Hamovniki"));
 
 const queryClient = new QueryClient();
 
