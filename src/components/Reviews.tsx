@@ -1,6 +1,6 @@
 import { Star } from "lucide-react";
 import { motion } from "framer-motion";
-import SEOHead from "./SEOHead";
+import { Helmet } from "react-helmet-async";
 
 interface Review {
   author: string;
