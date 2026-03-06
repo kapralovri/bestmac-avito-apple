@@ -109,6 +109,12 @@ const App = () => {
                 <Route path="/buy/macbook-pro-16-m3-max" element={<MacbookPro16M3Max />} />
                 <Route path="/buy/macbook-air-m3-students" element={<MacbookAirM3Students />} />
                 <Route path="/comparison" element={<Comparison />} />
+                {/* Geo landing pages */}
+                <Route path="/moskva" element={<MoskvaIndex />} />
+                <Route path="/moskva/kievskaya" element={<GeoKievskaya />} />
+                <Route path="/moskva/dorogomilovo" element={<GeoDorogomilovo />} />
+                <Route path="/moskva/arbat" element={<GeoArbat />} />
+                <Route path="/moskva/hamovniki" element={<GeoHamovniki />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
