@@ -309,6 +309,16 @@ def main():
     with open(URLS_FILE, 'r', encoding='utf-8') as f:
         all_entries = json.load(f)['entries']
 
+    # Меняем IP перед стартом — предыдущий мог быть заблокирован
+    if CHANGE_IP_URL:
+        logger.info("🔄 Смена IP перед стартом...")
+        try:
+            std_requests.get(CHANGE_IP_URL, timeout=10, verify=False)
+            time.sleep(8)
+            logger.info("✅ IP сменён")
+        except Exception as e:
+            logger.warning(f"⚠️ Смена IP не удалась: {e}")
+
     batch_env = os.environ.get("BATCH", args.batch)
     if batch_env == "all":
         my_entries = all_entries
