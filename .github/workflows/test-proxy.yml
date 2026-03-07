@@ -1,7 +1,7 @@
 name: Test Proxy & SCAN_URL
 
 on:
-  workflow_dispatch:  # запуск вручную кнопкой
+  workflow_dispatch:
 
 jobs:
   test:
@@ -22,4 +22,4 @@ jobs:
           PROXY_URL: ${{ secrets.PROXY_URL }}
           CHANGE_IP_URL: ${{ secrets.CHANGE_IP_URL }}
           SCAN_URL: ${{ secrets.SCAN_URL }}
-        run: test_scan_url.py
+        run: python ./test_scan_url.py
