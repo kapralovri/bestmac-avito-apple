@@ -523,11 +523,26 @@ class AvitoScanner:
             return
 
         logger.info("🎬 Сканирование запущено...")
+
+        # Меняем IP на старте — предыдущий мог быть заблокирован Авито
+        if CHANGE_IP_URL:
+            logger.info("🔄 Смена IP перед стартом...")
+            self.rotate_ip()
+
         time.sleep(random.uniform(1, 3))
 
-        resp = self.get(SCAN_URL)
+        # Если 429 — меняем IP и повторяем (до 3 раз)
+        resp = None
+        for attempt in range(3):
+            resp = self.get(SCAN_URL)
+            if resp:
+                break
+            logger.warning(f"   Попытка {attempt+1}/3 не удалась, меняем IP...")
+            self.rotate_ip()
+            time.sleep(5)
+
         if not resp:
-            logger.error("❌ Не удалось загрузить SCAN_URL")
+            logger.error("❌ Не удалось загрузить SCAN_URL после 3 попыток")
             return
 
         soup  = BeautifulSoup(resp.text, 'lxml')
