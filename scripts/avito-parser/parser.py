@@ -1,14 +1,9 @@
 #!/usr/bin/env python3
 """
-Парсер цен Авито для bestmac.ru — финальная версия
-Запускается 3 батчами ночью через GitHub Actions.
-
-Ключевые особенности:
-- Проверка прокси на старте, автопереключение на прямое если прокси мёртв
-- При 429: сначала ждёт 60 сек, потом меняет IP — не долбит прокси подряд
-- ProxyError 2 раза подряд = прокси отключается автоматически
-- extract_specs по значению (не по позиции) — надёжно для любого формата
-- Расчёт buyout: низ рынка минус 12 000 руб (а не % от медианы)
+Парсер цен Авито для bestmac.ru — v5 с curl_cffi
+Главное улучшение: curl_cffi имитирует Chrome на уровне TLS → 429 почти исчезают.
+Логика 429: быстрый backoff (15 сек) + смена IP → не тратим минуты на ожидание.
+Расписание: 3 батча по ~28 конфигураций, запускаются ночью с интервалом 1-2 часа.
 """
 import json
 import os
@@ -23,15 +18,27 @@ from pathlib import Path
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+# ── curl_cffi — обход блокировок Авито ───────────────────────────────────────
 try:
-    import requests
+    from curl_cffi import requests as curl_requests
+    CURL_AVAILABLE = True
+except ImportError:
+    CURL_AVAILABLE = False
+
+try:
+    import requests as std_requests
     from bs4 import BeautifulSoup
 except ImportError:
-    print("❌ pip install requests beautifulsoup4 lxml")
+    print("❌ pip install curl_cffi requests beautifulsoup4 lxml")
     exit(1)
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("Parser")
+
+if CURL_AVAILABLE:
+    logger.info("✅ curl_cffi — Chrome TLS имитация активна")
+else:
+    logger.warning("⚠️ curl_cffi не найден, используем requests")
 
 # ─── Пути ─────────────────────────────────────────────────────────────────────
 SCRIPT_DIR  = Path(__file__).parent
@@ -57,66 +64,14 @@ def format_proxy(s):
 
 PROXY_URL = format_proxy(RAW_PROXY)
 
-HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/122.0.0.0 Safari/537.36"
-    ),
-    "Accept-Language": "ru-RU,ru;q=0.9",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-}
+# Браузеры для ротации — разные fingerprints
+CURL_BROWSERS = ["chrome110", "chrome107", "chrome104", "chrome101", "chrome99"]
 
-# ─── Состояние прокси (глобальное) ────────────────────────────────────────────
-_proxy_alive      = bool(PROXY_URL)
-_proxy_fail_count = 0
-_last_ip_change   = 0.0
-
-def get_proxies():
-    if not PROXY_URL or not _proxy_alive:
-        return None
-    return {"http": PROXY_URL, "https": PROXY_URL}
-
-def check_proxy_alive() -> bool:
-    if not PROXY_URL:
-        return False
-    try:
-        r = requests.get("https://api.ipify.org", proxies={"http": PROXY_URL, "https": PROXY_URL},
-                         timeout=8, verify=False)
-        return r.status_code == 200
-    except Exception:
-        return False
-
-def try_change_ip() -> bool:
-    global _last_ip_change, _proxy_alive, _proxy_fail_count
-    if not CHANGE_IP_URL:
-        return False
-    if time.time() - _last_ip_change < 60:
-        logger.info("   ⏳ IP менялся недавно, пропускаем")
-        return False
-    try:
-        r = requests.get(CHANGE_IP_URL, timeout=10, verify=False)
-        _last_ip_change = time.time()
-        logger.info(f"   🔄 IP сменён (HTTP {r.status_code})")
-        time.sleep(8)
-        if check_proxy_alive():
-            _proxy_alive = True
-            _proxy_fail_count = 0
-            logger.info("   ✅ Прокси снова работает")
-            return True
-        else:
-            logger.warning("   ⚠️ Прокси не отвечает после смены IP")
-            return False
-    except Exception as e:
-        logger.warning(f"   ⚠️ Смена IP не удалась: {e}")
-        return False
-
-# ─── RAM / SSD по значению ────────────────────────────────────────────────────
+# ─── RAM / SSD ─────────────────────────────────────────────────────────────────
 RAM_VALUES = {8, 16, 18, 24, 36, 48, 64, 96, 128}
 SSD_VALUES = {64, 128, 256, 512, 1024, 2048, 4096}
 
 def extract_specs(text: str) -> tuple[int, int]:
-    """Определяет RAM и SSD по типичным значениям Apple — не по позиции в строке."""
     text = text.lower().replace(' ', '')
     ram, ssd = 8, 256
     for val_str, unit in re.findall(r'(\d+)(gb|гб|tb|тб)', text):
@@ -131,62 +86,124 @@ def extract_specs(text: str) -> tuple[int, int]:
             ssd = val
     return ram, ssd
 
-# ─── GET с автопереключением прокси → прямое ──────────────────────────────────
-def safe_get(url: str) -> 'requests.Response | None':
-    global _proxy_alive, _proxy_fail_count
 
-    for attempt in range(3):
-        proxies = get_proxies()
-        mode    = "прокси" if proxies else "прямое"
+# ─── HTTP-сессия с curl_cffi ──────────────────────────────────────────────────
+class Session:
+    """
+    Обёртка над curl_cffi / requests.
+    - Каждые N запросов меняет browser fingerprint (ротация TLS)
+    - При 429: меняет IP + переинициализирует сессию с новым браузером
+    - Короткий backoff вместо 60-секундного ожидания
+    """
+    def __init__(self):
+        self.proxy_str    = PROXY_URL
+        self._session     = None
+        self._req_count   = 0          # счётчик запросов для ротации fingerprint
+        self._rotate_every = 15        # менять fingerprint каждые 15 запросов
+        self._last_ip_change = 0.0
+        self._init_session()
 
+    def _init_session(self):
+        if CURL_AVAILABLE:
+            browser = random.choice(CURL_BROWSERS)
+            self._session = curl_requests.Session(impersonate=browser)
+            if self.proxy_str:
+                self._session.proxies = {
+                    "http":  self.proxy_str,
+                    "https": self.proxy_str,
+                }
+            logger.debug(f"   🔧 Сессия: {browser}")
+        else:
+            self._session = None
+
+    def _change_ip(self) -> bool:
+        if not CHANGE_IP_URL:
+            return False
+        now = time.time()
+        if now - self._last_ip_change < 30:  # минимум 30 сек между сменами
+            return False
         try:
-            time.sleep(random.uniform(5, 9))
-            resp = requests.get(url, headers=HEADERS, proxies=proxies,
-                                timeout=20, verify=False)
-
-            if resp.status_code == 200:
-                if proxies:
-                    _proxy_fail_count = 0
-                return resp
-
-            if resp.status_code == 429:
-                logger.warning(f"   ⚠️ 429 ({mode}), попытка {attempt+1}/3")
-                if attempt == 0:
-                    logger.info("   ⏳ Ждём 60 сек...")
-                    time.sleep(60)
-                elif attempt == 1:
-                    changed = try_change_ip()
-                    if not changed and proxies:
-                        logger.warning("   🔀 Прокси не восстановился, переходим напрямую")
-                        _proxy_alive = False
-                    time.sleep(30)
-                else:
-                    return None
-                continue
-
-            logger.warning(f"   ⚠️ HTTP {resp.status_code} ({mode})")
-            return None
-
-        except requests.exceptions.ProxyError:
-            _proxy_fail_count += 1
-            logger.warning(f"   ⚠️ Прокси недоступен (ошибка #{_proxy_fail_count})")
-            if _proxy_fail_count >= 2:
-                logger.warning("   🔀 Прокси отключён, работаем напрямую")
-                _proxy_alive = False
-                try_change_ip()  # пробуем сменить IP в фоне — вдруг восстановится
-            continue
-
-        except requests.exceptions.Timeout:
-            logger.warning(f"   ⚠️ Таймаут ({mode}), попытка {attempt+1}/3")
-            if attempt < 2:
-                time.sleep(15)
-            continue
-
+            if CURL_AVAILABLE and self._session:
+                self._session.get(CHANGE_IP_URL, timeout=8, verify=False)
+            else:
+                std_requests.get(CHANGE_IP_URL, timeout=8, verify=False)
+            self._last_ip_change = time.time()
+            time.sleep(5)  # даём IP примениться
+            self._init_session()  # новый браузер после смены IP
+            logger.info("   🔄 IP сменён, новый fingerprint")
+            return True
         except Exception as e:
-            logger.error(f"   ❌ Ошибка ({mode}): {e}")
-            return None
+            logger.warning(f"   ⚠️ Смена IP: {e}")
+            return False
 
-    return None
+    def get(self, url: str, retries: int = 3):
+        self._req_count += 1
+
+        # Ротация fingerprint каждые N запросов — профилактика блокировок
+        if self._req_count % self._rotate_every == 0:
+            self._init_session()
+
+        headers = {
+            "Accept":          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8",
+            "Accept-Encoding": "gzip, deflate, br",
+        }
+
+        for attempt in range(retries):
+            try:
+                # Пауза перед запросом — рандомная, чтобы не выглядеть как бот
+                time.sleep(random.uniform(3, 6))
+
+                if CURL_AVAILABLE and self._session:
+                    resp = self._session.get(
+                        url, headers=headers,
+                        timeout=20, verify=False, allow_redirects=True,
+                    )
+                else:
+                    resp = std_requests.get(
+                        url,
+                        headers={
+                            **headers,
+                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                                          "AppleWebKit/537.36 (KHTML, like Gecko) "
+                                          "Chrome/122.0.0.0 Safari/537.36",
+                        },
+                        proxies={"http": self.proxy_str, "https": self.proxy_str} if self.proxy_str else None,
+                        timeout=20, verify=False,
+                    )
+
+                if resp.status_code == 200:
+                    return resp
+
+                if resp.status_code == 429:
+                    logger.warning(f"   ⚠️ 429 (попытка {attempt+1}/{retries})")
+                    # Быстрый backoff: 15 сек → смена IP → ещё попытка
+                    # Вместо старых 60 сек — экономим время
+                    time.sleep(15)
+                    self._change_ip()
+                    continue
+
+                if resp.status_code in [403, 503]:
+                    logger.warning(f"   ⚠️ HTTP {resp.status_code}, смена fingerprint")
+                    self._init_session()
+                    time.sleep(10)
+                    continue
+
+                logger.warning(f"   ⚠️ HTTP {resp.status_code}")
+                return None
+
+            except Exception as e:
+                err = str(e)
+                if 'proxy' in err.lower() or 'connect' in err.lower():
+                    logger.warning(f"   ⚠️ Прокси ошибка (попытка {attempt+1}): таймаут")
+                    self._change_ip()
+                else:
+                    logger.warning(f"   ⚠️ Ошибка (попытка {attempt+1}): {err[:80]}")
+                if attempt < retries - 1:
+                    time.sleep(8)
+
+        return None
+
 
 # ─── Расчёт рыночных цен ──────────────────────────────────────────────────────
 def get_market_analysis(prices: list[int]) -> tuple[int, int, int]:
@@ -194,25 +211,25 @@ def get_market_analysis(prices: list[int]) -> tuple[int, int, int]:
         return 0, 0, 0
     prices  = sorted(prices)
     n       = len(prices)
-    # Убираем нижние 5% (случайный мусор) и верхние 10% (оверпрайс)
     low_idx = max(0, int(n * 0.05))
     hi_idx  = int(n * 0.90)
     clean   = prices[low_idx:hi_idx] if n > 10 else prices
     if not clean:
         clean = prices
-    market_low  = clean[int(len(clean) * 0.20)]  # 20-й перцентиль = реальный низ без хлама
+    market_low  = clean[int(len(clean) * 0.20)]  # 20-й перцентиль = реальный низ
     market_high = clean[int(len(clean) * 0.85)]
     median      = int(statistics.median(clean))
     return market_low, market_high, median
 
+
 # ─── Парсинг одной конфигурации ───────────────────────────────────────────────
-def parse_config(entry: dict) -> dict | None:
+def parse_config(entry: dict, session: Session) -> dict | None:
     url    = entry['url'].strip()
     prices = []
     logger.info(f"🔎 {entry['model_name']} {entry['ram']}GB/{entry['ssd']}GB")
 
-    for page in range(1, 4):  # 3 страницы — баланс данных и нагрузки
-        resp = safe_get(f"{url}&p={page}")
+    for page in range(1, 4):
+        resp = session.get(f"{url}&p={page}")
         if resp is None:
             logger.info(f"   Стр.{page}: пропускаем")
             continue
@@ -262,7 +279,6 @@ def parse_config(entry: dict) -> dict | None:
         return None
 
     low, high, median = get_market_analysis(prices)
-    # Выкуп = низ рынка минус 8 000 руб, округлённый до тысяч
     buyout = int((low - 8000) // 1000 * 1000)
 
     return {
@@ -278,27 +294,13 @@ def parse_config(entry: dict) -> dict | None:
         "updated_at":    time.strftime("%Y-%m-%d %H:%M"),
     }
 
+
 # ─── Main ──────────────────────────────────────────────────────────────────────
 def main():
-    global _proxy_alive
-
     ap = argparse.ArgumentParser()
     ap.add_argument("--batch",         default="all")
     ap.add_argument("--total-batches", type=int, default=3)
     args = ap.parse_args()
-
-    # Проверяем прокси на старте — не тратим время если он мёртв
-    if PROXY_URL:
-        logger.info(f"🔌 Проверяем прокси...")
-        if check_proxy_alive():
-            logger.info("✅ Прокси работает")
-            _proxy_alive = True
-        else:
-            logger.warning("⚠️ Прокси недоступен — работаем напрямую")
-            _proxy_alive = False
-    else:
-        logger.info("ℹ️ Прокси не задан — прямое соединение")
-        _proxy_alive = False
 
     if not URLS_FILE.exists():
         logger.error(f"❌ {URLS_FILE} не найден")
@@ -307,7 +309,6 @@ def main():
     with open(URLS_FILE, 'r', encoding='utf-8') as f:
         all_entries = json.load(f)['entries']
 
-    # Определяем батч
     batch_env = os.environ.get("BATCH", args.batch)
     if batch_env == "all":
         my_entries = all_entries
@@ -320,19 +321,22 @@ def main():
         my_entries = all_entries[start:end]
         logger.info(f"📦 Батч {b}/{args.total_batches}: {len(my_entries)} конфигураций")
 
+    # Одна сессия на весь батч — экономит инициализацию
+    session = Session()
+
     new_results    = []
     failed_configs = []
 
     for entry in my_entries:
-        res = parse_config(entry)
+        res = parse_config(entry, session)
         if res:
             new_results.append(res)
         else:
             failed_configs.append(f"{entry['model_name']} {entry['ram']}/{entry['ssd']}")
         # Пауза между конфигурациями
-        time.sleep(random.uniform(5, 10))
+        time.sleep(random.uniform(3, 7))
 
-    # ── Мерж с существующей базой ─────────────────────────────────────────────
+    # ── Мерж с базой ──────────────────────────────────────────────────────────
     existing_data = {"stats": []}
     if OUTPUT_FILE.exists():
         try:
@@ -345,7 +349,6 @@ def main():
     for s in new_results:
         db[(s['model_name'], s['ram'], s['ssd'])] = s
 
-    # ── Санация и сохранение ──────────────────────────────────────────────────
     final_stats    = []
     total_listings = 0
     repaired_count = 0
@@ -360,7 +363,7 @@ def main():
             if not stat.get('max_price'):
                 stat['max_price'] = int(median * 1.15)
             if not stat.get('buyout_price'):
-                stat['buyout_price'] = int((stat['min_price'] - 12000) // 1000 * 1000)
+                stat['buyout_price'] = int((stat['min_price'] - 8000) // 1000 * 1000)
 
             final_stats.append({
                 "model_name":    str(stat['model_name']),
@@ -398,8 +401,9 @@ def main():
         if len(failed_configs) > 10:
             print(f"   ... и ещё {len(failed_configs) - 10}")
     print(f"📈 Объявлений:       {total_listings}")
-    print(f"🔌 Соединение:       {'прокси' if _proxy_alive else 'прямое (без прокси)'}")
+    print(f"🔧 curl_cffi:        {'да' if CURL_AVAILABLE else 'нет (requests)'}")
     print("=" * 50)
+
 
 if __name__ == "__main__":
     main()
