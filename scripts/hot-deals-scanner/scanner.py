@@ -48,6 +48,10 @@ SCAN_URL      = os.environ.get('SCAN_URL')
 PROXY_URL     = os.environ.get('PROXY_URL', '').strip().strip('"').strip("'")
 CHANGE_IP_URL = os.environ.get('CHANGE_IP_URL', '').strip().strip('"').strip("'")
 
+# Диагностика переменных при старте
+logger.info(f"🔧 PROXY_URL: {'✅ ' + PROXY_URL[:25] if PROXY_URL else '❌ не задан'}")
+logger.info(f"🔧 SCAN_URL:  {'✅ ' + SCAN_URL[:40] if SCAN_URL else '❌ не задан'}")
+
 PRICE_THRESHOLD_FACTOR = 1.20
 
 URGENT_KEYWORDS = [
