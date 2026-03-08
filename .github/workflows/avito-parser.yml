@@ -2,11 +2,8 @@ name: Avito Price Parser
 
 on:
   schedule:
-    # Батч 1: 22:00 UTC = 01:00 МСК
     - cron: '0 22 * * *'
-    # Батч 2: 01:00 UTC = 04:00 МСК
     - cron: '0 1 * * *'
-    # Батч 3: 04:00 UTC = 07:00 МСК
     - cron: '0 4 * * *'
   
   workflow_dispatch:
@@ -70,6 +67,14 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add public/data/avito-urls.json public/data/avito-prices.json
-          git commit -m "chore: update prices batch ${{ steps.batch_step.outputs.batch }} [skip ci]" || echo "No changes"
-          git pull --rebase origin main
-          git push origin main
+          git diff --staged --quiet && echo "No changes" && exit 0
+          git commit -m "chore: update prices batch ${{ steps.batch_step.outputs.batch }} [skip ci]"
+          # Повторяем pull+push до 3 раз при конфликте
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push origin main && break
+            echo "Retry $i: rebase conflict, resetting..."
+            git rebase --abort 2>/dev/null || true
+            git fetch origin main
+            git reset --soft origin/main
+            git commit -m "chore: update prices batch ${{ steps.batch_step.outputs.batch }} [skip ci]"
+          done
