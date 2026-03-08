@@ -273,15 +273,13 @@ class AvitoScanner:
                     return resp
                 if resp.status_code in [403, 429]:
                     logger.warning(f"⚠️ HTTP {resp.status_code} (попытка {attempt+1}/{retries})")
-                    self.rotate_ip()
-                    time.sleep(random.uniform(5, 10))
+                    time.sleep(random.uniform(15, 25))
                 else:
                     break
             except Exception as e:
                 logger.error(f"   Ошибка запроса (попытка {attempt+1}): {e}")
                 if attempt < retries - 1:
-                    self.rotate_ip()
-                    time.sleep(5)
+                    time.sleep(15)
         return None
 
     def deep_analyze(self, url: str) -> dict:
