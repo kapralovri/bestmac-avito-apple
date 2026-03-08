@@ -2,8 +2,7 @@ name: Avito Scanner Auto
 
 on:
   schedule:
-    # Отключено — сканер теперь на VPS
-    # - cron: '5,15,25,35,45,55 * * * *'
+    - cron: '5,15,25,35,45,55 * * * *'
   workflow_dispatch:
   push:
     branches:
