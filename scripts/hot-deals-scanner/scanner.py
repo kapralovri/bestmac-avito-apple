@@ -243,16 +243,14 @@ class AvitoScanner:
     def rotate_ip(self):
         if CHANGE_IP_URL:
             try:
-                if CURL_AVAILABLE and self._curl_session:
-                    self._curl_session.get(CHANGE_IP_URL, timeout=15, verify=False)
-                else:
-                    std_requests.get(CHANGE_IP_URL, timeout=15, verify=False)
-                time.sleep(12)
+                # Всегда через std_requests — curl_cffi таймаутит на change_ip URL
+                std_requests.get(CHANGE_IP_URL, timeout=15, verify=False)
+                time.sleep(15)  # mobileproxy.space требует ~15 сек для применения
                 logger.info("🔄 IP сменён")
                 if CURL_AVAILABLE:
-                    self._init_curl_session()
-            except Exception:
-                pass
+                    self._init_curl_session()  # новый браузер
+            except Exception as e:
+                logger.warning(f"⚠️ rotate_ip: {e}")
 
     def get(self, url: str, retries: int = 3):
         headers = {
@@ -516,6 +514,18 @@ class AvitoScanner:
         except Exception as e:
             logger.error(f"❌ Telegram: {e}")
 
+    def _save_seen(self):
+        """Сохраняет seen_urls на диск немедленно — защита от повторных уведомлений."""
+        try:
+            SEEN_FILE.parent.mkdir(parents=True, exist_ok=True)
+            with open(SEEN_FILE, 'w', encoding='utf-8') as f:
+                json.dump({
+                    "updated_at": datetime.now().isoformat(),
+                    "seen_urls":  list(self.seen)[-5000:],
+                }, f)
+        except Exception as e:
+            logger.warning(f"⚠️ Не удалось сохранить seen: {e}")
+
     # ─── Основной цикл ────────────────────────────────────────────────────────
     def run(self):
         if not SCAN_URL:
@@ -524,22 +534,17 @@ class AvitoScanner:
 
         logger.info("🎬 Сканирование запущено...")
 
-        # Меняем IP на старте — предыдущий мог быть заблокирован Авито
-        if CHANGE_IP_URL:
-            logger.info("🔄 Смена IP перед стартом...")
-            self.rotate_ip()
-
         time.sleep(random.uniform(1, 3))
 
-        # Если 429 — меняем IP и повторяем (до 3 раз)
+        # Пробуем загрузить SCAN_URL, при 429 — ждём и повторяем БЕЗ смены IP
+        # IP должен жить долго — частая смена триггерит блокировку
         resp = None
         for attempt in range(3):
             resp = self.get(SCAN_URL)
             if resp:
                 break
-            logger.warning(f"   Попытка {attempt+1}/3 не удалась, меняем IP...")
-            self.rotate_ip()
-            time.sleep(5)
+            logger.warning(f"   Попытка {attempt+1}/3 не удалась, ждём 30 сек...")
+            time.sleep(30)
 
         if not resp:
             logger.error("❌ Не удалось загрузить SCAN_URL после 3 попыток")
@@ -607,6 +612,11 @@ class AvitoScanner:
                     self.seen.add(url)
                     continue
 
+                # Помечаем как seen СРАЗУ — даже если deep_analyze упадёт,
+                # повторного уведомления не будет
+                self.seen.add(url)
+                self._save_seen()
+
                 # deep_analyze — ОДИН РАЗ
                 time.sleep(random.uniform(2, 5))
                 analysis      = self.deep_analyze(raw_url)
@@ -666,8 +676,6 @@ class AvitoScanner:
                     "trend_str":      trend_str,
                 })
 
-                self.seen.add(url)
-
             except Exception as e:
                 logger.error(f"Ошибка: {e}")
                 continue
@@ -684,13 +692,8 @@ class AvitoScanner:
             ]})
             found_matches += 1
 
-        # Сохраняем историю просмотренных
-        SEEN_FILE.parent.mkdir(parents=True, exist_ok=True)
-        with open(SEEN_FILE, 'w', encoding='utf-8') as f:
-            json.dump({
-                "updated_at": datetime.now().isoformat(),
-                "seen_urls":  list(self.seen)[-5000:],
-            }, f)
+        # Финальное сохранение seen (основное уже сохранялось по ходу)
+        self._save_seen()
 
         # #5 Сохраняем историю цен
         HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
