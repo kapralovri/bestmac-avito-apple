@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-09 10:05",
+  "generated_at": "2026-03-10 00:31",
   "total_listings": 5057,
   "stats": [
     {
@@ -332,11 +332,11 @@
       "ram": 16,
       "ssd": 256,
       "min_price": 91000,
-      "max_price": 99890,
-      "median_price": 94900,
+      "max_price": 99000,
+      "median_price": 93990,
       "buyout_price": 83000,
       "samples_count": 149,
-      "updated_at": "2026-03-08 04:04"
+      "updated_at": "2026-03-10 00:31"
     },
     {
       "model_name": "MacBook Air 15 (2025, M4)",
