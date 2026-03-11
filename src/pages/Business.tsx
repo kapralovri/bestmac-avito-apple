@@ -216,6 +216,11 @@ const Business = () => {
                     Написать в Telegram
                   </a>
                 </Button>
+                <Button variant="outline">
+                  <a href="https://4.redirect.appmetrica.yandex.com/care.yandex.ru/maps/account?url_scheme=yandexmaps://care.yandex.ru/maps/account&utm_source=test_link_110326_ruchka&utm_medium=internal_test_110326_ruchka&utm_campaign=kasko_test_110326_ruchka&appmetrica_tracking_id=534152880416977558&referrer=reattribution%3D1&click_id=%7BLOGID%7D&url_scheme=yandexmaps%3A%2F%2Fcare.yandex.ru%2Fmaps%2Faccount%26utm_source%3Dtest_link_110326_ruchka%26utm_medium%3Dinternal_test_110326_ruchka%26utm_campaign%3Dkasko_test_110326_ruchka" target="_blank" rel="noopener noreferrer" className="text-inherit no-underline">
+                    <Shield className="w-4 h-4 mr-1" /> Страхование
+                  </a>
+                </Button>
               </div>
             </CardContent>
           </Card>
