@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-03-11 09:33",
-  "total_listings": 4688,
+  "generated_at": "2026-03-12 00:22",
+  "total_listings": 4548,
   "stats": [
     {
       "model_name": "MacBook Air 13 (2020, M1)",
@@ -175,12 +175,12 @@
       "processor": "Apple M4",
       "ram": 16,
       "ssd": 256,
-      "min_price": 70990,
-      "max_price": 75990,
+      "min_price": 72990,
+      "max_price": 74000,
       "median_price": 73500,
-      "buyout_price": 62000,
-      "samples_count": 150,
-      "updated_at": "2026-03-10 23:08"
+      "buyout_price": 64000,
+      "samples_count": 50,
+      "updated_at": "2026-03-11 23:31"
     },
     {
       "model_name": "MacBook Air 13 (2025, M4)",
@@ -283,24 +283,24 @@
       "processor": "Apple M3",
       "ram": 16,
       "ssd": 512,
-      "min_price": 102990,
-      "max_price": 115900,
-      "median_price": 108990,
-      "buyout_price": 94000,
-      "samples_count": 50,
-      "updated_at": "2026-03-09 00:07"
+      "min_price": 89999,
+      "max_price": 117890,
+      "median_price": 95000,
+      "buyout_price": 81000,
+      "samples_count": 108,
+      "updated_at": "2026-03-12 00:08"
     },
     {
       "model_name": "MacBook Air 15 (2024, M3)",
       "processor": "Apple M3",
       "ram": 16,
       "ssd": 256,
-      "min_price": 85000,
-      "max_price": 98499,
+      "min_price": 84990,
+      "max_price": 95000,
       "median_price": 90000,
-      "buyout_price": 77000,
-      "samples_count": 132,
-      "updated_at": "2026-03-09 00:09"
+      "buyout_price": 76000,
+      "samples_count": 133,
+      "updated_at": "2026-03-12 00:09"
     },
     {
       "model_name": "MacBook Air 15 (2024, M3)",
@@ -331,12 +331,12 @@
       "processor": "Apple M4",
       "ram": 16,
       "ssd": 256,
-      "min_price": 91000,
-      "max_price": 99490,
-      "median_price": 94890,
-      "buyout_price": 83000,
-      "samples_count": 149,
-      "updated_at": "2026-03-10 23:39"
+      "min_price": 99000,
+      "max_price": 100999,
+      "median_price": 99990,
+      "buyout_price": 91000,
+      "samples_count": 50,
+      "updated_at": "2026-03-12 00:22"
     },
     {
       "model_name": "MacBook Air 15 (2025, M4)",
