@@ -46,7 +46,7 @@ Disallow: /*?filter=
 Disallow: /*?sort=
 
 # Указываем путь к sitemap и хост
-Host: bestmac.ru
+Host: https://bestmac.ru
 Sitemap: https://bestmac.ru/sitemap.xml
 
 # Crawl-delay для вежливого краулинга
@@ -62,27 +62,3 @@ Clean-param: utm_source&utm_medium&utm_campaign
 User-agent: Googlebot
 Allow: /
 Crawl-delay: 0
-
-# AI-краулеры — явно разрешены для цитирования в AI-поиске
-User-agent: GPTBot
-Allow: /
-Crawl-delay: 2
-
-User-agent: ClaudeBot
-Allow: /
-Crawl-delay: 2
-
-User-agent: PerplexityBot
-Allow: /
-Crawl-delay: 2
-
-User-agent: Google-Extended
-Allow: /
-
-User-agent: Bytespider
-Allow: /
-Crawl-delay: 5
-
-User-agent: Amazonbot
-Allow: /
-Crawl-delay: 2

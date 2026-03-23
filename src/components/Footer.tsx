@@ -1,6 +1,4 @@
-'use client'
-
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import { MapPin, Phone, Mail } from "lucide-react";
 import { trackContactClick } from "@/components/Analytics";
 import { POPULAR_MODELS, modelShortName } from "@/lib/model-slugs";
@@ -50,11 +48,11 @@ const Footer = () => {
           <div>
             <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider mb-4">Услуги</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/buy" className="hover:text-foreground transition-colors">Купить технику</Link></li>
-              <li><Link href="/sell" className="hover:text-foreground transition-colors">Продать технику</Link></li>
-              <li><Link href="/selection" className="hover:text-foreground transition-colors">Подбор техники</Link></li>
-              <li><Link href="/pickup" className="hover:text-foreground transition-colors">Самовывоз</Link></li>
-              <li><Link href="/business" className="hover:text-foreground transition-colors">Для бизнеса</Link></li>
+              <li><Link to="/buy" className="hover:text-foreground transition-colors">Купить технику</Link></li>
+              <li><Link to="/sell" className="hover:text-foreground transition-colors">Продать технику</Link></li>
+              <li><Link to="/selection" className="hover:text-foreground transition-colors">Подбор техники</Link></li>
+              <li><Link to="/pickup" className="hover:text-foreground transition-colors">Самовывоз</Link></li>
+              <li><Link to="/business" className="hover:text-foreground transition-colors">Для бизнеса</Link></li>
             </ul>
           </div>
 
@@ -64,7 +62,7 @@ const Footer = () => {
             <ul className="space-y-2 text-sm text-muted-foreground">
               {POPULAR_MODELS.slice(0, 7).map(m => (
                 <li key={m.slug}>
-                  <Link href={`/sell/${m.slug}`} className="hover:text-foreground transition-colors">
+                  <Link to={`/sell/${m.slug}`} className="hover:text-foreground transition-colors">
                     {modelShortName(m.name)}
                   </Link>
                 </li>
@@ -78,8 +76,8 @@ const Footer = () => {
             © {new Date().getFullYear()} BestMac. Все права защищены.
           </p>
           <div className="flex items-center gap-6 text-xs text-muted-foreground">
-            <Link href="/privacy" className="hover:text-foreground transition-colors">Конфиденциальность</Link>
-            <Link href="/terms" className="hover:text-foreground transition-colors">Условия</Link>
+            <Link to="/privacy" className="hover:text-foreground transition-colors">Конфиденциальность</Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors">Условия</Link>
           </div>
         </div>
       </div>

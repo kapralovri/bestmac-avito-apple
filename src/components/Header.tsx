@@ -1,14 +1,11 @@
-'use client'
-
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Phone, Menu, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 
 const Header = () => {
-  const pathname = usePathname();
+  const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
@@ -24,7 +21,7 @@ const Header = () => {
     <header className="bg-background/80 backdrop-blur-xl border-b border-border/50 sticky top-0 z-50">
       <div className="apple-container-wide">
         <div className="flex items-center justify-between h-12">
-          <Link href="/" className="text-xl font-semibold tracking-tight text-foreground hover:opacity-80 transition-opacity">
+          <Link to="/" className="text-xl font-semibold tracking-tight text-foreground hover:opacity-80 transition-opacity">
             BestMac
           </Link>
 
@@ -32,9 +29,9 @@ const Header = () => {
             {navItems.map((item) => (
               <Link
                 key={item.path}
-                href={item.path}
+                to={item.path}
                 className={`text-xs transition-opacity ${
-                  pathname === item.path
+                  location.pathname === item.path
                     ? "text-foreground opacity-100"
                     : "text-muted-foreground hover:text-foreground opacity-80 hover:opacity-100"
                 }`}
@@ -52,7 +49,7 @@ const Header = () => {
               <Phone className="w-3 h-3" />
               <span>+7 903 299 00 29</span>
             </a>
-            <Link href="/contact" className="hidden md:block">
+            <Link to="/contact" className="hidden md:block">
               <Button size="sm" className="h-7 text-xs rounded-full px-4 bg-primary hover:bg-primary/90">
                 Связаться
               </Button>
@@ -80,10 +77,10 @@ const Header = () => {
                 {navItems.map((item) => (
                   <Link
                     key={item.path}
-                    href={item.path}
+                    to={item.path}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`py-2 px-2 rounded-lg text-sm transition-colors ${
-                      pathname === item.path
+                      location.pathname === item.path
                         ? "text-primary bg-primary/5"
                         : "text-muted-foreground hover:text-foreground"
                     }`}
@@ -91,7 +88,7 @@ const Header = () => {
                     {item.label}
                   </Link>
                 ))}
-                <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)}>
+                <Link to="/contact" onClick={() => setIsMobileMenuOpen(false)}>
                   <Button size="sm" className="w-full mt-2 rounded-full bg-primary hover:bg-primary/90">
                     Связаться
                   </Button>

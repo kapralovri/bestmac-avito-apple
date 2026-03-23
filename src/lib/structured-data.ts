@@ -87,7 +87,7 @@ export const generateArticleSchema = (article: {
   image?: string;
 }) => ({
   "@context": "https://schema.org",
-  "@type": "BlogPosting",
+  "@type": "Article",
   "headline": article.title,
   "description": article.description,
   "image": article.image || "https://bestmac.ru/favicon.png",
@@ -95,8 +95,7 @@ export const generateArticleSchema = (article: {
   "dateModified": article.dateModified,
   "author": {
     "@type": "Person",
-    "name": "Роман Капралов",
-    "url": "https://bestmac.ru"
+    "name": article.author
   },
   "publisher": {
     "@type": "Organization",
@@ -114,16 +113,14 @@ export const generateArticleSchema = (article: {
 
 export const generateLocalBusinessSchema = () => ({
   "@context": "https://schema.org",
-  "@type": ["ElectronicsStore", "LocalBusiness"],
+  "@type": "LocalBusiness",
   "name": "BestMac",
-  "image": "https://bestmac.ru/favicon.png",
+  "image": "https://bestmac.ru/og-image.jpg",
   "url": "https://bestmac.ru",
-  "telephone": "+7-903-299-00-29",
-  "foundingDate": "2018",
-  "priceRange": "$$",
+  "telephone": "+7(000)000-00-00", // Замените на реальный при необходимости или оставьте TG/WA
+  "priceRange": "$$$",
   "address": {
     "@type": "PostalAddress",
-    "streetAddress": "ул. Дениса Давыдова 3",
     "addressLocality": "Москва",
     "addressCountry": "RU"
   },
@@ -131,6 +128,6 @@ export const generateLocalBusinessSchema = () => ({
   "aggregateRating": {
     "@type": "AggregateRating",
     "ratingValue": "4.9",
-    "reviewCount": "128"
+    "reviewCount": "156"
   }
 });

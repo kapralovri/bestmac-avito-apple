@@ -1,9 +1,7 @@
-'use client'
-
 import { motion } from "framer-motion";
 import { ArrowRight, Calendar, User } from "lucide-react";
 import { Button } from "./ui/button";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 
 interface BlogPost {
   slug: string;
@@ -44,7 +42,7 @@ const defaultPosts: BlogPost[] = [
 ];
 
 const BlogPreview = ({ posts = defaultPosts, title = "Полезные статьи" }: BlogPreviewProps) => {
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -85,7 +83,7 @@ const BlogPreview = ({ posts = defaultPosts, title = "Полезные стат�
           </p>
         </motion.div>
 
-        <motion.div
+        <motion.div 
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           variants={containerVariants}
           initial="hidden"
@@ -98,19 +96,19 @@ const BlogPreview = ({ posts = defaultPosts, title = "Полезные стат�
               className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group"
               variants={itemVariants}
               whileHover={{ y: -5 }}
-              onClick={() => router.push(`/blog/${post.slug}`)}
+              onClick={() => navigate(`/blog/${post.slug}`)}
             >
               {post.image && (
                 <div className="relative h-48 overflow-hidden">
-                  <img
-                    src={post.image}
+                  <img 
+                    src={post.image} 
                     alt={post.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     loading="lazy"
                   />
                 </div>
               )}
-
+              
               <div className="p-6">
                 <div className="flex items-center text-sm text-muted-foreground mb-3 gap-4">
                   <span className="flex items-center gap-1">
@@ -132,13 +130,13 @@ const BlogPreview = ({ posts = defaultPosts, title = "Полезные стат�
                 <h3 className="text-xl font-semibold mb-3 group-hover:text-primary transition-colors">
                   {post.title}
                 </h3>
-
+                
                 <p className="text-muted-foreground mb-4 line-clamp-3">
                   {post.excerpt}
                 </p>
 
-                <Button
-                  variant="link"
+                <Button 
+                  variant="link" 
                   className="p-0 h-auto text-primary group-hover:gap-2 transition-all"
                 >
                   Читать далее
@@ -149,17 +147,17 @@ const BlogPreview = ({ posts = defaultPosts, title = "Полезные стат�
           ))}
         </motion.div>
 
-        <motion.div
+        <motion.div 
           className="text-center mt-12"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <Button
-            variant="outline"
+          <Button 
+            variant="outline" 
             size="lg"
-            onClick={() => router.push('/blog')}
+            onClick={() => navigate('/blog')}
             className="hover:bg-secondary"
           >
             Все статьи

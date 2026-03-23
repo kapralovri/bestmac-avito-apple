@@ -1,8 +1,8 @@
-'use client'
-
 import { motion } from "framer-motion";
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import { MessageCircle, CheckCircle2, Shield, Clock, MapPin, Calculator } from "lucide-react";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ interface SellDeviceLandingProps {
     description: string;
     keywords: string;
     modelsBought: string[];
-    heroImage: string | { src: string };
+    heroImage: string;
 }
 
 const SellDeviceLanding = ({
@@ -52,8 +52,13 @@ const SellDeviceLanding = ({
     return (
         <div className="min-h-screen bg-background text-foreground flex flex-col">
             <SEOHead
+                title={title}
+                description={description}
+                canonical={`/sell/${deviceType.toLowerCase().replace(' ', '-')}`}
+                keywords={keywords}
                 schema={schemaGraph}
             />
+            <Header />
 
             <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
                 <Breadcrumbs items={breadcrumbItems} />
@@ -135,7 +140,7 @@ const SellDeviceLanding = ({
                     >
                         <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent rounded-[2rem] blur-3xl -z-10" />
                         <img
-                            src={typeof heroImage === 'string' ? heroImage : heroImage.src}
+                            src={heroImage}
                             alt={`Скупка ${deviceType} в Москве`}
                             className="w-full h-auto object-contain drop-shadow-2xl"
                             style={{ maxHeight: '500px' }}
@@ -209,7 +214,7 @@ const SellDeviceLanding = ({
                             <h3 className="font-bold text-lg mb-2">Обмен по Trade-In</h3>
                             <p className="text-sm">Хотите обновить устройство? Сдайте свой старый {deviceType} и получите скидку на покупку нового MacBook или другого устройства Apple из нашего каталога!</p>
                             <Button variant="link" className="px-0 mt-2" asChild>
-                                <Link href="/buy">Смотреть каталог →</Link>
+                                <Link to="/buy">Смотреть каталог →</Link>
                             </Button>
                         </div>
                     </div>
@@ -231,6 +236,7 @@ const SellDeviceLanding = ({
                 </motion.section>
 
             </main>
+            <Footer />
         </div>
     );
 };

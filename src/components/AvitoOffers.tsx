@@ -1,5 +1,3 @@
-'use client'
-
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
@@ -56,27 +54,17 @@ const AvitoOffers = ({ limit }: AvitoOffersProps = {}) => {
         transition={{ duration: 0.5 }}
         whileHover={{ y: -5 }}
       >
-        <a href={offer.url} target="_blank" rel="noopener noreferrer" className="block bg-gray-100">
-          {offer.imageUrl ? (
-            <img
-              className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
-              src={`/api/image-proxy?url=${encodeURIComponent(offer.imageUrl)}`}
-              alt={`${offer.title} - MacBook или техника Apple по цене ${formattedPrice} ₽ на Avito`}
-              loading="lazy"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = '/placeholder.svg';
-              }}
-            />
-          ) : (
-            <div className="w-full h-48 flex flex-col items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 gap-2">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" className="opacity-25">
-                <path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z" stroke="#64748b" strokeWidth="1.5" strokeLinecap="round"/>
-                <rect x="2" y="17" width="20" height="4" rx="1" stroke="#64748b" strokeWidth="1.5"/>
-              </svg>
-              <span className="text-xs text-slate-400 font-medium">Avito</span>
-            </div>
-          )}
+        <a href={offer.url} target="_blank" rel="noopener noreferrer" className="block">
+          <img
+            className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
+            src={offer.imageUrl || ''}
+            alt={`${offer.title} - MacBook или техника Apple по цене ${formattedPrice} ₽ на Avito`}
+            loading="lazy"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+            }}
+          />
         </a>
 
         <div className="p-6">

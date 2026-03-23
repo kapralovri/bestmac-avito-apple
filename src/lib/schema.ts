@@ -1,19 +1,17 @@
 // Базовые данные организации
 export const organizationSchema = {
   "@context": "https://schema.org",
-  "@type": ["ElectronicsStore", "LocalBusiness"],
+  "@type": ["Organization", "LocalBusiness"],
   "name": "BestMac",
   "description": "Купить MacBook, продать MacBook, скупка MacBook в Москве. Продажа подержанной техники Apple с гарантией.",
-  "image": "https://bestmac.ru/favicon.png",
+  "image": "https://bestmac.ru/og-image.jpg",
   "url": "https://bestmac.ru",
   "telephone": "+7-903-299-00-29",
-  "foundingDate": "2018",
   "address": {
     "@type": "PostalAddress",
     "streetAddress": "ул. Дениса Давыдова 3",
     "addressLocality": "Москва",
-    "addressRegion": "Москва",
-    "postalCode": "121248",
+    "addressRegion": "Дорогомилово",
     "addressCountry": "RU"
   },
   "geo": {
@@ -24,15 +22,17 @@ export const organizationSchema = {
   "openingHoursSpecification": [
     {
       "@type": "OpeningHoursSpecification",
-      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      "dayOfWeek": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday"
+      ],
       "opens": "10:00",
-      "closes": "20:00"
-    },
-    {
-      "@type": "OpeningHoursSpecification",
-      "dayOfWeek": ["Saturday", "Sunday"],
-      "opens": "11:00",
-      "closes": "18:00"
+      "closes": "23:00"
     }
   ],
   "aggregateRating": {
@@ -97,7 +97,7 @@ export const breadcrumbSchema = (items: Array<{name: string, url: string}>) => (
     "@type": "ListItem",
     "position": index + 1,
     "name": item.name,
-    "item": item.url.startsWith('http') ? item.url : `https://bestmac.ru${item.url}`
+    "item": item.url
   }))
 });
 

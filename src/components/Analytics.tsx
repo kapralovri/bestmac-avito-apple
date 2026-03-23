@@ -1,5 +1,3 @@
-'use client'
-
 import { useEffect } from 'react';
 
 const METRIKA_ID = 50006968;

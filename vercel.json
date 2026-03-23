@@ -1,4 +1,41 @@
 {
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/api/buyout/estimate",
+      "destination": "/api/buyout/estimate"
+    },
+    {
+      "source": "/favicon.ico",
+      "destination": "/favicon.png"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(googlebot|yandexbot|bingbot|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora\\ link\\ preview|showyoubot|outbrain|pinterest\\/0\\.|slackbot|vkShare|W3C_Validator|whatsapp|telegrambot|applebot|yandex.com/bots).*"
+        }
+      ],
+      "destination": "/api/prerender?__path=/"
+    },
+    {
+      "source": "/:path((?!api|_vercel|assets).*)*",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(googlebot|yandexbot|bingbot|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora\\ link\\ preview|showyoubot|outbrain|pinterest\\/0\\.|slackbot|vkShare|W3C_Validator|whatsapp|telegrambot|applebot|yandex.com/bots).*"
+        }
+      ],
+      "destination": "/api/prerender?__path=/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
   "redirects": [
     {
       "source": "/:path*",
@@ -29,6 +66,20 @@
           "value": "SAMEORIGIN"
         }
       ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     }
-  ]
+  ],
+  "functions": {
+    "api/prerender.ts": {
+      "includeFiles": "api/prerendered/**"
+    }
+  }
 }

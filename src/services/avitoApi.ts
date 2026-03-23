@@ -105,7 +105,7 @@ class AvitoApiService {
       this.accessToken = data.access_token;
       
       // Сохраняем токен в localStorage
-      localStorage.setItem('avito_access_token', this.accessToken ?? '');
+      localStorage.setItem('avito_access_token', this.accessToken);
       
       return true;
     } catch (error) {
@@ -208,7 +208,7 @@ class AvitoApiService {
     return categoryMap[avitoCategory || ''] || 'MacBook';
   }
 
-  private extractSpecifications(item: NonNullable<AvitoApiResponse['items']>[0]): string[] {
+  private extractSpecifications(item: AvitoApiResponse['items'][0]): string[] {
     const specs: string[] = [];
     
     if (item.attributes) {
