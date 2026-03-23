@@ -56,17 +56,23 @@ const AvitoOffers = ({ limit }: AvitoOffersProps = {}) => {
         transition={{ duration: 0.5 }}
         whileHover={{ y: -5 }}
       >
-        <a href={offer.url} target="_blank" rel="noopener noreferrer" className="block">
-          <img
-            className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
-            src={offer.imageUrl || ''}
-            alt={`${offer.title} - MacBook или техника Apple по цене ${formattedPrice} ₽ на Avito`}
-            loading="lazy"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
-            }}
-          />
+        <a href={offer.url} target="_blank" rel="noopener noreferrer" className="block bg-gray-100">
+          {offer.imageUrl ? (
+            <img
+              className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
+              src={`/api/image-proxy?url=${encodeURIComponent(offer.imageUrl)}`}
+              alt={`${offer.title} - MacBook или техника Apple по цене ${formattedPrice} ₽ на Avito`}
+              loading="lazy"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/placeholder.svg';
+              }}
+            />
+          ) : (
+            <div className="w-full h-48 flex items-center justify-center bg-gray-100">
+              <img src="/placeholder.svg" alt="" className="w-16 h-16 opacity-30" />
+            </div>
+          )}
         </a>
 
         <div className="p-6">
