@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     cssCodeSplit: true,
     minify: 'esbuild',
-    target: 'es2015',
+    target: ['es2020', 'chrome80', 'safari13', 'ios13', 'firefox78'],
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {

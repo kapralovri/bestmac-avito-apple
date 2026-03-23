@@ -1,3 +1,5 @@
+'use client'
+
 import { ShieldCheck, Award, Handshake, HeartHandshake } from "lucide-react";
 import { motion } from "framer-motion";
 import { useRef, useCallback, useState } from "react";
@@ -47,7 +49,7 @@ const AboutSection = () => {
             Обо мне
           </h2>
           <p className="text-lg text-muted-foreground">
-            Более 10 лет в мире Apple
+            В мире Apple с 2018 года
           </p>
         </motion.div>
 
@@ -60,15 +62,15 @@ const AboutSection = () => {
         >
           <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-border flex-shrink-0">
             <img
-              src={romanPhoto}
+              src={typeof romanPhoto === 'string' ? romanPhoto : romanPhoto.src}
               alt="Роман Капралов - основатель BestMac"
               className="w-full h-full object-cover"
             />
           </div>
           <div className="text-center lg:text-left space-y-4 text-muted-foreground text-lg leading-relaxed max-w-2xl">
             <p>
-              Меня зовут <span className="text-foreground font-medium">Роман</span>. Я уже более
-              <span className="text-primary font-medium"> 10 лет</span> занимаюсь подбором и продажей подержанной техники Apple.
+              Меня зовут <span className="text-foreground font-medium">Роман</span>. С
+              <span className="text-primary font-medium"> 2018 года</span> занимаюсь подбором и продажей подержанной техники Apple.
             </p>
             <p>
               Продаю технику с минимальным пробегом в отличном состоянии. Все аппараты тщательно тестируются перед продажей.

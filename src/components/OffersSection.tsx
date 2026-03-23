@@ -1,3 +1,5 @@
+'use client'
+
 import { motion } from "framer-motion";
 import { useRef, useCallback, useState } from "react";
 import AvitoOffers from "@/components/AvitoOffers";

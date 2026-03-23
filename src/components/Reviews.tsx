@@ -1,6 +1,5 @@
 import { Star } from "lucide-react";
 import { motion } from "framer-motion";
-import { Helmet } from "react-helmet-async";
 
 interface Review {
   author: string;
@@ -65,13 +64,6 @@ const Reviews = ({ reviews = defaultReviews, title = "Отзывы наших к
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "name": "BestMac",
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "5.0",
-      "reviewCount": reviews.length,
-      "bestRating": "5",
-      "worstRating": "5"
-    },
     "review": reviews.map(review => ({
       "@type": "Review",
       "author": {
@@ -112,11 +104,7 @@ const Reviews = ({ reviews = defaultReviews, title = "Отзывы наших к
 
   return (
     <>
-      <Helmet>
-        <script type="application/ld+json">
-          {JSON.stringify(reviewSchema)}
-        </script>
-      </Helmet>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewSchema) }} />
       <section className="py-16 bg-card/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div

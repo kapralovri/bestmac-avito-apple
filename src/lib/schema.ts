@@ -1,12 +1,13 @@
 // Базовые данные организации
 export const organizationSchema = {
   "@context": "https://schema.org",
-  "@type": ["Organization", "LocalBusiness"],
+  "@type": ["ElectronicsStore", "LocalBusiness"],
   "name": "BestMac",
   "description": "Купить MacBook, продать MacBook, скупка MacBook в Москве. Продажа подержанной техники Apple с гарантией.",
-  "image": "https://bestmac.ru/og-image.jpg",
+  "image": "https://bestmac.ru/favicon.png",
   "url": "https://bestmac.ru",
   "telephone": "+7-903-299-00-29",
+  "foundingDate": "2018",
   "address": {
     "@type": "PostalAddress",
     "streetAddress": "ул. Дениса Давыдова 3",
@@ -22,17 +23,15 @@ export const organizationSchema = {
   "openingHoursSpecification": [
     {
       "@type": "OpeningHoursSpecification",
-      "dayOfWeek": [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday"
-      ],
+      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
       "opens": "10:00",
-      "closes": "23:00"
+      "closes": "20:00"
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Saturday", "Sunday"],
+      "opens": "11:00",
+      "closes": "18:00"
     }
   ],
   "aggregateRating": {

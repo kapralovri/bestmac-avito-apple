@@ -1,12 +1,14 @@
+'use client'
+
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import macbookHero from "@/assets/images/macbook-hero.jpg";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { useRef } from "react";
 
 const Hero = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const sectionRef = useRef<HTMLDivElement>(null);
 
   const { scrollYProgress } = useScroll({
@@ -38,7 +40,7 @@ const Hero = () => {
     <section ref={sectionRef} className="relative h-[200vh]">
       {/* Sticky container */}
       <div className="sticky top-0 h-screen overflow-hidden bg-background flex flex-col items-center justify-center">
-        
+
         {/* Animated glow */}
         <motion.div
           className="absolute inset-0 pointer-events-none"
@@ -53,10 +55,13 @@ const Hero = () => {
           style={{ scale: imageScale, opacity: imageOpacity, y: imageY }}
         >
           <img
-            src={macbookHero}
+            src={typeof macbookHero === 'string' ? macbookHero : macbookHero.src}
             alt="MacBook Pro на тёмном фоне"
             className="w-full h-full object-cover"
             loading="eager"
+            fetchPriority="high"
+            width="1920"
+            height="1080"
           />
           {/* Dramatic vignette */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_30%,_hsl(0_0%_0%)_100%)]" />
@@ -85,9 +90,9 @@ const Hero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            <span className="text-gradient">Техника Apple.</span>
+            <span className="text-gradient">MacBook б/у</span>
             <br />
-            <span className="text-gradient-blue">Выгодно.</span>
+            <span className="text-gradient-blue">в Москве.</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -112,7 +117,7 @@ const Hero = () => {
             <Button
               size="lg"
               className="rounded-full px-10 h-14 text-base font-medium bg-primary hover:bg-primary/90 shadow-elegant transition-all duration-300 hover:shadow-[0_30px_80px_-20px_hsl(212_100%_48%_/_0.4)]"
-              onClick={() => navigate("/buy")}
+              onClick={() => router.push("/buy")}
             >
               Смотреть каталог
               <ArrowRight className="ml-2 w-4 h-4" />
@@ -121,7 +126,7 @@ const Hero = () => {
               variant="outline"
               size="lg"
               className="rounded-full px-10 h-14 text-base font-medium border-border/50 bg-card/30 backdrop-blur-sm hover:bg-card/60 text-foreground transition-all duration-300"
-              onClick={() => navigate("/sell")}
+              onClick={() => router.push("/sell")}
             >
               Продать технику
             </Button>

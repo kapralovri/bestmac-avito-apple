@@ -1,7 +1,8 @@
+'use client'
+
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { faqSchema } from "@/lib/schema";
-import { Helmet } from "react-helmet-async";
 
 interface FAQItem {
   question: string;
@@ -28,11 +29,7 @@ const FAQ = ({ items, title = "Часто задаваемые вопросы" }
   return (
     <>
       {schema && (
-        <Helmet>
-          <script type="application/ld+json">
-            {JSON.stringify(schema)}
-          </script>
-        </Helmet>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       )}
       <section className="py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

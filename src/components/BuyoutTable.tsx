@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useMemo, useState } from 'react';
 import type { BuyoutRow } from '@/types/buyout';
 import { loadBuyoutData } from '@/lib/buyout';

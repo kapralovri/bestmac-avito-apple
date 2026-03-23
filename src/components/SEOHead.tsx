@@ -1,75 +1,24 @@
-import { Helmet } from 'react-helmet-async';
-import { useLocation } from 'react-router-dom';
+'use client'
+
+// NOTE: In Next.js, title/description/canonical are handled by generateMetadata in each page.tsx
+// This component only renders JSON-LD structured data.
 
 interface SEOHeadProps {
-  title?: string;
-  description?: string;
-  canonical?: string;
-  schema?: object;
-  ogImage?: string;
-  keywords?: string;
-  noindex?: boolean;
+  title?: string
+  description?: string
+  canonical?: string
+  schema?: object
+  ogImage?: string
+  keywords?: string
+  noindex?: boolean
 }
 
-const SEOHead = ({
-  title,
-  description,
-  canonical,
-  schema,
-  ogImage = "https://bestmac.ru/og-image.jpg",
-  keywords,
-  noindex = false
-}: SEOHeadProps) => {
-  const baseUrl = "https://bestmac.ru";
-  const location = useLocation();
-  const pathname = (location?.pathname || '/').replace(/\/+$/, '') || '/';
-
-  // Normalize canonical: strip trailing slashes
-  const canonicalPath = (canonical ?? pathname).replace(/\/+$/, '') || '/';
-  const fullCanonical = `${baseUrl}${canonicalPath}`;
-
-  // IMPORTANT: og:url должен отражать фактический URL страницы (pathname),
-  // а не только canonical проп, чтобы валидаторы корректно подхватывали значение.
-  const ogUrl = `${baseUrl}${pathname}`;
-
-  // Detect 404 pages and add noindex
-  const is404 = title?.includes('404') || title?.includes('не найдена');
-  const shouldNoIndex = noindex || is404;
-
+export default function SEOHead({ schema }: SEOHeadProps) {
+  if (!schema) return null
   return (
-    <Helmet>
-      {title && <title>{title}</title>}
-      {description && <meta name="description" content={description} />}
-      {keywords && <meta name="keywords" content={keywords} />}
-      {shouldNoIndex && <meta name="robots" content="noindex, nofollow" />}
-      <link rel="canonical" href={fullCanonical} />
-
-      {/* Open Graph */}
-      {title && <meta property="og:title" content={title} />}
-      {description && <meta property="og:description" content={description} />}
-      <meta property="og:type" content="website" />
-      <meta property="og:url" content={ogUrl} />
-      <meta
-        property="og:image"
-        content={ogImage.startsWith('http') ? ogImage : `${baseUrl}${ogImage}`}
-      />
-      <meta property="og:locale" content="ru_RU" />
-      <meta property="og:site_name" content="BestMac" />
-
-      {/* Twitter Card */}
-      <meta name="twitter:card" content="summary_large_image" />
-      {title && <meta name="twitter:title" content={title} />}
-      {description && <meta name="twitter:description" content={description} />}
-      <meta name="twitter:image" content={ogImage.startsWith('http') ? ogImage : `${baseUrl}${ogImage}`} />
-
-      {/* Schema.org */}
-      {schema && (
-        <script type="application/ld+json">
-          {JSON.stringify(schema)}
-        </script>
-      )}
-    </Helmet>
-  );
-};
-
-export default SEOHead;
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  )
+}

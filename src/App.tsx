@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { initAnalytics } from "./components/Analytics";
 import CookieBanner from "./components/CookieBanner";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 // Lazy-loaded pages
 const Index = lazy(() => import("./pages/Index"));
@@ -49,13 +50,27 @@ const GeoDorogomilovo = lazy(() => import("./pages/geo/Dorogomilovo"));
 const GeoArbat = lazy(() => import("./pages/geo/Arbat"));
 const GeoHamovniki = lazy(() => import("./pages/geo/Hamovniki"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: 1, staleTime: 1000 * 60 * 5 },
+  },
+});
 
-// Loading component
+// Loading component — inline styles чтобы работало даже если Tailwind CSS ещё не загрузился
 const PageLoader = () => (
-  <div className="min-h-screen bg-background flex flex-col items-center justify-center">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+  <div style={{ minHeight: '100vh', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ width: 48, height: 48, border: '2px solid transparent', borderBottomColor: '#0071e3', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
   </div>
+);
+
+// Обёртка для lazy-маршрутов с собственным ErrorBoundary
+const SafeRoute = ({ children }: { children: React.ReactNode }) => (
+  <ErrorBoundary>
+    <Suspense fallback={<PageLoader />}>
+      {children}
+    </Suspense>
+  </ErrorBoundary>
 );
 
 const App = () => {
@@ -71,54 +86,52 @@ const App = () => {
           <Sonner />
           <CookieBanner />
           <BrowserRouter>
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/buy" element={<Buy />} />
-                <Route path="/sell" element={<Sell />} />
-                <Route path="/selection" element={<Selection />} />
-                <Route path="/business" element={<Business />} />
-                <Route path="/product/:id" element={<ProductDetail />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/pickup" element={<Pickup />} />
-                <Route path="/service" element={<Service />} />
-                <Route path="/sell/imac" element={<SellImac />} />
-                <Route path="/sell/mac-pro" element={<SellMacPro />} />
-                <Route path="/sell/mac-mini" element={<SellMacMini />} />
-                <Route path="/sell/macbook-pro" element={<SellSeries series="pro" />} />
-                <Route path="/sell/macbook-air" element={<SellSeries series="air" />} />
-                <Route path="/sell/broken" element={<SellBroken />} />
-                <Route path="/sell/:model_slug" element={<SellModel />} />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="/terms" element={<Terms />} />
-                {/* Blog routes */}
-                <Route path="/blog" element={<BlogIndex />} />
-                <Route path="/blog/kak-vybrat-macbook-2024" element={<KakVybratMacbook2024 />} />
-                <Route path="/blog/proverka-macbook-pered-pokupkoi" element={<ProverkaMacbookPeredPokupkoi />} />
-                <Route path="/blog/macbook-air-m2-vs-m3" element={<MacbookAirM2vsM3 />} />
-                <Route path="/blog/kak-prodat-macbook-vygodno" element={<KakProdatMacbookVygodno />} />
-                <Route path="/blog/macbook-m4-obzor" element={<MacbookM4Obzor />} />
-                <Route path="/blog/macbook-vs-windows" element={<MacbookVsWindows />} />
-                <Route path="/blog/macbook-bu-podvodnye" element={<MacbookBuPodvodnye />} />
-                <Route path="/blog/macbook-dlia-studenta" element={<MacbookDliaStudenta />} />
-                <Route path="/blog/macbook-apgreid" element={<MacbookApgreid />} />
-                {/* Long-tail landing pages */}
-                <Route path="/buy/macbook-air-m2-16gb" element={<MacbookAirM2Buy />} />
-                <Route path="/sell/macbook-broken-screen" element={<MacbookBrokenScreen />} />
-                <Route path="/buy/macbook-pro-14-m3" element={<MacbookPro14M3 />} />
-                <Route path="/buy/macbook-pro-16-m3-max" element={<MacbookPro16M3Max />} />
-                <Route path="/buy/macbook-air-m3-students" element={<MacbookAirM3Students />} />
-                <Route path="/comparison" element={<Comparison />} />
-                {/* Geo landing pages */}
-                <Route path="/moskva" element={<MoskvaIndex />} />
-                <Route path="/moskva/kievskaya" element={<GeoKievskaya />} />
-                <Route path="/moskva/dorogomilovo" element={<GeoDorogomilovo />} />
-                <Route path="/moskva/arbat" element={<GeoArbat />} />
-                <Route path="/moskva/hamovniki" element={<GeoHamovniki />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
+            <Routes>
+              <Route path="/" element={<SafeRoute><Index /></SafeRoute>} />
+              <Route path="/buy" element={<SafeRoute><Buy /></SafeRoute>} />
+              <Route path="/sell" element={<SafeRoute><Sell /></SafeRoute>} />
+              <Route path="/selection" element={<SafeRoute><Selection /></SafeRoute>} />
+              <Route path="/business" element={<SafeRoute><Business /></SafeRoute>} />
+              <Route path="/product/:id" element={<SafeRoute><ProductDetail /></SafeRoute>} />
+              <Route path="/contact" element={<SafeRoute><Contact /></SafeRoute>} />
+              <Route path="/pickup" element={<SafeRoute><Pickup /></SafeRoute>} />
+              <Route path="/service" element={<SafeRoute><Service /></SafeRoute>} />
+              <Route path="/sell/imac" element={<SafeRoute><SellImac /></SafeRoute>} />
+              <Route path="/sell/mac-pro" element={<SafeRoute><SellMacPro /></SafeRoute>} />
+              <Route path="/sell/mac-mini" element={<SafeRoute><SellMacMini /></SafeRoute>} />
+              <Route path="/sell/macbook-pro" element={<SafeRoute><SellSeries series="pro" /></SafeRoute>} />
+              <Route path="/sell/macbook-air" element={<SafeRoute><SellSeries series="air" /></SafeRoute>} />
+              <Route path="/sell/broken" element={<SafeRoute><SellBroken /></SafeRoute>} />
+              <Route path="/sell/:model_slug" element={<SafeRoute><SellModel /></SafeRoute>} />
+              <Route path="/privacy" element={<SafeRoute><Privacy /></SafeRoute>} />
+              <Route path="/terms" element={<SafeRoute><Terms /></SafeRoute>} />
+              {/* Blog routes */}
+              <Route path="/blog" element={<SafeRoute><BlogIndex /></SafeRoute>} />
+              <Route path="/blog/kak-vybrat-macbook-2024" element={<SafeRoute><KakVybratMacbook2024 /></SafeRoute>} />
+              <Route path="/blog/proverka-macbook-pered-pokupkoi" element={<SafeRoute><ProverkaMacbookPeredPokupkoi /></SafeRoute>} />
+              <Route path="/blog/macbook-air-m2-vs-m3" element={<SafeRoute><MacbookAirM2vsM3 /></SafeRoute>} />
+              <Route path="/blog/kak-prodat-macbook-vygodno" element={<SafeRoute><KakProdatMacbookVygodno /></SafeRoute>} />
+              <Route path="/blog/macbook-m4-obzor" element={<SafeRoute><MacbookM4Obzor /></SafeRoute>} />
+              <Route path="/blog/macbook-vs-windows" element={<SafeRoute><MacbookVsWindows /></SafeRoute>} />
+              <Route path="/blog/macbook-bu-podvodnye" element={<SafeRoute><MacbookBuPodvodnye /></SafeRoute>} />
+              <Route path="/blog/macbook-dlia-studenta" element={<SafeRoute><MacbookDliaStudenta /></SafeRoute>} />
+              <Route path="/blog/macbook-apgreid" element={<SafeRoute><MacbookApgreid /></SafeRoute>} />
+              {/* Long-tail landing pages */}
+              <Route path="/buy/macbook-air-m2-16gb" element={<SafeRoute><MacbookAirM2Buy /></SafeRoute>} />
+              <Route path="/sell/macbook-broken-screen" element={<SafeRoute><MacbookBrokenScreen /></SafeRoute>} />
+              <Route path="/buy/macbook-pro-14-m3" element={<SafeRoute><MacbookPro14M3 /></SafeRoute>} />
+              <Route path="/buy/macbook-pro-16-m3-max" element={<SafeRoute><MacbookPro16M3Max /></SafeRoute>} />
+              <Route path="/buy/macbook-air-m3-students" element={<SafeRoute><MacbookAirM3Students /></SafeRoute>} />
+              <Route path="/comparison" element={<SafeRoute><Comparison /></SafeRoute>} />
+              {/* Geo landing pages */}
+              <Route path="/moskva" element={<SafeRoute><MoskvaIndex /></SafeRoute>} />
+              <Route path="/moskva/kievskaya" element={<SafeRoute><GeoKievskaya /></SafeRoute>} />
+              <Route path="/moskva/dorogomilovo" element={<SafeRoute><GeoDorogomilovo /></SafeRoute>} />
+              <Route path="/moskva/arbat" element={<SafeRoute><GeoArbat /></SafeRoute>} />
+              <Route path="/moskva/hamovniki" element={<SafeRoute><GeoHamovniki /></SafeRoute>} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<SafeRoute><NotFound /></SafeRoute>} />
+            </Routes>
           </BrowserRouter>
         </TooltipProvider>
       </QueryClientProvider>

@@ -113,14 +113,16 @@ export const generateArticleSchema = (article: {
 
 export const generateLocalBusinessSchema = () => ({
   "@context": "https://schema.org",
-  "@type": "LocalBusiness",
+  "@type": ["ElectronicsStore", "LocalBusiness"],
   "name": "BestMac",
-  "image": "https://bestmac.ru/og-image.jpg",
+  "image": "https://bestmac.ru/favicon.png",
   "url": "https://bestmac.ru",
-  "telephone": "+7(000)000-00-00", // Замените на реальный при необходимости или оставьте TG/WA
-  "priceRange": "$$$",
+  "telephone": "+7-903-299-00-29",
+  "foundingDate": "2018",
+  "priceRange": "$$",
   "address": {
     "@type": "PostalAddress",
+    "streetAddress": "ул. Дениса Давыдова 3",
     "addressLocality": "Москва",
     "addressCountry": "RU"
   },
@@ -128,6 +130,6 @@ export const generateLocalBusinessSchema = () => ({
   "aggregateRating": {
     "@type": "AggregateRating",
     "ratingValue": "4.9",
-    "reviewCount": "156"
+    "reviewCount": "128"
   }
 });
