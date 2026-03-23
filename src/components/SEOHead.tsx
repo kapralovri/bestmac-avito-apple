@@ -1,7 +1,5 @@
-'use client'
-
-// NOTE: In Next.js, title/description/canonical are handled by generateMetadata in each page.tsx
-// This component only renders JSON-LD structured data.
+// Server component — no 'use client'. Renders JSON-LD structured data in SSR HTML.
+// title/description/canonical are handled by generateMetadata in each page.tsx
 
 interface SEOHeadProps {
   title?: string

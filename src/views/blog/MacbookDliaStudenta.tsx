@@ -11,7 +11,7 @@ const MacbookDliaStudenta = () => {
     title: "Какой MacBook выбрать студенту: бюджетные варианты",
     description: "Лучшие модели MacBook для студентов в 2024 году. Сравнение характеристик, цен и рекомендации по выбору недорогого MacBook для учебы.",
     datePublished: "2024-01-12",
-    dateModified: "2024-01-12",
+    dateModified: "2026-03-23",
     author: "BestMac",
     url: "/blog/macbook-dlia-studenta",
   });

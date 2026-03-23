@@ -10,7 +10,7 @@ const MacbookVsWindows = () => {
     title: "MacBook или Windows ноутбук: что выбрать в 2024 году",
     description: "Сравнение MacBook и Windows ноутбуков по производительности, цене, экосистеме и долговечности. Помогаем сделать правильный выбор.",
     datePublished: "2024-01-15",
-    dateModified: "2024-01-15",
+    dateModified: "2026-03-23",
     author: "BestMac",
     url: "/blog/macbook-vs-windows",
   });

@@ -1,0 +1,292 @@
+{
+  "version": 3,
+  "pages404": true,
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [
+    {
+      "page": "/product/[id]",
+      "regex": "^/product/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/product/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/sell/[model_slug]",
+      "regex": "^/sell/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPmodel_slug": "nxtPmodel_slug"
+      },
+      "namedRegex": "^/sell/(?<nxtPmodel_slug>[^/]+?)(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/blog",
+      "regex": "^/blog(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog(?:/)?$"
+    },
+    {
+      "page": "/blog/kak-prodat-macbook-vygodno",
+      "regex": "^/blog/kak\\-prodat\\-macbook\\-vygodno(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/kak\\-prodat\\-macbook\\-vygodno(?:/)?$"
+    },
+    {
+      "page": "/blog/kak-vybrat-macbook-2024",
+      "regex": "^/blog/kak\\-vybrat\\-macbook\\-2024(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/kak\\-vybrat\\-macbook\\-2024(?:/)?$"
+    },
+    {
+      "page": "/blog/macbook-air-m2-vs-m3",
+      "regex": "^/blog/macbook\\-air\\-m2\\-vs\\-m3(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/macbook\\-air\\-m2\\-vs\\-m3(?:/)?$"
+    },
+    {
+      "page": "/blog/macbook-apgreid",
+      "regex": "^/blog/macbook\\-apgreid(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/macbook\\-apgreid(?:/)?$"
+    },
+    {
+      "page": "/blog/macbook-bu-podvodnye",
+      "regex": "^/blog/macbook\\-bu\\-podvodnye(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/macbook\\-bu\\-podvodnye(?:/)?$"
+    },
+    {
+      "page": "/blog/macbook-dlia-studenta",
+      "regex": "^/blog/macbook\\-dlia\\-studenta(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/macbook\\-dlia\\-studenta(?:/)?$"
+    },
+    {
+      "page": "/blog/macbook-m4-obzor",
+      "regex": "^/blog/macbook\\-m4\\-obzor(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/macbook\\-m4\\-obzor(?:/)?$"
+    },
+    {
+      "page": "/blog/macbook-vs-windows",
+      "regex": "^/blog/macbook\\-vs\\-windows(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/macbook\\-vs\\-windows(?:/)?$"
+    },
+    {
+      "page": "/blog/proverka-macbook-pered-pokupkoi",
+      "regex": "^/blog/proverka\\-macbook\\-pered\\-pokupkoi(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/proverka\\-macbook\\-pered\\-pokupkoi(?:/)?$"
+    },
+    {
+      "page": "/business",
+      "regex": "^/business(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/business(?:/)?$"
+    },
+    {
+      "page": "/buy",
+      "regex": "^/buy(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/buy(?:/)?$"
+    },
+    {
+      "page": "/buy/macbook-air-m2-16gb",
+      "regex": "^/buy/macbook\\-air\\-m2\\-16gb(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/buy/macbook\\-air\\-m2\\-16gb(?:/)?$"
+    },
+    {
+      "page": "/buy/macbook-air-m3-students",
+      "regex": "^/buy/macbook\\-air\\-m3\\-students(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/buy/macbook\\-air\\-m3\\-students(?:/)?$"
+    },
+    {
+      "page": "/buy/macbook-pro-14-m3",
+      "regex": "^/buy/macbook\\-pro\\-14\\-m3(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/buy/macbook\\-pro\\-14\\-m3(?:/)?$"
+    },
+    {
+      "page": "/buy/macbook-pro-16-m3-max",
+      "regex": "^/buy/macbook\\-pro\\-16\\-m3\\-max(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/buy/macbook\\-pro\\-16\\-m3\\-max(?:/)?$"
+    },
+    {
+      "page": "/comparison",
+      "regex": "^/comparison(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/comparison(?:/)?$"
+    },
+    {
+      "page": "/contact",
+      "regex": "^/contact(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/contact(?:/)?$"
+    },
+    {
+      "page": "/icon.png",
+      "regex": "^/icon\\.png(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/icon\\.png(?:/)?$"
+    },
+    {
+      "page": "/moskva",
+      "regex": "^/moskva(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/moskva(?:/)?$"
+    },
+    {
+      "page": "/moskva/arbat",
+      "regex": "^/moskva/arbat(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/moskva/arbat(?:/)?$"
+    },
+    {
+      "page": "/moskva/dorogomilovo",
+      "regex": "^/moskva/dorogomilovo(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/moskva/dorogomilovo(?:/)?$"
+    },
+    {
+      "page": "/moskva/hamovniki",
+      "regex": "^/moskva/hamovniki(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/moskva/hamovniki(?:/)?$"
+    },
+    {
+      "page": "/moskva/kievskaya",
+      "regex": "^/moskva/kievskaya(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/moskva/kievskaya(?:/)?$"
+    },
+    {
+      "page": "/pickup",
+      "regex": "^/pickup(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/pickup(?:/)?$"
+    },
+    {
+      "page": "/privacy",
+      "regex": "^/privacy(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/privacy(?:/)?$"
+    },
+    {
+      "page": "/selection",
+      "regex": "^/selection(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/selection(?:/)?$"
+    },
+    {
+      "page": "/sell",
+      "regex": "^/sell(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/sell(?:/)?$"
+    },
+    {
+      "page": "/sell/broken",
+      "regex": "^/sell/broken(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/sell/broken(?:/)?$"
+    },
+    {
+      "page": "/sell/imac",
+      "regex": "^/sell/imac(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/sell/imac(?:/)?$"
+    },
+    {
+      "page": "/sell/mac-mini",
+      "regex": "^/sell/mac\\-mini(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/sell/mac\\-mini(?:/)?$"
+    },
+    {
+      "page": "/sell/mac-pro",
+      "regex": "^/sell/mac\\-pro(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/sell/mac\\-pro(?:/)?$"
+    },
+    {
+      "page": "/sell/macbook-air",
+      "regex": "^/sell/macbook\\-air(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/sell/macbook\\-air(?:/)?$"
+    },
+    {
+      "page": "/sell/macbook-broken-screen",
+      "regex": "^/sell/macbook\\-broken\\-screen(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/sell/macbook\\-broken\\-screen(?:/)?$"
+    },
+    {
+      "page": "/sell/macbook-pro",
+      "regex": "^/sell/macbook\\-pro(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/sell/macbook\\-pro(?:/)?$"
+    },
+    {
+      "page": "/service",
+      "regex": "^/service(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/service(?:/)?$"
+    },
+    {
+      "page": "/terms",
+      "regex": "^/terms(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/terms(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSuffix": ".prefetch.rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments"
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

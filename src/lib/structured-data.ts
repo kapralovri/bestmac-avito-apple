@@ -87,7 +87,7 @@ export const generateArticleSchema = (article: {
   image?: string;
 }) => ({
   "@context": "https://schema.org",
-  "@type": "Article",
+  "@type": "BlogPosting",
   "headline": article.title,
   "description": article.description,
   "image": article.image || "https://bestmac.ru/favicon.png",
@@ -95,7 +95,8 @@ export const generateArticleSchema = (article: {
   "dateModified": article.dateModified,
   "author": {
     "@type": "Person",
-    "name": article.author
+    "name": "Роман Капралов",
+    "url": "https://bestmac.ru"
   },
   "publisher": {
     "@type": "Organization",

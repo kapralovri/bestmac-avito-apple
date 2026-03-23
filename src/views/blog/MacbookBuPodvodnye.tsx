@@ -10,7 +10,7 @@ const MacbookBuPodvodnye = () => {
     title: "Подводные камни покупки б/у MacBook: чего опасаться",
     description: "Распространенные проблемы при покупке б/у MacBook, красные флаги, как избежать обмана и проверить устройство перед покупкой.",
     datePublished: "2024-01-10",
-    dateModified: "2024-01-10",
+    dateModified: "2026-03-23",
     author: "BestMac",
     url: "/blog/macbook-bu-podvodnye",
   });

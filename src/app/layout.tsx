@@ -1,5 +1,4 @@
-import type { Metadata } from 'next'
-export const dynamic = 'force-dynamic'
+import type { Metadata, Viewport } from 'next'
 import Script from 'next/script'
 import './globals.css'
 import Providers from '@/components/Providers'
@@ -8,6 +7,12 @@ import Footer from '@/components/Footer'
 import { Toaster } from '@/components/ui/toaster'
 import { Toaster as Sonner } from '@/components/ui/sonner'
 import CookieBanner from '@/components/CookieBanner'
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#000000',
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://bestmac.ru'),
@@ -20,6 +25,21 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.png',
     shortcut: '/favicon.png',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'ru_RU',
+    url: 'https://bestmac.ru',
+    siteName: 'BestMac',
+    title: 'Купить MacBook б/у в Москве с гарантией — BestMac',
+    description: 'Покупка и продажа MacBook б/у в Москве. Гарантия 1 месяц, проверка по 35 параметрам, выезд на дом.',
+    images: [{ url: '/og-default.jpg', width: 1200, height: 630, alt: 'BestMac — MacBook б/у в Москве' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Купить MacBook б/у в Москве с гарантией — BestMac',
+    description: 'Покупка и продажа MacBook б/у в Москве. Гарантия 1 месяц, проверка по 35 параметрам.',
+    images: ['/og-default.jpg'],
   },
 }
 
@@ -48,12 +68,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <CookieBanner />
         </Providers>
 
-        {/* Google Tag Manager — afterInteractive чтобы не блокировать рендер */}
         <Script id="gtm" strategy="afterInteractive">
           {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-5H7ZD6C');`}
         </Script>
 
-        {/* Yandex.Metrika — afterInteractive чтобы не блокировать рендер */}
         <Script id="yandex-metrika" strategy="afterInteractive">
           {`(function(m,e,t,r,i,k,a){try{m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a);}catch(e){console.warn('Yandex.Metrika loading error:',e);}})(window,document,'script','https://mc.yandex.ru/metrika/tag.js','ym');try{ym(50006968,'init',{webvisor:true,clickmap:true,accurateTrackBounce:true,trackLinks:true});}catch(e){console.warn('Yandex.Metrika init error:',e);}`}
         </Script>

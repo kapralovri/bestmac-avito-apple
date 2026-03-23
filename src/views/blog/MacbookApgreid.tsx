@@ -10,7 +10,7 @@ const MacbookApgreid = () => {
     title: "Можно ли апгрейдить MacBook: что реально заменить",
     description: "Полный гид по апгрейду MacBook. Узнайте, какие компоненты можно заменить в разных моделях, стоимость апгрейда и альтернативные решения.",
     datePublished: "2024-01-18",
-    dateModified: "2024-01-18",
+    dateModified: "2026-03-23",
     author: "BestMac",
     url: "/blog/macbook-apgreid",
   });

@@ -46,7 +46,7 @@ Disallow: /*?filter=
 Disallow: /*?sort=
 
 # Указываем путь к sitemap и хост
-Host: https://bestmac.ru
+Host: bestmac.ru
 Sitemap: https://bestmac.ru/sitemap.xml
 
 # Crawl-delay для вежливого краулинга
