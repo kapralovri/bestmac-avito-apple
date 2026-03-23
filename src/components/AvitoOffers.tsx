@@ -69,8 +69,12 @@ const AvitoOffers = ({ limit }: AvitoOffersProps = {}) => {
               }}
             />
           ) : (
-            <div className="w-full h-48 flex items-center justify-center bg-gray-100">
-              <img src="/placeholder.svg" alt="" className="w-16 h-16 opacity-30" />
+            <div className="w-full h-48 flex flex-col items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 gap-2">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" className="opacity-25">
+                <path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z" stroke="#64748b" strokeWidth="1.5" strokeLinecap="round"/>
+                <rect x="2" y="17" width="20" height="4" rx="1" stroke="#64748b" strokeWidth="1.5"/>
+              </svg>
+              <span className="text-xs text-slate-400 font-medium">Avito</span>
             </div>
           )}
         </a>
