@@ -124,24 +124,12 @@ def solve_captcha(page) -> bool:
                 cookies[key] = cookie_map[key]
         logger.info(f"[ШАГ 2] Куки: {list(cookies.keys())}")
 
-        # --- Шаг 3: POST на /web/1/firewallCaptcha/verify ---
-        headers = {
-            'accept': '*/*',
-            'accept-language': 'en',
-            'content-type': 'application/json',
-            'origin': 'https://www.avito.ru',
-            'priority': 'u=1, i',
-            'referer': curr_url,
-            'sec-ch-ua': '"Not/A)Brand";v="8", "Chromium";v="126", "Google Chrome";v="126"',
-            'sec-ch-ua-mobile': '?0',
-            'sec-ch-ua-platform': '"Windows"',
-            'sec-fetch-dest': 'empty',
-            'sec-fetch-mode': 'cors',
-            'sec-fetch-site': 'same-origin',
-            'user-agent': USER_AGENT,
-            'x-cube': 'undefined',
-        }
-        json_data = {
+        # --- Шаг 3: POST через fetch() ВНУТРИ браузера ---
+        # Важно: используем page.evaluate с fetch + credentials:'include'
+        # чтобы куки верификации автоматически сохранились в браузере
+        logger.info(f"[ШАГ 3] 📤 POST через browser fetch → {AVITO_VERIFY_URL}")
+
+        js_payload = json.dumps({
             'captcha': '',
             'hCaptchaResponse': '',
             'captcha_id': AVITO_CAPTCHA_ID,
@@ -149,18 +137,31 @@ def solve_captcha(page) -> bool:
             'pass_token': pass_token,
             'gen_time': gen_time,
             'captcha_output': captcha_output,
-        }
+        })
 
-        logger.info(f"[ШАГ 3] 📤 POST → {AVITO_VERIFY_URL}")
-        resp = requests.post(AVITO_VERIFY_URL, cookies=cookies, headers=headers,
-                             json=json_data, timeout=15)
-        logger.info(f"[ШАГ 3] Ответ: HTTP {resp.status_code} | {resp.text[:300]}")
+        resp_data = page.evaluate(f"""async () => {{
+            const resp = await fetch('{AVITO_VERIFY_URL}', {{
+                method: 'POST',
+                headers: {{
+                    'accept': '*/*',
+                    'content-type': 'application/json',
+                    'origin': 'https://www.avito.ru',
+                    'referer': window.location.href,
+                    'x-cube': 'undefined',
+                }},
+                credentials: 'include',
+                body: JSON.stringify({js_payload}),
+            }});
+            return await resp.json();
+        }}""")
 
-        verified = resp.json().get('result', {}).get('verified', False)
+        logger.info(f"[ШАГ 3] Ответ: {str(resp_data)[:300]}")
+
+        verified = resp_data.get('result', {}).get('verified', False)
         if verified:
             logger.info("[ШАГ 3] ✅ Капча пройдена!")
         else:
-            logger.error(f"[ШАГ 3] ❌ verified=False: {resp.text[:300]}")
+            logger.error(f"[ШАГ 3] ❌ verified=False: {resp_data}")
             return False
 
         # --- Шаг 4: Перезагружаем страницу ---
