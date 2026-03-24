@@ -49,22 +49,65 @@ def clean_url(url: str) -> str:
     return url.split('?')[0]
 
 
+RAM_VALUES = {8, 16, 18, 24, 32, 36, 48, 64, 96, 128}
+
 def extract_specs(text: str):
-    text = text.lower().replace(' ', '')
-    matches = re.findall(r'(\d+)(?:gb|гб|tb|тб)', text)
-    ram, ssd = 8, 256
+    """Извлекает RAM и SSD из текста. Поддерживает форматы:
+    16/512, 16gb/512gb, 16гб 512гб, 16 gb 1tb и т.д.
+    """
+    text_lower = text.lower()
+
+    # Формат "16/512" или "16 / 1024" — самый частый в заголовках MacBook
+    slash = re.search(r'\b(\d+)\s*/\s*(\d+)\b', text_lower)
+    if slash:
+        a, b = int(slash.group(1)), int(slash.group(2))
+        if a in RAM_VALUES and b > a:
+            ssd = b * 1024 if b <= 8 else b
+            return a, ssd
+
+    # Формат с единицами: 16gb, 512гб, 1tb
+    t = text_lower.replace(' ', '')
+    matches = re.findall(r'(\d+)(?:gb|гб|tb|тб)', t)
     clean = [m for m in matches if not (2018 <= int(m) <= 2026)]
+    ram, ssd = 8, 256
     if len(clean) >= 2:
         ram = int(clean[0])
         ssd_val = int(clean[1])
         ssd = ssd_val * 1024 if ssd_val <= 8 else ssd_val
     elif len(clean) == 1:
         val = int(clean[0])
-        if val in [8, 16, 18, 24, 32, 36, 48, 64, 96, 128]:
+        if val in RAM_VALUES:
             ram = val
         else:
             ssd = val
     return ram, ssd
+
+
+def extract_specs_from_page(soup) -> tuple:
+    """Извлекает RAM и SSD из страницы объявления (таблица характеристик)."""
+    ram, ssd = None, None
+    try:
+        # Характеристики Авито — список параметров
+        for item in soup.select('[data-marker="item-params"] li, .params-paramsList li'):
+            text = item.get_text(' ', strip=True).lower()
+            if any(w in text for w in ['оперативн', 'ram', 'память']):
+                m = re.search(r'(\d+)', text)
+                if m and int(m.group(1)) in RAM_VALUES:
+                    ram = int(m.group(1))
+            if any(w in text for w in ['накопитель', 'ssd', 'hdd', 'диск']):
+                m = re.search(r'(\d+)', text)
+                if m:
+                    v = int(m.group(1))
+                    ssd = v * 1024 if v <= 8 else v
+        # Если не нашли в таблице — пробуем из заголовка h1
+        h1 = soup.find('h1')
+        if h1 and (ram is None or ssd is None):
+            r, s = extract_specs(h1.get_text())
+            if ram is None: ram = r
+            if ssd is None: ssd = s
+    except:
+        pass
+    return ram or 8, ssd or 256
 
 
 def is_captcha_page(page) -> bool:
@@ -258,17 +301,22 @@ class AvitoScanner:
             return False
 
     def deep_analyze(self, url: str):
-        """Открывает объявление, ищет циклы АКБ и срочность."""
+        """Открывает объявление: извлекает specs, циклы АКБ, срочность."""
         try:
             tab = self.context.new_page()
             tab.goto(url, wait_until='domcontentloaded', timeout=25000)
             time.sleep(random.uniform(1.0, 2.0))
             if is_captcha_page(tab):
                 solve_captcha(tab)
-            content = tab.content()
+            html = tab.content()
             tab.close()
 
-            soup = BeautifulSoup(content, 'lxml')
+            soup = BeautifulSoup(html, 'lxml')
+
+            # Specs из таблицы характеристик
+            ram, ssd = extract_specs_from_page(soup)
+
+            # Описание — циклы и срочность
             desc = soup.find('div', attrs={'data-marker': 'item-description'})
             text = desc.get_text().lower() if desc else ""
 
@@ -278,10 +326,10 @@ class AvitoScanner:
                 cycles = int(m.group(1))
 
             is_urgent = any(w in text for w in URGENT_KEYWORDS)
-            return cycles, is_urgent
+            return ram, ssd, cycles, is_urgent
         except Exception as e:
             logger.debug(f"deep_analyze: {e}")
-            return None, False
+            return 8, 256, None, False
 
     def notify(self, title, price, market_low, buyout, ram, ssd, url, cycles, is_urgent, is_avito_low):
         if not TELEGRAM_URL:
@@ -364,7 +412,17 @@ class AvitoScanner:
 
                 is_avito_low = any(x in item.get_text().lower() for x in
                                    ["ниже рыночной", "цена ниже", "хорошая цена"])
+
+                # Пробуем взять specs из превью (заголовок + сниппет)
                 ram, ssd = extract_specs(full_text)
+                specs_from_preview = (ram != 8 or ssd != 256)
+
+                # Если из превью не определили — заходим в объявление
+                if not specs_from_preview:
+                    ram, ssd, cycles, is_urgent = self.deep_analyze(raw_url)
+                    logger.info(f"  📄 {raw_title[:50]} → {ram}GB/{ssd}GB")
+                else:
+                    cycles, is_urgent = None, False
 
                 matched_stat = None
                 for (m_name, m_ram, m_ssd), stat in self.prices.items():
@@ -378,14 +436,14 @@ class AvitoScanner:
                     should_notify = (
                         price <= int(market_low * PRICE_THRESHOLD_FACTOR)
                         or is_avito_low
+                        or is_urgent
                     )
-                    cycles, is_urgent = None, False
-                    if not should_notify:
-                        cycles, is_urgent = self.deep_analyze(raw_url)
-                        if is_urgent:
-                            should_notify = True
-                    else:
-                        cycles, is_urgent = self.deep_analyze(raw_url)
+                    # Если зашли в объявление — cycles уже есть, иначе идём за ними
+                    if should_notify and cycles is None:
+                        ram2, ssd2, cycles, is_urgent2 = self.deep_analyze(raw_url)
+                        is_urgent = is_urgent or is_urgent2
+
+                    logger.info(f"  💰 {raw_title[:40]} | {price:,}₽ vs рынок {market_low:,}₽ | notify={should_notify}")
 
                     if should_notify:
                         self.notify(raw_title, price, market_low,
@@ -393,6 +451,8 @@ class AvitoScanner:
                                     ram, ssd, url, cycles, is_urgent, is_avito_low)
                         found_matches += 1
                         time.sleep(random.uniform(2, 4))
+                else:
+                    logger.debug(f"  ❌ Нет совпадения: {raw_title[:50]} {ram}GB/{ssd}GB")
 
                 self.seen.add(url)
                 newly_seen.append(url)
