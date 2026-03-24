@@ -27,6 +27,11 @@ TELEGRAM_URL      = os.environ.get('TELEGRAM_NOTIFY_URL')
 SCAN_URL          = os.environ.get('SCAN_URL')
 RUCAPTCHA_API_KEY = os.environ.get('RUCAPTCHA_API_KEY', '')
 
+# Постоянный captcha_id GeeTest v4 для Авито (не меняется)
+AVITO_CAPTCHA_ID  = '2d9c743cf7d63dbc9db578a608196bcd'
+AVITO_VERIFY_URL  = 'https://www.avito.ru/web/1/firewallCaptcha/verify'
+USER_AGENT        = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
+
 PRICE_THRESHOLD_FACTOR = 1.10
 
 URGENT_KEYWORDS = ['срочно', 'торг', 'уступлю', 'переезд', 'сегодня',
@@ -38,8 +43,6 @@ BAD_KEYWORDS = [
     'восстановлен', 'реф', 'refurbished', 'залит', 'глючит', 'полосы', 'пятна',
     'в разбор', 'на части', 'пароль', 'обход'
 ]
-
-AVITO_VERIFY_URL = 'https://www.avito.ru/web/1/firewallCaptcha/verify'
 
 
 def clean_url(url: str) -> str:
@@ -65,149 +68,107 @@ def extract_specs(text: str):
 
 
 def is_captcha_page(page) -> bool:
-    body = page.content().lower()
-    return (
-        'geetest' in body
-        or 'доступ ограничен' in body
-        or 'captcha' in page.url.lower()
-        or page.query_selector('.firewall-container') is not None
-    )
+    return page.query_selector('div.firewall-container') is not None
 
 
-def solve_captcha(page, captcha_data: dict = None) -> bool:
+def solve_captcha(page) -> bool:
     """
-    Решает GeeTest капчу Авито:
-    1. gt из HTML, challenge из captcha_data (перехвачен ДО загрузки) или JS runtime
-    2. Отправляет в RuCaptcha
-    3. POST токены на https://www.avito.ru/web/1/firewallCaptcha/verify
-    4. Перезагружает страницу
+    Решает GeeTest v4 капчу Авито (по примеру от поддержки RuCaptcha).
+
+    Шаги:
+    1. Отправляем captcha_id в RuCaptcha → получаем lot_number, pass_token, gen_time, captcha_output
+    2. Берём куки srv_id, u, v из браузера
+    3. POST на /web/1/firewallCaptcha/verify
+    4. Перезагружаем страницу
     """
     if not RUCAPTCHA_API_KEY:
-        logger.warning("⚠️  RUCAPTCHA_API_KEY не задан — капчу не решить")
+        logger.warning("⚠️  RUCAPTCHA_API_KEY не задан — пропускаем")
         return False
 
     try:
         from twocaptcha import TwoCaptcha
         solver = TwoCaptcha(RUCAPTCHA_API_KEY, server='rucaptcha.com', defaultTimeout=120)
 
-        # --- Шаг 1: Получаем gt ---
-        html = page.content()
-        gt = None
+        curr_url = page.url
+        logger.info(f"[ШАГ 1] 🧩 GeeTest v4 | captcha_id: {AVITO_CAPTCHA_ID}")
+        logger.info(f"[ШАГ 1] ⏳ Отправляем в RuCaptcha (20-60 сек)...")
 
-        sk = re.search(r'data-sitekey=["\']([a-f0-9\-]{30,})["\']', html)
-        if sk:
-            gt = sk.group(1).replace('-', '')
-            logger.info(f"[ШАГ 1] gt из data-sitekey: {gt[:16]}...")
-        if not gt:
-            gt_m = re.search(r'"gt"\s*:\s*"([a-f0-9]{32})"', html)
-            if gt_m:
-                gt = gt_m.group(1)
-                logger.info(f"[ШАГ 1] gt из JS: {gt[:16]}...")
-        if not gt:
-            logger.error("[ШАГ 1] ❌ gt не найден")
-            return False
+        result = solver.geetest_v4(
+            captcha_id=AVITO_CAPTCHA_ID,
+            url=curr_url,
+        )
+        logger.info(f"[ШАГ 1] ✅ RuCaptcha ответила: {str(result)[:100]}")
 
-        # --- Шаг 2: Получаем challenge ---
-        challenge = None
-
-        # 2a. Из перехваченных сетевых запросов (до загрузки страницы)
-        if captcha_data and captcha_data.get('challenge'):
-            challenge = captcha_data['challenge']
-            logger.info(f"[ШАГ 2] challenge из сети: {challenge[:16]}...")
-
-        # 2b. Из JS runtime (window объекты GeeTest)
-        if not challenge:
-            challenge = page.evaluate("""() => {
-                try {
-                    // GeeTest хранит challenge в глобальных объектах
-                    const keys = Object.keys(window);
-                    for (const k of keys) {
-                        const obj = window[k];
-                        if (obj && typeof obj === 'object' && obj.challenge) return obj.challenge;
-                        if (obj && typeof obj === 'object' && obj._challenge) return obj._challenge;
-                    }
-                    // Ищем в script тегах
-                    for (const s of document.querySelectorAll('script')) {
-                        const m = s.textContent.match(/"challenge"\s*:\s*"([a-f0-9]{32,})"/);
-                        if (m) return m[1];
-                    }
-                } catch(e) {}
-                return null;
-            }""")
-            if challenge:
-                logger.info(f"[ШАГ 2] challenge из JS runtime: {challenge[:16]}...")
-
-        # 2c. Нажимаем "Продолжить" и ждём challenge из сети
-        if not challenge:
-            btn = page.query_selector('button:has-text("Продолжить"), .firewall-btn')
-            if btn:
-                logger.info("[ШАГ 2] Нажимаем 'Продолжить', ждём challenge из сети...")
-                btn.click()
-                # Ждём до 5 сек пока появится challenge
-                for _ in range(10):
-                    page.wait_for_timeout(500)
-                    if captcha_data and captcha_data.get('challenge'):
-                        challenge = captcha_data['challenge']
-                        logger.info(f"[ШАГ 2] challenge перехвачен после клика: {challenge[:16]}...")
-                        break
-
-        if not challenge:
-            logger.error("[ШАГ 2] ❌ challenge не найден ни в сети, ни в JS runtime")
-            logger.error(f"   captcha_data: {captcha_data}")
-            logger.error(f"   HTML фрагмент: {html[800:1200]}")
-            return False
-
-        logger.info(f"🧩 GeeTest v3 | gt: {gt[:16]}... | challenge: {challenge[:16]}...")
-
-        # --- Шаг 3: Отправляем в RuCaptcha ---
-        logger.info("⏳ Отправляем задачу в RuCaptcha (15-40 сек)...")
-        result = solver.geetest(gt=gt, challenge=challenge, url=page.url)
-        logger.info(f"✅ RuCaptcha решила капчу")
-
-        gc = result.get('geetest_challenge', '')
-        gv = result.get('geetest_validate', '')
-        gs = result.get('geetest_seccode', '')
-        logger.info(f"   challenge: {gc[:16]}... validate: {gv[:16]}...")
-
-        # --- Шаг 3: RuCaptcha → done (выше)
-        # --- Шаг 4: POST на https://www.avito.ru/web/1/firewallCaptcha/verify ---
-        logger.info(f"[ШАГ 4] 📤 POST → {AVITO_VERIFY_URL}")
-        logger.info(f"   Payload: challenge={gc[:16]}... validate={gv[:16]}... seccode={gs[:16]}...")
-
-        # Берём все куки из браузера
-        cookies = page.context.cookies()
-        cookie_header = '; '.join(f"{c['name']}={c['value']}" for c in cookies)
-
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'application/json, text/plain, */*',
-            'Accept-Language': 'ru-RU,ru;q=0.9',
-            'Content-Type': 'application/json',
-            'Origin': 'https://www.avito.ru',
-            'Referer': page.url,
-            'Cookie': cookie_header,
-            'X-Requested-With': 'XMLHttpRequest',
-        }
-
-        payload = {
-            'geetest_challenge': gc,
-            'geetest_validate': gv,
-            'geetest_seccode': gs,
-        }
-
-        resp = requests.post(AVITO_VERIFY_URL, json=payload, headers=headers, timeout=15)
-        logger.info(f"[ШАГ 4] Ответ: HTTP {resp.status_code} | {resp.text[:300]}")
-
-        if resp.status_code == 200:
-            logger.info("[ШАГ 4] ✅ Верификация прошла!")
-            logger.info("[ШАГ 5] 🔄 Перезагружаем страницу...")
-            page.reload(wait_until='domcontentloaded', timeout=20000)
-            page.wait_for_timeout(2000)
-            logger.info("[ШАГ 5] ✅ Страница перезагружена")
-            return True
+        # result['code'] — JSON-строка с токенами
+        code = result['code']
+        if isinstance(code, str):
+            code_data = json.loads(code)
         else:
-            logger.error(f"[ШАГ 4] ❌ verify вернул {resp.status_code}: {resp.text[:300]}")
+            code_data = code
+
+        lot_number    = code_data['lot_number']
+        pass_token    = code_data['pass_token']
+        gen_time      = code_data['gen_time']
+        captcha_output = code_data['captcha_output']
+        logger.info(f"[ШАГ 1] lot_number: {lot_number[:16]}...")
+
+        # --- Шаг 2: Берём куки из браузера ---
+        logger.info("[ШАГ 2] 🍪 Извлекаем куки из браузера...")
+        all_cookies = page.context.cookies()
+        cookie_map = {c['name']: c['value'] for c in all_cookies}
+
+        # Только эти три куки нужны для verify (как в примере от поддержки)
+        cookies = {}
+        for key in ['srv_id', 'u', 'v']:
+            if key in cookie_map:
+                cookies[key] = cookie_map[key]
+        logger.info(f"[ШАГ 2] Куки: {list(cookies.keys())}")
+
+        # --- Шаг 3: POST на /web/1/firewallCaptcha/verify ---
+        headers = {
+            'accept': '*/*',
+            'accept-language': 'en',
+            'content-type': 'application/json',
+            'origin': 'https://www.avito.ru',
+            'priority': 'u=1, i',
+            'referer': curr_url,
+            'sec-ch-ua': '"Not/A)Brand";v="8", "Chromium";v="126", "Google Chrome";v="126"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Windows"',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'same-origin',
+            'user-agent': USER_AGENT,
+            'x-cube': 'undefined',
+        }
+        json_data = {
+            'captcha': '',
+            'hCaptchaResponse': '',
+            'captcha_id': AVITO_CAPTCHA_ID,
+            'lot_number': lot_number,
+            'pass_token': pass_token,
+            'gen_time': gen_time,
+            'captcha_output': captcha_output,
+        }
+
+        logger.info(f"[ШАГ 3] 📤 POST → {AVITO_VERIFY_URL}")
+        resp = requests.post(AVITO_VERIFY_URL, cookies=cookies, headers=headers,
+                             json=json_data, timeout=15)
+        logger.info(f"[ШАГ 3] Ответ: HTTP {resp.status_code} | {resp.text[:300]}")
+
+        verified = resp.json().get('result', {}).get('verified', False)
+        if verified:
+            logger.info("[ШАГ 3] ✅ Капча пройдена!")
+        else:
+            logger.error(f"[ШАГ 3] ❌ verified=False: {resp.text[:300]}")
             return False
+
+        # --- Шаг 4: Перезагружаем страницу ---
+        logger.info("[ШАГ 4] 🔄 Перезагружаем страницу...")
+        page.reload(wait_until='domcontentloaded', timeout=20000)
+        page.wait_for_timeout(2000)
+        logger.info("[ШАГ 4] ✅ Страница перезагружена")
+        return True
 
     except Exception as e:
         logger.error(f"❌ Ошибка решения капчи: {e}")
@@ -223,8 +184,7 @@ class AvitoScanner:
         )
         self.context = self.browser.new_context(
             viewport={'width': 1440, 'height': 900},
-            user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-                       'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            user_agent=USER_AGENT,
             locale='ru-RU',
             timezone_id='Europe/Moscow',
             extra_http_headers={'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8'},
@@ -235,10 +195,6 @@ class AvitoScanner:
             window.chrome = { runtime: {} };
         """)
         self.page = self.context.new_page()
-
-        # Перехватываем challenge ДО любой навигации
-        self._captcha_data = {}
-        self.page.on('response', self._on_response)
 
         # База цен
         self.prices = {}
@@ -260,22 +216,6 @@ class AvitoScanner:
             except:
                 pass
 
-    def _on_response(self, response):
-        """Перехватывает gt+challenge из сетевых запросов GeeTest/Avito."""
-        url = response.url
-        if any(x in url for x in ['geetest', 'firewallCaptcha', 'register']):
-            try:
-                body = response.json()
-                logger.info(f"🌐 Перехвачен ответ [{response.status}]: {url[:70]}")
-                logger.info(f"   Ключи: {list(body.keys())}")
-                if 'challenge' in body:
-                    self._captcha_data['challenge'] = body['challenge']
-                    logger.info(f"   ✅ challenge: {body['challenge'][:16]}...")
-                if 'gt' in body:
-                    self._captcha_data['gt'] = body['gt']
-            except:
-                pass
-
     def navigate(self, url: str) -> bool:
         try:
             self.page.goto(url, wait_until='domcontentloaded', timeout=30000)
@@ -283,7 +223,7 @@ class AvitoScanner:
 
             if is_captcha_page(self.page):
                 logger.warning(f"🛡 Капча на {url[:70]}")
-                solved = solve_captcha(self.page, self._captcha_data)
+                solved = solve_captcha(self.page)
                 if not solved:
                     return False
                 if is_captcha_page(self.page):
@@ -299,12 +239,13 @@ class AvitoScanner:
             return False
 
     def deep_analyze(self, url: str):
+        """Открывает объявление, ищет циклы АКБ и срочность."""
         try:
             tab = self.context.new_page()
             tab.goto(url, wait_until='domcontentloaded', timeout=25000)
             time.sleep(random.uniform(1.0, 2.0))
             if is_captcha_page(tab):
-                solve_captcha(tab, {})
+                solve_captcha(tab)
             content = tab.content()
             tab.close()
 
