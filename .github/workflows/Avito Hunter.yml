@@ -12,8 +12,6 @@ on:
 jobs:
   scan:
     runs-on: ubuntu-latest
-    
-    # Даем права на запись, чтобы сохранять файл просмотренных объявлений
     permissions:
       contents: write
 
@@ -22,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0 # Важно для корректного слияния изменений
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -31,37 +29,28 @@ jobs:
           cache: 'pip'
           cache-dependency-path: scripts/hot-deals-scanner/requirements.txt
 
-      - name: Install dependencies
-        run: |
-          pip install -r scripts/hot-deals-scanner/requirements.txt
+      - name: Install Python dependencies
+        run: pip install -r scripts/hot-deals-scanner/requirements.txt
+
+      - name: Install Playwright Chromium
+        run: playwright install chromium --with-deps
 
       - name: Run scanner
         env:
-          PROXY_URL: ${{ secrets.PROXY_URL }}
-          CHANGE_IP_URL: ${{ secrets.CHANGE_IP_URL }}
-          TELEGRAM_NOTIFY_URL: ${{ secrets.TELEGRAM_NOTIFY_URL }}
           SCAN_URL: ${{ secrets.SCAN_URL }}
-        run: |
-          python scripts/hot-deals-scanner/scanner.py
+          TELEGRAM_NOTIFY_URL: ${{ secrets.TELEGRAM_NOTIFY_URL }}
+          RUCAPTCHA_API_KEY: ${{ secrets.RUCAPTCHA_API_KEY }}
+        run: python scripts/hot-deals-scanner/scanner.py
 
-      - name: Save History (Commit and Push)
+      - name: Save seen history
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          
-          # Добавляем файл
           git add public/data/seen-hot-deals.json
-          
-          # Проверяем, есть ли что коммитить, чтобы не было ошибки "nothing to commit"
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            # 1. Сначала коммитим локально
             git commit -m "chore: update seen hot deals [skip ci]"
-            
-            # 2. Теперь стягиваем изменения из main, наш коммит встанет сверху
             git pull --rebase origin main
-            
-            # 3. Отправляем в репозиторий
             git push origin main
           fi
