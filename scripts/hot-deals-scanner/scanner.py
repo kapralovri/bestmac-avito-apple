@@ -166,9 +166,17 @@ def solve_captcha(page) -> bool:
 
         # --- Шаг 4: Перезагружаем страницу ---
         logger.info("[ШАГ 4] 🔄 Перезагружаем страницу...")
-        page.reload(wait_until='domcontentloaded', timeout=20000)
-        page.wait_for_timeout(2000)
-        logger.info("[ШАГ 4] ✅ Страница перезагружена")
+        page.reload(wait_until='networkidle', timeout=30000)
+        page.wait_for_timeout(3000)
+        logger.info(f"[ШАГ 4] ✅ После reload | URL: {page.url[:80]}")
+        logger.info(f"[ШАГ 4] Title: {page.title()}")
+        still_captcha = page.query_selector('div.firewall-container') is not None
+        logger.info(f"[ШАГ 4] firewall-container после reload: {still_captcha}")
+        if still_captcha:
+            logger.info("[ШАГ 4] Ждём ещё 5 сек и пробуем снова...")
+            page.wait_for_timeout(5000)
+            still_captcha = page.query_selector('div.firewall-container') is not None
+            logger.info(f"[ШАГ 4] firewall-container после доп. ожидания: {still_captcha}")
         return True
 
     except Exception as e:
@@ -228,8 +236,13 @@ class AvitoScanner:
                 if not solved:
                     return False
                 if is_captcha_page(self.page):
-                    logger.error("❌ Капча осталась после решения")
-                    return False
+                    logger.warning("⚠️  firewall-container ещё виден, ждём 5 сек...")
+                    self.page.wait_for_timeout(5000)
+                    if is_captcha_page(self.page):
+                        logger.error(f"❌ Капча осталась. URL: {self.page.url} | Title: {self.page.title()}")
+                        logger.error(f"   HTML фрагмент: {self.page.content()[:500]}")
+                        return False
+                    logger.info("✅ Капча исчезла после ожидания")
 
             return True
         except PWTimeout:
