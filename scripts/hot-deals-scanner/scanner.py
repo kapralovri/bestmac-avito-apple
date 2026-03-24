@@ -166,7 +166,7 @@ def solve_captcha(page) -> bool:
 
         # --- Шаг 4: Перезагружаем страницу ---
         logger.info("[ШАГ 4] 🔄 Перезагружаем страницу...")
-        page.reload(wait_until='networkidle', timeout=30000)
+        page.reload(wait_until='domcontentloaded', timeout=20000)
         page.wait_for_timeout(3000)
         logger.info(f"[ШАГ 4] ✅ После reload | URL: {page.url[:80]}")
         logger.info(f"[ШАГ 4] Title: {page.title()}")
@@ -316,6 +316,13 @@ class AvitoScanner:
 
         logger.info("🎬 Запуск Playwright сканера...")
 
+        # Прогрев: сначала открываем главную страницу Авито
+        # чтобы установить куки сессии до загрузки SCAN_URL
+        logger.info("🌐 Прогрев: открываем avito.ru...")
+        if not self.navigate("https://www.avito.ru"):
+            logger.warning("⚠️  Прогрев не удался, продолжаем без него")
+
+        logger.info("🔍 Переходим на SCAN_URL...")
         if not self.navigate(SCAN_URL):
             logger.error("❌ Не удалось загрузить SCAN_URL")
             self.context.close()
