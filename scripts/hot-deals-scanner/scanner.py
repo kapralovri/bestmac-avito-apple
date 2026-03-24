@@ -64,28 +64,114 @@ def extract_specs(text: str):
     return ram, ssd
 
 
+def detect_captcha_type(page) -> dict:
+    """Определяет тип капчи на странице. Возвращает dict с типом и параметрами."""
+    html = page.content()
+
+    # GeeTest v3 — основная капча Авито
+    gt_match = re.search(r'"gt"\s*:\s*"([a-f0-9]{32})"', html)
+    challenge_match = re.search(r'"challenge"\s*:\s*"([a-f0-9]{32,})"', html)
+    if gt_match and challenge_match:
+        api_server = None
+        api_match = re.search(r'"api_server"\s*:\s*"([^"]+)"', html)
+        if api_match:
+            api_server = api_match.group(1)
+        return {
+            'type': 'geetest',
+            'gt': gt_match.group(1),
+            'challenge': challenge_match.group(1),
+            'api_server': api_server,
+        }
+
+    # GeeTest v4
+    captcha_id_match = re.search(r'"captcha_id"\s*:\s*"([a-f0-9]{32})"', html)
+    if captcha_id_match:
+        return {'type': 'geetest_v4', 'captcha_id': captcha_id_match.group(1)}
+
+    # reCAPTCHA v2
+    sitekey_match = re.search(r'data-sitekey=["\']([^"\']+)["\']', html)
+    if sitekey_match:
+        return {'type': 'recaptcha_v2', 'sitekey': sitekey_match.group(1)}
+
+    # Обычная картинка
+    if page.query_selector('img[src*="captcha"]'):
+        return {'type': 'image'}
+
+    return {'type': 'unknown'}
+
+
 def solve_captcha_rucaptcha(page) -> bool:
-    """Пытается решить капчу Авито через RuCaptcha. Возвращает True если решено."""
+    """Определяет тип капчи Авито и решает через RuCaptcha. Возвращает True если решено."""
     if not RUCAPTCHA_API_KEY:
         logger.warning("⚠️  Капча обнаружена, но RUCAPTCHA_API_KEY не задан — пропускаем")
         return False
 
     try:
         from twocaptcha import TwoCaptcha
-        # RuCaptcha совместима с 2Captcha API
         solver = TwoCaptcha(RUCAPTCHA_API_KEY, server='rucaptcha.com', defaultTimeout=120)
 
-        # Ищем sitekey для reCAPTCHA
-        sitekey = page.evaluate("""() => {
-            const el = document.querySelector('[data-sitekey]');
-            return el ? el.getAttribute('data-sitekey') : null;
-        }""")
+        captcha_info = detect_captcha_type(page)
+        logger.info(f"🔍 Тип капчи: {captcha_info['type']} | URL: {page.url[:60]}")
 
-        if sitekey:
-            logger.info(f"🔑 Решаем reCAPTCHA v2 (sitekey: {sitekey[:20]}...)")
+        # --- GeeTest v3 (основная капча Авито) ---
+        if captcha_info['type'] == 'geetest':
+            gt = captcha_info['gt']
+            challenge = captcha_info['challenge']
+            api_server = captcha_info.get('api_server')
+            logger.info(f"🧩 GeeTest v3 | gt: {gt[:16]}... | challenge: {challenge[:16]}...")
+            logger.info("⏳ Отправляем задачу в RuCaptcha (обычно 10-30 сек)...")
+
+            kwargs = dict(gt=gt, challenge=challenge, url=page.url)
+            if api_server:
+                kwargs['apiServer'] = api_server
+
+            result = solver.geetest(**kwargs)
+            logger.info(f"✅ GeeTest решён, вставляем токены...")
+
+            # Вставляем результат в поля формы
+            page.evaluate(f"""() => {{
+                const setInput = (name, val) => {{
+                    let el = document.querySelector(`input[name="${{name}}"]`);
+                    if (!el) {{ el = document.createElement('input'); el.type='hidden'; el.name=name; document.forms[0] && document.forms[0].appendChild(el); }}
+                    if (el) el.value = val;
+                }};
+                setInput('geetest_challenge', '{result["geetest_challenge"]}');
+                setInput('geetest_validate', '{result["geetest_validate"]}');
+                setInput('geetest_seccode', '{result["geetest_seccode"]}');
+                const btn = document.querySelector('button[type="submit"], input[type="submit"], .submit');
+                if (btn) btn.click();
+            }}""")
+            page.wait_for_load_state('networkidle', timeout=15000)
+            logger.info("✅ GeeTest токены вставлены, страница обновлена")
+            return True
+
+        # --- GeeTest v4 ---
+        elif captcha_info['type'] == 'geetest_v4':
+            captcha_id = captcha_info['captcha_id']
+            logger.info(f"🧩 GeeTest v4 | captcha_id: {captcha_id[:16]}...")
+            logger.info("⏳ Отправляем задачу в RuCaptcha (обычно 10-30 сек)...")
+            result = solver.geetest_v4(captcha_id=captcha_id, url=page.url)
+            logger.info("✅ GeeTest v4 решён")
+            page.evaluate(f"""() => {{
+                const s = (n, v) => {{ const e = document.querySelector(`input[name="${{n}}"]`); if(e) e.value=v; }};
+                s('captcha_id', '{result["captcha_id"]}');
+                s('lot_number', '{result["lot_number"]}');
+                s('pass_token', '{result["pass_token"]}');
+                s('gen_time', '{result["gen_time"]}');
+                s('captcha_output', '{result["captcha_output"]}');
+                const btn = document.querySelector('button[type="submit"], .submit');
+                if (btn) btn.click();
+            }}""")
+            page.wait_for_load_state('networkidle', timeout=15000)
+            return True
+
+        # --- reCAPTCHA v2 ---
+        elif captcha_info['type'] == 'recaptcha_v2':
+            sitekey = captcha_info['sitekey']
+            logger.info(f"🔑 reCAPTCHA v2 | sitekey: {sitekey[:20]}...")
+            logger.info("⏳ Отправляем задачу в RuCaptcha (обычно 30-60 сек)...")
             result = solver.recaptcha(sitekey=sitekey, url=page.url)
             token = result['code']
-            # Вставляем токен и сабмитим
             page.evaluate(f"""() => {{
                 document.getElementById('g-recaptcha-response').value = '{token}';
                 const form = document.querySelector('form');
@@ -95,16 +181,14 @@ def solve_captcha_rucaptcha(page) -> bool:
             logger.info("✅ reCAPTCHA решена")
             return True
 
-        # Если это обычная картинка-капча Авито
-        img_el = page.query_selector('img[src*="captcha"]')
-        if img_el:
-            logger.info("🖼 Решаем image captcha...")
-            img_bytes = img_el.screenshot()
+        # --- Image captcha ---
+        elif captcha_info['type'] == 'image':
+            logger.info("🖼 Image captcha — решаем через RuCaptcha...")
+            img_el = page.query_selector('img[src*="captcha"]')
             import base64
-            img_b64 = base64.b64encode(img_bytes).decode()
+            img_b64 = base64.b64encode(img_el.screenshot()).decode()
             result = solver.normal(img_b64)
             token = result['code']
-
             inp = page.query_selector('input[name*="captcha"], input[type="text"]')
             if inp:
                 inp.fill(token)
@@ -114,6 +198,9 @@ def solve_captcha_rucaptcha(page) -> bool:
                     page.wait_for_load_state('networkidle', timeout=10000)
                     logger.info("✅ Image captcha решена")
                     return True
+
+        else:
+            logger.error(f"❌ Неизвестный тип капчи. HTML фрагмент: {page.content()[:500]}")
 
     except Exception as e:
         logger.error(f"❌ Ошибка решения капчи: {e}")
