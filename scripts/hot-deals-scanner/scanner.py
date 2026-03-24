@@ -232,17 +232,22 @@ class AvitoScanner:
 
             if is_captcha_page(self.page):
                 logger.warning(f"🛡 Капча на {url[:70]}")
-                solved = solve_captcha(self.page)
-                if not solved:
-                    return False
-                if is_captcha_page(self.page):
-                    logger.warning("⚠️  firewall-container ещё виден, ждём 5 сек...")
-                    self.page.wait_for_timeout(5000)
-                    if is_captcha_page(self.page):
-                        logger.error(f"❌ Капча осталась. URL: {self.page.url} | Title: {self.page.title()}")
-                        logger.error(f"   HTML фрагмент: {self.page.content()[:500]}")
+                max_captcha_attempts = 3
+                for attempt in range(1, max_captcha_attempts + 1):
+                    logger.info(f"🔁 Решаем капчу (попытка {attempt}/{max_captcha_attempts})...")
+                    solved = solve_captcha(self.page)
+                    if not solved:
+                        logger.error(f"❌ Не удалось решить капчу (попытка {attempt})")
                         return False
-                    logger.info("✅ Капча исчезла после ожидания")
+                    self.page.wait_for_timeout(3000)
+                    if not is_captcha_page(self.page):
+                        logger.info(f"✅ Капча пройдена с попытки {attempt}")
+                        break
+                    if attempt < max_captcha_attempts:
+                        logger.warning(f"⚠️  Капча появилась снова, попытка {attempt + 1}...")
+                    else:
+                        logger.error(f"❌ Капча не прошла после {max_captcha_attempts} попыток")
+                        return False
 
             return True
         except PWTimeout:
