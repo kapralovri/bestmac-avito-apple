@@ -73,8 +73,7 @@ def solve_captcha_rucaptcha(page) -> bool:
     try:
         from twocaptcha import TwoCaptcha
         # RuCaptcha совместима с 2Captcha API
-        solver = TwoCaptcha(RUCAPTCHA_API_KEY, defaultTimeout=120,
-                            service_url='https://rucaptcha.com')
+        solver = TwoCaptcha(RUCAPTCHA_API_KEY, server='rucaptcha.com', defaultTimeout=120)
 
         # Ищем sitekey для reCAPTCHA
         sitekey = page.evaluate("""() => {
