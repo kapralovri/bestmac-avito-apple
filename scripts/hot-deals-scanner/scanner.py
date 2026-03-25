@@ -164,29 +164,67 @@ def navigate_with_captcha(page, url: str) -> bool:
 # ─────────────────────────────────────────────
 
 def extract_specs_from_title(title: str):
-    """Вытаскиваем RAM/SSD прямо из заголовка: '16/512', '8gb/256gb' и т.д."""
-    t = title.lower().replace(' ', '')
-    slash = re.search(r'(\d+)/(\d+)', t)
-    if slash:
-        a, b = int(slash.group(1)), int(slash.group(2))
-        if a in [8, 16, 18, 24, 32, 36, 48, 64] and b in [256, 512, 1024, 2048]:
+    """Вытаскиваем RAM/SSD из заголовка: 'M5/16/1TB', '16/512Gb', '24 gb 1 tb', 'M2 8 256'."""
+    t = title.lower()
+
+    # ─── 1. Процессор/RAM/SSD через слеши: "M5/16/1TB", "M4/24/1TB" ───
+    m = re.search(r'm\d+\s*/\s*(\d+)\s*/\s*(\d+)\s*(tb|тб)?', t)
+    if m:
+        ram = int(m.group(1))
+        ssd_val = int(m.group(2))
+        ssd = ssd_val * 1024 if (m.group(3) and ssd_val <= 8) else ssd_val
+        return ram, ssd
+
+    # ─── 2. RAM/SSD через слеш: "16/256Gb", "16/1TB" ──────────────────
+    m = re.search(r'(?<![a-zа-яё\d])(\d+)\s*/\s*(\d+)\s*(tb|тб|gb|гб)?', t)
+    if m:
+        a, b = int(m.group(1)), int(m.group(2))
+        unit = (m.group(3) or '')
+        if 'tb' in unit or 'тб' in unit:
+            if b <= 8: b *= 1024
+        if a in (8, 16, 18, 24, 32, 36, 48, 64) and b in (256, 512, 1024, 2048):
             return a, b
-        if b in [8, 16, 18, 24, 32, 36, 48, 64] and a in [256, 512, 1024, 2048]:
+        if b in (8, 16, 18, 24, 32, 36, 48, 64) and a in (256, 512, 1024, 2048):
             return b, a
-    matches = re.findall(r'(\d+)(?:gb|гб|tb|тб)', t)
-    clean = [m for m in matches if not (2018 <= int(m) <= 2026)]
-    ram, ssd = 8, 256
-    if len(clean) >= 2:
-        ram = int(clean[0])
-        ssd_val = int(clean[1])
-        ssd = ssd_val * 1024 if ssd_val <= 8 else ssd_val
-    elif len(clean) == 1:
-        val = int(clean[0])
-        if val in [8, 16, 18, 24, 32, 36, 48, 64, 96, 128]:
-            ram = val
+
+    # ─── 3. Числа с юнитами: "24 gb", "1 tb", "16gb" ──────────────────
+    #   (?<![a-zа-яё]) — НЕ склеиваем с буквами (m4 + 24gb ≠ m424gb)
+    unit_vals = []
+    for um in re.finditer(r'(?<![a-zа-яё])(\d+)\s*(gb|гб|tb|тб)', t):
+        v = int(um.group(1))
+        if 2018 <= v <= 2026:
+            continue
+        unit = um.group(2)
+        if 'tb' in unit or 'тб' in unit:
+            v = v * 1024 if v <= 8 else v
+        unit_vals.append(v)
+
+    ram, ssd = None, None
+    if len(unit_vals) >= 2:
+        return unit_vals[0], unit_vals[1]
+    if len(unit_vals) == 1:
+        v = unit_vals[0]
+        if v in (8, 16, 18, 24, 32, 36, 48, 64, 96, 128):
+            ram = v
         else:
-            ssd = val
-    return ram, ssd
+            ssd = v
+
+    # ─── 4. Голые числа: "M2 8 256", "m1 16gb 512" (512 без юнита) ────
+    cleaned = re.sub(r'\bm\d\b', '', t)                       # процессор
+    cleaned = re.sub(r'\b20[12]\d\b', '', cleaned)             # год
+    cleaned = re.sub(r'\b1[345][""\'″]?\b', '', cleaned)      # диагональ 13"-15"
+    cleaned = re.sub(r'\d+\s*(?:gb|гб|tb|тб)', '', cleaned)   # уже захвачено
+
+    bare = [int(x) for x in re.findall(r'(?<![/\da-zа-яё])(\d+)(?![/\da-zа-яё])', cleaned)
+            if int(x) in (8, 16, 24, 32, 48, 64, 128, 256, 512, 1024, 2048)]
+
+    for bv in bare:
+        if bv in (8, 16, 24, 32, 48, 64, 128) and ram is None:
+            ram = bv
+        elif bv in (256, 512, 1024, 2048) and ssd is None:
+            ssd = bv
+
+    return ram or 8, ssd or 256
 
 
 def parse_listing(soup: BeautifulSoup) -> dict:
@@ -336,11 +374,12 @@ class AvitoScanner:
             if db_ram == ram and db_ssd == ssd:
                 if norm in db_model or db_model in norm:
                     return stat
-        # Пословный матчинг: все ключевые слова модели из базы есть в заголовке
+        # Пословный матчинг: ключевые слова (без года) из базы есть в заголовке
         for (db_model, db_ram, db_ssd), stat in self.prices.items():
             if db_ram == ram and db_ssd == ssd:
                 db_words = re.findall(r'[a-zа-яё0-9]+', db_model)
-                if db_words and all(w in norm for w in db_words):
+                db_core = [w for w in db_words if not re.match(r'^20[12]\d$', w)]
+                if db_core and all(w in norm for w in db_core):
                     return stat
         return None
 
