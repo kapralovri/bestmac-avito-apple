@@ -2,10 +2,8 @@ name: Avito Price Parser
 
 on:
   schedule:
-    - cron: '0 22 * * *'
-    - cron: '0 1 * * *'
-    - cron: '0 4 * * *'
-  
+    - cron: '0 2 */2 * *'   # каждые 2 дня в 2:00 UTC (ночью)
+
   workflow_dispatch:
     inputs:
       batch:
@@ -14,12 +12,16 @@ on:
         type: choice
         options: ['all', '1', '2', '3']
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   parse:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     permissions:
       contents: write
-    
+
     steps:
       - name: Determine batch
         id: batch_step
@@ -27,11 +29,7 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "batch=${{ github.event.inputs.batch }}" >> $GITHUB_OUTPUT
           else
-            HOUR=$(date -u +%H)
-            if [ "$HOUR" = "22" ]; then echo "batch=1" >> $GITHUB_OUTPUT;
-            elif [ "$HOUR" = "01" ]; then echo "batch=2" >> $GITHUB_OUTPUT;
-            elif [ "$HOUR" = "04" ]; then echo "batch=3" >> $GITHUB_OUTPUT;
-            else echo "batch=all" >> $GITHUB_OUTPUT; fi
+            echo "batch=all" >> $GITHUB_OUTPUT
           fi
 
       - name: Checkout
@@ -48,7 +46,9 @@ jobs:
           cache-dependency-path: scripts/avito-parser/requirements.txt
 
       - name: Install dependencies
-        run: pip install -r scripts/avito-parser/requirements.txt
+        run: |
+          pip install -r scripts/avito-parser/requirements.txt
+          playwright install chromium --with-deps
 
       - name: Sync Google Sheets
         run: python scripts/sync-google-sheet.py
@@ -56,8 +56,7 @@ jobs:
       - name: Run parser
         env:
           BATCH: ${{ steps.batch_step.outputs.batch }}
-          PROXY_URL: ${{ secrets.PROXY_URL }}
-          CHANGE_IP_URL: ${{ secrets.CHANGE_IP_URL }}
+          RUCAPTCHA_API_KEY: ${{ secrets.RUCAPTCHA_API_KEY }}
         run: |
           cd scripts/avito-parser
           python parser.py --batch $BATCH --total-batches 3
@@ -69,7 +68,6 @@ jobs:
           git add public/data/avito-urls.json public/data/avito-prices.json
           git diff --staged --quiet && echo "No changes" && exit 0
           git commit -m "chore: update prices batch ${{ steps.batch_step.outputs.batch }} [skip ci]"
-          # Повторяем pull+push до 3 раз при конфликте
           for i in 1 2 3; do
             git pull --rebase origin main && git push origin main && break
             echo "Retry $i: rebase conflict, resetting..."
