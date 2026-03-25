@@ -239,6 +239,19 @@ class AvitoParser:
                 break
 
             soup = BeautifulSoup(self.page.content(), 'lxml')
+
+            # Убираем блок "объявления есть в других городах" —
+            # цены из регионов сильно искажают московскую статистику
+            other_cities = soup.find(string=re.compile(r'объявлени\S* есть в других городах', re.I))
+            if other_cities:
+                # Удаляем всё после этого блока
+                parent = other_cities.find_parent(['div', 'section', 'h2', 'h3', 'span'])
+                if parent:
+                    for sibling in list(parent.find_next_siblings()):
+                        sibling.decompose()
+                    parent.decompose()
+                    logger.info(f"   🏙 Отсечены объявления из других городов")
+
             items = soup.select('[data-marker="item"]')
             logger.info(f"   📄 Стр. {page_num}: {len(items)} объявлений")
 
