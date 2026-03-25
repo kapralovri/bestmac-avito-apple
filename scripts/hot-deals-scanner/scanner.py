@@ -416,30 +416,73 @@ class AvitoScanner:
             found_matches = 0
             newly_seen = []
 
+            # ═══════════════════════════════════════════════════════════════
+            # ФАЗ 1 — быстрый просмотр всех 50 объявлений без HTTP-запросов
+            # ═══════════════════════════════════════════════════════════════
+            candidates = []
+            skipped_seen = 0
+
             for idx, item in enumerate(items_data, 1):
-                url   = item['url']
-                price = item['price']
-                raw_title = item['title']
+                url        = item['url']
+                price      = item['price']
+                raw_title  = item['title']
                 is_avito_low = item['is_avito_low']
 
                 if url in self.seen:
+                    skipped_seen += 1
                     continue
 
-                # Мгновенный отсев по заголовку
-                if any(w in raw_title.lower() for w in BAD_KEYWORDS):
-                    logger.info(f"  [#{idx}] ⛔ Пропускаем (плохие слова): {raw_title[:60]}")
+                title_lower = raw_title.lower()
+
+                # Отсев по плохим словам
+                if any(w in title_lower for w in BAD_KEYWORDS):
+                    logger.info(f"  [#{idx}] ⛔ BAD_KEYWORDS: {raw_title[:60]}")
                     self.seen.add(url)
                     newly_seen.append(url)
                     continue
 
+                # Отсев по цене
                 if price < 15000:
                     self.seen.add(url)
                     newly_seen.append(url)
                     continue
 
-                logger.info(f"  [#{idx}] 🔍 {raw_title[:60]} | {price:,} ₽ | {url}")
+                # Попытка быстрой проверки по спекам из заголовка
+                t_ram, t_ssd = extract_specs_from_title(raw_title)
+                stat = match_model_in_prices(self.prices, raw_title, t_ram, t_ssd)
+                if stat and not is_avito_low:
+                    threshold = int(stat['min_price'] * PRICE_THRESHOLD_FACTOR)
+                    if price > threshold:
+                        logger.info(
+                            f"  [#{idx}] 💸 Дорого по заголовку: {raw_title[:50]} | "
+                            f"{price:,}₽ > {threshold:,}₽"
+                        )
+                        self.seen.add(url)
+                        newly_seen.append(url)
+                        continue
 
-                # ─── Открываем объявление ─────────────────────────────────
+                logger.info(
+                    f"  [#{idx}] ✅ Кандидат: {raw_title[:60]} | "
+                    f"{price:,}₽ | RAM≈{t_ram}GB SSD≈{t_ssd}GB"
+                )
+                candidates.append({**item, 'idx': idx})
+
+            logger.info(
+                f"📋 Фаза 1 завершена: {len(candidates)} кандидатов из {len(items_data)} "
+                f"(уже видели: {skipped_seen})"
+            )
+
+            # ═══════════════════════════════════════════════════════════════
+            # ФАЗ 2 — открываем только кандидатов, делаем контрольную сверку
+            # ═══════════════════════════════════════════════════════════════
+            for item in candidates:
+                url        = item['url']
+                price      = item['price']
+                raw_title  = item['title']
+                is_avito_low = item['is_avito_low']
+                idx        = item['idx']
+
+                logger.info(f"\n  [#{idx}] 🔍 Открываем объявление: {raw_title[:60]}")
                 time.sleep(random.uniform(2, 4))
                 listing_title, ram, ssd, cycles, is_urgent = parse_listing_page(self.page, url)
 
@@ -449,15 +492,14 @@ class AvitoScanner:
                     newly_seen.append(url)
                     continue
 
-                # Фильтр по BAD_KEYWORDS из полного текста
-                full_text = (listing_title or raw_title).lower()
-                if any(w in full_text for w in BAD_KEYWORDS):
-                    logger.info(f"  [#{idx}] ⛔ Плохие слова в объявлении")
+                # Финальный фильтр по BAD_KEYWORDS из полного текста
+                if any(w in listing_title.lower() for w in BAD_KEYWORDS):
+                    logger.info(f"  [#{idx}] ⛔ BAD_KEYWORDS в тексте объявления")
                     self.seen.add(url)
                     newly_seen.append(url)
                     continue
 
-                # ─── Сравниваем с базой цен ───────────────────────────────
+                # ─── Контрольная сверка с базой цен ──────────────────────
                 matched = match_model_in_prices(self.prices, listing_title, ram, ssd)
 
                 if matched:
@@ -468,8 +510,8 @@ class AvitoScanner:
                         or is_urgent
                     )
                     logger.info(
-                        f"  [#{idx}] 📊 Низ рынка: {market_low:,} ₽ | "
-                        f"Наша цена: {price:,} ₽ | notify={should_notify}"
+                        f"  [#{idx}] 📊 Низ рынка: {market_low:,}₽ | "
+                        f"Наша цена: {price:,}₽ | notify={should_notify}"
                     )
                     if should_notify:
                         send_notify(
@@ -478,7 +520,10 @@ class AvitoScanner:
                         )
                         found_matches += 1
                 else:
-                    logger.info(f"  [#{idx}] ℹ️ Модель не найдена в базе: {listing_title[:60]} RAM={ram} SSD={ssd}")
+                    logger.info(
+                        f"  [#{idx}] ℹ️ Модель не найдена в базе: "
+                        f"{listing_title[:60]} RAM={ram} SSD={ssd}"
+                    )
 
                 self.seen.add(url)
                 newly_seen.append(url)
