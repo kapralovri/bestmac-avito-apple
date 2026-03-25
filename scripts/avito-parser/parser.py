@@ -160,13 +160,23 @@ def get_market_analysis(prices: list):
         return 0, 0, 0
     prices = sorted(prices)
     n = len(prices)
-    end_idx = int(n * 0.9)
-    clean_prices = prices[:end_idx] if n > 5 else prices
-    if not clean_prices:
+
+    # IQR-фильтр: убираем выбросы по межквартильному размаху
+    if n >= 8:
+        q1 = prices[n // 4]
+        q3 = prices[3 * n // 4]
+        iqr = q3 - q1
+        lower = q1 - 1.5 * iqr
+        upper = q3 + 1.5 * iqr
+        clean_prices = [p for p in prices if lower <= p <= upper]
+        if len(clean_prices) < 3:
+            clean_prices = prices  # фоллбэк если слишком агрессивно
+    else:
         clean_prices = prices
+
     market_low = clean_prices[0]
+    market_high = clean_prices[-1]
     median = int(statistics.median(clean_prices))
-    market_high = clean_prices[int(len(clean_prices) * 0.85)] if len(clean_prices) > 5 else clean_prices[-1]
     return market_low, market_high, median
 
 
