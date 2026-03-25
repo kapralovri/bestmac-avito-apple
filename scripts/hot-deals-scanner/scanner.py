@@ -150,6 +150,11 @@ def navigate_with_captcha(page, url: str) -> bool:
             return False
         page.wait_for_timeout(3000)
 
+    # Финальная проверка после последней попытки
+    if not is_captcha_page(page):
+        logger.info("✅ Капча пройдена после финальной проверки")
+        return True
+
     logger.error("❌ Капча не прошла после 3 попыток")
     return False
 
