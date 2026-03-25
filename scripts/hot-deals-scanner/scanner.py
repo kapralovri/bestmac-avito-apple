@@ -269,7 +269,6 @@ def parse_listing(soup: BeautifulSoup) -> dict:
 
     # ─── Стратегия 2: все params-блоки (иногда data-marker другой) ─────
     if result['ram'] is None or result['ssd'] is None:
-        # Попробуем искать по классам с "params" или "characteristics"
         for selector in ['[class*="params"]', '[class*="characteristic"]',
                          '[class*="Params"]', '[class*="Characteristic"]']:
             block = soup.select_one(selector)
@@ -288,6 +287,31 @@ def parse_listing(soup: BeautifulSoup) -> dict:
                         result['ssd'] = val * 1024 if val <= 8 else val
                 if result['ram'] is not None and result['ssd'] is not None:
                     break
+
+    # ─── Стратегия 2.5: поиск по тексту страницы (не зависит от разметки) ──
+    if result['model_name'] is None or result['ram'] is None or result['ssd'] is None:
+        lines = [l.strip() for l in soup.get_text('\n').split('\n') if l.strip()]
+        for i, line in enumerate(lines):
+            low = line.lower()
+            next_line = lines[i + 1].strip() if i + 1 < len(lines) else ''
+
+            if result['model_name'] is None and re.match(r'^модель$', low):
+                if next_line and not next_line.lower().startswith(('процессор', 'оперативн', 'накопител')):
+                    result['model_name'] = next_line
+                    logger.info(f"     📝 Модель из текста: {next_line[:60]}")
+
+            elif result['ram'] is None and re.match(r'^оперативная память$', low):
+                m = re.search(r'(\d+)', next_line)
+                if m:
+                    result['ram'] = int(m.group(1))
+                    logger.info(f"     📝 RAM из текста: {result['ram']} GB")
+
+            elif result['ssd'] is None and re.match(r'^(?:накопитель ssd|объ[её]м накопителя|ssd)$', low):
+                m = re.search(r'(\d+)', next_line)
+                if m:
+                    val = int(m.group(1))
+                    result['ssd'] = val * 1024 if val <= 8 else val
+                    logger.info(f"     📝 SSD из текста: {result['ssd']} GB")
 
     # ─── Стратегия 3: из h1 заголовка ──────────────────────────────────
     if (result['ram'] is None or result['ssd'] is None) and result['h1_title']:
@@ -380,6 +404,14 @@ class AvitoScanner:
                 db_words = re.findall(r'[a-zа-яё0-9]+', db_model)
                 db_core = [w for w in db_words if not re.match(r'^20[12]\d$', w)]
                 if db_core and all(w in norm for w in db_core):
+                    return stat
+        # Гибкий матчинг: без года И без диагонали (заголовки часто опускают "13")
+        for (db_model, db_ram, db_ssd), stat in self.prices.items():
+            if db_ram == ram and db_ssd == ssd:
+                db_words = re.findall(r'[a-zа-яё0-9]+', db_model)
+                db_flex = [w for w in db_words
+                           if not re.match(r'^20[12]\d$', w) and w not in ('13', '14', '15', '16')]
+                if len(db_flex) >= 2 and all(w in norm for w in db_flex):
                     return stat
         return None
 
