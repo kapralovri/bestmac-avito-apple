@@ -192,13 +192,23 @@ def extract_specs_from_title(title: str):
 def parse_listing(soup: BeautifulSoup) -> dict:
     """
     Читает таблицу характеристик объявления Авито.
-    Возвращает: model_name, ram, ssd, cycles, is_urgent
+    Возвращает: model_name, ram, ssd, cycles, is_urgent, h1_title
     """
     result = {'model_name': None, 'ram': None, 'ssd': None,
-              'cycles': None, 'is_urgent': False}
+              'cycles': None, 'is_urgent': False, 'h1_title': None}
 
-    # Характеристики — список li с парами "название: значение"
+    # Заголовок h1 — всегда пытаемся достать
+    h1 = soup.select_one('h1[itemprop="name"]') or soup.select_one('h1')
+    if h1:
+        result['h1_title'] = h1.get_text(strip=True)
+        logger.info(f"     📝 h1: {result['h1_title'][:80]}")
+    else:
+        logger.warning("     ⚠️  h1 не найден на странице")
+
+    # ─── Стратегия 1: [data-marker="item-params"] li ───────────────────
     params = soup.select('[data-marker="item-params"] li')
+    logger.info(f"     🔍 item-params li: {len(params)} элементов")
+
     for li in params:
         text = li.get_text(' ', strip=True)
         lower = text.lower()
@@ -208,16 +218,47 @@ def parse_listing(soup: BeautifulSoup) -> dict:
             if val:
                 result['model_name'] = val
 
-        elif 'оперативн' in lower:
+        elif 'оперативн' in lower or 'ram' in lower:
             m = re.search(r'(\d+)', text)
             if m:
                 result['ram'] = int(m.group(1))
 
-        elif 'накопител' in lower or ('объем' in lower and 'ssd' in lower.replace(' ', '')):
+        elif 'накопител' in lower or 'ssd' in lower or ('объем' in lower and ('гб' in lower or 'gb' in lower)):
             m = re.search(r'(\d+)', text)
             if m:
                 val = int(m.group(1))
                 result['ssd'] = val * 1024 if val <= 8 else val
+
+    # ─── Стратегия 2: все params-блоки (иногда data-marker другой) ─────
+    if result['ram'] is None or result['ssd'] is None:
+        # Попробуем искать по классам с "params" или "characteristics"
+        for selector in ['[class*="params"]', '[class*="characteristic"]',
+                         '[class*="Params"]', '[class*="Characteristic"]']:
+            block = soup.select_one(selector)
+            if block:
+                block_text = block.get_text(' ', strip=True).lower()
+                logger.info(f"     🔍 fallback ({selector}): {block_text[:150]}")
+
+                if result['ram'] is None:
+                    r = re.search(r'(?:оперативн\S*|ram)\s*\S*\s*(\d+)', block_text)
+                    if r:
+                        result['ram'] = int(r.group(1))
+                if result['ssd'] is None:
+                    s = re.search(r'(?:накопител\S*|ssd|объ[её]м\S*)\s*\S*\s*(\d+)', block_text)
+                    if s:
+                        val = int(s.group(1))
+                        result['ssd'] = val * 1024 if val <= 8 else val
+                if result['ram'] is not None and result['ssd'] is not None:
+                    break
+
+    # ─── Стратегия 3: из h1 заголовка ──────────────────────────────────
+    if (result['ram'] is None or result['ssd'] is None) and result['h1_title']:
+        t_ram, t_ssd = extract_specs_from_title(result['h1_title'])
+        if result['ram'] is None:
+            result['ram'] = t_ram
+        if result['ssd'] is None:
+            result['ssd'] = t_ssd
+        logger.info(f"     📝 Specs из h1: RAM={result['ram']}GB SSD={result['ssd']}GB")
 
     # Описание — циклы и срочность
     desc_el = soup.find('div', attrs={'data-marker': 'item-description'})
@@ -290,9 +331,16 @@ class AvitoScanner:
         key = (norm, ram, ssd)
         if key in self.prices:
             return self.prices[key]
+        # Частичное совпадение строк
         for (db_model, db_ram, db_ssd), stat in self.prices.items():
             if db_ram == ram and db_ssd == ssd:
                 if norm in db_model or db_model in norm:
+                    return stat
+        # Пословный матчинг: все ключевые слова модели из базы есть в заголовке
+        for (db_model, db_ram, db_ssd), stat in self.prices.items():
+            if db_ram == ram and db_ssd == ssd:
+                db_words = re.findall(r'[a-zа-яё0-9]+', db_model)
+                if db_words and all(w in norm for w in db_words):
                     return stat
         return None
 
@@ -448,14 +496,20 @@ class AvitoScanner:
 
                 info       = parse_listing(listing_soup)
                 model_name = info['model_name']
+                h1_title   = info['h1_title']
                 ram        = info['ram']
                 ssd        = info['ssd']
                 cycles     = info['cycles']
                 is_urgent  = info['is_urgent']
 
+                # Фоллбэк: если model_name не из таблицы — берём h1 или title из карточки
+                display_name = model_name or h1_title or title
+                ram = ram or 8
+                ssd = ssd or 256
+
                 logger.info(
-                    f"     Модель: {model_name} | RAM: {ram} | SSD: {ssd} | "
-                    f"Циклы: {cycles} | Срочно: {is_urgent}"
+                    f"     Модель: {model_name} | h1: {(h1_title or '')[:50]} | "
+                    f"RAM: {ram} | SSD: {ssd} | Циклы: {cycles} | Срочно: {is_urgent}"
                 )
 
                 # Финальный фильтр по полному тексту описания
@@ -467,9 +521,14 @@ class AvitoScanner:
                     continue
 
                 # Контрольная сверка с базой цен
-                stat = self.find_stat(model_name, ram or 8, ssd or 256)
+                # Пробуем: 1) model_name из таблицы, 2) h1, 3) title из карточки
+                stat = self.find_stat(model_name, ram, ssd)
+                if not stat and h1_title:
+                    stat = self.find_stat(h1_title, ram, ssd)
                 if not stat:
-                    logger.info(f"     ❌ Нет в базе цен: {model_name} {ram}/{ssd}")
+                    stat = self.find_stat(title, ram, ssd)
+                if not stat:
+                    logger.info(f"     ❌ Нет в базе цен: {display_name[:50]} {ram}/{ssd}")
                     self.seen.add(url); newly_seen.append(url)
                     continue
 
