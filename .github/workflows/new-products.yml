@@ -1,0 +1,54 @@
+name: New Products Parser
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # каждый день в 09:00 МСК (06:00 UTC)
+  workflow_dispatch:       # ручной запуск
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  parse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: scripts/new-products-parser/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r scripts/new-products-parser/requirements.txt
+
+      - name: Run parser
+        run: |
+          cd scripts/new-products-parser
+          python parser.py
+
+      - name: Commit and push
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add public/data/new-products.json
+          git diff --staged --quiet && echo "No changes" && exit 0
+          git commit -m "chore: update new-products prices [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push origin main && break
+            echo "Retry $i..."
+            git rebase --abort 2>/dev/null || true
+            git fetch origin main
+            git reset --soft origin/main
+            git commit -m "chore: update new-products prices [skip ci]"
+          done

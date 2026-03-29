@@ -48,6 +48,7 @@ const GeoKievskaya = lazy(() => import("./pages/geo/Kievskaya"));
 const GeoDorogomilovo = lazy(() => import("./pages/geo/Dorogomilovo"));
 const GeoArbat = lazy(() => import("./pages/geo/Arbat"));
 const GeoHamovniki = lazy(() => import("./pages/geo/Hamovniki"));
+const BuyNew = lazy(() => import("./pages/BuyNew"));
 
 const queryClient = new QueryClient();
 
@@ -75,6 +76,7 @@ const App = () => {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/buy" element={<Buy />} />
+                <Route path="/buy/new" element={<BuyNew />} />
                 <Route path="/sell" element={<Sell />} />
                 <Route path="/selection" element={<Selection />} />
                 <Route path="/business" element={<Business />} />
