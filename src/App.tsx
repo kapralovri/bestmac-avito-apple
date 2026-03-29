@@ -40,8 +40,6 @@ const MacbookPro14M3 = lazy(() => import("./pages/longtail/MacbookPro14M3"));
 const MacbookPro16M3Max = lazy(() => import("./pages/longtail/MacbookPro16M3Max"));
 const MacbookAirM3Students = lazy(() => import("./pages/longtail/MacbookAirM3Students"));
 const Comparison = lazy(() => import("./pages/Comparison"));
-const Upgrade = lazy(() => import("./pages/Upgrade"));
-const Deals = lazy(() => import("./pages/Deals"));
 const Pickup = lazy(() => import("./pages/Pickup"));
 const Service = lazy(() => import("./pages/Service"));
 const SellModel = lazy(() => import("./pages/SellModel"));
@@ -111,8 +109,6 @@ const App = () => {
                 <Route path="/buy/macbook-pro-16-m3-max" element={<MacbookPro16M3Max />} />
                 <Route path="/buy/macbook-air-m3-students" element={<MacbookAirM3Students />} />
                 <Route path="/comparison" element={<Comparison />} />
-                <Route path="/upgrade" element={<Upgrade />} />
-                <Route path="/deals" element={<Deals />} />
                 {/* Geo landing pages */}
                 <Route path="/moskva" element={<MoskvaIndex />} />
                 <Route path="/moskva/kievskaya" element={<GeoKievskaya />} />

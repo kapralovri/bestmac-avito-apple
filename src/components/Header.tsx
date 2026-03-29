@@ -9,10 +9,8 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { path: "/deals", label: "🔥 Сделки" },
     { path: "/buy", label: "В продаже" },
     { path: "/sell", label: "Выкуп" },
-    { path: "/upgrade", label: "Апгрейд" },
     { path: "/selection", label: "Подбор" },
     { path: "/service", label: "Сервис" },
     { path: "/blog", label: "Блог" },
