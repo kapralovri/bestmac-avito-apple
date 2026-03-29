@@ -6,6 +6,7 @@ import MarketTrends from "@/components/MarketTrends";
 import FAQ from "@/components/FAQ";
 import SEOHead from "@/components/SEOHead";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import NewProductsSection from "@/components/NewProductsSection";
 import { productOfferSchema, faqData } from "@/lib/schema";
 
 const Buy = () => {
@@ -47,6 +48,8 @@ const Buy = () => {
           </motion.div>
           <AvitoOffers />
         </section>
+
+        <NewProductsSection />
 
         <MarketTrends />
         
