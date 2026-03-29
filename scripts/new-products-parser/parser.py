@@ -406,6 +406,19 @@ def run():
     for cat in ['imac', 'macbook_air', 'macbook_pro', 'iphone_17', 'iphone_17_pro']:
         all_items.extend(found.get(cat, []))
 
+    # Deduplicate by (name, source_price)
+    seen: set = set()
+    deduped = []
+    for item in all_items:
+        key = (item['name'], item['source_price'])
+        if key not in seen:
+            seen.add(key)
+            deduped.append(item)
+    removed = len(all_items) - len(deduped)
+    if removed:
+        print(f"  → Удалено дублей: {removed}")
+    all_items = deduped
+
     output = {
         'updated_at': datetime.now(timezone.utc).isoformat(),
         'categories_found': list(found.keys()),

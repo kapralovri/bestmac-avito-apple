@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-03-29T20:34:09.901075+00:00",
+  "updated_at": "2026-03-29T21:07:27.849473+00:00",
   "categories_found": [
     "iphone_17_pro",
     "macbook_pro",
@@ -22,38 +22,6 @@
       "name": "iMac M3",
       "price": 115000,
       "source_price": 110000
-    },
-    {
-      "category": "macbook_air",
-      "category_display": "MacBook Air",
-      "model": "MacBook Air 15\"",
-      "chip": "M3",
-      "ram": null,
-      "ram_gb": null,
-      "ssd": null,
-      "ssd_gb": null,
-      "color": null,
-      "flags": [],
-      "is_activated": false,
-      "name": "MacBook Air 15\" M3",
-      "price": 167000,
-      "source_price": 162000
-    },
-    {
-      "category": "macbook_air",
-      "category_display": "MacBook Air",
-      "model": "MacBook Air 15\"",
-      "chip": "M3",
-      "ram": null,
-      "ram_gb": null,
-      "ssd": null,
-      "ssd_gb": null,
-      "color": null,
-      "flags": [],
-      "is_activated": false,
-      "name": "MacBook Air 15\" M3",
-      "price": 167000,
-      "source_price": 162000
     },
     {
       "category": "macbook_air",
