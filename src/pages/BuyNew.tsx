@@ -1,59 +1,126 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import Breadcrumbs from "@/components/Breadcrumbs";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, RefreshCw } from "lucide-react";
-
-interface Product {
-  name: string;
-  price: number;
-  source_price: number;
-  flags: string[];
-  is_activated: boolean;
-  category: string;
-  category_display: string;
-}
-
-interface ProductsData {
-  updated_at: string | null;
-  categories_found: string[];
-  items: Product[];
-}
+import { RefreshCw, AlertCircle, X } from "lucide-react";
+import {
+  ProductCard,
+  formatDate,
+  tgLink,
+  type Product,
+  type ProductsData,
+} from "@/components/NewProductsSection";
 
 const CATEGORIES = [
   { key: "all", label: "Все" },
-  { key: "imac", label: "iMac" },
+  { key: "iphone_17_pro", label: "iPhone 17 Pro / Max" },
+  { key: "iphone_17", label: "iPhone 17 / Air" },
   { key: "macbook_air", label: "MacBook Air" },
   { key: "macbook_pro", label: "MacBook Pro" },
-  { key: "iphone_17", label: "iPhone 17 / Air" },
-  { key: "iphone_17_pro", label: "iPhone 17 Pro" },
+  { key: "imac", label: "iMac" },
 ];
 
-const TG_LINK = "https://t.me/bestmac_moscow";
+const STORAGE_ORDER = ["128GB", "256GB", "512GB", "1TB", "2TB"];
+const RAM_ORDER = ["8GB", "16GB", "24GB", "32GB", "48GB", "64GB"];
+const SSD_ORDER = ["256GB", "512GB", "1TB", "2TB"];
 
-function formatPrice(price: number): string {
-  return price.toLocaleString("ru-RU") + " ₽";
+function unique<T>(arr: (T | undefined | null)[]): T[] {
+  return Array.from(new Set(arr.filter(Boolean) as T[]));
 }
 
-function formatDate(iso: string | null): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return d.toLocaleDateString("ru-RU", {
-    day: "numeric",
-    month: "long",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Europe/Moscow",
+function sortValues(vals: string[], order?: string[]): string[] {
+  if (!order) return [...vals].sort();
+  return [...vals].sort((a, b) => {
+    const ia = order.indexOf(a);
+    const ib = order.indexOf(b);
+    if (ia === -1 && ib === -1) return a.localeCompare(b);
+    if (ia === -1) return 1;
+    if (ib === -1) return -1;
+    return ia - ib;
   });
 }
 
+// ─── Filter chip row ───────────────────────────────────────────────────────────
+const ChipRow = ({
+  label,
+  values,
+  active,
+  onChange,
+}: {
+  label: string;
+  values: string[];
+  active: string;
+  onChange: (v: string) => void;
+}) => {
+  if (values.length < 2) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <span className="text-xs text-muted-foreground w-12 shrink-0">{label}</span>
+      <button
+        onClick={() => onChange("all")}
+        className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+          active === "all"
+            ? "bg-primary text-primary-foreground border-primary"
+            : "border-border hover:border-primary/50"
+        }`}
+      >
+        Все
+      </button>
+      {values.map((v) => (
+        <button
+          key={v}
+          onClick={() => onChange(v)}
+          className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+            active === v
+              ? "bg-primary text-primary-foreground border-primary"
+              : "border-border hover:border-primary/50"
+          }`}
+        >
+          {v}
+        </button>
+      ))}
+    </div>
+  );
+};
+
+// ─── JSON-LD product list schema ───────────────────────────────────────────────
+function buildSchema(items: Product[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Новая техника Apple — официальные поставки",
+    description:
+      "Каталог новых iPhone, MacBook, iMac с актуальными ценами в Москве",
+    numberOfItems: items.length,
+    itemListElement: items.slice(0, 50).map((p, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      item: {
+        "@type": "Product",
+        name: p.name,
+        brand: { "@type": "Brand", name: "Apple" },
+        offers: {
+          "@type": "Offer",
+          price: p.price,
+          priceCurrency: "RUB",
+          availability: "https://schema.org/InStock",
+          seller: { "@type": "Organization", name: "BestMac" },
+        },
+      },
+    })),
+  };
+}
+
+// ─── Page ──────────────────────────────────────────────────────────────────────
 const BuyNew = () => {
   const [data, setData] = useState<ProductsData | null>(null);
   const [activeCategory, setActiveCategory] = useState("all");
+  const [filterStorage, setFilterStorage] = useState("all");
+  const [filterRam, setFilterRam] = useState("all");
+  const [filterColor, setFilterColor] = useState("all");
 
   const breadcrumbItems = [
     { name: "Главная", url: "/" },
@@ -68,27 +135,89 @@ const BuyNew = () => {
       .catch(console.error);
   }, []);
 
-  const filtered = data?.items.filter(
-    (p) => activeCategory === "all" || p.category === activeCategory
-  ) ?? [];
+  // Reset attribute filters when category changes
+  const handleCategoryChange = (cat: string) => {
+    setActiveCategory(cat);
+    setFilterStorage("all");
+    setFilterRam("all");
+    setFilterColor("all");
+  };
 
-  const categoryCounts = data
-    ? CATEGORIES.reduce<Record<string, number>>((acc, cat) => {
-        acc[cat.key] =
-          cat.key === "all"
-            ? data.items.length
-            : data.items.filter((p) => p.category === cat.key).length;
-        return acc;
-      }, {})
-    : {};
+  const categoryItems = useMemo(
+    () =>
+      data?.items.filter(
+        (p) => activeCategory === "all" || p.category === activeCategory
+      ) ?? [],
+    [data, activeCategory]
+  );
+
+  // Available filter values for current category
+  const storageValues = useMemo(
+    () =>
+      sortValues(unique(categoryItems.map((p) => p.storage)), STORAGE_ORDER),
+    [categoryItems]
+  );
+  const ramValues = useMemo(
+    () => sortValues(unique(categoryItems.map((p) => p.ram)), RAM_ORDER),
+    [categoryItems]
+  );
+  const ssdValues = useMemo(
+    () => sortValues(unique(categoryItems.map((p) => p.ssd)), SSD_ORDER),
+    [categoryItems]
+  );
+  const colorValues = useMemo(
+    () => sortValues(unique(categoryItems.map((p) => p.color))),
+    [categoryItems]
+  );
+
+  // "Память" = storage for iPhones, SSD for MacBooks
+  const memValues = storageValues.length > 1 ? storageValues : ssdValues;
+
+  const filtered = useMemo(
+    () =>
+      categoryItems.filter((p) => {
+        if (filterStorage !== "all") {
+          const val = p.storage ?? p.ssd;
+          if (val !== filterStorage) return false;
+        }
+        if (filterRam !== "all" && p.ram !== filterRam) return false;
+        if (filterColor !== "all" && p.color !== filterColor) return false;
+        return true;
+      }),
+    [categoryItems, filterStorage, filterRam, filterColor]
+  );
+
+  const categoryCounts = useMemo(() => {
+    if (!data) return {} as Record<string, number>;
+    return CATEGORIES.reduce<Record<string, number>>((acc, cat) => {
+      acc[cat.key] =
+        cat.key === "all"
+          ? data.items.length
+          : data.items.filter((p) => p.category === cat.key).length;
+      return acc;
+    }, {});
+  }, [data]);
+
+  const hasActiveFilters =
+    filterStorage !== "all" || filterRam !== "all" || filterColor !== "all";
+
+  const schema = data ? buildSchema(data.items) : null;
+
+  // Dynamic meta description
+  const iphoneCount =
+    (data?.items.filter((p) => p.category.startsWith("iphone")).length ?? 0);
+  const macCount =
+    (data?.items.filter((p) => p.category.startsWith("macbook")).length ?? 0);
+  const metaDesc = `Новая техника Apple в Москве: ${iphoneCount > 0 ? `iPhone 17 Pro / Air (${iphoneCount} позиций), ` : ""}${macCount > 0 ? `MacBook Air M4 / MacBook Pro (${macCount} позиций), ` : ""}iMac. Официальные поставки. Свяжитесь для уточнения цены.`;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SEOHead
-        title="Новая техника Apple в Москве — цены на MacBook, iPhone, iMac | BestMac"
-        description="Новые MacBook Air, MacBook Pro, iMac, iPhone 17 в Москве. Актуальные цены, официальные поставки. Гарантия. Доставка."
+        title="Новая техника Apple в Москве — iPhone 17, MacBook Air M4, iMac | BestMac"
+        description={metaDesc}
         canonical="/buy/new"
-        keywords="купить новый macbook москва, новый iphone 17 москва, imac цена москва, macbook pro новый"
+        schema={schema}
+        keywords="купить новый iphone 17 pro москва, новый macbook air m4 москва, imac m4 цена москва, купить iphone 17 pro max, macbook air 13 m4"
       />
       <Header />
 
@@ -105,7 +234,8 @@ const BuyNew = () => {
             Новая техника Apple
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-2">
-            Официальные поставки. Цены обновляются ежедневно.
+            Официальные поставки iPhone 17, MacBook Air M4, iMac. Актуальные цены,
+            доставка в Москве.
           </p>
           {data?.updated_at && (
             <p className="text-sm text-muted-foreground flex items-center justify-center gap-1.5">
@@ -116,7 +246,7 @@ const BuyNew = () => {
         </motion.div>
 
         {/* Category tabs */}
-        <div className="flex flex-wrap gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-4">
           {CATEGORIES.map((cat) => {
             const count = categoryCounts[cat.key] ?? 0;
             if (cat.key !== "all" && count === 0) return null;
@@ -125,7 +255,7 @@ const BuyNew = () => {
                 key={cat.key}
                 variant={activeCategory === cat.key ? "default" : "outline"}
                 size="sm"
-                onClick={() => setActiveCategory(cat.key)}
+                onClick={() => handleCategoryChange(cat.key)}
                 className="gap-1.5"
               >
                 {cat.label}
@@ -137,10 +267,63 @@ const BuyNew = () => {
           })}
         </div>
 
+        {/* Attribute filters */}
+        {(memValues.length > 1 || ramValues.length > 1 || colorValues.length > 1) && (
+          <div className="bg-muted/30 border rounded-xl p-3 mb-4 flex flex-col gap-2">
+            <ChipRow
+              label="Память"
+              values={memValues}
+              active={filterStorage}
+              onChange={setFilterStorage}
+            />
+            {ramValues.length > 1 && (
+              <ChipRow
+                label="RAM"
+                values={ramValues}
+                active={filterRam}
+                onChange={setFilterRam}
+              />
+            )}
+            {colorValues.length > 1 && (
+              <ChipRow
+                label="Цвет"
+                values={colorValues}
+                active={filterColor}
+                onChange={setFilterColor}
+              />
+            )}
+            {hasActiveFilters && (
+              <button
+                onClick={() => {
+                  setFilterStorage("all");
+                  setFilterRam("all");
+                  setFilterColor("all");
+                }}
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground w-fit mt-1"
+              >
+                <X className="w-3 h-3" />
+                Сбросить фильтры
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Disclaimer */}
-        <div className="bg-muted/50 border rounded-lg px-4 py-3 mb-6 text-sm text-muted-foreground">
-          Цены актуальны на дату последнего обновления. Для оформления заказа
-          напишите нам в Telegram — уточним наличие и договоримся об условиях.
+        <div className="flex gap-3 items-start bg-muted/50 border rounded-xl px-4 py-3 mb-6 text-sm text-muted-foreground">
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-amber-500" />
+          <p>
+            Цены могут изменяться в связи с колебаниями курса валют. Указанная
+            стоимость ориентировочная —{" "}
+            <a
+              href={tgLink("новая техника Apple")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-foreground"
+            >
+              свяжитесь для уточнения финальной стоимости
+            </a>
+            .
+          </p>
         </div>
 
         {/* Products grid */}
@@ -150,61 +333,29 @@ const BuyNew = () => {
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 text-muted-foreground">
-            Нет позиций в этой категории
+            Нет позиций с выбранными параметрами
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filtered.map((product, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: Math.min(idx * 0.03, 0.4) }}
-                className="border rounded-xl p-4 bg-card hover:shadow-md transition-shadow flex flex-col gap-3"
-              >
-                {/* Category badge + flags */}
-                <div className="flex items-start justify-between gap-2">
-                  <Badge variant="secondary" className="text-xs shrink-0">
-                    {product.category_display}
-                  </Badge>
-                  <span className="text-base leading-none">
-                    {product.flags.join("")}
-                  </span>
-                </div>
-
-                {/* Name */}
-                <p className="text-sm font-medium leading-snug line-clamp-3">
-                  {product.name}
-                </p>
-
-                {/* Activated badge */}
-                {product.is_activated && (
-                  <Badge
-                    variant="outline"
-                    className="text-xs w-fit text-amber-600 border-amber-400"
-                  >
-                    Активирован
-                  </Badge>
-                )}
-
-                {/* Price */}
-                <div className="mt-auto pt-1 border-t">
-                  <p className="text-lg font-bold">{formatPrice(product.price)}</p>
-                  <p className="text-xs text-muted-foreground">
-                    до наценки: {formatPrice(product.source_price)}
-                  </p>
-                </div>
-
-                {/* CTA */}
-                <a href={TG_LINK} target="_blank" rel="noopener noreferrer">
-                  <Button size="sm" className="w-full gap-1.5">
-                    <MessageCircle className="w-3.5 h-3.5" />
-                    Узнать наличие
-                  </Button>
-                </a>
-              </motion.div>
-            ))}
-          </div>
+          <>
+            <p className="text-sm text-muted-foreground mb-4">
+              Показано {filtered.length} позиций
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filtered.map((product, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.3,
+                    delay: Math.min(idx * 0.03, 0.4),
+                  }}
+                >
+                  <ProductCard product={product} />
+                </motion.div>
+              ))}
+            </div>
+          </>
         )}
       </main>
 
