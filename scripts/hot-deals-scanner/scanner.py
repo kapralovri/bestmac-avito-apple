@@ -23,6 +23,7 @@ logger = logging.getLogger("Scanner")
 # --- КОНФИГУРАЦИЯ ---
 PRICES_FILE       = Path("public/data/avito-prices.json")
 SEEN_FILE         = Path("public/data/seen-hot-deals.json")
+HOT_DEALS_FILE    = Path("public/data/hot-deals.json")
 TELEGRAM_URL      = os.environ.get('TELEGRAM_NOTIFY_URL')
 SCAN_URL          = os.environ.get('SCAN_URL')
 RUCAPTCHA_API_KEY = os.environ.get('RUCAPTCHA_API_KEY', '')
@@ -50,6 +51,39 @@ BAD_KEYWORDS = [
 
 def clean_url(url: str) -> str:
     return url.split('?')[0]
+
+
+def calculate_deal_score(price: int, median_price: int, min_price: int,
+                         cycles, is_urgent: bool, is_avito_low: bool) -> int:
+    """Скоринг сделки 0-100. Выше = выгоднее."""
+    score = 0
+
+    # 1. Цена vs медиана (0-45 баллов)
+    if median_price > 0:
+        discount_pct = (median_price - price) / median_price * 100
+        score += min(45, max(0, int(discount_pct * 1.8)))
+
+    # 2. Циклы батареи (0-20 баллов)
+    if cycles is not None:
+        if cycles < 100:   score += 20
+        elif cycles < 200: score += 15
+        elif cycles < 300: score += 10
+        elif cycles < 500: score += 5
+    else:
+        score += 8  # неизвестно — нейтрально
+
+    # 3. Срочность (0-15 баллов)
+    if is_urgent:
+        score += 15
+
+    # 4. Метка "Цена ниже рыночной" от Авито (0-15 баллов)
+    if is_avito_low:
+        score += 15
+
+    # 5. Базовые баллы за то что прошло все фильтры (5 баллов)
+    score += 5
+
+    return min(100, max(0, score))
 
 
 def is_captcha_page(page) -> bool:
@@ -465,6 +499,7 @@ class AvitoScanner:
 
         found = 0
         newly_seen = []
+        new_hot_deals = []
 
         # ═══════════════════════════════════════════════════════════════
         # ФАЗ 1 — быстрый просмотр всех объявлений без HTTP-запросов
@@ -617,6 +652,26 @@ class AvitoScanner:
                 )
 
                 if should_notify:
+                    deal_score = calculate_deal_score(
+                        price, stat['median_price'], market_low,
+                        cycles, is_urgent, is_avito_low
+                    )
+                    discount_pct = (stat['median_price'] - price) / stat['median_price'] * 100 if stat['median_price'] > 0 else 0
+                    new_hot_deals.append({
+                        'model_name': stat['model_name'],
+                        'processor':  stat['processor'],
+                        'ram':        ram or 8,
+                        'ssd':        ssd or 256,
+                        'price':      price,
+                        'median_price':   stat['median_price'],
+                        'discount_percent': round(discount_pct, 2),
+                        'deal_score': deal_score,
+                        'cycles':     cycles,
+                        'is_urgent':  is_urgent,
+                        'url':        url,
+                        'found_at':   datetime.now().isoformat(),
+                    })
+                    logger.info(f"     🏷 Deal score: {deal_score}/100")
                     self.notify(
                         title, price, market_low, stat['buyout_price'],
                         ram or 8, ssd or 256, url,
@@ -633,13 +688,35 @@ class AvitoScanner:
                 logger.warning(f"     ⚠️  Ошибка: {e}")
                 continue
 
-        # Сохраняем историю
+        # Сохраняем историю просмотренных
         if newly_seen:
             with open(SEEN_FILE, 'w', encoding='utf-8') as f:
                 json.dump({
                     "updated_at": datetime.now().isoformat(),
                     "seen_urls": list(self.seen)[-5000:]
                 }, f)
+
+        # Обновляем hot-deals.json — добавляем новые сделки, храним последние 50
+        if new_hot_deals:
+            existing_deals = []
+            if HOT_DEALS_FILE.exists():
+                try:
+                    with open(HOT_DEALS_FILE, 'r', encoding='utf-8') as f:
+                        existing_deals = json.load(f).get('deals', [])
+                except Exception:
+                    pass
+            # Дедупликация по URL
+            existing_urls = {d['url'] for d in existing_deals}
+            merged = new_hot_deals + [d for d in existing_deals if d['url'] not in existing_urls]
+            # Сортируем по score, оставляем 50 лучших
+            merged.sort(key=lambda d: d.get('deal_score', 0), reverse=True)
+            merged = merged[:50]
+            with open(HOT_DEALS_FILE, 'w', encoding='utf-8') as f:
+                json.dump({
+                    "updated_at": datetime.now().isoformat(),
+                    "deals": merged
+                }, f, ensure_ascii=False, indent=2)
+            logger.info(f"💾 hot-deals.json: {len(merged)} сделок сохранено")
 
         self.context.close()
         self.browser.close()

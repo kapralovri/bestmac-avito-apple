@@ -43,11 +43,11 @@ jobs:
           RUCAPTCHA_API_KEY: ${{ secrets.RUCAPTCHA_API_KEY }}
         run: python scripts/hot-deals-scanner/scanner.py
 
-      - name: Save seen history
+      - name: Save results
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add public/data/seen-hot-deals.json
+          git add public/data/seen-hot-deals.json public/data/hot-deals.json
           if git diff --staged --quiet; then
             echo "No changes"
           else
