@@ -6,6 +6,7 @@ Fetches latest price posts for 5 categories, adds markup, saves to JSON.
 Categories: iMac, MacBook Air, MacBook Pro, iPhone 17/Air, iPhone 17 Pro
 """
 
+import os
 import re
 import json
 import time
@@ -16,7 +17,10 @@ from datetime import datetime, timezone
 CHANNEL = "BigSaleApple"
 MARKUP = 5000       # ₽ added to each price
 MIN_PRICE = 10000   # filter noise / header lines
-OUTPUT_FILE = "public/data/new-products.json"
+
+# Path relative to repo root, works from any working directory
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+OUTPUT_FILE = os.path.join(REPO_ROOT, "public", "data", "new-products.json")
 
 # Detection order matters: more specific first
 CATEGORY_DETECT = [
