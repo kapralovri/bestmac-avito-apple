@@ -19,7 +19,7 @@
         {
           "type": "header",
           "key": "user-agent",
-          "value": ".*(googlebot|yandexbot|bingbot|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora\\ link\\ preview|showyoubot|outbrain|pinterest\\/0\\.|slackbot|vkShare|W3C_Validator|whatsapp|telegrambot|applebot|yandex.com/bots).*"
+          "value": ".*(googlebot|yandexbot|bingbot|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora\\ link\\ preview|showyoubot|outbrain|pinterest\\/0\\.|slackbot|vkShare|W3C_Validator|whatsapp|telegrambot|applebot|yandex.com/bots|GPTBot|ChatGPT-User|ClaudeBot|PerplexityBot|Google-Extended).*"
         }
       ],
       "destination": "/api/prerender?__path=/"
@@ -30,7 +30,7 @@
         {
           "type": "header",
           "key": "user-agent",
-          "value": ".*(googlebot|yandexbot|bingbot|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora\\ link\\ preview|showyoubot|outbrain|pinterest\\/0\\.|slackbot|vkShare|W3C_Validator|whatsapp|telegrambot|applebot|yandex.com/bots).*"
+          "value": ".*(googlebot|yandexbot|bingbot|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora\\ link\\ preview|showyoubot|outbrain|pinterest\\/0\\.|slackbot|vkShare|W3C_Validator|whatsapp|telegrambot|applebot|yandex.com/bots|GPTBot|ChatGPT-User|ClaudeBot|PerplexityBot|Google-Extended).*"
         }
       ],
       "destination": "/api/prerender?__path=/:path*"
@@ -77,6 +77,28 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/data/(.*).json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, s-maxage=3600"
+        }
+      ]
+    },
+    {
+      "source": "/llms.txt",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
         }
       ]
     }

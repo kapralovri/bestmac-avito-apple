@@ -1,64 +1,44 @@
 User-agent: *
 Allow: /
 
-# Разрешаем индексацию основных страниц
-Allow: /buy
-Allow: /sell
-Allow: /selection
-Allow: /business
-Allow: /contact
-Allow: /pickup
-Allow: /comparison
-Allow: /privacy
-Allow: /terms
-
-# Разрешаем индексацию блога
-Allow: /blog/kak-vybrat-macbook-2024
-Allow: /blog/proverka-macbook-pered-pokupkoi
-Allow: /blog/macbook-air-m2-vs-m3
-Allow: /blog/kak-prodat-macbook-vygodno
-Allow: /blog/macbook-m4-obzor
-Allow: /blog/macbook-vs-windows
-Allow: /blog/macbook-bu-podvodnye
-Allow: /blog/macbook-dlia-studenta
-Allow: /blog/macbook-apgreid
-
-# Разрешаем индексацию long-tail страниц
-Allow: /buy/macbook-air-m2-16gb
-Allow: /buy/macbook-pro-14-m3
-Allow: /buy/macbook-pro-16-m3-max
-Allow: /buy/macbook-air-m3-students
-Allow: /sell/macbook-broken-screen
-
-# Разрешаем индексацию динамических страниц выкупа
-Allow: /sell/macbook-air-*
-Allow: /sell/macbook-pro-*
-
 # Запрещаем служебные разделы
 Disallow: /api/
 Disallow: /admin/
 Disallow: /*?*utm_
 Disallow: /*?*ref=
 Disallow: /*?*source=
-
-# Запрещаем динамические параметры фильтрации
 Disallow: /*?filter=
 Disallow: /*?sort=
 
-# Указываем путь к sitemap и хост
+# Sitemap и хост
 Host: https://bestmac.ru
 Sitemap: https://bestmac.ru/sitemap.xml
 
-# Crawl-delay для вежливого краулинга
-Crawl-delay: 1
-
-# Специальные правила для Yandex
+# Yandex
 User-agent: Yandex
 Allow: /
 Crawl-delay: 1
 Clean-param: utm_source&utm_medium&utm_campaign
 
-# Специальные правила для Google
+# Google
 User-agent: Googlebot
 Allow: /
-Crawl-delay: 0
+
+# AI-краулеры — разрешаем
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Bingbot
+Allow: /
