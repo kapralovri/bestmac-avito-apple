@@ -16,6 +16,21 @@ const MacbookVsWindows = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "MacBook vs Windows — что выбрать",
+    "description": "Сравнение MacBook и Windows-ноутбуков. Плюсы и минусы каждой платформы.",
+    "image": "https://bestmac.ru/og-image.jpg",
+    "datePublished": "2025-06-15",
+    "dateModified": "2026-03-31",
+    "author": { "@type": "Person", "name": "Роман Капралов" },
+    "publisher": { "@type": "Organization", "name": "BestMac", "logo": { "@type": "ImageObject", "url": "https://bestmac.ru/favicon.png" } },
+    "mainEntityOfPage": { "@type": "WebPage", "@id": "https://bestmac.ru/blog/macbook-vs-windows" }
+  }) }}
+      />
 <main className="flex-grow container mx-auto px-4 py-12">
         <Breadcrumbs items={[
           { name: "Главная", url: "/" },

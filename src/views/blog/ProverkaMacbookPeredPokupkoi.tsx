@@ -14,6 +14,21 @@ const ProverkaMacbookPeredPokupkoi = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Проверка MacBook перед покупкой — чек-лист",
+    "description": "Как проверить MacBook б/у перед покупкой. Полный чек-лист проверки.",
+    "image": "https://bestmac.ru/og-image.jpg",
+    "datePublished": "2025-11-01",
+    "dateModified": "2026-03-31",
+    "author": { "@type": "Person", "name": "Роман Капралов" },
+    "publisher": { "@type": "Organization", "name": "BestMac", "logo": { "@type": "ImageObject", "url": "https://bestmac.ru/favicon.png" } },
+    "mainEntityOfPage": { "@type": "WebPage", "@id": "https://bestmac.ru/blog/proverka-macbook-pered-pokupkoi" }
+  }) }}
+      />
 <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumbs items={breadcrumbItems} />
         

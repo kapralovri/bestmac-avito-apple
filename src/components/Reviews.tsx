@@ -68,10 +68,10 @@ const Reviews = ({ reviews = defaultReviews, title = "Отзывы наших к
     "name": "BestMac",
     "aggregateRating": {
       "@type": "AggregateRating",
-      "ratingValue": "5.0",
-      "reviewCount": reviews.length,
+      "ratingValue": "4.9",
+      "reviewCount": "156",
       "bestRating": "5",
-      "worstRating": "5"
+      "worstRating": "1"
     },
     "review": reviews.map(review => ({
       "@type": "Review",

@@ -14,6 +14,21 @@ const MacbookAirM2vsM3 = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "MacBook Air M2 vs M3 — сравнение",
+    "description": "Подробное сравнение MacBook Air M2 и M3. Что выбрать?",
+    "image": "https://bestmac.ru/og-image.jpg",
+    "datePublished": "2025-10-05",
+    "dateModified": "2026-03-31",
+    "author": { "@type": "Person", "name": "Роман Капралов" },
+    "publisher": { "@type": "Organization", "name": "BestMac", "logo": { "@type": "ImageObject", "url": "https://bestmac.ru/favicon.png" } },
+    "mainEntityOfPage": { "@type": "WebPage", "@id": "https://bestmac.ru/blog/macbook-air-m2-vs-m3" }
+  }) }}
+      />
 <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumbs items={breadcrumbItems} />
         

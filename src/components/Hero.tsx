@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import macbookHero from "@/assets/images/macbook-hero.jpg";
@@ -54,11 +55,14 @@ const Hero = () => {
           className="absolute inset-0 flex items-center justify-center"
           style={{ scale: imageScale, opacity: imageOpacity, y: imageY }}
         >
-          <img
-            src={typeof macbookHero === 'string' ? macbookHero : macbookHero.src}
+          <Image
+            src={macbookHero}
             alt="MacBook Pro на тёмном фоне"
-            className="w-full h-full object-cover"
-            loading="eager"
+            className="object-cover"
+            fill
+            sizes="100vw"
+            priority
+            placeholder="blur"
           />
           {/* Dramatic vignette */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_30%,_hsl(0_0%_0%)_100%)]" />
@@ -83,9 +87,9 @@ const Hero = () => {
           {/* Main headline */}
           <motion.h1
             className="text-6xl sm:text-7xl md:text-[5.5rem] lg:text-[7rem] font-bold tracking-tighter leading-[0.9] mb-6"
-            initial={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 1, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ delay: 0.1, duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
             <span className="text-gradient">Техника Apple.</span>
             <br />

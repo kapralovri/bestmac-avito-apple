@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Terms from '@/views/Terms';
 
 export const metadata: Metadata = {
-  title: 'Условия использования — BestMac',
+  title: 'Условия использования',
   description: 'Условия использования сервиса BestMac.',
   alternates: { canonical: '/terms' },
 };

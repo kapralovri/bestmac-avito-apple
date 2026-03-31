@@ -34,8 +34,8 @@ export async function generateMetadata({
   const shortName = modelName ? modelShortName(modelName) : null;
 
   const title = shortName
-    ? `Выкуп ${shortName} в Москве дорого — BestMac`
-    : 'Выкуп MacBook в Москве — онлайн-оценка | BestMac';
+    ? `Выкуп ${shortName} в Москве дорого`
+    : 'Выкуп MacBook в Москве — онлайн-оценка';
 
   const description = shortName
     ? `Узнайте реальную стоимость выкупа вашего ${shortName}. Прозрачная оценка, выплата до 80% от рынка, деньги сразу.`

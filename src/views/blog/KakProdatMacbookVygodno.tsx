@@ -9,6 +9,21 @@ import { ArrowRight } from "lucide-react";
 const KakProdatMacbookVygodno = () => {
   return (
     <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Как продать MacBook выгодно",
+    "description": "Советы как продать MacBook по лучшей цене. Подготовка, оценка стоимости.",
+    "image": "https://bestmac.ru/og-image.jpg",
+    "datePublished": "2025-11-15",
+    "dateModified": "2026-03-31",
+    "author": { "@type": "Person", "name": "Роман Капралов" },
+    "publisher": { "@type": "Organization", "name": "BestMac", "logo": { "@type": "ImageObject", "url": "https://bestmac.ru/favicon.png" } },
+    "mainEntityOfPage": { "@type": "WebPage", "@id": "https://bestmac.ru/blog/kak-prodat-macbook-vygodno" }
+  }) }}
+      />
 <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <Breadcrumbs
           items={[

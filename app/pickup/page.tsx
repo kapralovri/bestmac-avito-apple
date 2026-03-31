@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Pickup from '@/views/Pickup';
 
 export const metadata: Metadata = {
-  title: 'Самовывоз — BestMac',
+  title: 'Самовывоз',
   description: 'Как добраться до офиса BestMac. Адрес: Москва, ул. Дениса Давыдова 3, м. Киевская.',
   alternates: { canonical: '/pickup' },
 };

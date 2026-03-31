@@ -11,7 +11,7 @@ export const organizationSchema = {
     "@type": "PostalAddress",
     "streetAddress": "ул. Дениса Давыдова 3",
     "addressLocality": "Москва",
-    "addressRegion": "Дорогомилово",
+    "addressRegion": "Москва",
     "addressCountry": "RU"
   },
   "geo": {
@@ -97,7 +97,7 @@ export const breadcrumbSchema = (items: Array<{name: string, url: string}>) => (
     "@type": "ListItem",
     "position": index + 1,
     "name": item.name,
-    "item": item.url
+    "item": item.url.startsWith('http') ? item.url : `https://bestmac.ru${item.url}`
   }))
 });
 

@@ -11,7 +11,7 @@ import LeadForm from "@/components/LeadForm";
 import { faqData } from "@/lib/schema";
 
 export const metadata: Metadata = {
-  title: 'BestMac — Честный выкуп и продажа MacBook в Москве с гарантией',
+  title: { absolute: 'BestMac — Честный выкуп и продажа MacBook в Москве с гарантией' },
   description: 'Купить или продать MacBook б/у в Москве с гарантией 1 месяц. Официальная скупка MacBook, iMac, iPhone через ИП. Дорогомилово, Киевская, ЦАО. Онлайн-калькулятор оценки, выезд на дом.',
   alternates: { canonical: '/' },
 };

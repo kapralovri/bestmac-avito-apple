@@ -14,6 +14,21 @@ const KakVybratMacbook2024 = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Как выбрать MacBook в 2024 году — полный гид",
+    "description": "Подробный гид по выбору MacBook. Сравнение Air и Pro, помощь в выборе.",
+    "image": "https://bestmac.ru/og-image.jpg",
+    "datePublished": "2025-09-20",
+    "dateModified": "2026-03-31",
+    "author": { "@type": "Person", "name": "Роман Капралов" },
+    "publisher": { "@type": "Organization", "name": "BestMac", "logo": { "@type": "ImageObject", "url": "https://bestmac.ru/favicon.png" } },
+    "mainEntityOfPage": { "@type": "WebPage", "@id": "https://bestmac.ru/blog/kak-vybrat-macbook-2024" }
+  }) }}
+      />
 <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumbs items={breadcrumbItems} />
         

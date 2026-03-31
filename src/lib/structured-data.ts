@@ -117,12 +117,19 @@ export const generateLocalBusinessSchema = () => ({
   "name": "BestMac",
   "image": "https://bestmac.ru/og-image.jpg",
   "url": "https://bestmac.ru",
-  "telephone": "+7(000)000-00-00", // Замените на реальный при необходимости или оставьте TG/WA
-  "priceRange": "$$$",
+  "telephone": "+7-903-299-00-29",
+  "priceRange": "$$",
   "address": {
     "@type": "PostalAddress",
+    "streetAddress": "ул. Дениса Давыдова 3",
     "addressLocality": "Москва",
+    "addressRegion": "Москва",
     "addressCountry": "RU"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": "55.7369",
+    "longitude": "37.5165"
   },
   "description": "Скупка техники Apple в Москве. Выкуп MacBook Pro, Air, Mac Mini, iMac дорого и быстро. Оценка онлайн за 5 минут, оплата наличными.",
   "aggregateRating": {

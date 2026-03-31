@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import GeoDorogomilovo from '@/views/geo/Dorogomilovo';
 
 export const metadata: Metadata = {
-  title: 'MacBook в Дорогомилово — BestMac',
+  title: 'MacBook в Дорогомилово',
   description: 'Купить и продать MacBook в районе Дорогомилово. Офис BestMac на ул. Дениса Давыдова.',
   alternates: { canonical: '/moskva/dorogomilovo' },
 };

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import MacbookAirM3Students from '@/views/longtail/MacbookAirM3Students';
 
 export const metadata: Metadata = {
-  title: 'MacBook Air M3 для студентов | BestMac',
+  title: 'MacBook Air M3 для студентов',
   description: 'MacBook Air M3 — лучший ноутбук для учёбы. Покупайте с гарантией.',
   alternates: { canonical: '/buy/macbook-air-m3-students' },
 };

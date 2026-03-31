@@ -182,35 +182,9 @@ const SellModel = () => {
     { name: shortName || 'Модель', url: `/sell/${model_slug}` },
   ]);
 
-  const organizationSchema = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "BestMac",
-    "url": "https://bestmac.ru",
-    "telephone": "+7-903-299-00-29",
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "ул. Дениса Давыдова 3",
-      "addressLocality": "Москва",
-      "addressCountry": "RU"
-    }
-  };
+  // Organization schema is already in layout.tsx globally
 
-  const softwareAppSchema = {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": `Калькулятор выкупа ${shortName}`,
-    "applicationCategory": "UtilitiesApplication",
-    "operatingSystem": "Web",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "RUB"
-    },
-    "description": `Онлайн-калькулятор для оценки стоимости выкупа ${shortName}. Узнайте рыночную цену за 10 секунд.`
-  };
-
-  const combinedSchema = [breadcrumbSchema, organizationSchema, softwareAppSchema];
+  const combinedSchema = [breadcrumbSchema];
 
   const handleModelSelect = (model: string) => {
     setModelName(model);

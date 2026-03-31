@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import MacbookApgreid from '@/views/blog/MacbookApgreid';
 
 export const metadata: Metadata = {
-  title: 'Апгрейд MacBook — что можно улучшить | BestMac',
+  title: 'Апгрейд MacBook — что можно улучшить',
   description: 'Возможности апгрейда MacBook. Замена SSD, оперативной памяти.',
   alternates: { canonical: '/blog/macbook-apgreid' },
 };
