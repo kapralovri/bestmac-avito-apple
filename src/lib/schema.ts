@@ -38,7 +38,7 @@ export const organizationSchema = {
   "aggregateRating": {
     "@type": "AggregateRating",
     "ratingValue": "4.9",
-    "reviewCount": "128"
+    "reviewCount": "156"
   },
   "priceRange": "$$",
   "sameAs": ["https://t.me/romanmanro"],

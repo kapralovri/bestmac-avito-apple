@@ -1,6 +1,13 @@
 import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
+
+const inter = Inter({
+  subsets: ['latin', 'cyrillic'],
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
+  display: 'swap',
+});
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CookieBanner from '@/components/CookieBanner';
@@ -53,7 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
       </head>
-      <body>
+      <body className={inter.className}>
         {/* Google Analytics */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-Z7HMP0832W"
