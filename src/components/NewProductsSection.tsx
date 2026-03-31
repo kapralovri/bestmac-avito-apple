@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, RefreshCw, ArrowRight, AlertCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 
 export interface Product {
   name: string;
@@ -324,7 +324,7 @@ const DeviceGroupBlock = ({
 
       {filtered.length > PREVIEW_COUNT && (
         <div className="mt-4 text-center">
-          <Link to="/buy/new">
+          <Link href="/buy/new">
             <Button variant="outline" size="sm" className="gap-1.5">
               Смотреть все {filtered.length} позиций
               <ArrowRight className="w-3.5 h-3.5" />
