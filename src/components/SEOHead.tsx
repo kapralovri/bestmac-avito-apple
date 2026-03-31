@@ -1,5 +1,7 @@
+"use client";
+
 import { Helmet } from 'react-helmet-async';
-import { useLocation } from 'react-router-dom';
+import { usePathname } from 'next/navigation';
 
 interface SEOHeadProps {
   title?: string;
@@ -21,8 +23,8 @@ const SEOHead = ({
   noindex = false
 }: SEOHeadProps) => {
   const baseUrl = "https://bestmac.ru";
-  const location = useLocation();
-  const pathname = (location?.pathname || '/').replace(/\/+$/, '') || '/';
+  const currentPathname = usePathname();
+  const pathname = (currentPathname || '/').replace(/\/+$/, '') || '/';
 
   // Normalize canonical: strip trailing slashes
   const canonicalPath = (canonical ?? pathname).replace(/\/+$/, '') || '/';

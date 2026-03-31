@@ -1,9 +1,8 @@
+"use client";
+
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { MessageCircle, CheckCircle2, Shield, Clock, MapPin, Calculator } from "lucide-react";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import SEOHead from "@/components/SEOHead";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { trackContactClick } from "@/components/Analytics";
@@ -51,14 +50,7 @@ const SellDeviceLanding = ({
 
     return (
         <div className="min-h-screen bg-background text-foreground flex flex-col">
-            <SEOHead
-                title={title}
-                description={description}
-                canonical={`/sell/${deviceType.toLowerCase().replace(' ', '-')}`}
-                keywords={keywords}
-                schema={schemaGraph}
-            />
-            <Header />
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph) }} />
 
             <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
                 <Breadcrumbs items={breadcrumbItems} />
@@ -214,7 +206,7 @@ const SellDeviceLanding = ({
                             <h3 className="font-bold text-lg mb-2">Обмен по Trade-In</h3>
                             <p className="text-sm">Хотите обновить устройство? Сдайте свой старый {deviceType} и получите скидку на покупку нового MacBook или другого устройства Apple из нашего каталога!</p>
                             <Button variant="link" className="px-0 mt-2" asChild>
-                                <Link to="/buy">Смотреть каталог →</Link>
+                                <Link href="/buy">Смотреть каталог →</Link>
                             </Button>
                         </div>
                     </div>
@@ -236,7 +228,6 @@ const SellDeviceLanding = ({
                 </motion.section>
 
             </main>
-            <Footer />
         </div>
     );
 };

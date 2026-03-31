@@ -1,45 +1,5 @@
 {
-  "framework": null,
-  "buildCommand": "vite build",
-  "outputDirectory": "dist",
-  "installCommand": "npm install",
   "trailingSlash": false,
-  "rewrites": [
-    {
-      "source": "/api/buyout/estimate",
-      "destination": "/api/buyout/estimate"
-    },
-    {
-      "source": "/favicon.ico",
-      "destination": "/favicon.png"
-    },
-    {
-      "source": "/",
-      "has": [
-        {
-          "type": "header",
-          "key": "user-agent",
-          "value": ".*(googlebot|yandexbot|bingbot|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora\\ link\\ preview|showyoubot|outbrain|pinterest\\/0\\.|slackbot|vkShare|W3C_Validator|whatsapp|telegrambot|applebot|yandex.com/bots|GPTBot|ChatGPT-User|ClaudeBot|PerplexityBot|Google-Extended).*"
-        }
-      ],
-      "destination": "/api/prerender?__path=/"
-    },
-    {
-      "source": "/:path((?!api|_vercel|assets).*)*",
-      "has": [
-        {
-          "type": "header",
-          "key": "user-agent",
-          "value": ".*(googlebot|yandexbot|bingbot|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora\\ link\\ preview|showyoubot|outbrain|pinterest\\/0\\.|slackbot|vkShare|W3C_Validator|whatsapp|telegrambot|applebot|yandex.com/bots|GPTBot|ChatGPT-User|ClaudeBot|PerplexityBot|Google-Extended).*"
-        }
-      ],
-      "destination": "/api/prerender?__path=/:path*"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ],
   "redirects": [
     {
       "source": "/:path*",
@@ -72,7 +32,7 @@
       ]
     },
     {
-      "source": "/assets/(.*)",
+      "source": "/_next/static/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -102,10 +62,5 @@
         }
       ]
     }
-  ],
-  "functions": {
-    "api/prerender.ts": {
-      "includeFiles": "api/prerendered/**"
-    }
-  }
+  ]
 }

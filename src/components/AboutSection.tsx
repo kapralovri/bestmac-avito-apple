@@ -1,3 +1,5 @@
+"use client";
+
 import { ShieldCheck, Award, Handshake, HeartHandshake } from "lucide-react";
 import { motion } from "framer-motion";
 import { useRef, useCallback, useState } from "react";
@@ -60,7 +62,7 @@ const AboutSection = () => {
         >
           <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-border flex-shrink-0">
             <img
-              src={romanPhoto}
+              src={typeof romanPhoto === 'string' ? romanPhoto : romanPhoto.src}
               alt="Роман Капралов - основатель BestMac"
               className="w-full h-full object-cover"
             />

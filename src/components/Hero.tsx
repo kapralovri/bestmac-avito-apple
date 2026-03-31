@@ -1,12 +1,14 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import macbookHero from "@/assets/images/macbook-hero.jpg";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { useRef } from "react";
 
 const Hero = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const sectionRef = useRef<HTMLDivElement>(null);
 
   const { scrollYProgress } = useScroll({
@@ -53,7 +55,7 @@ const Hero = () => {
           style={{ scale: imageScale, opacity: imageOpacity, y: imageY }}
         >
           <img
-            src={macbookHero}
+            src={typeof macbookHero === 'string' ? macbookHero : macbookHero.src}
             alt="MacBook Pro на тёмном фоне"
             className="w-full h-full object-cover"
             loading="eager"
@@ -112,7 +114,7 @@ const Hero = () => {
             <Button
               size="lg"
               className="rounded-full px-10 h-14 text-base font-medium bg-primary hover:bg-primary/90 shadow-elegant transition-all duration-300 hover:shadow-[0_30px_80px_-20px_hsl(212_100%_48%_/_0.4)]"
-              onClick={() => navigate("/buy")}
+              onClick={() => router.push("/buy")}
             >
               Смотреть каталог
               <ArrowRight className="ml-2 w-4 h-4" />
@@ -121,7 +123,7 @@ const Hero = () => {
               variant="outline"
               size="lg"
               className="rounded-full px-10 h-14 text-base font-medium border-border/50 bg-card/30 backdrop-blur-sm hover:bg-card/60 text-foreground transition-all duration-300"
-              onClick={() => navigate("/sell")}
+              onClick={() => router.push("/sell")}
             >
               Продать технику
             </Button>

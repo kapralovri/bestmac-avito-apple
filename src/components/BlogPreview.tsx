@@ -1,7 +1,9 @@
+"use client";
+
 import { motion } from "framer-motion";
 import { ArrowRight, Calendar, User } from "lucide-react";
 import { Button } from "./ui/button";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 
 interface BlogPost {
   slug: string;
@@ -42,7 +44,7 @@ const defaultPosts: BlogPost[] = [
 ];
 
 const BlogPreview = ({ posts = defaultPosts, title = "Полезные статьи" }: BlogPreviewProps) => {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -96,7 +98,7 @@ const BlogPreview = ({ posts = defaultPosts, title = "Полезные стат�
               className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group"
               variants={itemVariants}
               whileHover={{ y: -5 }}
-              onClick={() => navigate(`/blog/${post.slug}`)}
+              onClick={() => router.push(`/blog/${post.slug}`)}
             >
               {post.image && (
                 <div className="relative h-48 overflow-hidden">
@@ -157,7 +159,7 @@ const BlogPreview = ({ posts = defaultPosts, title = "Полезные стат�
           <Button 
             variant="outline" 
             size="lg"
-            onClick={() => navigate('/blog')}
+            onClick={() => router.push('/blog')}
             className="hover:bg-secondary"
           >
             Все статьи

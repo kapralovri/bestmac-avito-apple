@@ -1,3 +1,5 @@
+"use client";
+
 import { motion } from "framer-motion";
 import { CheckCircle2, TrendingUp, Shield, Clock } from "lucide-react";
 

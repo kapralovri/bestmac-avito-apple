@@ -1,7 +1,6 @@
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { breadcrumbSchema } from "@/lib/schema";
-import SEOHead from "./SEOHead";
 
 interface BreadcrumbItem {
   name: string;
@@ -17,11 +16,12 @@ const Breadcrumbs = ({ items }: BreadcrumbsProps) => {
 
   return (
     <>
-      <SEOHead 
-        title=""
-        description=""
-        schema={schema}
-      />
+      {schema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      )}
       <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-6" aria-label="Хлебные крошки">
         {items.map((item, index) => (
           <div key={item.url} className="flex items-center">
@@ -31,8 +31,8 @@ const Breadcrumbs = ({ items }: BreadcrumbsProps) => {
                 {item.name}
               </span>
             ) : (
-              <Link 
-                to={item.url} 
+              <Link
+                href={item.url}
                 className="hover:text-primary transition-colors"
               >
                 {item.name}
