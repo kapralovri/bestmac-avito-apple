@@ -1,374 +1,223 @@
 #!/usr/bin/env python3
+"""
+Сканер горячих сделок Авито для bestmac.ru
+v3: время публикации, рейтинг продавца, скоринг, история цен, снижение цены.
+"""
 import json
 import os
 import re
 import time
 import random
 import logging
-from datetime import datetime
+import statistics
+import argparse
+import urllib3
+from playwright.sync_api import sync_playwright
+from datetime import datetime, timedelta
 from pathlib import Path
 from urllib.parse import urljoin
 
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 try:
-    from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
-    from bs4 import BeautifulSoup
-    import requests
+    from curl_cffi import requests as curl_requests
+    CURL_AVAILABLE = True
 except ImportError:
-    print("pip install playwright beautifulsoup4 requests && playwright install chromium")
+    CURL_AVAILABLE = False
+
+try:
+    import requests as std_requests
+    from bs4 import BeautifulSoup
+except ImportError:
+    print("Error: pip install curl_cffi requests beautifulsoup4 lxml")
     exit(1)
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("Scanner")
 
-# --- КОНФИГУРАЦИЯ ---
-PRICES_FILE       = Path("public/data/avito-prices.json")
-SEEN_FILE         = Path("public/data/seen-hot-deals.json")
-TELEGRAM_URL      = os.environ.get('TELEGRAM_NOTIFY_URL')
-SCAN_URL          = os.environ.get('SCAN_URL')
-RUCAPTCHA_API_KEY = os.environ.get('RUCAPTCHA_API_KEY', '')
+if CURL_AVAILABLE:
+    logger.info("✅ curl_cffi — Chrome-имитация")
+else:
+    logger.warning("⚠️ curl_cffi не установлен")
 
-AVITO_CAPTCHA_ID = '2d9c743cf7d63dbc9db578a608196bcd'
-AVITO_VERIFY_URL = 'https://www.avito.ru/web/1/firewallCaptcha/verify'
-USER_AGENT       = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-                    'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36')
+# ─── Конфигурация ─────────────────────────────────────────────────────────────
+PRICES_FILE  = Path("public/data/avito-prices.json")
+SEEN_FILE    = Path("public/data/seen-hot-deals.json")
+HISTORY_FILE = Path("public/data/price-history.json")  # #5 история цен
 
-PRICE_THRESHOLD_FACTOR = 1.10
+TELEGRAM_URL  = os.environ.get('TELEGRAM_NOTIFY_URL')
+SCAN_URL      = os.environ.get('SCAN_URL')
+PROXY_URL     = os.environ.get('PROXY_URL', '').strip().strip('"').strip("'")
+CHANGE_IP_URL = os.environ.get('CHANGE_IP_URL', '').strip().strip('"').strip("'")
+
+# Диагностика переменных при старте
+logger.info(f"🔧 PROXY_URL: {'✅ ' + PROXY_URL[:25] if PROXY_URL else '❌ не задан'}")
+logger.info(f"🔧 SCAN_URL:  {'✅ ' + SCAN_URL[:40] if SCAN_URL else '❌ не задан'}")
+
+PRICE_THRESHOLD_FACTOR = 1.20
 
 URGENT_KEYWORDS = [
-    'срочно', 'торг', 'уступлю', 'переезд', 'сегодня',
-    'быстро', 'дисконт', 'возможен торг', 'отдам за', 'нужны деньги'
+    'срочно', 'торг', 'уступлю', 'переезд', 'сегодня', 'быстро',
+    'дисконт', 'возможен торг', 'отдам за', 'снижу', 'договоримся',
 ]
+
 BAD_KEYWORDS = [
     'mdm', 'залочен', 'разбита', 'разбит', 'ремонт', 'не работает', 'icloud',
     'запчаст', 'матриц', 'дефект', 'аккаунт',
-    'под заказ', 'срок доставки', 'предоплата', 'замена', 'меняли',
-    'восстановлен', 'реф', 'refurbished', 'залит', 'глючит',
-    'полосы', 'пятна', 'в разбор', 'на части', 'пароль', 'обход',
-    'трещин', 'вмятин', 'царапин', 'не включ',
+    'под заказ', 'срок доставки', 'предоплата', 'замена', 'меняли', 'менял',
+    'восстановлен', 'реф', 'refurbished', 'залит', 'глючит', 'полосы', 'пятна',
+    'в разбор', 'на части', 'пароль', 'обход', 'не включается', 'трещин',
 ]
+
+RAM_VALUES = {8, 16, 18, 24, 36, 48, 64, 96, 128}
+SSD_VALUES = {64, 128, 256, 512, 1024, 2048, 4096}
+
+CURL_BROWSERS = ["chrome110", "chrome107", "chrome104", "chrome101", "chrome100", "chrome99"]
 
 
 def clean_url(url: str) -> str:
     return url.split('?')[0]
 
 
-def is_captcha_page(page) -> bool:
-    return page.query_selector('div.firewall-container') is not None
-
-
-# ─────────────────────────────────────────────
-# КАПЧА
-# ─────────────────────────────────────────────
-
-def solve_captcha(page) -> bool:
-    """GeeTest v4 по примеру от поддержки RuCaptcha."""
-    if not RUCAPTCHA_API_KEY:
-        logger.warning("⚠️  RUCAPTCHA_API_KEY не задан")
-        return False
-    try:
-        from twocaptcha import TwoCaptcha
-        solver = TwoCaptcha(RUCAPTCHA_API_KEY, server='rucaptcha.com', defaultTimeout=120)
-
-        logger.info(f"[ШАГ 1] 🧩 GeeTest v4 | captcha_id: {AVITO_CAPTCHA_ID}")
-        logger.info("[ШАГ 1] ⏳ Отправляем в RuCaptcha (20-60 сек)...")
-        result = solver.geetest_v4(captcha_id=AVITO_CAPTCHA_ID, url=page.url)
-        logger.info(f"[ШАГ 1] ✅ RuCaptcha ответила: {str(result)[:100]}")
-
-        code = result['code']
-        code_data = json.loads(code) if isinstance(code, str) else code
-        lot_number     = code_data['lot_number']
-        pass_token     = code_data['pass_token']
-        gen_time       = code_data['gen_time']
-        captcha_output = code_data['captcha_output']
-        logger.info(f"[ШАГ 1] lot_number: {lot_number[:16]}...")
-
-        logger.info("[ШАГ 2] 🍪 Куки из браузера...")
-        cookie_map = {c['name']: c['value'] for c in page.context.cookies()}
-        logger.info(f"[ШАГ 2] Доступные куки: {list(cookie_map.keys())}")
-
-        js_payload = json.dumps({
-            'captcha': '',
-            'hCaptchaResponse': '',
-            'captcha_id': AVITO_CAPTCHA_ID,
-            'lot_number': lot_number,
-            'pass_token': pass_token,
-            'gen_time': gen_time,
-            'captcha_output': captcha_output,
-        })
-        logger.info(f"[ШАГ 3] 📤 POST через browser fetch → {AVITO_VERIFY_URL}")
-        resp_data = page.evaluate(f"""async () => {{
-            const resp = await fetch('{AVITO_VERIFY_URL}', {{
-                method: 'POST',
-                headers: {{
-                    'accept': '*/*',
-                    'content-type': 'application/json',
-                    'origin': 'https://www.avito.ru',
-                    'referer': window.location.href,
-                    'x-cube': 'undefined',
-                }},
-                credentials: 'include',
-                body: JSON.stringify({js_payload}),
-            }});
-            return await resp.json();
-        }}""")
-        logger.info(f"[ШАГ 3] Ответ: {str(resp_data)[:200]}")
-
-        if not resp_data.get('result', {}).get('verified', False):
-            logger.error(f"[ШАГ 3] ❌ verified=False")
-            return False
-        logger.info("[ШАГ 3] ✅ Капча пройдена!")
-
-        logger.info("[ШАГ 4] 🔄 Перезагружаем страницу...")
-        page.reload(wait_until='domcontentloaded', timeout=20000)
-        page.wait_for_timeout(3000)
-        logger.info(f"[ШАГ 4] URL: {page.url[:80]} | Title: {page.title()}")
-        logger.info(f"[ШАГ 4] firewall-container: {is_captcha_page(page)}")
-        return True
-
-    except Exception as e:
-        logger.error(f"❌ Ошибка решения капчи: {e}")
-        return False
-
-
-def navigate_with_captcha(page, url: str) -> bool:
-    """Переходит на URL, при необходимости решает капчу до 3 раз."""
-    try:
-        page.goto(url, wait_until='domcontentloaded', timeout=30000)
-        page.wait_for_timeout(random.randint(1500, 3000))
-    except PWTimeout:
-        logger.warning(f"⏱ Таймаут: {url[:60]}")
-        return False
-    except Exception as e:
-        logger.warning(f"⚠️  Ошибка goto: {e}")
-        return False
-
-    for attempt in range(1, 4):
-        if not is_captcha_page(page):
-            return True
-        logger.warning(f"🛡 Капча (попытка {attempt}/3) на {url[:60]}")
-        if not solve_captcha(page):
-            return False
-        page.wait_for_timeout(3000)
-
-    # Финальная проверка после последней попытки
-    if not is_captcha_page(page):
-        logger.info("✅ Капча пройдена после финальной проверки")
-        return True
-
-    logger.error("❌ Капча не прошла после 3 попыток")
-    return False
-
-
-# ─────────────────────────────────────────────
-# ПАРСИНГ ХАРАКТЕРИСТИК
-# ─────────────────────────────────────────────
-
-def extract_specs_from_title(title: str):
-    """Вытаскиваем RAM/SSD из заголовка: 'M5/16/1TB', '16/512Gb', '24 gb 1 tb', 'M2 8 256'."""
-    t = title.lower()
-
-    # ─── 1. Процессор/RAM/SSD через слеши: "M5/16/1TB", "M4/24/1TB" ───
-    m = re.search(r'm\d+\s*/\s*(\d+)\s*/\s*(\d+)\s*(tb|тб)?', t)
-    if m:
-        ram = int(m.group(1))
-        ssd_val = int(m.group(2))
-        ssd = ssd_val * 1024 if (m.group(3) and ssd_val <= 8) else ssd_val
-        return ram, ssd
-
-    # ─── 2. RAM/SSD через слеш: "16/256Gb", "16/1TB" ──────────────────
-    m = re.search(r'(?<![a-zа-яё\d])(\d+)\s*/\s*(\d+)\s*(tb|тб|gb|гб)?', t)
-    if m:
-        a, b = int(m.group(1)), int(m.group(2))
-        unit = (m.group(3) or '')
-        if 'tb' in unit or 'тб' in unit:
-            if b <= 8: b *= 1024
-        if a in (8, 16, 18, 24, 32, 36, 48, 64) and b in (256, 512, 1024, 2048):
-            return a, b
-        if b in (8, 16, 18, 24, 32, 36, 48, 64) and a in (256, 512, 1024, 2048):
-            return b, a
-
-    # ─── 3. Числа с юнитами: "24 gb", "1 tb", "16gb" ──────────────────
-    #   (?<![a-zа-яё]) — НЕ склеиваем с буквами (m4 + 24gb ≠ m424gb)
-    unit_vals = []
-    for um in re.finditer(r'(?<![a-zа-яё])(\d+)\s*(gb|гб|tb|тб)', t):
-        v = int(um.group(1))
-        if 2018 <= v <= 2026:
+def extract_specs(text: str) -> tuple[int, int]:
+    text = text.lower().replace(' ', '')
+    ram, ssd = 8, 256
+    for val_str, unit in re.findall(r'(\d+)(gb|гб|tb|тб)', text):
+        val = int(val_str)
+        if 2015 <= val <= 2030:
             continue
-        unit = um.group(2)
-        if 'tb' in unit or 'тб' in unit:
-            v = v * 1024 if v <= 8 else v
-        unit_vals.append(v)
-
-    ram, ssd = None, None
-    if len(unit_vals) >= 2:
-        return unit_vals[0], unit_vals[1]
-    if len(unit_vals) == 1:
-        v = unit_vals[0]
-        if v in (8, 16, 18, 24, 32, 36, 48, 64, 96, 128):
-            ram = v
-        else:
-            ssd = v
-
-    # ─── 4. Голые числа: "M2 8 256", "m1 16gb 512" (512 без юнита) ────
-    cleaned = re.sub(r'\bm\d\b', '', t)                       # процессор
-    cleaned = re.sub(r'\b20[12]\d\b', '', cleaned)             # год
-    cleaned = re.sub(r'\b1[345][""\'″]?\b', '', cleaned)      # диагональ 13"-15"
-    cleaned = re.sub(r'\d+\s*(?:gb|гб|tb|тб)', '', cleaned)   # уже захвачено
-
-    bare = [int(x) for x in re.findall(r'(?<![/\da-zа-яё])(\d+)(?![/\da-zа-яё])', cleaned)
-            if int(x) in (8, 16, 24, 32, 48, 64, 128, 256, 512, 1024, 2048)]
-
-    for bv in bare:
-        if bv in (8, 16, 24, 32, 48, 64, 128) and ram is None:
-            ram = bv
-        elif bv in (256, 512, 1024, 2048) and ssd is None:
-            ssd = bv
-
-    return ram or 8, ssd or 256
+        if unit in ('tb', 'тб'):
+            val *= 1024
+        if val in RAM_VALUES:
+            ram = val
+        elif val in SSD_VALUES:
+            ssd = val
+    return ram, ssd
 
 
-def parse_listing(soup: BeautifulSoup) -> dict:
+# ─── #2 Парсинг времени публикации ────────────────────────────────────────────
+def parse_item_age(item) -> tuple[str, int]:
     """
-    Читает таблицу характеристик объявления Авито.
-    Возвращает: model_name, ram, ssd, cycles, is_urgent, h1_title
+    Возвращает (human_str, minutes_ago).
+    human_str: "15 мин", "2 ч", "3 дня"
+    minutes_ago: количество минут для скоринга
     """
-    result = {'model_name': None, 'ram': None, 'ssd': None,
-              'cycles': None, 'is_urgent': False, 'h1_title': None}
+    try:
+        date_tag = item.select_one('[data-marker="item-date"]')
+        if not date_tag:
+            # Запасной вариант — ищем по классу
+            date_tag = item.select_one('p[class*="date"]') or item.select_one('[class*="dateInfo"]')
+        if not date_tag:
+            return "?", 999
 
-    # Заголовок h1 — всегда пытаемся достать
-    h1 = soup.select_one('h1[itemprop="name"]') or soup.select_one('h1')
-    if h1:
-        result['h1_title'] = h1.get_text(strip=True)
-        logger.info(f"     📝 h1: {result['h1_title'][:80]}")
-    else:
-        logger.warning("     ⚠️  h1 не найден на странице")
+        raw = date_tag.get_text(strip=True).lower()
 
-    # ─── Стратегия 1: [data-marker="item-params"] li ───────────────────
-    params = soup.select('[data-marker="item-params"] li')
-    logger.info(f"     🔍 item-params li: {len(params)} элементов")
+        # Форматы Авито: "15 минут назад", "2 часа назад", "вчера", "3 дня назад", "сегодня в 14:30"
+        if 'минут' in raw or 'мин' in raw:
+            m = re.search(r'(\d+)', raw)
+            mins = int(m.group(1)) if m else 30
+            return f"{mins} мин", mins
 
-    for li in params:
-        text = li.get_text(' ', strip=True)
-        lower = text.lower()
+        if 'час' in raw:
+            m = re.search(r'(\d+)', raw)
+            hrs = int(m.group(1)) if m else 2
+            return f"{hrs} ч", hrs * 60
 
-        if 'модель' in lower:
-            val = re.sub(r'(?i)модель\s*[:\s]', '', text).strip()
-            if val:
-                result['model_name'] = val
-
-        elif 'оперативн' in lower or 'ram' in lower:
-            m = re.search(r'(\d+)', text)
+        if 'сегодня' in raw:
+            # "сегодня в 14:30" — считаем от текущего времени
+            m = re.search(r'(\d{1,2}):(\d{2})', raw)
             if m:
-                result['ram'] = int(m.group(1))
+                h, mn = int(m.group(1)), int(m.group(2))
+                now = datetime.now()
+                pub = now.replace(hour=h, minute=mn, second=0)
+                diff = max(0, int((now - pub).total_seconds() / 60))
+                label = f"{diff} мин" if diff < 60 else f"{diff // 60} ч"
+                return label, diff
+            return "сегодня", 120
 
-        elif 'накопител' in lower or 'ssd' in lower or ('объем' in lower and ('гб' in lower or 'gb' in lower)):
-            m = re.search(r'(\d+)', text)
-            if m:
-                val = int(m.group(1))
-                result['ssd'] = val * 1024 if val <= 8 else val
+        if 'вчера' in raw:
+            return "вчера", 60 * 24
 
-    # ─── Стратегия 2: все params-блоки (иногда data-marker другой) ─────
-    if result['ram'] is None or result['ssd'] is None:
-        for selector in ['[class*="params"]', '[class*="characteristic"]',
-                         '[class*="Params"]', '[class*="Characteristic"]']:
-            block = soup.select_one(selector)
-            if block:
-                block_text = block.get_text(' ', strip=True).lower()
-                logger.info(f"     🔍 fallback ({selector}): {block_text[:150]}")
+        m = re.search(r'(\d+)\s*д', raw)
+        if m:
+            days = int(m.group(1))
+            return f"{days} дн", days * 60 * 24
 
-                if result['ram'] is None:
-                    r = re.search(r'(?:оперативн\S*|ram)\s*\S*\s*(\d+)', block_text)
-                    if r:
-                        result['ram'] = int(r.group(1))
-                if result['ssd'] is None:
-                    s = re.search(r'(?:накопител\S*|ssd|объ[её]м\S*)\s*\S*\s*(\d+)', block_text)
-                    if s:
-                        val = int(s.group(1))
-                        result['ssd'] = val * 1024 if val <= 8 else val
-                if result['ram'] is not None and result['ssd'] is not None:
-                    break
+    except Exception:
+        pass
 
-    # ─── Стратегия 2.5: поиск по тексту страницы (не зависит от разметки) ──
-    if result['model_name'] is None or result['ram'] is None or result['ssd'] is None:
-        lines = [l.strip() for l in soup.get_text('\n').split('\n') if l.strip()]
-        for i, line in enumerate(lines):
-            low = line.lower()
-            next_line = lines[i + 1].strip() if i + 1 < len(lines) else ''
-
-            if result['model_name'] is None and re.match(r'^модель$', low):
-                if next_line and not next_line.lower().startswith(('процессор', 'оперативн', 'накопител')):
-                    result['model_name'] = next_line
-                    logger.info(f"     📝 Модель из текста: {next_line[:60]}")
-
-            elif result['ram'] is None and re.match(r'^оперативная память$', low):
-                m = re.search(r'(\d+)', next_line)
-                if m:
-                    result['ram'] = int(m.group(1))
-                    logger.info(f"     📝 RAM из текста: {result['ram']} GB")
-
-            elif result['ssd'] is None and re.match(r'^(?:накопитель ssd|объ[её]м накопителя|ssd)$', low):
-                m = re.search(r'(\d+)', next_line)
-                if m:
-                    val = int(m.group(1))
-                    result['ssd'] = val * 1024 if val <= 8 else val
-                    logger.info(f"     📝 SSD из текста: {result['ssd']} GB")
-
-    # ─── Стратегия 3: из h1 заголовка ──────────────────────────────────
-    if (result['ram'] is None or result['ssd'] is None) and result['h1_title']:
-        t_ram, t_ssd = extract_specs_from_title(result['h1_title'])
-        if result['ram'] is None:
-            result['ram'] = t_ram
-        if result['ssd'] is None:
-            result['ssd'] = t_ssd
-        logger.info(f"     📝 Specs из h1: RAM={result['ram']}GB SSD={result['ssd']}GB")
-
-    # Описание — циклы и срочность
-    desc_el = soup.find('div', attrs={'data-marker': 'item-description'})
-    desc_text = desc_el.get_text().lower() if desc_el else ''
-
-    cyc = re.search(r'(\d+)\s*(?:цикл|cycle|ц\.|cyc)', desc_text)
-    if cyc:
-        result['cycles'] = int(cyc.group(1))
-
-    result['is_urgent'] = any(w in desc_text for w in URGENT_KEYWORDS)
-
-    return result
+    return "?", 999
 
 
-# ─────────────────────────────────────────────
-# СКАНЕР
-# ─────────────────────────────────────────────
+# ─── #4 Скоринг объявления ────────────────────────────────────────────────────
+def calc_score(
+    price: int,
+    market_low: int,
+    is_urgent: bool,
+    is_avito_low: bool,
+    price_reduced: bool,
+    cycles: int | None,
+    is_private: bool,
+    minutes_ago: int,
+) -> int:
+    """
+    Балл от 0 до 100. Чем выше — тем горячее сделка.
+    Используется для сортировки уведомлений и установки порога.
+    """
+    score = 0
+
+    # Цена ниже рынка
+    if market_low > 0:
+        discount = (market_low - price) / market_low
+        if discount >= 0.20:   score += 35
+        elif discount >= 0.10: score += 25
+        elif discount >= 0.05: score += 15
+        elif discount >= 0:    score += 5
+
+    # Срочность / снижение
+    if price_reduced: score += 20   # #1 снижение цены — сильный сигнал
+    if is_urgent:     score += 15
+    if is_avito_low:  score += 10
+
+    # АКБ
+    if cycles is not None:
+        if cycles < 100:   score += 15
+        elif cycles < 200: score += 10
+        elif cycles < 400: score += 5
+
+    # Частное лицо
+    if is_private: score += 10
+
+    # Свежесть объявления
+    if minutes_ago <= 30:    score += 10
+    elif minutes_ago <= 120: score += 7
+    elif minutes_ago <= 360: score += 3
+
+    return min(score, 100)
+
 
 class AvitoScanner:
-    def __init__(self, playwright):
-        self.browser = playwright.chromium.launch(
-            headless=True,
-            args=['--no-sandbox', '--disable-setuid-sandbox',
-                  '--disable-blink-features=AutomationControlled']
-        )
-        self.context = self.browser.new_context(
-            viewport={'width': 1440, 'height': 900},
-            user_agent=USER_AGENT,
-            locale='ru-RU',
-            timezone_id='Europe/Moscow',
-            extra_http_headers={'Accept-Language': 'ru-RU,ru;q=0.9'},
-        )
-        self.context.add_init_script("""
-            Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-            Object.defineProperty(navigator, 'plugins',   { get: () => [1, 2, 3] });
-            window.chrome = { runtime: {} };
-        """)
-        self.page = self.context.new_page()
+    def __init__(self):
+        p_str = PROXY_URL
+        if p_str and not p_str.startswith('http'):
+            p_str = f"http://{p_str}"
+        self.proxy_str   = p_str
+        self.std_proxies = {"http": p_str, "https": p_str} if p_str else None
+        self._curl_session = None
+        if CURL_AVAILABLE:
+            self._init_curl_session()
 
-        # База цен: ключ — нормализованный model_name + ram + ssd
+        # База цен
         self.prices = {}
         if PRICES_FILE.exists():
             with open(PRICES_FILE, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-            for s in data.get('stats', []):
-                key = (self._norm(s['model_name']), int(s['ram']), int(s['ssd']))
-                self.prices[key] = s
+                for s in data.get('stats', []):
+                    key = (s['model_name'].lower(), int(s['ram']), int(s['ssd']))
+                    self.prices[key] = s
             logger.info(f"📊 База цен: {len(self.prices)} конфигураций")
+        else:
+            logger.warning("⚠️ База цен не найдена!")
 
         # История просмотренных
         self.seen = set()
@@ -376,280 +225,567 @@ class AvitoScanner:
             try:
                 with open(SEEN_FILE, 'r', encoding='utf-8') as f:
                     data = json.load(f)
-                self.seen = set(clean_url(u) for u in data.get('seen_urls', []))
+                    self.seen = set(clean_url(u) for u in data.get('seen_urls', []))
                 logger.info(f"👁 История: {len(self.seen)} объявлений")
             except Exception:
                 pass
 
-    @staticmethod
-    def _norm(s: str) -> str:
-        return re.sub(r'\s+', ' ', str(s).lower().strip())
+        # #5 История цен по конфигурациям
+        self.price_history = {}
+        if HISTORY_FILE.exists():
+            try:
+                with open(HISTORY_FILE, 'r', encoding='utf-8') as f:
+                    self.price_history = json.load(f)
+            except Exception:
+                pass
 
-    def find_stat(self, model_name: str, ram: int, ssd: int):
-        """Ищет конфигурацию в базе цен по model_name + ram + ssd."""
-        if not model_name:
-            return None
-        norm = self._norm(model_name)
-        key = (norm, ram, ssd)
-        if key in self.prices:
-            return self.prices[key]
-        # Частичное совпадение строк
-        for (db_model, db_ram, db_ssd), stat in self.prices.items():
-            if db_ram == ram and db_ssd == ssd:
-                if norm in db_model or db_model in norm:
-                    return stat
-        # Пословный матчинг: ключевые слова (без года) из базы есть в заголовке
-        for (db_model, db_ram, db_ssd), stat in self.prices.items():
-            if db_ram == ram and db_ssd == ssd:
-                db_words = re.findall(r'[a-zа-яё0-9]+', db_model)
-                db_core = [w for w in db_words if not re.match(r'^20[12]\d$', w)]
-                if db_core and all(w in norm for w in db_core):
-                    return stat
-        # Гибкий матчинг: без года И без диагонали (заголовки часто опускают "13")
-        for (db_model, db_ram, db_ssd), stat in self.prices.items():
-            if db_ram == ram and db_ssd == ssd:
-                db_words = re.findall(r'[a-zа-яё0-9]+', db_model)
-                db_flex = [w for w in db_words
-                           if not re.match(r'^20[12]\d$', w) and w not in ('13', '14', '15', '16')]
-                if len(db_flex) >= 2 and all(w in norm for w in db_flex):
-                    return stat
+    def _init_curl_session(self):
+        browser = random.choice(CURL_BROWSERS)
+        self._curl_session = curl_requests.Session(impersonate=browser)
+        if self.proxy_str:
+            self._curl_session.proxies = {"http": self.proxy_str, "https": self.proxy_str}
+        logger.info(f"🌐 curl_cffi: {browser}")
+
+    def rotate_ip(self):
+        if CHANGE_IP_URL:
+            try:
+                # Всегда через std_requests — curl_cffi таймаутит на change_ip URL
+                std_requests.get(CHANGE_IP_URL, timeout=15, verify=False)
+                time.sleep(15)  # mobileproxy.space требует ~15 сек для применения
+                logger.info("🔄 IP сменён")
+                if CURL_AVAILABLE:
+                    self._init_curl_session()  # новый браузер
+            except Exception as e:
+                logger.warning(f"⚠️ rotate_ip: {e}")
+
+    def check_captcha(self, page):
+        """Проверка на наличие капчи или блокировки 'Доступ ограничен'."""
+        try:
+            if "captcha" in page.url.lower() or page.query_selector('div[class*="captcha"]') or "ограничен" in page.content().lower():
+                logger.warning("🚨 Обнаружена капча или блокировка!")
+                return True
+        except Exception:
+            pass
+        return False
+
+    def get_playwright(self, url):
+        """Локальный запуск через Playwright с профилем Chrome."""
+        profile_dir = Path.home() / ".bestmac_avito_profile"
+        with sync_playwright() as p:
+            context = p.chromium.launch_persistent_context(
+                user_data_dir=str(profile_dir),
+                channel="chrome",
+                headless=False,
+                viewport={'width': 1920, 'height': 1080},
+                no_viewport=False,
+            )
+            page = context.pages[0] if context.pages else context.new_page()
+            try:
+                logger.info(f"🌐 Playwright: переход на {url}")
+                page.goto(url, timeout=60000)
+                if self.check_captcha(page):
+                    logger.warning("⏳ Пожалуйста, решите капчу в окне браузера...")
+                    page.wait_for_selector('div[data-marker="item"]', timeout=300000)
+                
+                content = page.content()
+                # Для deep_analyze нам нужен soup, но run() тоже вызывает get()
+                # Вернем объект-заглушку с полем text
+                class Resp:
+                    def __init__(self, t): self.text = t
+                    @property
+                    def status_code(self): return 200
+                return Resp(content)
+            except Exception as e:
+                logger.error(f"❌ Playwright error: {e}")
+                return None
+            finally:
+                context.close()
+
+    def get(self, url: str, retries: int = 3, use_playwright: bool = False):
+        if use_playwright:
+            return self.get_playwright(url)
+            
+        headers = {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8",
+            "Accept-Encoding": "gzip, deflate, br",
+        }
+        for attempt in range(retries):
+            try:
+                if CURL_AVAILABLE and self._curl_session:
+                    resp = self._curl_session.get(url, headers=headers, timeout=30,
+                                                  verify=False, allow_redirects=True)
+                else:
+                    resp = std_requests.get(
+                        url,
+                        headers={**headers, "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"},
+                        proxies=self.std_proxies, timeout=30, verify=False,
+                    )
+                if resp.status_code == 200:
+                    return resp
+                if resp.status_code in [403, 429]:
+                    logger.warning(f"⚠️ HTTP {resp.status_code} (попытка {attempt+1}/{retries})")
+                    time.sleep(random.uniform(15, 25))
+                else:
+                    break
+            except Exception as e:
+                logger.error(f"   Ошибка запроса (попытка {attempt+1}): {e}")
+                if attempt < retries - 1:
+                    time.sleep(15)
         return None
 
-    def notify(self, title, price, market_low, buyout, ram, ssd,
-               url, cycles, is_urgent, is_avito_low):
+    def deep_analyze(self, url: str) -> dict:
+        """
+        Заходит в объявление ОДИН РАЗ.
+        Собирает: циклы АКБ, срочность, характеристики,
+                  #1 снижение цены, #3 данные продавца.
+        """
+        result = {
+            "cycles":        None,
+            "is_urgent":     False,
+            "specs":         {},
+            "price_reduced": False,   # #1
+            "is_private":    False,   # #3
+            "seller_reviews": None,   # #3
+            "seller_type":   "?",     # #3 "Частное лицо" / "Магазин"
+        }
+        resp = self.get(url)
+        if not resp:
+            return result
+
+        try:
+            soup = BeautifulSoup(resp.text, 'lxml')
+
+            # ── Описание ──────────────────────────────────────────────────────
+            desc_tag  = soup.find('div', attrs={'data-marker': 'item-description'})
+            desc_text = desc_tag.get_text().lower() if desc_tag else ""
+
+            c_match = re.search(r'(\d+)\s*(?:цикл|cycle|ц\.|cyc)', desc_text)
+            if c_match:
+                result["cycles"] = int(c_match.group(1))
+
+            result["is_urgent"] = any(w in desc_text for w in URGENT_KEYWORDS)
+
+            # ── #1 Снижение цены ───────────────────────────────────────────────
+            # Авито показывает бейдж снижения или текст в блоке цены
+            page_text = soup.get_text().lower()
+            result["price_reduced"] = any(x in page_text for x in [
+                'снижена', 'снижена цена', 'цена снижена', 'price reduced',
+                'скидка', 'снижал цену', 'понизил цену',
+            ])
+
+            # ── Характеристики ────────────────────────────────────────────────
+            specs = {}
+            for sel in [
+                'li[class*="params-paramsList__item"]',
+                '[data-marker="item-view/item-params"] li',
+                'ul[class*="params"] li',
+                'li[class*="param"]',
+            ]:
+                params_items = soup.select(sel)
+                if params_items:
+                    break
+
+            for li in params_items:
+                text = li.get_text(separator='|||').strip()
+                if '|||' in text:
+                    parts = [p.strip() for p in text.split('|||') if p.strip()]
+                    if len(parts) >= 2:
+                        specs[parts[0].lower()] = parts[-1]
+
+            if specs:
+                for key_ru, field in [
+                    ('оперативная память, гб', 'ram'),
+                    ('объем накопителей, гб',  'ssd'),
+                    ('модель',                 'model'),
+                    ('диагональ, дюйм',        'diagonal'),
+                ]:
+                    raw = specs.get(key_ru, '')
+                    if raw:
+                        if field in ('ram', 'ssd'):
+                            try: result["specs"][field] = int(float(raw))
+                            except ValueError: pass
+                        elif field == 'diagonal':
+                            try: result["specs"][field] = float(raw)
+                            except ValueError: pass
+                        else:
+                            result["specs"][field] = raw
+
+            # ── #3 Данные продавца ────────────────────────────────────────────
+            # Авито показывает блок продавца с типом и количеством отзывов
+            seller_block = (
+                soup.find('div', attrs={'data-marker': 'seller-info'}) or
+                soup.find('div', attrs={'data-marker': 'contacts'}) or
+                soup.find('[class*="seller-info"]')
+            )
+            if seller_block:
+                seller_text = seller_block.get_text().lower()
+
+                # Тип продавца
+                if any(x in seller_text for x in ['частное лицо', 'частный']):
+                    result["is_private"]  = True
+                    result["seller_type"] = "Частное лицо"
+                elif any(x in seller_text for x in ['магазин', 'компания', 'официальный']):
+                    result["seller_type"] = "Магазин"
+
+                # Количество отзывов
+                rev_match = re.search(r'(\d+)\s*отзыв', seller_text)
+                if rev_match:
+                    result["seller_reviews"] = int(rev_match.group(1))
+
+        except Exception as e:
+            logger.error(f"   Ошибка deep_analyze: {e}")
+
+        return result
+
+    def match_to_db(self, title: str, ram: int, ssd: int, specs: dict) -> dict | None:
+        final_ram   = specs.get('ram', ram)
+        final_ssd   = specs.get('ssd', ssd)
+        title_lower = title.lower()
+        best_match  = None
+        best_score  = 0
+
+        for (m_name, m_ram, m_ssd), stat in self.prices.items():
+            if m_ram != final_ram or m_ssd != final_ssd:
+                continue
+            markers = re.findall(
+                r'(air|pro mini|mac mini|imac|m1 pro|m1 max|m2 pro|m2 max|m3 pro|m3 max|m4 pro|m4 max|m5 pro|m5 max|m1|m2|m3|m4|m5)',
+                m_name
+            )
+            score = sum(1 for m in markers if m in title_lower)
+            if len(markers) > 0 and score >= len(markers) and score > best_score:
+                best_score = score
+                best_match = stat
+
+        return best_match
+
+    # ─── #5 Обновление истории цен ────────────────────────────────────────────
+    def update_price_history(self, model_name: str, ram: int, ssd: int, price: int):
+        """Сохраняет цену найденного объявления в историю. Хранит последние 90 дней."""
+        key   = f"{model_name}|{ram}|{ssd}"
+        today = datetime.now().strftime("%Y-%m-%d")
+
+        if key not in self.price_history:
+            self.price_history[key] = []
+
+        # Добавляем точку
+        self.price_history[key].append({"date": today, "price": price})
+
+        # Чистим старше 90 дней
+        cutoff = (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d")
+        self.price_history[key] = [
+            p for p in self.price_history[key] if p["date"] >= cutoff
+        ]
+
+    def get_trend_str(self, model_name: str, ram: int, ssd: int) -> str:
+        """Возвращает строку тренда цен за последние 30 дней."""
+        key    = f"{model_name}|{ram}|{ssd}"
+        points = self.price_history.get(key, [])
+        if len(points) < 5:
+            return ""
+
+        # Сравниваем медиану последних 15 дней vs предыдущих 15
+        cutoff_15 = (datetime.now() - timedelta(days=15)).strftime("%Y-%m-%d")
+        cutoff_30 = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+
+        recent = [p["price"] for p in points if p["date"] >= cutoff_15]
+        older  = [p["price"] for p in points if cutoff_30 <= p["date"] < cutoff_15]
+
+        if len(recent) < 3 or len(older) < 3:
+            return ""
+
+        med_recent = statistics.median(recent)
+        med_older  = statistics.median(older)
+        diff_pct   = round((med_recent - med_older) / med_older * 100)
+
+        if diff_pct <= -3:
+            return f"📉 тренд −{abs(diff_pct)}% за 30д"
+        elif diff_pct >= 3:
+            return f"📈 тренд +{diff_pct}% за 30д"
+        return ""
+
+    # ─── Telegram уведомление ─────────────────────────────────────────────────
+    def notify(
+        self, title, price, market_low, buyout, ram, ssd, url,
+        cycles, is_urgent, is_avito_low, price_reduced,
+        seller_type, seller_reviews, diagonal,
+        age_str, minutes_ago, score, trend_str,
+    ):
         if not TELEGRAM_URL:
             return
-        badges = []
-        if is_urgent:    badges.append("🚨 <b>СРОЧНО / ТОРГ</b>")
-        if is_avito_low: badges.append("📉 <b>НИЖЕ РЫНКА (АВИТО)</b>")
-        if cycles and cycles < 200: badges.append(f"🔋 <b>АКБ: {cycles} цикл.</b>")
-        status = " | ".join(badges) if badges else "🎯 <b>Подходящий вариант</b>"
-        disc = int((1 - price / market_low) * 100) if market_low else 0
-        disc_str = f" (−{disc}%)" if disc > 0 else ""
+
+        # ── Шапка: скор + бейджи ──────────────────────────────────────────────
+        score_bar = "🔥" * min(5, score // 20) or "·"
+        badges = [f"<b>Скор: {score}/100</b> {score_bar}"]
+
+        if price_reduced: badges.append("🔻 <b>ЦЕНА СНИЖЕНА</b>")
+        if is_urgent:     badges.append("🚨 <b>СРОЧНО/ТОРГ</b>")
+        if is_avito_low:  badges.append("📉 <b>НИЖЕ РЫНКА (АВИТО)</b>")
+        if cycles:
+            label = "🔋 <b>АКБ ИДЕАЛ</b>" if cycles < 200 else "🔋"
+            badges.append(f"{label} {cycles} цикл.")
+
+        # ── Скидка ────────────────────────────────────────────────────────────
+        discount_pct = round((1 - price / market_low) * 100) if market_low else 0
+        discount_str = f" <b>(−{discount_pct}%)</b>" if discount_pct > 0 else ""
+
+        # ── Продавец ──────────────────────────────────────────────────────────
+        if seller_reviews is not None:
+            seller_str = f"{seller_type}, {seller_reviews} отз."
+        else:
+            seller_str = seller_type
+
+        # ── Диагональ ─────────────────────────────────────────────────────────
+        diag_str = f" {diagonal}\"" if diagonal else ""
+
         text = (
-            f"{status}\n\n"
+            f"{chr(10).join(badges)}\n\n"
             f"💻 {title}\n"
-            f"⚙️ <b>{ram}GB / {ssd}GB</b>\n"
-            f"💰 Цена: <b>{price:,} ₽</b>{disc_str}\n"
-            f"📉 Низ рынка: {market_low:,} ₽\n"
-            f"🤝 Выкуп: {buyout:,} ₽\n"
-            f"⚡ Циклы: {cycles if cycles else '—'}\n"
-            f"🔗 <a href='{url}'>Открыть на Avito</a>"
+            f"⚙️ <b>{ram}GB\u202f/\u202f{ssd}GB{diag_str}</b>\n"
+            f"💰 Цена: <b>{price:,}\u202f₽</b>{discount_str}\n"
+            f"📉 Низ рынка: {market_low:,}\u202f₽\n"
+            f"🤝 Выкуп: <b>{buyout:,}\u202f₽</b>\n"
+            f"👤 {seller_str}\n"
+            f"⏱ Опубликовано: <b>{age_str}</b>\n"
         )
+        if trend_str:
+            text += f"{trend_str}\n"
+        text += f"🔗 <a href='{url}'>Открыть на Avito</a>"
+
+        text = text.replace(',', '\u202f')
+
         try:
-            requests.post(TELEGRAM_URL, json={"text": text, "parse_mode": "HTML"}, timeout=10)
-            logger.info(f"✅ Telegram отправлен: {price:,} ₽")
+            std_requests.post(
+                TELEGRAM_URL,
+                json={"text": text, "parse_mode": "HTML"},
+                timeout=10,
+            )
+            logger.info(f"✅ [{score}/100] {title[:45]} | {price:,} ₽ | {age_str}")
         except Exception as e:
             logger.error(f"❌ Telegram: {e}")
 
-    def run(self):
+    def notify_not_in_db(self, title: str, price: int, ram: int, ssd: int, url: str, age_str: str):
+        """Уведомление о объявлении, которое не нашлось в базе цен."""
+        if not TELEGRAM_URL:
+            return
+
+        text = (
+            f"⚠️ <b>НЕТ В БАЗЕ</b>\n\n"
+            f"💻 {title}\n"
+            f"⚙️ <b>{ram}GB\u202f/\u202f{ssd}GB</b>\n"
+            f"💰 Цена: <b>{price:,}\u202f₽</b>\n"
+            f"⏱ {age_str}\n"
+            f"🔗 <a href='{url}'>Открыть на Avito</a>\n\n"
+            f"<i>Добавьте эту модель в avito-urls.json</i>"
+        )
+        text = text.replace(',', '\u202f')
+
+        try:
+            std_requests.post(
+                TELEGRAM_URL,
+                json={"text": text, "parse_mode": "HTML"},
+                timeout=10,
+            )
+            logger.info(f"⚠️ Нет в базе → отправлено: {title[:50]} | {price:,}₽ | {ram}/{ssd}")
+        except Exception as e:
+            logger.error(f"❌ Telegram (not_in_db): {e}")
+
+    def _save_seen(self):
+        """Сохраняет seen_urls на диск немедленно — защита от повторных уведомлений."""
+        try:
+            SEEN_FILE.parent.mkdir(parents=True, exist_ok=True)
+            with open(SEEN_FILE, 'w', encoding='utf-8') as f:
+                json.dump({
+                    "updated_at": datetime.now().isoformat(),
+                    "seen_urls":  list(self.seen)[-5000:],
+                }, f)
+        except Exception as e:
+            logger.warning(f"⚠️ Не удалось сохранить seen: {e}")
+
+    # ─── Основной цикл ────────────────────────────────────────────────────────
+    def run(self, use_playwright=False):
         if not SCAN_URL:
             logger.error("❌ SCAN_URL не задан")
             return
 
-        logger.info("🎬 Запуск сканера...")
+        logger.info(f"🎬 Сканирование запущено ({'Playwright' if use_playwright else 'Proxy'} мода)...")
 
-        # Прогрев: сначала главная, потом SCAN_URL
-        logger.info("🌐 Прогрев: avito.ru...")
-        navigate_with_captcha(self.page, "https://www.avito.ru")
+        time.sleep(random.uniform(1, 3))
 
-        logger.info("🔍 Открываем SCAN_URL...")
-        if not navigate_with_captcha(self.page, SCAN_URL):
-            logger.error("❌ Не удалось загрузить SCAN_URL")
-            self.context.close(); self.browser.close(); return
+        # Пробуем загрузить SCAN_URL
+        resp = None
+        for attempt in range(3):
+            resp = self.get(SCAN_URL, use_playwright=use_playwright)
+            if resp:
+                break
+            logger.warning(f"   Попытка {attempt+1}/3 не удалась, ждём 30 сек...")
+            time.sleep(30)
 
-        # Парсим HTML страницы поиска через BeautifulSoup (надёжнее Playwright locators)
-        soup = BeautifulSoup(self.page.content(), 'lxml')
+        if not resp:
+            logger.error("❌ Не удалось загрузить SCAN_URL после 3 попыток")
+            return
+
+        soup  = BeautifulSoup(resp.text, 'lxml')
         items = soup.select('[data-marker="item"]')
-        logger.info(f"🔎 Найдено {len(items)} объявлений на странице")
+        logger.info(f"🔎 Объявлений: {len(items)}")
 
-        found = 0
-        newly_seen = []
+        if not items:
+            logger.warning("⚠️ Объявления не найдены")
+            logger.debug(f"HTML preview: {resp.text[:500]}")
+            return
 
-        # ═══════════════════════════════════════════════════════════════
-        # ФАЗ 1 — быстрый просмотр всех объявлений без HTTP-запросов
-        #         фильтрация по заголовку / сниппету / цене / базе цен
-        # ═══════════════════════════════════════════════════════════════
+        # Собираем кандидатов с их скорами для сортировки
         candidates = []
-        skipped_seen = 0
+        found_matches = 0
 
-        for idx, item in enumerate(items, 1):
+        for item in items:
             try:
                 link_tag = item.select_one('[data-marker="item-title"]')
                 if not link_tag:
                     continue
 
-                raw_url = urljoin("https://www.avito.ru", link_tag['href'])
-                url     = clean_url(raw_url)
-                title   = link_tag.get('title', '') or link_tag.get_text(strip=True)
+                raw_url   = urljoin("https://www.avito.ru", link_tag['href'])
+                url       = clean_url(raw_url)
+                raw_title = link_tag.get('title', '')
 
                 if url in self.seen:
-                    skipped_seen += 1
                     continue
 
-                # Цена
+                snippet_tag  = item.select_one('[data-marker="item-description"]')
+                snippet      = snippet_tag.get_text().lower() if snippet_tag else ""
+                full_preview = (raw_title + ' ' + snippet).lower()
+
+                if any(w in full_preview for w in BAD_KEYWORDS):
+                    self.seen.add(url)
+                    continue
+
                 price_tag = item.select_one('[itemprop="price"]')
-                price = int(price_tag['content']) if price_tag else 0
+                if not price_tag:
+                    continue
+                price = int(price_tag['content'])
                 if price < 15000:
-                    self.seen.add(url); newly_seen.append(url)
                     continue
 
-                # Сниппет (краткое описание из карточки)
-                snippet_el = item.select_one('[data-marker="item-description"]')
-                snippet = snippet_el.get_text(strip=True) if snippet_el else ''
-                preview = (title + ' ' + snippet).lower()
+                # #2 Время публикации из превью
+                age_str, minutes_ago = parse_item_age(item)
 
-                # Отсев по BAD_KEYWORDS
-                if any(w in preview for w in BAD_KEYWORDS):
-                    logger.info(f"  [{idx}] ⛔ BAD_KEYWORDS: {title[:55]}")
-                    self.seen.add(url); newly_seen.append(url)
+                is_avito_low      = any(x in item.get_text().lower()
+                                        for x in ["ниже рыночной", "цена ниже", "хорошая цена"])
+                is_urgent_preview = any(w in full_preview for w in URGENT_KEYWORDS)
+
+                preview_ram, preview_ssd = extract_specs(full_preview)
+                preview_match = self.match_to_db(raw_title, preview_ram, preview_ssd, {})
+
+                if not preview_match:
+                    logger.warning(f"   ⚠️ Нет в базе: {raw_title[:60]} | {price:,}₽ | RAM={preview_ram} SSD={preview_ssd}")
+                    self.notify_not_in_db(raw_title, price, preview_ram, preview_ssd, url, age_str)
+                    self.seen.add(url)
                     continue
 
-                # Пытаемся вытащить RAM/SSD из заголовка для быстрой проверки цены
-                t_ram, t_ssd = extract_specs_from_title(title)
-                is_avito_low = any(x in item.get_text().lower() for x in
-                                   ["ниже рыночной", "цена ниже", "хорошая цена"])
+                market_low = preview_match['min_price']
+                price_ok   = price <= int(market_low * PRICE_THRESHOLD_FACTOR)
 
-                # Если конфиг найден в базе — проверяем, не слишком ли дорого
-                stat = self.find_stat(None, t_ram, t_ssd)  # ищем только по RAM/SSD
-                if stat and not is_avito_low:
-                    threshold = int(stat['min_price'] * PRICE_THRESHOLD_FACTOR)
-                    if price > threshold:
-                        logger.info(
-                            f"  [{idx}] 💸 Дорого по заголовку: {title[:50]} | "
-                            f"{price:,}₽ > порог {threshold:,}₽"
-                        )
-                        self.seen.add(url); newly_seen.append(url)
-                        continue
+                if not (price_ok or is_avito_low or is_urgent_preview):
+                    self.seen.add(url)
+                    continue
 
-                logger.info(
-                    f"  [{idx}] ✅ Кандидат: {title[:55]} | "
-                    f"{price:,}₽ | RAM≈{t_ram}GB SSD≈{t_ssd}GB"
+                # Помечаем как seen СРАЗУ — даже если deep_analyze упадёт,
+                # повторного уведомления не будет
+                self.seen.add(url)
+                self._save_seen()
+
+                # deep_analyze — ОДИН РАЗ
+                time.sleep(random.uniform(2, 5))
+                analysis      = self.deep_analyze(raw_url)
+                cycles        = analysis["cycles"]
+                is_urgent     = analysis["is_urgent"] or is_urgent_preview
+                specs         = analysis["specs"]
+                price_reduced = analysis["price_reduced"]   # #1
+                is_private    = analysis["is_private"]       # #3
+                seller_type   = analysis["seller_type"]      # #3
+                seller_reviews = analysis["seller_reviews"]  # #3
+
+                final_match = self.match_to_db(raw_title, preview_ram, preview_ssd, specs)
+                if not final_match:
+                    final_ram = specs.get('ram', preview_ram)
+                    final_ssd = specs.get('ssd', preview_ssd)
+                    logger.warning(f"   ⚠️ Нет в базе (deep): {raw_title[:60]} | {price:,}₽ | RAM={final_ram} SSD={final_ssd}")
+                    self.notify_not_in_db(raw_title, price, final_ram, final_ssd, url, age_str)
+                    continue
+
+                market_low = final_match['min_price']
+                buyout     = final_match['buyout_price']
+                final_ram  = specs.get('ram', preview_ram)
+                final_ssd  = specs.get('ssd', preview_ssd)
+                diagonal   = specs.get('diagonal')
+
+                price_ok_final = price <= int(market_low * PRICE_THRESHOLD_FACTOR)
+                if not (price_ok_final or is_avito_low or is_urgent or price_reduced):
+                    self.seen.add(url)
+                    continue
+
+                # #5 Обновляем историю цен
+                self.update_price_history(final_match['model_name'], final_ram, final_ssd, price)
+                trend_str = self.get_trend_str(final_match['model_name'], final_ram, final_ssd)
+
+                # #4 Считаем скор
+                score = calc_score(
+                    price, market_low,
+                    is_urgent, is_avito_low, price_reduced,
+                    cycles, is_private, minutes_ago,
                 )
+
                 candidates.append({
-                    'idx': idx, 'url': url, 'raw_url': raw_url,
-                    'title': title, 'price': price, 'is_avito_low': is_avito_low,
+                    "score":          score,
+                    "title":          raw_title,
+                    "price":          price,
+                    "market_low":     market_low,
+                    "buyout":         buyout,
+                    "ram":            final_ram,
+                    "ssd":            final_ssd,
+                    "url":            url,
+                    "cycles":         cycles,
+                    "is_urgent":      is_urgent,
+                    "is_avito_low":   is_avito_low,
+                    "price_reduced":  price_reduced,
+                    "seller_type":    seller_type,
+                    "seller_reviews": seller_reviews,
+                    "diagonal":       diagonal,
+                    "age_str":        age_str,
+                    "minutes_ago":    minutes_ago,
+                    "trend_str":      trend_str,
                 })
 
             except Exception as e:
-                logger.warning(f"  [{idx}] ⚠️  Ошибка фазы 1: {e}")
+                logger.error(f"Ошибка: {e}")
                 continue
 
-        logger.info(
-            f"📋 Фаза 1: {len(candidates)} кандидатов из {len(items)} "
-            f"(уже видели: {skipped_seen})"
-        )
+        # #4 Сортируем по скору — самые горячие приходят первыми
+        candidates.sort(key=lambda x: x["score"], reverse=True)
 
-        # ═══════════════════════════════════════════════════════════════
-        # ФАЗ 2 — открываем только кандидатов, читаем таблицу характеристик
-        # ═══════════════════════════════════════════════════════════════
-        for item in candidates:
-            idx         = item['idx']
-            url         = item['url']
-            raw_url     = item['raw_url']
-            title       = item['title']
-            price       = item['price']
-            is_avito_low = item['is_avito_low']
+        for c in candidates:
+            self.notify(**{k: c[k] for k in [
+                'title', 'price', 'market_low', 'buyout', 'ram', 'ssd', 'url',
+                'cycles', 'is_urgent', 'is_avito_low', 'price_reduced',
+                'seller_type', 'seller_reviews', 'diagonal',
+                'age_str', 'minutes_ago', 'score', 'trend_str',
+            ]})
+            found_matches += 1
 
-            try:
-                logger.info(f"[{idx}/{len(items)}] 📄 {title[:55]} | {price:,}₽")
+        # Финальное сохранение seen (основное уже сохранялось по ходу)
+        self._save_seen()
 
-                detail_page = self.context.new_page()
-                listing_ok  = navigate_with_captcha(detail_page, raw_url)
+        # #5 Сохраняем историю цен
+        HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with open(HISTORY_FILE, 'w', encoding='utf-8') as f:
+            json.dump(self.price_history, f, ensure_ascii=False)
 
-                if not listing_ok:
-                    detail_page.close()
-                    self.seen.add(url); newly_seen.append(url)
-                    continue
-
-                listing_soup = BeautifulSoup(detail_page.content(), 'lxml')
-                detail_page.close()
-
-                info       = parse_listing(listing_soup)
-                model_name = info['model_name']
-                h1_title   = info['h1_title']
-                ram        = info['ram']
-                ssd        = info['ssd']
-                cycles     = info['cycles']
-                is_urgent  = info['is_urgent']
-
-                # Фоллбэк: если model_name не из таблицы — берём h1 или title из карточки
-                display_name = model_name or h1_title or title
-                ram = ram or 8
-                ssd = ssd or 256
-
-                logger.info(
-                    f"     Модель: {model_name} | h1: {(h1_title or '')[:50]} | "
-                    f"RAM: {ram} | SSD: {ssd} | Циклы: {cycles} | Срочно: {is_urgent}"
-                )
-
-                # Финальный фильтр по полному тексту описания
-                desc_el = listing_soup.find('div', attrs={'data-marker': 'item-description'})
-                full_text = desc_el.get_text().lower() if desc_el else ''
-                if any(w in full_text for w in BAD_KEYWORDS):
-                    logger.info("     ❌ Отсев по описанию")
-                    self.seen.add(url); newly_seen.append(url)
-                    continue
-
-                # Контрольная сверка с базой цен
-                # Пробуем: 1) model_name из таблицы, 2) h1, 3) title из карточки
-                stat = self.find_stat(model_name, ram, ssd)
-                if not stat and h1_title:
-                    stat = self.find_stat(h1_title, ram, ssd)
-                if not stat:
-                    stat = self.find_stat(title, ram, ssd)
-                if not stat:
-                    logger.info(f"     ❌ Нет в базе цен: {display_name[:50]} {ram}/{ssd}")
-                    self.seen.add(url); newly_seen.append(url)
-                    continue
-
-                market_low = stat['min_price']
-                should_notify = (
-                    price <= int(market_low * PRICE_THRESHOLD_FACTOR)
-                    or is_avito_low
-                    or is_urgent
-                )
-
-                logger.info(
-                    f"     💰 {price:,}₽ vs рынок {market_low:,}₽ "
-                    f"(порог {int(market_low * PRICE_THRESHOLD_FACTOR):,}₽) "
-                    f"→ notify={should_notify}"
-                )
-
-                if should_notify:
-                    self.notify(
-                        title, price, market_low, stat['buyout_price'],
-                        ram or 8, ssd or 256, url,
-                        cycles, is_urgent, is_avito_low
-                    )
-                    found += 1
-                    time.sleep(random.uniform(2, 4))
-
-                self.seen.add(url)
-                newly_seen.append(url)
-                time.sleep(random.uniform(1, 2))
-
-            except Exception as e:
-                logger.warning(f"     ⚠️  Ошибка: {e}")
-                continue
-
-        # Сохраняем историю
-        if newly_seen:
-            with open(SEEN_FILE, 'w', encoding='utf-8') as f:
-                json.dump({
-                    "updated_at": datetime.now().isoformat(),
-                    "seen_urls": list(self.seen)[-5000:]
-                }, f)
-
-        self.context.close()
-        self.browser.close()
-        logger.info(f"🏁 Готово. Уведомлений отправлено: {found}")
-
-
-def main():
-    with sync_playwright() as pw:
-        AvitoScanner(pw).run()
+        logger.info(f"🏁 Готово. Уведомлений: {found_matches}")
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--playwright', action='store_true', help="Use local Playwright/Chrome instead of proxies")
+    args = parser.parse_args()
+    
+    AvitoScanner().run(use_playwright=args.playwright)
