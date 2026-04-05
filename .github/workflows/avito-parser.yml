@@ -1,10 +1,7 @@
-name: Avito Price Parser
+name: Avito Price Parser (v1 — disabled, replaced by price-builder.yml)
 
 on:
-  schedule:
-    - cron: '0 2 */2 * *'   # каждые 2 дня в 2:00 UTC (ночью)
-
-  workflow_dispatch:
+  workflow_dispatch:   # только ручной запуск, cron отключён
     inputs:
       batch:
         description: 'Батч (1-3) или "all"'

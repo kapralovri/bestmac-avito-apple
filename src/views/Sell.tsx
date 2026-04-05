@@ -586,48 +586,43 @@ const Sell = () => {
                   </Link>
                 </motion.div>
 
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
-                  <Link href="/sell/broken" className="block w-full">
-                    <div className="bg-gradient-to-r from-destructive/10 to-orange-500/10 border-2 border-destructive/20 hover:border-destructive/40 p-4 rounded-xl flex items-center gap-4 transition-colors">
-                      <div className="bg-destructive/10 p-2 rounded-full hidden sm:block">
-                        <AlertTriangle className="w-6 h-6 text-destructive" />
-                      </div>
-                      <div>
-                        <p className="font-bold text-foreground">Сломался MacBook? Залит водой или заблокирован?</p>
-                        <p className="text-sm text-muted-foreground mt-0.5">Оценим на запчасти по фото за 5 минут. Нажмите здесь →</p>
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-
                 <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
                   <h2 className="text-2xl font-bold mb-6 text-center">Выкупаем другие компьютеры Apple</h2>
-                  <div className="grid md:grid-cols-3 gap-6">
-                    <Link href="/sell/imac" className="block group">
+                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <Link href="/sell/imac-24-2024-m4" className="block group">
                       <div className="bg-card hover:bg-muted/50 transition-colors border p-6 rounded-2xl flex flex-col items-center text-center h-full">
                         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                           <Monitor className="w-8 h-8 text-primary" />
                         </div>
                         <h3 className="font-bold text-lg mb-2">Скупка iMac</h3>
-                        <p className="text-sm text-muted-foreground">Моноблоки 21.5", 27", 24" M1/M3</p>
+                        <p className="text-sm text-muted-foreground">Моноблоки 24" и 27" — с 2017 года</p>
                       </div>
                     </Link>
-                    <Link href="/sell/mac-pro" className="block group">
-                      <div className="bg-card hover:bg-muted/50 transition-colors border p-6 rounded-2xl flex flex-col items-center text-center h-full">
-                        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                          <HardDrive className="w-8 h-8 text-primary" />
-                        </div>
-                        <h3 className="font-bold text-lg mb-2">Скупка Mac Pro</h3>
-                        <p className="text-sm text-muted-foreground">Профессиональные станции Apple</p>
-                      </div>
-                    </Link>
-                    <Link href="/sell/mac-mini" className="block group">
+                    <Link href="/sell/mac-mini-2024-m4" className="block group">
                       <div className="bg-card hover:bg-muted/50 transition-colors border p-6 rounded-2xl flex flex-col items-center text-center h-full">
                         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                           <Cpu className="w-8 h-8 text-primary" />
                         </div>
                         <h3 className="font-bold text-lg mb-2">Скупка Mac mini</h3>
-                        <p className="text-sm text-muted-foreground">Компактные десктопы на Intel и M-чипах</p>
+                        <p className="text-sm text-muted-foreground">Компактные десктопы M1–M4</p>
+                      </div>
+                    </Link>
+                    <Link href="/sell/mac-studio-2024-m4-max" className="block group">
+                      <div className="bg-card hover:bg-muted/50 transition-colors border p-6 rounded-2xl flex flex-col items-center text-center h-full">
+                        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                          <HardDrive className="w-8 h-8 text-primary" />
+                        </div>
+                        <h3 className="font-bold text-lg mb-2">Скупка Mac Studio</h3>
+                        <p className="text-sm text-muted-foreground">M1 Max/Ultra — M4 Max</p>
+                      </div>
+                    </Link>
+                    <Link href="/sell/broken" className="block group">
+                      <div className="bg-card hover:bg-muted/50 transition-colors border p-6 rounded-2xl flex flex-col items-center text-center h-full">
+                        <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                          <AlertTriangle className="w-8 h-8 text-destructive" />
+                        </div>
+                        <h3 className="font-bold text-lg mb-2">На запчасти</h3>
+                        <p className="text-sm text-muted-foreground">Сломанные, залитые, заблокированные</p>
                       </div>
                     </Link>
                   </div>
@@ -636,13 +631,15 @@ const Sell = () => {
                 <motion.section className="grid lg:grid-cols-2 gap-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.25 }}>
                   <div className="space-y-6">
                     <div>
-                      <h2 className="text-2xl font-bold mb-4">Какие MacBook мы выкупаем?</h2>
-                      <p className="text-muted-foreground mb-4">Мы занимаемся узкоспециализированной скупкой ноутбуков Apple в Москве.</p>
+                      <h2 className="text-2xl font-bold mb-4">Какую технику Apple мы выкупаем?</h2>
+                      <p className="text-muted-foreground mb-4">Скупка компьютеров Apple в Москве — ноутбуки, моноблоки, десктопы.</p>
                       <ul className="space-y-2 text-sm">
-                        <li className="flex items-start gap-2"><CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" /><span><strong>MacBook Pro</strong> (13", 14", 16") с 2016 по 2024 год.</span></li>
-                        <li className="flex items-start gap-2"><CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" /><span><strong>MacBook Air</strong> (13", 15") на <strong>M2 и M3</strong>.</span></li>
+                        <li className="flex items-start gap-2"><CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" /><span><strong>MacBook Pro</strong> (13", 14", 16") — M1, M2, M3, M4.</span></li>
+                        <li className="flex items-start gap-2"><CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" /><span><strong>MacBook Air</strong> (13", 15") — M1, M2, M3, M4.</span></li>
+                        <li className="flex items-start gap-2"><CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" /><span><strong>iMac</strong> 24" и 27" — с 2017 года.</span></li>
+                        <li className="flex items-start gap-2"><CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" /><span><strong>Mac mini</strong> — M1, M2, M4.</span></li>
+                        <li className="flex items-start gap-2"><CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" /><span><strong>Mac Studio</strong> — все модели.</span></li>
                         <li className="flex items-start gap-2"><CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" /><span><strong>Любое состояние:</strong> б/у, идеальное, с коробкой и без.</span></li>
-                        <li className="flex items-start gap-2"><CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" /><span><strong>Проблемные:</strong> залитые, разбитые (на запчасти).</span></li>
                       </ul>
                     </div>
                   </div>

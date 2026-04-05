@@ -1,7 +1,9 @@
-name: Avito Scanner Auto (v1 — disabled, replaced by scanner-v2.yml)
+name: Avito Scanner v2
 
 on:
-  workflow_dispatch:   # только ручной запуск, cron отключён
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
 
 jobs:
   scan:
@@ -28,21 +30,19 @@ jobs:
       - name: Install dependencies
         run: pip install -r scripts/hot-deals-scanner/requirements.txt
 
-      - name: Install Playwright Chromium
-        run: playwright install chromium --with-deps
-
-      - name: Run scanner
+      - name: Run scanner v2
         env:
-          SCAN_URL: ${{ secrets.SCAN_URL }}
           TELEGRAM_NOTIFY_URL: ${{ secrets.TELEGRAM_NOTIFY_URL }}
           RUCAPTCHA_API_KEY: ${{ secrets.RUCAPTCHA_API_KEY }}
-        run: python scripts/hot-deals-scanner/scanner.py
+          PROXY_URL: ${{ secrets.PROXY_URL }}
+          CHANGE_IP_URL: ${{ secrets.CHANGE_IP_URL }}
+        run: python scripts/hot-deals-scanner/scanner_v2.py
 
       - name: Save seen history
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add public/data/seen-hot-deals.json
+          git add public/data/seen-hot-deals.json public/data/price-history.json
           if git diff --staged --quiet; then
             echo "No changes"
           else
