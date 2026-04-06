@@ -34,8 +34,6 @@ jobs:
         env:
           TELEGRAM_NOTIFY_URL: ${{ secrets.TELEGRAM_NOTIFY_URL }}
           RUCAPTCHA_API_KEY: ${{ secrets.RUCAPTCHA_API_KEY }}
-          PROXY_URL: ${{ secrets.PROXY_URL }}
-          CHANGE_IP_URL: ${{ secrets.CHANGE_IP_URL }}
         run: python scripts/hot-deals-scanner/scanner_v2.py
 
       - name: Save seen history
