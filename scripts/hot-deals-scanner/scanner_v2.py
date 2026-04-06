@@ -75,12 +75,98 @@ CHANGE_IP_URL = os.environ.get('CHANGE_IP_URL', '').strip().strip('"').strip("'"
 
 AVITO_CAPTCHA_ID = '2d9c743cf7d63dbc9db578a608196bcd'
 AVITO_VERIFY_URL = 'https://www.avito.ru/web/1/firewallCaptcha/verify'
+USER_AGENT = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+              'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36')
 
 CURL_BROWSERS = ["chrome110", "chrome107", "chrome104", "chrome101", "chrome100"]
 
 
 def clean_url(url):
     return url.split('?')[0]
+
+
+# ─── Капча (из scanner v1 / parser.py) ───────────────────────────────────────
+
+def is_captcha_page(page) -> bool:
+    return page.query_selector('div.firewall-container') is not None
+
+
+def solve_captcha(page) -> bool:
+    if not RUCAPTCHA_API_KEY:
+        logger.warning("⚠️ RUCAPTCHA_API_KEY не задан")
+        return False
+    try:
+        from twocaptcha import TwoCaptcha
+        solver = TwoCaptcha(RUCAPTCHA_API_KEY, server='rucaptcha.com', defaultTimeout=120)
+
+        logger.info(f"[ШАГ 1] 🧩 GeeTest v4 | captcha_id: {AVITO_CAPTCHA_ID}")
+        logger.info("[ШАГ 1] ⏳ Отправляем в RuCaptcha (20-60 сек)...")
+        result = solver.geetest_v4(captcha_id=AVITO_CAPTCHA_ID, url=page.url)
+        logger.info(f"[ШАГ 1] ✅ RuCaptcha ответила")
+
+        code = result['code']
+        code_data = json.loads(code) if isinstance(code, str) else code
+
+        js_payload = json.dumps({
+            'captcha': '',
+            'hCaptchaResponse': '',
+            'captcha_id': AVITO_CAPTCHA_ID,
+            'lot_number': code_data['lot_number'],
+            'pass_token': code_data['pass_token'],
+            'gen_time': code_data['gen_time'],
+            'captcha_output': code_data['captcha_output'],
+        })
+
+        logger.info(f"[ШАГ 3] 📤 POST → {AVITO_VERIFY_URL}")
+        resp_data = page.evaluate(f"""async () => {{
+            const resp = await fetch('{AVITO_VERIFY_URL}', {{
+                method: 'POST',
+                headers: {{
+                    'accept': '*/*',
+                    'content-type': 'application/json',
+                    'origin': 'https://www.avito.ru',
+                    'referer': window.location.href,
+                }},
+                credentials: 'include',
+                body: JSON.stringify({js_payload}),
+            }});
+            return await resp.json();
+        }}""")
+        logger.info(f"[ШАГ 3] Ответ: {str(resp_data)[:200]}")
+
+        if not resp_data.get('result', {}).get('verified', False):
+            logger.error("[ШАГ 3] ❌ verified=False")
+            return False
+        logger.info("[ШАГ 3] ✅ Капча пройдена!")
+
+        logger.info("[ШАГ 4] 🔄 Перезагружаем страницу...")
+        page.reload(wait_until='domcontentloaded', timeout=20000)
+        page.wait_for_timeout(3000)
+        logger.info(f"[ШАГ 4] firewall-container: {is_captcha_page(page)}")
+        return not is_captcha_page(page)
+
+    except Exception as e:
+        logger.error(f"❌ Ошибка капчи: {e}")
+        return False
+
+
+def navigate_with_captcha(page, url: str) -> bool:
+    try:
+        page.goto(url, wait_until='domcontentloaded', timeout=30000)
+        page.wait_for_timeout(random.randint(1500, 3000))
+    except Exception as e:
+        logger.warning(f"⚠️ Ошибка goto: {e}")
+        return False
+
+    for attempt in range(1, 4):
+        if not is_captcha_page(page):
+            return True
+        logger.warning(f"🛡 Капча (попытка {attempt}/3)")
+        if not solve_captcha(page):
+            return False
+        page.wait_for_timeout(3000)
+
+    return not is_captcha_page(page)
 
 
 # ─── Парсинг времени публикации ──────────────────────────────────────────────
@@ -181,15 +267,11 @@ def extract_location(soup):
 
 
 class AvitoScannerV2:
-    def __init__(self):
-        p_str = PROXY_URL
-        if p_str and not p_str.startswith('http'):
-            p_str = f"http://{p_str}"
-        self.proxy_str = p_str
-        self.std_proxies = {"http": p_str, "https": p_str} if p_str else None
-        self._curl_session = None
-        if CURL_AVAILABLE:
-            self._init_curl_session()
+    def __init__(self, playwright_instance):
+        self.pw = playwright_instance
+        self.browser = None
+        self.context = None
+        self.page = None
 
         # База цен
         self.prices = {}
@@ -223,41 +305,49 @@ class AvitoScannerV2:
             except Exception:
                 pass
 
-    def _init_curl_session(self):
-        browser = random.choice(CURL_BROWSERS)
-        self._curl_session = curl_requests.Session(impersonate=browser)
-        if self.proxy_str:
-            self._curl_session.proxies = {"http": self.proxy_str, "https": self.proxy_str}
+    def _start_browser(self):
+        """Запускает Playwright-браузер."""
+        self.browser = self.pw.chromium.launch(
+            headless=True,
+            args=['--no-sandbox', '--disable-setuid-sandbox',
+                  '--disable-blink-features=AutomationControlled'],
+        )
+        self.context = self.browser.new_context(
+            viewport={'width': 1440, 'height': 900},
+            user_agent=USER_AGENT,
+            locale='ru-RU',
+            timezone_id='Europe/Moscow',
+            extra_http_headers={'Accept-Language': 'ru-RU,ru;q=0.9'},
+        )
+        self.context.add_init_script("""
+            Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+            Object.defineProperty(navigator, 'plugins',   { get: () => [1, 2, 3] });
+            window.chrome = { runtime: {} };
+        """)
+        self.page = self.context.new_page()
 
-    def get(self, url, retries=3):
-        headers = {
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8",
-            "Accept-Encoding": "gzip, deflate, br",
-        }
-        for attempt in range(retries):
-            try:
-                if CURL_AVAILABLE and self._curl_session:
-                    resp = self._curl_session.get(url, headers=headers, timeout=30,
-                                                  verify=False, allow_redirects=True)
-                else:
-                    resp = std_requests.get(
-                        url,
-                        headers={**headers, "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"},
-                        proxies=self.std_proxies, timeout=30, verify=False,
-                    )
-                if resp.status_code == 200:
-                    return resp
-                if resp.status_code in [403, 429]:
-                    logger.warning(f"⚠️ HTTP {resp.status_code} (попытка {attempt+1}/{retries})")
-                    time.sleep(random.uniform(15, 25))
-                else:
-                    break
-            except Exception as e:
-                logger.error(f"   Ошибка запроса (попытка {attempt+1}): {e}")
-                if attempt < retries - 1:
-                    time.sleep(15)
-        return None
+    def _warmup(self):
+        """Прогрев: заходим на avito.ru, решаем капчу один раз."""
+        logger.info("🌐 Прогрев: avito.ru...")
+        ok = navigate_with_captcha(self.page, "https://www.avito.ru")
+        if ok:
+            logger.info("✅ Прогрев пройден")
+        else:
+            logger.warning("⚠️ Прогрев не удался, продолжаем...")
+        self.page.wait_for_timeout(random.randint(2000, 4000))
+
+    def _load_page(self, url):
+        """Загружает страницу через Playwright с обходом капчи. Возвращает HTML или None."""
+        ok = navigate_with_captcha(self.page, url)
+        if not ok:
+            return None
+        return self.page.content()
+
+    def _close(self):
+        if self.context:
+            self.context.close()
+        if self.browser:
+            self.browser.close()
 
     def deep_analyze(self, url):
         """Заходит в объявление, собирает детали."""
@@ -271,12 +361,12 @@ class AvitoScannerV2:
             "seller_type": "?",
             "location": "",
         }
-        resp = self.get(url)
-        if not resp:
+        html = self._load_page(url)
+        if not html:
             return result
 
         try:
-            soup = BeautifulSoup(resp.text, 'lxml')
+            soup = BeautifulSoup(html, 'lxml')
 
             # Описание
             desc_tag = soup.find('div', attrs={'data-marker': 'item-description'})
@@ -506,7 +596,11 @@ class AvitoScannerV2:
             for fam in SCAN_FAMILIES.values()
         ]
 
-    def run(self, use_playwright=False):
+    def run(self):
+        # Запускаем Playwright-браузер
+        self._start_browser()
+        self._warmup()
+
         scan_urls = self._get_scan_urls()
         logger.info(f"🎬 Запуск сканера v2 ({len(scan_urls)} URL)...")
 
@@ -518,21 +612,14 @@ class AvitoScannerV2:
             logger.info(f"\n{'─'*40}")
             logger.info(f"🔍 {label}: {url[:60]}...")
 
-            time.sleep(random.uniform(1, 3))
+            time.sleep(random.uniform(2, 5))
 
-            resp = None
-            for attempt in range(3):
-                resp = self.get(url)
-                if resp:
-                    break
-                logger.warning(f"   Попытка {attempt+1}/3 не удалась")
-                time.sleep(30)
-
-            if not resp:
+            html = self._load_page(url)
+            if not html:
                 logger.error(f"❌ Не удалось загрузить {label}")
                 continue
 
-            soup = BeautifulSoup(resp.text, 'lxml')
+            soup = BeautifulSoup(html, 'lxml')
             items = soup.select('[data-marker="item"]')
             logger.info(f"🔎 {label}: {len(items)} объявлений")
 
@@ -725,13 +812,14 @@ class AvitoScannerV2:
         with open(HISTORY_FILE, 'w', encoding='utf-8') as f:
             json.dump(self.price_history, f, ensure_ascii=False)
 
+        # Закрываем браузер
+        self._close()
+
         logger.info(f"\n🏁 Готово. Уведомлений: {total_notifications}")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Avito Scanner v2")
-    parser.add_argument('--playwright', action='store_true',
-                        help="Use Playwright instead of proxies")
-    args = parser.parse_args()
+    from playwright.sync_api import sync_playwright
 
-    AvitoScannerV2().run(use_playwright=args.playwright)
+    with sync_playwright() as pw:
+        AvitoScannerV2(pw).run()
