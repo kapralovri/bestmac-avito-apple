@@ -52,7 +52,7 @@ USER_AGENT        = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
                      'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36')
 
 MAX_PAGES_DEFAULT = 3
-MIN_SAMPLES = 5
+MIN_SAMPLES_DEFAULT = 3
 
 
 # ─── Капча (из parser.py) ────────────────────────────────────────────────────
@@ -472,6 +472,8 @@ def main():
                         help=f"Макс. страниц на URL (по умолчанию {MAX_PAGES_DEFAULT})")
     parser.add_argument("--clean", action='store_true',
                         help="Не мержить с существующей базой — чистый запуск")
+    parser.add_argument("--min-samples", type=int, default=MIN_SAMPLES_DEFAULT,
+                        help=f"Мин. объявлений для конфига (по умолчанию {MIN_SAMPLES_DEFAULT})")
     args = parser.parse_args()
 
     # Определяем URL для парсинга
@@ -529,8 +531,8 @@ def main():
     for (model_name, ram, ssd), data in all_configs.items():
         prices = data['prices']
 
-        if len(prices) < MIN_SAMPLES:
-            logger.info(f"   ⏭ {model_name} {ram}/{ssd}: {len(prices)} цен (мало, нужно ≥{MIN_SAMPLES})")
+        if len(prices) < args.min_samples:
+            logger.info(f"   ⏭ {model_name} {ram}/{ssd}: {len(prices)} цен (мало, нужно ≥{args.min_samples})")
             continue
 
         low, high, median = get_market_analysis(prices)
