@@ -41,11 +41,21 @@ interface AvitoUrlsData {
   }>;
 }
 
+const DEVICE_FAMILIES = [
+  { key: 'macbook', label: 'MacBook', icon: Laptop, prefix: 'MacBook' },
+  { key: 'imac', label: 'iMac', icon: Monitor, prefix: 'iMac' },
+  { key: 'mac-mini', label: 'Mac mini', icon: Cpu, prefix: 'Mac mini' },
+  { key: 'mac-studio', label: 'Mac Studio', icon: HardDrive, prefix: 'Mac Studio' },
+] as const;
+
+type FamilyKey = typeof DEVICE_FAMILIES[number]['key'];
+
 const Sell = () => {
   const [data, setData] = useState<AvitoPricesData | null>(null);
   const [urlsData, setUrlsData] = useState<AvitoUrlsData | null>(null);
   const [totalListings, setTotalListings] = useState(0);
   const [lastUpdate, setLastUpdate] = useState<string>('');
+  const [family, setFamily] = useState<FamilyKey>('macbook');
 
   // Форма
   const [modelName, setModelName] = useState('');
@@ -79,11 +89,15 @@ const Sell = () => {
     });
   }, []);
 
-  // Список моделей из конфигурации
+  // Список моделей из конфигурации (фильтр по семейству)
+  const currentFamily = DEVICE_FAMILIES.find(f => f.key === family);
   const models = useMemo(() => {
     if (!urlsData) return [];
-    return filterModels(getModelsFromConfig(urlsData), modelSearch);
-  }, [urlsData, modelSearch]);
+    const allModels = getModelsFromConfig(urlsData);
+    const prefix = currentFamily?.prefix || 'MacBook';
+    const familyModels = allModels.filter(m => m.startsWith(prefix));
+    return filterModels(familyModels, modelSearch);
+  }, [urlsData, modelSearch, family, currentFamily]);
 
   // Опции процессоров из конфигурации
   const processorOptions = useMemo(() => {
@@ -102,6 +116,16 @@ const Sell = () => {
     if (!urlsData || !modelName || !processor || !ram) return [];
     return getSsdFromConfig(urlsData, modelName, processor, Number(ram));
   }, [urlsData, modelName, processor, ram]);
+
+  // Сброс при смене семейства
+  useEffect(() => {
+    setModelName('');
+    setModelSearch('');
+    setProcessor('');
+    setRam('');
+    setSsd('');
+    setResult(null);
+  }, [family]);
 
   // Сброс зависимых полей
   useEffect(() => {
@@ -338,10 +362,33 @@ const Sell = () => {
                         Параметры устройства
                       </CardTitle>
                       <CardDescription>
-                        Выберите характеристики вашего MacBook
+                        Выберите характеристики вашего {currentFamily?.label || 'устройства'}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-5">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Тип устройства</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {DEVICE_FAMILIES.map((f) => {
+                            const Icon = f.icon;
+                            return (
+                              <button
+                                key={f.key}
+                                onClick={() => setFamily(f.key)}
+                                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
+                                  family === f.key
+                                    ? 'border-primary bg-primary/10 text-primary'
+                                    : 'border-border hover:border-primary/50 hover:bg-muted/50'
+                                }`}
+                              >
+                                <Icon className="w-4 h-4" />
+                                {f.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <label className="text-sm font-medium flex items-center gap-2">

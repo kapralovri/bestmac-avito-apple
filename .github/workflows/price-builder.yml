@@ -2,17 +2,21 @@ name: Price Builder v2
 
 on:
   schedule:
-    - cron: '0 2 */2 * *'   # каждые 2 дня в 2:00 UTC
+    - cron: '0 3 * * *'   # ежедневно в 3:00 UTC (6:00 МСК)
   workflow_dispatch:
     inputs:
-      families:
-        description: 'Семейства (через пробел) или пусто = все'
+      url:
+        description: 'Кастомный URL (пусто = BUILDER_URLS из config.py)'
         default: ''
         type: string
       max_pages:
-        description: 'Макс. страниц на семейство'
-        default: '15'
+        description: 'Макс. страниц'
+        default: '3'
         type: string
+      clean:
+        description: 'Чистый запуск (не мержить с существующей базой)'
+        default: false
+        type: boolean
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -48,19 +52,26 @@ jobs:
           RUCAPTCHA_API_KEY: ${{ secrets.RUCAPTCHA_API_KEY }}
         run: |
           cd scripts/price-builder
-          FAMILIES="${{ github.event.inputs.families }}"
-          MAX_PAGES="${{ github.event.inputs.max_pages || '15' }}"
-          if [ -n "$FAMILIES" ]; then
-            python builder.py --families $FAMILIES --max-pages $MAX_PAGES
-          else
-            python builder.py --max-pages $MAX_PAGES
+          CUSTOM_URL="${{ github.event.inputs.url }}"
+          MAX_PAGES="${{ github.event.inputs.max_pages || '3' }}"
+          CLEAN="${{ github.event.inputs.clean }}"
+
+          CMD="python builder.py --max-pages $MAX_PAGES"
+          if [ -n "$CUSTOM_URL" ]; then
+            CMD="$CMD --url \"$CUSTOM_URL\""
           fi
+          if [ "$CLEAN" = "true" ]; then
+            CMD="$CMD --clean"
+          fi
+
+          echo "Running: $CMD"
+          eval $CMD
 
       - name: Commit and push
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add public/data/avito-prices.json
+          git add public/data/avito-prices.json public/data/avito-urls.json
           git diff --staged --quiet && echo "No changes" && exit 0
           git commit -m "chore: update prices (builder v2) [skip ci]"
           for i in 1 2 3; do

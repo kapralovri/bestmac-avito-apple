@@ -72,3 +72,20 @@ MOSCOW_MARKERS = ['москва', 'moscow', 'мск', 'московская об
 
 # ─── Порог цены для скоринга ─────────────────────────────────────────────────
 PRICE_THRESHOLD_FACTOR = 1.20
+
+# ─── URL для Price Builder v2 ────────────────────────────────────────────────
+# Каждый URL — отдельная категория с фильтрами Авито.
+# Пользователь настраивает фильтры на Авито и вставляет URL сюда.
+# s=104 = сортировка по дате.
+
+BUILDER_URLS = [
+    {
+        "label": "MacBook (Air + Pro)",
+        "url": "https://www.avito.ru/all/noutbuki/apple/b_u-ASgBAgICAkTwvA2I0jSo5A302WY?f=ASgBAQICAkTwvA2I0jSo5A302WYBQKDkDfQWgPPEFYLzxBXCocUVsqnFFarexBWm45cV9LnrEba46xGy3sQVxp~2FcCZlhXYuesRuLjrEb656xGQuOsR3MKmFaiS_hTowqYVppL~FKa56xHyuOsRzrfrEQ&q=macbook&s=104",
+    },
+    # Добавьте URL для настольных (iMac, Mac mini, Mac Studio) когда будут готовы:
+    # {
+    #     "label": "Настольные (iMac, Mac mini, Mac Studio)",
+    #     "url": "https://www.avito.ru/all/nastolnye_kompyutery/apple/b_u-...&s=104",
+    # },
+]
