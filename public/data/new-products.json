@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-04-06T14:12:05.551156+00:00",
+  "updated_at": "2026-04-07T07:14:46.030044+00:00",
   "categories_found": [
     "iphone_17_pro",
     "macbook_air",
@@ -51,6 +51,22 @@
       "flags": [],
       "is_activated": false,
       "name": "MacBook Air 15\" M3",
+      "price": 82000,
+      "source_price": 77000
+    },
+    {
+      "category": "macbook_air",
+      "category_display": "MacBook Air",
+      "model": "MacBook Air 15\"",
+      "chip": "M3",
+      "ram": null,
+      "ram_gb": null,
+      "ssd": null,
+      "ssd_gb": null,
+      "color": null,
+      "flags": [],
+      "is_activated": false,
+      "name": "MacBook Air 15\" M3",
       "price": 162500,
       "source_price": 157500
     },
@@ -67,8 +83,24 @@
       "flags": [],
       "is_activated": false,
       "name": "MacBook Air 13\" M4 16GB 256GB Sky Blue",
-      "price": 89000,
-      "source_price": 84000
+      "price": 86500,
+      "source_price": 81500
+    },
+    {
+      "category": "macbook_air",
+      "category_display": "MacBook Air",
+      "model": "MacBook Air 13\"",
+      "chip": "M4",
+      "ram": "16GB",
+      "ram_gb": 16,
+      "ssd": "256GB",
+      "ssd_gb": 256,
+      "color": "Midnight",
+      "flags": [],
+      "is_activated": false,
+      "name": "MacBook Air 13\" M4 16GB 256GB Midnight",
+      "price": 87500,
+      "source_price": 82500
     },
     {
       "category": "macbook_air",
@@ -83,8 +115,8 @@
       "flags": [],
       "is_activated": false,
       "name": "MacBook Air 13\" M4 16GB 256GB Starlight",
-      "price": 90000,
-      "source_price": 85000
+      "price": 89500,
+      "source_price": 84500
     },
     {
       "category": "macbook_air",
@@ -99,8 +131,8 @@
       "flags": [],
       "is_activated": false,
       "name": "MacBook Air 13\" M4 16GB 256GB Silver",
-      "price": 90000,
-      "source_price": 85000
+      "price": 89500,
+      "source_price": 84500
     },
     {
       "category": "macbook_air",
@@ -147,8 +179,8 @@
       "flags": [],
       "is_activated": false,
       "name": "MacBook Air 15\" M4 Sky Blue",
-      "price": 129000,
-      "source_price": 124000
+      "price": 127000,
+      "source_price": 122000
     },
     {
       "category": "macbook_air",
@@ -163,8 +195,40 @@
       "flags": [],
       "is_activated": false,
       "name": "MacBook Air 15\" M4 Midnight",
-      "price": 129000,
-      "source_price": 124000
+      "price": 127000,
+      "source_price": 122000
+    },
+    {
+      "category": "macbook_air",
+      "category_display": "MacBook Air",
+      "model": "MacBook Air 15\"",
+      "chip": "M4",
+      "ram": null,
+      "ram_gb": null,
+      "ssd": null,
+      "ssd_gb": null,
+      "color": "Silver",
+      "flags": [],
+      "is_activated": false,
+      "name": "MacBook Air 15\" M4 Silver",
+      "price": 127000,
+      "source_price": 122000
+    },
+    {
+      "category": "macbook_air",
+      "category_display": "MacBook Air",
+      "model": "MacBook Air 15\"",
+      "chip": "M4",
+      "ram": null,
+      "ram_gb": null,
+      "ssd": null,
+      "ssd_gb": null,
+      "color": "Starlight",
+      "flags": [],
+      "is_activated": false,
+      "name": "MacBook Air 15\" M4 Starlight",
+      "price": 127000,
+      "source_price": 122000
     },
     {
       "category": "macbook_air",
@@ -205,8 +269,8 @@
       "flags": [],
       "is_activated": false,
       "name": "iPhone 17 Pro 256GB Silver",
-      "price": 102000,
-      "source_price": 97000
+      "price": 103000,
+      "source_price": 98000
     },
     {
       "category": "iphone_17_pro",
@@ -426,8 +490,8 @@
       "flags": [],
       "is_activated": false,
       "name": "iPhone 17 Pro Max 256GB Orange",
-      "price": 119300,
-      "source_price": 114300
+      "price": 119000,
+      "source_price": 114000
     },
     {
       "category": "iphone_17_pro",
