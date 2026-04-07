@@ -103,10 +103,19 @@ def solve_captcha(page) -> bool:
         if not resp_data.get('result', {}).get('verified', False):
             logger.error("❌ verified=False")
             return False
-        logger.info("✅ Капча пройдена!")
+        logger.info("✅ Капча пройдена (verified=True)")
 
+        # После верификации ждём дольше — Avito может показать капчу снова при reload
+        page.wait_for_timeout(2000)
         page.reload(wait_until='domcontentloaded', timeout=20000)
-        page.wait_for_timeout(3000)
+        page.wait_for_timeout(5000)
+
+        if is_captcha_page(page):
+            logger.warning("⚠️ Капча снова после reload — пробуем ещё раз reload...")
+            page.wait_for_timeout(3000)
+            page.reload(wait_until='domcontentloaded', timeout=20000)
+            page.wait_for_timeout(5000)
+
         return not is_captcha_page(page)
 
     except Exception as e:
@@ -129,8 +138,22 @@ def navigate_with_captcha(page, url: str) -> bool:
         if not is_captcha_page(page):
             return True
         logger.warning(f"🛡 Капча (попытка {attempt}/3)")
-        if not solve_captcha(page):
-            return False
+        solved = solve_captcha(page)
+
+        if not solved:
+            # Капча решена (verified), но страница всё ещё показывает captcha
+            # Пробуем перейти на целевой URL заново — куки уже установлены
+            logger.info(f"   🔄 Повторный переход на URL...")
+            try:
+                page.goto(url, wait_until='domcontentloaded', timeout=30000)
+                page.wait_for_timeout(random.randint(2000, 4000))
+            except Exception:
+                pass
+
+            if not is_captcha_page(page):
+                return True
+            continue
+
         page.wait_for_timeout(3000)
 
     return not is_captcha_page(page)
