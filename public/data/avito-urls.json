@@ -1,6 +1,6 @@
 {
   "description": "Конфигурации Apple для оценки. Генерируется автоматически из avito-prices.json.",
-  "updated_at": "2026-04-09T05:26:51.582082",
+  "updated_at": "2026-04-09T05:32:51.991621",
   "source": "price-builder-v2",
   "entries": [
     {
@@ -102,13 +102,6 @@
       "url": ""
     },
     {
-      "model_name": "Mac mini (2024, M4)",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 256,
-      "url": ""
-    },
-    {
       "model_name": "MacBook Air 15 (2024, M3)",
       "processor": "Apple M3",
       "ram": 8,
@@ -138,6 +131,13 @@
     },
     {
       "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "url": ""
+    },
+    {
+      "model_name": "iMac 24 (2021, M1)",
       "processor": "Apple M1",
       "ram": 8,
       "ssd": 512,
