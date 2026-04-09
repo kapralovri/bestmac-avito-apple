@@ -1,6 +1,6 @@
 {
   "description": "Конфигурации Apple для оценки. Генерируется автоматически из avito-prices.json.",
-  "updated_at": "2026-04-08T12:49:16.120327",
+  "updated_at": "2026-04-09T05:17:10.493728",
   "source": "price-builder-v2",
   "entries": [
     {
@@ -92,6 +92,48 @@
       "processor": "Apple M1",
       "ram": 16,
       "ssd": 256,
+      "url": ""
+    },
+    {
+      "model_name": "MacBook Air 15 (2023, M2)",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "url": ""
+    },
+    {
+      "model_name": "MacBook Air 15 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "url": ""
+    },
+    {
+      "model_name": "MacBook Air 15 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 512,
+      "url": ""
+    },
+    {
+      "model_name": "MacBook Air 15 (2023, M2)",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 512,
+      "url": ""
+    },
+    {
+      "model_name": "MacBook Pro 13 (2022, M2)",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "url": ""
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
       "url": ""
     }
   ]
