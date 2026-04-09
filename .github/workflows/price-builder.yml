@@ -1,20 +1,24 @@
-name: Price Builder v2
+name: Price Builder v3
 
 on:
   schedule:
-    - cron: '0 3 * * *'   # ежедневно в 3:00 UTC (6:00 МСК)
+    - cron: '0 3 * * *'   # ежедневно в 03:00 UTC
   workflow_dispatch:
     inputs:
-      url:
-        description: 'Кастомный URL (пусто = BUILDER_URLS из config.py)'
+      models:
+        description: 'Фильтр по model_name (подстрока, через пробел) или пусто = все'
+        default: ''
+        type: string
+      family:
+        description: 'Семейство из Sheets (MacBook/iMac/Mac mini/Mac Studio) или пусто'
         default: ''
         type: string
       max_pages:
-        description: 'Макс. страниц'
-        default: '3'
+        description: 'Макс. страниц на модель'
+        default: '15'
         type: string
       clean:
-        description: 'Чистый запуск (не мержить с существующей базой)'
+        description: 'Пересоздать базу с нуля (--clean)'
         default: false
         type: boolean
 
@@ -24,7 +28,7 @@ env:
 jobs:
   build-prices:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     permissions:
       contents: write
 
@@ -47,38 +51,43 @@ jobs:
           pip install -r scripts/price-builder/requirements.txt
           playwright install chromium --with-deps
 
-      - name: Run Price Builder v2
+      - name: Sync models from Google Sheets
+        run: python scripts/sync-google-sheet.py
+
+      - name: Run Price Builder v3
         env:
           RUCAPTCHA_API_KEY: ${{ secrets.RUCAPTCHA_API_KEY }}
         run: |
           cd scripts/price-builder
-          CUSTOM_URL="${{ github.event.inputs.url }}"
-          MAX_PAGES="${{ github.event.inputs.max_pages || '3' }}"
-          CLEAN="${{ github.event.inputs.clean }}"
-
-          CMD="python builder.py --max-pages $MAX_PAGES"
-          if [ -n "$CUSTOM_URL" ]; then
-            CMD="$CMD --url \"$CUSTOM_URL\""
+          MAX_PAGES="${{ github.event.inputs.max_pages || '15' }}"
+          MODELS="${{ github.event.inputs.models }}"
+          FAMILY="${{ github.event.inputs.family }}"
+          CLEAN=""
+          if [ "${{ github.event.inputs.clean }}" = "true" ]; then
+            CLEAN="--clean"
           fi
-          if [ "$CLEAN" = "true" ]; then
-            CMD="$CMD --clean"
+          ARGS="--max-pages $MAX_PAGES $CLEAN"
+          if [ -n "$MODELS" ]; then
+            ARGS="$ARGS --models $MODELS"
           fi
-
-          echo "Running: $CMD"
-          eval $CMD
+          if [ -n "$FAMILY" ]; then
+            ARGS="$ARGS --family $FAMILY"
+          fi
+          echo "Running: python builder.py $ARGS"
+          python builder.py $ARGS
 
       - name: Commit and push
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add public/data/avito-prices.json public/data/avito-urls.json
+          git add public/data/avito-prices.json public/data/avito-urls.json public/data/models-config.json
           git diff --staged --quiet && echo "No changes" && exit 0
-          git commit -m "chore: update prices (builder v2) [skip ci]"
+          git commit -m "chore: update prices (builder v3) [skip ci]"
           for i in 1 2 3; do
             git pull --rebase origin main && git push origin main && break
             echo "Retry $i..."
             git rebase --abort 2>/dev/null || true
             git fetch origin main
             git reset --soft origin/main
-            git commit -m "chore: update prices (builder v2) [skip ci]"
+            git commit -m "chore: update prices (builder v3) [skip ci]"
           done
