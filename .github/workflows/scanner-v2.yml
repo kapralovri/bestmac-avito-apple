@@ -1,9 +1,7 @@
-name: Avito Scanner v2
+name: Avito Scanner v2 (disabled — moved to Beget VPS)
 
 on:
-  schedule:
-    - cron: '*/15 * * * *'
-  workflow_dispatch:
+  workflow_dispatch:   # только ручной запуск, cron отключён
 
 jobs:
   scan:
