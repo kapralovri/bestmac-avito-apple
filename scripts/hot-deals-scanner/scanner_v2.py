@@ -59,9 +59,9 @@ if CURL_AVAILABLE:
     logger.info("✅ curl_cffi доступен")
 
 # ─── Конфигурация ─────────────────────────────────────────────────────────────
-PRICES_FILE  = Path("public/data/avito-prices.json")
-SEEN_FILE    = Path("public/data/seen-hot-deals.json")
-HISTORY_FILE = Path("public/data/price-history.json")
+PRICES_FILE  = Path(os.environ.get('PRICES_FILE_PATH', 'public/data/avito-prices.json'))
+SEEN_FILE    = Path(os.environ.get('SEEN_FILE_PATH', 'public/data/seen-hot-deals.json'))
+HISTORY_FILE = Path(os.environ.get('PRICE_HISTORY_PATH', 'public/data/price-history.json'))
 
 TELEGRAM_URL  = os.environ.get('TELEGRAM_NOTIFY_URL')
 RUCAPTCHA_API_KEY = os.environ.get('RUCAPTCHA_API_KEY', '')
