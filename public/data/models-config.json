@@ -1,6 +1,6 @@
 {
   "description": "Список моделей для Parser v3. Синхронизируется из Google Sheets (вкладка «Модели»). Процессор/RAM/SSD определяются классификатором.",
-  "updated_at": "2026-04-10",
+  "updated_at": "2026-04-11",
   "source": "https://docs.google.com/spreadsheets/d/1hq9JqsWLyGVFVtzfWhZbwylSEkWLpSptWBirsh4zsy0/edit?gid=2097102067",
   "entries": [
     {
