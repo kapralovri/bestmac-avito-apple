@@ -217,15 +217,13 @@ class AvitoParser:
 
     def parse_config(self, entry: dict) -> dict | None:
         """
-        Парсит одну конфигурацию (1-3 страницы поиска).
+        Парсит одну модель (1-3 страницы поиска).
         Возвращает словарь со статистикой цен или None.
         """
         model = entry['model_name']
-        ram   = entry['ram']
-        ssd   = entry['ssd']
         url   = entry['url'].strip()
 
-        logger.info(f"🔎 {model} {ram}/{ssd}...")
+        logger.info(f"🔎 {model}...")
 
         prices = []
 
@@ -294,13 +292,14 @@ class AvitoParser:
 
         return {
             "model_name": entry['model_name'],
-            "processor": entry['processor'],
-            "ram": entry['ram'],
-            "ssd": entry['ssd'],
+            "family": entry.get('family', ''),
+            "processor": "",
+            "ram": 0,
+            "ssd": 0,
             "min_price": low,
             "max_price": high,
             "median_price": median,
-            "buyout_price": buyout,
+            "buyout_price": entry.get('buyout_price') or buyout,
             "samples_count": len(prices),
             "updated_at": time.ctime(),
         }
@@ -348,11 +347,14 @@ def main():
             if res:
                 new_results.append(res)
             else:
-                failed_configs.append(f"{entry['model_name']} {entry['ram']}/{entry['ssd']}")
+                failed_configs.append(entry['model_name'])
 
         avito.close()
 
-    # Мержим с существующей базой
+    # Мержим с существующей базой.
+    # Допустимые модели — только те, что сейчас есть в конфиге.
+    valid_model_names = {e['model_name'] for e in all_entries}
+
     existing_data = {"stats": []}
     if OUTPUT_FILE.exists():
         try:
@@ -361,15 +363,21 @@ def main():
         except Exception:
             pass
 
-    db = {(s['model_name'], s['ram'], s['ssd']): s for s in existing_data.get('stats', [])}
+    # Оставляем из старой базы только актуальные модели (убираем «призраков»)
+    pruned = [s for s in existing_data.get('stats', []) if s['model_name'] in valid_model_names]
+    pruned_count = len(existing_data.get('stats', [])) - len(pruned)
+    if pruned_count:
+        logger.info(f"🗑 Удалено устаревших записей: {pruned_count}")
+
+    db = {s['model_name']: s for s in pruned}
     for s in new_results:
-        db[(s['model_name'], s['ram'], s['ssd'])] = s
+        db[s['model_name']] = s
 
     final_stats = []
     total_all_listings = 0
     repaired_count = 0
 
-    for key, stat in db.items():
+    for model_name, stat in db.items():
         try:
             median = int(stat.get('median_price', 0))
             if median < 5000:
@@ -385,9 +393,10 @@ def main():
 
             clean_item = {
                 "model_name": str(stat['model_name']),
-                "processor": str(stat.get('processor', 'Apple M-series')),
-                "ram": int(stat['ram']),
-                "ssd": int(stat['ssd']),
+                "family": str(stat.get('family', '')),
+                "processor": str(stat.get('processor', '')),
+                "ram": int(stat.get('ram', 0)),
+                "ssd": int(stat.get('ssd', 0)),
                 "min_price": int(stat['min_price']),
                 "max_price": int(stat['max_price']),
                 "median_price": int(stat['median_price']),
@@ -415,6 +424,7 @@ def main():
     print("=" * 50)
     print(f"✅ Обновлено успешно: {len(new_results)}")
     print(f"🛠 Отремонтировано: {repaired_count}")
+    print(f"🗑 Удалено устаревших: {pruned_count}")
     print(f"❌ Не удалось: {len(failed_configs)}")
     if failed_configs:
         for c in failed_configs:

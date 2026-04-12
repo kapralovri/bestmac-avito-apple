@@ -1,1420 +1,177 @@
 {
-  "description": "Опции дропдаунов для фронта. Автогенерируется билдером из результатов парсинга.",
+  "description": "Таблица ссылок для парсинга Авито. Синхронизируется из Google Sheets.",
   "updated_at": "2026-04-12",
+  "source": "https://docs.google.com/spreadsheets/d/1hq9JqsWLyGVFVtzfWhZbwylSEkWLpSptWBirsh4zsy0",
   "entries": [
     {
-      "model_name": "Mac Studio (2022, M1 Max)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio (2022, M1 Max)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio (2022, M1 Ultra)",
-      "processor": "Apple M1 Ultra",
-      "ram": 64,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio (2023, M2 Max)",
-      "processor": "Apple M2 Max",
-      "ram": 32,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio (2023, M2 Max)",
-      "processor": "Apple M2 Max",
-      "ram": 32,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio (2023, M2 Max)",
-      "processor": "Apple M2 Max",
-      "ram": 64,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio (2023, M2 Ultra)",
-      "processor": "Apple M2 Ultra",
-      "ram": 64,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio (2024, M4 Max)",
-      "processor": "Apple M4 Max",
-      "ram": 36,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio (2024, M4 Max)",
-      "processor": "Apple M4 Max",
-      "ram": 36,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio (2024, M4 Max)",
-      "processor": "Apple M4 Max",
-      "ram": 36,
-      "ssd": 4096,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio (2024, M4 Max)",
-      "processor": "Apple M4 Max",
-      "ram": 48,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio (2024, M4 Max)",
-      "processor": "Apple M4 Max",
-      "ram": 64,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio (2024, M4 Max)",
-      "processor": "Apple M4 Max",
-      "ram": 128,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio (2024, M4 Max)",
-      "processor": "Apple M4 Max",
-      "ram": 128,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio (2024, M4 Max)",
-      "processor": "Apple M4 Max",
-      "ram": 128,
-      "ssd": 2048,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio (2024, M4 Max)",
-      "processor": "Apple M4 Max",
-      "ram": 128,
-      "ssd": 4096,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio (2024, M4 Max)",
-      "processor": "Apple M4 Max",
-      "ram": 128,
-      "ssd": 8192,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio (2025, M4 Max)",
-      "processor": "Apple M4 Max",
-      "ram": 36,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio (2025, M4 Max)",
-      "processor": "Apple M4 Max",
-      "ram": 36,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio (2025, M4 Max)",
-      "processor": "Apple M4 Max",
-      "ram": 64,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio (?, M3 Ultra)",
-      "processor": "Apple M3 Ultra",
-      "ram": 96,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac mini (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
-    },
-    {
-      "model_name": "Mac mini (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
-    },
-    {
-      "model_name": "Mac mini (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
-    },
-    {
-      "model_name": "Mac mini (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
-    },
-    {
-      "model_name": "Mac mini (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
-    },
-    {
-      "model_name": "Mac mini (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
-    },
-    {
-      "model_name": "Mac mini (2023, M2 Pro)",
-      "processor": "Apple M2 Pro",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
-    },
-    {
-      "model_name": "Mac mini (2023, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
-    },
-    {
-      "model_name": "Mac mini (2023, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
-    },
-    {
-      "model_name": "Mac mini (2023, M2)",
-      "processor": "Apple M2",
-      "ram": 16,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
-    },
-    {
-      "model_name": "Mac mini (2023, M2)",
-      "processor": "Apple M2",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
-    },
-    {
-      "model_name": "Mac mini (2024, M4 Pro)",
-      "processor": "Apple M4 Pro",
-      "ram": 24,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
-    },
-    {
-      "model_name": "Mac mini (2024, M4 Pro)",
-      "processor": "Apple M4 Pro",
-      "ram": 24,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
-    },
-    {
-      "model_name": "Mac mini (2024, M4 Pro)",
-      "processor": "Apple M4 Pro",
-      "ram": 48,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
-    },
-    {
-      "model_name": "Mac mini (2024, M4 Pro)",
-      "processor": "Apple M4 Pro",
-      "ram": 64,
-      "ssd": 2048,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
-    },
-    {
-      "model_name": "Mac mini (2024, M4)",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
-    },
-    {
-      "model_name": "Mac mini (2024, M4)",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
-    },
-    {
-      "model_name": "Mac mini (2024, M4)",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
-    },
-    {
-      "model_name": "Mac mini (2024, M4)",
-      "processor": "Apple M4",
-      "ram": 24,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
-    },
-    {
-      "model_name": "MacBook Air (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air (2024, M3)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air (2024, M3)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air (2025, M4)",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air (2025, M4)",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 13 (2020, Intel)",
-      "processor": "Apple Intel",
-      "ram": 8,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
       "model_name": "MacBook Air 13 (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 13 (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 13 (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 13 (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 13 (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 1024,
+      "family": "Macbook",
       "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
       "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 16,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 13 (2024, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 13 (2024, M3)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 13 (2024, M3)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 13 (2024, M3)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 13 (2024, M3)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 13 (2024, M3)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 13 (2024, M3)",
-      "processor": "Apple M3",
-      "ram": 24,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 13 (2025, M4)",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 13 (2025, M4)",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 13 (2025, M4)",
-      "processor": "Apple M4",
-      "ram": 24,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 15 (2023, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 15 (2023, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 15 (2023, M2)",
-      "processor": "Apple M2",
-      "ram": 16,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 15 (2024, M3)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 15 (2024, M3)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 15 (2024, M3)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 15 (2024, M3)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 15 (2024, M3)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 15 (2024, M3)",
-      "processor": "Apple M3",
-      "ram": 24,
-      "ssd": 2048,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 15 (2025, M4)",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 15 (2025, M4)",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 15 (2025, M4)",
-      "processor": "Apple M4",
-      "ram": 24,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 16 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 16,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 16 (2024, M3)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 16 (2025, M4)",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Air 16 (2025, M4)",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro (2023, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro (2023, M3)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro (2024, M4 Pro)",
-      "processor": "Apple M4 Pro",
-      "ram": 24,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro (2025, M5)",
-      "processor": "Apple M5",
-      "ram": 24,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2022_m2-ASgBAgICAkSg5A3yuOsRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3yuOsRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
       "model_name": "MacBook Pro 13 (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_13_2020_m1-ASgBAgICAkSg5A2QuOsRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A2QuOsRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
-      "model_name": "MacBook Pro 13 (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+      "model_name": "MacBook Pro 14 (2021)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_14_2021-ASgBAgICAkSg5A24uOsRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A24uOsRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
-      "model_name": "MacBook Pro 13 (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 13 (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 13 (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 13 (2021, M1)",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+      "model_name": "MacBook Pro 16 (2021)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_16_2021-ASgBAgICAkSg5A22uOsRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A22uOsRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
       "model_name": "MacBook Pro 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_13_2022_m2-ASgBAgICAkSg5A2~uesRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A2~uesRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
-      "model_name": "MacBook Pro 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+      "model_name": "MacBook Air 15 (2023, M2)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_15_2023_m2-ASgBAgICAkSg5A2muesRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A2muesRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
-      "model_name": "MacBook Pro 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 24,
-      "ssd": 2048,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+      "model_name": "MacBook Pro 14 (2023)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_14_2023-ASgBAgICAkSg5A3YuesRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3YuesRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
-      "model_name": "MacBook Pro 14 (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+      "model_name": "MacBook Pro 16 (2023)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_16_2023-ASgBAgICAkSg5A30uesRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A30uesRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
-      "model_name": "MacBook Pro 14 (2021, M1 Pro)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2024_m3-ASgBAgICAkSg5A2mkv4UqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A2mkv4UqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
-      "model_name": "MacBook Pro 14 (2021, M1 Pro)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+      "model_name": "MacBook Air 15 (2024, M3)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_15_2024_m3-ASgBAgICAkSg5A2okv4UqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A2okv4UqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
-      "model_name": "MacBook Pro 14 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+      "model_name": "MacBook Pro 14 (2024)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_14_2024-ASgBAgICAkSg5A3AmZYVqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3AmZYVqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
-      "model_name": "MacBook Pro 14 (2023, M2 Pro)",
-      "processor": "Apple M2 Pro",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+      "model_name": "MacBook Pro 16 (2024)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_16_2024-ASgBAgICAkSg5A2m45cVqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A2m45cVqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
-      "model_name": "MacBook Pro 14 (2023, M2 Pro)",
-      "processor": "Apple M2 Pro",
-      "ram": 16,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+      "model_name": "MacBook Air 13 (2025, M4)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2025_m4-ASgBAgICAkSg5A3owqYVqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3owqYVqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
-      "model_name": "MacBook Pro 14 (2023, M3 Max)",
-      "processor": "Apple M3 Max",
-      "ram": 36,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+      "model_name": "MacBook Air 15 (2025, M4)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_15_2025_m4-ASgBAgICAkSg5A3cwqYVqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3cwqYVqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
-      "model_name": "MacBook Pro 14 (2023, M3 Pro)",
-      "processor": "Apple M3 Pro",
-      "ram": 18,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+      "model_name": "MacBook Pro 14 (2025)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_14_2025-ASgBAgICAkSg5A3Gn7YVqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Gn7YVqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
-      "model_name": "MacBook Pro 14 (2023, M3)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+      "model_name": "MacBook 13 Neo (2026)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_13_neo_2026-ASgBAgICAkSg5A2IpMMVqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A2IpMMVqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
-      "model_name": "MacBook Pro 14 (2023, M3)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+      "model_name": "MacBook Pro 14 (2026)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_14_2026-ASgBAgICAkSg5A2y3sQVqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A2y3sQVqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
-      "model_name": "MacBook Pro 14 (2023, M3)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+      "model_name": "MacBook Pro 16 (2026, M5 Pro)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_16_2026_m5_pro-ASgBAgICAkSg5A2yqcUVqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A2yqcUVqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
-      "model_name": "MacBook Pro 14 (2024, M4 Max)",
-      "processor": "Apple M4 Max",
-      "ram": 36,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+      "model_name": "Macbook Air 13 (2026, M5)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2026_m5-ASgBAgICAkSg5A2C88QVqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A2C88QVqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
-      "model_name": "MacBook Pro 14 (2024, M4 Max)",
-      "processor": "Apple M4 Max",
-      "ram": 64,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+      "model_name": "Macbook Air 15 (2026, M5)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_15_2026_m5-ASgBAgICAkSg5A2A88QVqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A2A88QVqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
-      "model_name": "MacBook Pro 14 (2024, M4 Pro)",
-      "processor": "Apple M4 Pro",
-      "ram": 24,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2024, M4 Pro)",
-      "processor": "Apple M4 Pro",
-      "ram": 24,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2024, M4 Pro)",
-      "processor": "Apple M4 Pro",
-      "ram": 48,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2024, M4 Pro)",
-      "processor": "Apple M4 Pro",
-      "ram": 48,
-      "ssd": 4096,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2024, M4)",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2024, M4)",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2024, M4)",
-      "processor": "Apple M4",
-      "ram": 24,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2024, M4)",
-      "processor": "Apple M4",
-      "ram": 48,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2025, M4)",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2025, M5)",
-      "processor": "Apple M5",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2025, M5)",
-      "processor": "Apple M5",
-      "ram": 16,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2025, M5)",
-      "processor": "Apple M5",
-      "ram": 24,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2020, M1)",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021, M1 Max)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021, M1 Pro)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021, M1 Pro)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021, M1 Pro)",
-      "processor": "Apple M1 Pro",
-      "ram": 32,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021, M1 Pro)",
-      "processor": "Apple M1 Pro",
-      "ram": 32,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 16,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2023, M2 Max)",
-      "processor": "Apple M2 Max",
-      "ram": 32,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2023, M2 Max)",
-      "processor": "Apple M2 Max",
-      "ram": 32,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2023, M2 Max)",
-      "processor": "Apple M2 Max",
-      "ram": 64,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2023, M2 Pro)",
-      "processor": "Apple M2 Pro",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2023, M2 Pro)",
-      "processor": "Apple M2 Pro",
-      "ram": 16,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2023, M2 Pro)",
-      "processor": "Apple M2 Pro",
-      "ram": 32,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2023, M3 Max)",
-      "processor": "Apple M3 Max",
-      "ram": 36,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2023, M3 Max)",
-      "processor": "Apple M3 Max",
-      "ram": 48,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2023, M3 Pro)",
-      "processor": "Apple M3 Pro",
-      "ram": 18,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2023, M3 Pro)",
-      "processor": "Apple M3 Pro",
-      "ram": 36,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2023, M3)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2023, M3)",
-      "processor": "Apple M3",
-      "ram": 18,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2024, M4 Max)",
-      "processor": "Apple M4 Max",
-      "ram": 36,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2024, M4 Max)",
-      "processor": "Apple M4 Max",
-      "ram": 48,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2024, M4 Max)",
-      "processor": "Apple M4 Max",
-      "ram": 64,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2024, M4 Max)",
-      "processor": "Apple M4 Max",
-      "ram": 64,
-      "ssd": 2048,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2024, M4 Max)",
-      "processor": "Apple M4 Max",
-      "ram": 64,
-      "ssd": 4096,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2024, M4 Max)",
-      "processor": "Apple M4 Max",
-      "ram": 128,
-      "ssd": 8192,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2024, M4 Pro)",
-      "processor": "Apple M4 Pro",
-      "ram": 24,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2024, M4 Pro)",
-      "processor": "Apple M4 Pro",
-      "ram": 24,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2024, M4 Pro)",
-      "processor": "Apple M4 Pro",
-      "ram": 48,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2024, M4)",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2024, M4)",
-      "processor": "Apple M4",
-      "ram": 24,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2024, M4)",
-      "processor": "Apple M4",
-      "ram": 24,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2024, M4)",
-      "processor": "Apple M4",
-      "ram": 48,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2025, M5 Pro)",
-      "processor": "Apple M5 Pro",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 24 (2024, M4 Pro)",
-      "processor": "Apple M4 Pro",
-      "ram": 24,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "MacBook Pro 24 (2025, M5)",
-      "processor": "Apple M5",
-      "ram": 24,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
-    },
-    {
-      "model_name": "iMac 16 (2021, M1)",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 256,
+      "model_name": "imac 24 m1",
+      "family": "Imac",
       "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
     },
     {
-      "model_name": "iMac 16 (2021, M1)",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+      "model_name": "imac 24 m3",
+      "family": "Imac",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=imac+24+m3"
     },
     {
-      "model_name": "iMac 24 (2021, M1)",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+      "model_name": "imac 24 m4",
+      "family": "Imac",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=imac+24+m4"
     },
     {
-      "model_name": "iMac 24 (2021, M1)",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+      "model_name": "Imac 27 2020",
+      "family": "Imac",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=imac+27+2020"
     },
     {
-      "model_name": "iMac 24 (2021, M1)",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+      "model_name": "Imac 27 2019",
+      "family": "Imac",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=imac+27+2019"
     },
     {
-      "model_name": "iMac 24 (2021, M1)",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+      "model_name": "Imac 27 2017",
+      "family": "Imac",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=imac+27+2017"
     },
     {
-      "model_name": "iMac 24 (2021, M1)",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+      "model_name": "Mac Studio m1",
+      "family": "Mac Studio",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
     },
     {
-      "model_name": "iMac 24 (2021, M1)",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+      "model_name": "Mac Studio m2",
+      "family": "Mac Studio",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+studio+m2"
     },
     {
-      "model_name": "iMac 24 (2021, M1)",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 2048,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+      "model_name": "Mac Studio m3",
+      "family": "Mac Studio",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+studio+m3"
     },
     {
-      "model_name": "iMac 24 (2021, M3)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+      "model_name": "Mac Studio m4",
+      "family": "Mac Studio",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+studio+m4"
     },
     {
-      "model_name": "iMac 24 (2023, M1)",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+      "model_name": "mac mini m1",
+      "family": "Mac mini",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
     },
     {
-      "model_name": "iMac 24 (2023, M3)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+      "model_name": "mac mini m2",
+      "family": "Mac mini",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m2"
     },
     {
-      "model_name": "iMac 24 (2023, M3)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 24 (2023, M3)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 24 (2023, M3)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 24 (2023, M3)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 24 (2023, M3)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 2048,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 24 (2023, M3)",
-      "processor": "Apple M3",
-      "ram": 24,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 24 (2023, M3)",
-      "processor": "Apple M3",
-      "ram": 24,
-      "ssd": 2048,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 24 (2024, M4)",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 256,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 24 (2024, M4)",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 24 (2024, M4)",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 24 (2024, M4)",
-      "processor": "Apple M4",
-      "ram": 24,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 24 (2024, M4)",
-      "processor": "Apple M4",
-      "ram": 24,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 24 (2024, M4)",
-      "processor": "Apple M4",
-      "ram": 32,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 24 (2024, M4)",
-      "processor": "Apple M4",
-      "ram": 32,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 24 (2024, M4)",
-      "processor": "Apple M4",
-      "ram": 32,
-      "ssd": 2048,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 27 (2017, Intel)",
-      "processor": "Apple Intel",
-      "ram": 16,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 27 (2017, Intel)",
-      "processor": "Apple Intel",
-      "ram": 24,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 27 (2017, Intel)",
-      "processor": "Apple Intel",
-      "ram": 32,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 27 (2019, Intel)",
-      "processor": "Apple Intel",
-      "ram": 8,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 27 (2019, Intel)",
-      "processor": "Apple Intel",
-      "ram": 16,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 27 (2019, Intel)",
-      "processor": "Apple Intel",
-      "ram": 24,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 27 (2019, Intel)",
-      "processor": "Apple Intel",
-      "ram": 32,
-      "ssd": 2048,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 27 (2020, Intel)",
-      "processor": "Apple Intel",
-      "ram": 8,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 27 (2020, Intel)",
-      "processor": "Apple Intel",
-      "ram": 32,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 27 (2020, Intel)",
-      "processor": "Apple Intel",
-      "ram": 32,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
-    },
-    {
-      "model_name": "iMac 27 (?, Intel)",
-      "processor": "Apple Intel",
-      "ram": 8,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+      "model_name": "mac mini m4",
+      "family": "Mac mini",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m4"
     }
   ]
 }

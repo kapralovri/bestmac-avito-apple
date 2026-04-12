@@ -140,7 +140,9 @@ export function getSsdOptions(stats: AvitoPriceStat[], modelName: string, ram: n
 }
 
 /**
- * Найти статистику по параметрам
+ * Найти статистику по параметрам.
+ * Сначала ищет точное совпадение (модель + ram + ssd + процессор),
+ * затем — по модели без конфига (для данных нового формата без ram/ssd).
  */
 export function findPriceStat(
   stats: AvitoPriceStat[],
@@ -149,12 +151,17 @@ export function findPriceStat(
   ssd: number,
   processor?: string
 ): AvitoPriceStat | undefined {
-  return stats.find(
+  // Точный поиск
+  const exact = stats.find(
     s => s.model_name === modelName &&
       s.ram === ram &&
       s.ssd === ssd &&
       (!processor || s.processor === processor)
   );
+  if (exact) return exact;
+
+  // Fallback: модель-уровневая запись (ram=0, ssd=0) — новый формат без конфигов
+  return stats.find(s => s.model_name === modelName && s.ram === 0 && s.ssd === 0);
 }
 
 /**
