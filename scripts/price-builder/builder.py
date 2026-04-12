@@ -216,33 +216,120 @@ class PriceBuilder:
             logger.warning("⚠️ Прогрев не удался, продолжаем...")
         self.page.wait_for_timeout(random.randint(2000, 4000))
 
+    # ── Deep analysis: открываем объявление и читаем «Технические характеристики» ──
+
+    def deep_analyze(self, listing_url: str) -> dict:
+        """
+        Открывает страницу объявления и извлекает RAM и SSD из раздела
+        «Технические характеристики» (data-marker="item-params").
+        Возвращает {'ram': int, 'ssd': int, 'processor': str}.
+        Нули означают «не найдено».
+        """
+        result = {'ram': 0, 'ssd': 0, 'processor': ''}
+        try:
+            detail_page = self.context.new_page()
+            ok = navigate_with_captcha(detail_page, listing_url)
+            if not ok:
+                detail_page.close()
+                return result
+
+            soup = BeautifulSoup(detail_page.content(), 'lxml')
+            detail_page.close()
+
+            # Читаем «item-params» — список li с характеристиками
+            params = soup.select('[data-marker="item-params"] li')
+
+            for li in params:
+                text = li.get_text(' ', strip=True)
+                lower = text.lower()
+
+                if result['ram'] == 0 and ('оперативн' in lower or 'ram' in lower):
+                    m = re.search(r'(\d+)', text)
+                    if m:
+                        v = int(m.group(1))
+                        from common.config import VALID_RAM
+                        if v in VALID_RAM:
+                            result['ram'] = v
+
+                elif result['ssd'] == 0 and (
+                    'накопител' in lower or 'ssd' in lower
+                    or ('объ' in lower and ('гб' in lower or 'gb' in lower or 'тб' in lower or 'tb' in lower))
+                ):
+                    m = re.search(r'(\d+)\s*(тб|tb|гб|gb)', text, re.I)
+                    if m:
+                        val = int(m.group(1))
+                        unit = m.group(2).lower()
+                        if 'т' in unit or 't' in unit:
+                            val *= 1024
+                        from common.config import VALID_SSD
+                        if val in VALID_SSD:
+                            result['ssd'] = val
+
+                elif not result['processor'] and 'процессор' in lower:
+                    val = re.sub(r'(?i)процессор\s*[:\s]', '', text).strip()
+                    if val:
+                        result['processor'] = val
+
+            # Фоллбэк: ищем по тексту страницы построчно
+            if result['ram'] == 0 or result['ssd'] == 0:
+                lines = [ln.strip() for ln in soup.get_text('\n').split('\n') if ln.strip()]
+                from common.config import VALID_RAM, VALID_SSD
+                for i, line in enumerate(lines):
+                    low = line.lower()
+                    next_line = lines[i + 1].strip() if i + 1 < len(lines) else ''
+
+                    if result['ram'] == 0 and re.match(r'^оперативная память$', low):
+                        m = re.search(r'(\d+)', next_line)
+                        if m and int(m.group(1)) in VALID_RAM:
+                            result['ram'] = int(m.group(1))
+
+                    elif result['ssd'] == 0 and re.match(r'^(?:накопитель ssd|объ[её]м накопителя|ssd)$', low):
+                        m = re.search(r'(\d+)\s*(тб|tb|гб|gb)?', next_line, re.I)
+                        if m:
+                            val = int(m.group(1))
+                            unit = (m.group(2) or '').lower()
+                            if 'т' in unit or 't' in unit:
+                                val *= 1024
+                            if val in VALID_SSD:
+                                result['ssd'] = val
+
+        except Exception as e:
+            logger.debug(f"     deep_analyze error: {e}")
+
+        return result
+
     def parse_entry(self, entry: dict, max_pages: int) -> dict:
         """
         Парсит одну запись из models-config (одна модель/год).
-        Возвращает {(model_name, ram, ssd): {'prices': [...], 'processor': str}}.
+
+        model_name ФИКСИРОВАН из конфига — модели точно соответствуют листу Google Sheets.
+        Классификатор используется только для определения Процессора / RAM / SSD.
+        Если RAM или SSD не удалось извлечь из заголовка — открываем объявление
+        и читаем «Технические характеристики».
+
+        Возвращает {(model_name, processor, ram, ssd): {'prices': [...]}}.
         """
         sheet_family = entry.get('family', '').strip()
-        sheet_label  = entry.get('model_name', '').strip()
+        sheet_label  = entry.get('model_name', '').strip()   # ← ФИКСИРОВАННЫЙ model_name
         url          = entry.get('url', '').strip()
 
         if not url:
             return {}
 
+        # Допустимые семейства классификатора для этой строки Sheet
         allowed_families = SHEET_FAMILY_SCOPE.get(sheet_family, None)
-        if allowed_families is None:
-            logger.warning(f"⚠️ Неизвестное семейство в Sheets: '{sheet_family}' — принимаем всё")
 
         logger.info(f"\n{'='*60}")
         logger.info(f"📦 {sheet_label}  [{sheet_family}]")
         logger.info(f"{'='*60}")
 
-        configs = {}
+        configs: dict[tuple, dict] = {}
         total_items = 0
         total_classified = 0
+        total_deep = 0
         total_skipped_family = 0
         total_skipped_junk = 0
-        total_skipped_year = 0
-        total_unclassified = 0
+        total_skipped_no_specs = 0
 
         for page_num in range(1, max_pages + 1):
             page_url = f"{url}&p={page_num}" if '?' in url else f"{url}?p={page_num}"
@@ -284,12 +371,12 @@ class PriceBuilder:
 
                     check_text = (title + ' ' + snippet).lower()
 
-                    # Фильтр мусора
+                    # ── Фильтр стоп-слов ─────────────────────────────────────
                     if any(w in check_text for w in JUNK_KEYWORDS):
                         total_skipped_junk += 1
                         continue
 
-                    # Цена
+                    # ── Цена ─────────────────────────────────────────────────
                     price_tag = item.select_one('[itemprop="price"]')
                     if not price_tag:
                         continue
@@ -299,50 +386,72 @@ class PriceBuilder:
 
                     total_items += 1
 
-                    # Классификация
+                    # ── Классификация по заголовку ────────────────────────────
                     config = classify(title)
 
-                    # Фильтр по семейству из Sheets
-                    if allowed_families and config.family not in allowed_families:
+                    # Санити-чек: семейство должно совпадать с тем, что ожидаем
+                    if allowed_families and config.family and config.family not in allowed_families:
                         total_skipped_family += 1
                         continue
 
-                    if not config.is_valid:
-                        total_unclassified += 1
+                    # ── Deep analysis при отсутствии RAM или SSD ──────────────
+                    if config.ram == 0 or config.ssd == 0:
+                        link_tag = item.select_one('[data-marker="item-title"]')
+                        listing_href = link_tag.get('href', '') if link_tag else ''
+                        if listing_href:
+                            listing_url = ('https://www.avito.ru' + listing_href).split('?')[0]
+                            logger.debug(f"     🔍 Deep: {title[:50]}")
+                            deep = self.deep_analyze(listing_url)
+                            total_deep += 1
+                            if config.ram == 0 and deep['ram']:
+                                config.ram = deep['ram']
+                            if config.ssd == 0 and deep['ssd']:
+                                config.ssd = deep['ssd']
+                            # Если чип не определён из заголовка — пробуем из спека
+                            if not config.chip_gen and deep['processor']:
+                                # Парсим чип из строки типа "Apple M4 Pro"
+                                m = re.search(r'\b(m[1-9])\s*(pro|max|ultra)?\b',
+                                              deep['processor'], re.I)
+                                if m:
+                                    config.chip_gen = m.group(1).upper()
+                                    if m.group(2):
+                                        config.chip_tier = m.group(2).capitalize()
+                            time.sleep(random.uniform(1.5, 3.0))
+
+                    # После deep — если всё ещё нет RAM или SSD → пропускаем
+                    if config.ram == 0 or config.ssd == 0:
+                        total_skipped_no_specs += 1
                         continue
 
-                    # Фильтр по году
-                    min_year = MIN_YEARS.get(config.family, 2020)
-                    if config.year and config.year < min_year:
-                        total_skipped_year += 1
-                        continue
+                    # ── model_name ФИКСИРОВАН из конфига ─────────────────────
+                    # Диагональ и год всегда соответствуют модели из листа.
+                    # Только Процессор/RAM/SSD берутся из объявления.
+                    model_name = sheet_label
+                    proc = processor_label(config) if config.chip_gen else 'Apple'
+                    key = (model_name, proc, config.ram, config.ssd)
 
-                    # Группируем по canonical model_name из classifier
-                    model_name = config.model_name
-                    key = (model_name, config.ram, config.ssd)
                     if key not in configs:
-                        configs[key] = {
-                            'prices': [],
-                            'processor': processor_label(config),
-                        }
+                        configs[key] = {'prices': []}
                     configs[key]['prices'].append(price)
                     total_classified += 1
 
-                except Exception:
+                except Exception as e:
+                    logger.debug(f"   item error: {e}")
                     continue
 
-            # Если мало объявлений — следующая пуста
+            # Мало объявлений — следующая страница пустая
             if len(items) < 10:
                 break
 
         logger.info(
-            f"   📊 {total_items} объявл., "
-            f"{total_classified} классиф., "
-            f"{total_skipped_family} не та модель, "
-            f"{total_skipped_junk} мусор, "
-            f"{total_skipped_year} старые, "
-            f"{total_unclassified} нераспознано"
+            f"   📊 {total_items} объявл. | "
+            f"{total_classified} классиф. | "
+            f"{total_deep} deep | "
+            f"{total_skipped_family} не та модель | "
+            f"{total_skipped_junk} стоп-слова | "
+            f"{total_skipped_no_specs} нет спеков"
         )
+        logger.info(f"   🗂 Уникальных конфигов: {len(configs)}")
 
         return configs
 
@@ -466,10 +575,11 @@ def main():
                 continue
 
             for key, data in entry_configs.items():
+                # key = (model_name, processor, ram, ssd)
                 if key in all_configs:
                     all_configs[key]['prices'].extend(data['prices'])
                 else:
-                    all_configs[key] = data
+                    all_configs[key] = {'prices': list(data['prices'])}
 
         builder.close()
 
@@ -483,32 +593,41 @@ def main():
         except Exception:
             pass
 
+    # Ключ базы: (model_name, processor, ram, ssd)
     db: dict[tuple, dict] = {
-        (s['model_name'], s['ram'], s['ssd']): s
+        (s['model_name'], s.get('processor', ''), s['ram'], s['ssd']): s
         for s in existing_data.get('stats', [])
     }
+
+    # Удаляем устаревшие модели (не в конфиге)
+    valid_model_names = {e['model_name'] for e in entries}
+    pruned_count = sum(1 for k in list(db) if k[0] not in valid_model_names)
+    db = {k: v for k, v in db.items() if k[0] in valid_model_names}
+    if pruned_count:
+        logger.info(f"🗑 Удалено устаревших записей: {pruned_count}")
 
     new_count = 0
     updated_count = 0
     skipped_low_samples = 0
 
-    for (model_name, ram, ssd), data in all_configs.items():
+    for (model_name, processor, ram, ssd), data in all_configs.items():
         prices = data['prices']
 
         if len(prices) < args.min_samples:
-            logger.info(f"   ⏭ {model_name} {ram}/{ssd}: {len(prices)} цен (< {args.min_samples})")
+            logger.info(f"   ⏭ {model_name} | {processor} {ram}/{ssd}: "
+                        f"{len(prices)} цен (< {args.min_samples})")
             skipped_low_samples += 1
             continue
 
         low, high, median = get_market_analysis(prices)
         buyout = max(0, int((low - 12000) // 1000 * 1000))
 
-        key = (model_name, ram, ssd)
+        key = (model_name, processor, ram, ssd)
         is_new = key not in db
 
         db[key] = {
             "model_name": model_name,
-            "processor": data['processor'],
+            "processor": processor,
             "ram": ram,
             "ssd": ssd,
             "min_price": low,
@@ -521,8 +640,8 @@ def main():
 
         if is_new:
             new_count += 1
-            logger.info(f"   🆕 {model_name} {ram}/{ssd}: {len(prices)} цен, "
-                        f"low={low:,}₽ med={median:,}₽ buyout={buyout:,}₽")
+            logger.info(f"   🆕 {model_name} | {processor} {ram}/{ssd}: "
+                        f"{len(prices)} цен, low={low:,}₽ med={median:,}₽ buyout={buyout:,}₽")
         else:
             updated_count += 1
 
