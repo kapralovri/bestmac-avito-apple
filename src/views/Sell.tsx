@@ -1,5 +1,7 @@
+"use client";
+
 import { useState, useEffect, useMemo } from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   loadAvitoPrices,
@@ -21,10 +23,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/Breadcrumbs';
-import SEOHead from '@/components/SEOHead';
 import FAQ from '@/components/FAQ';
 import { Clock, Wallet, TrendingUp, Shield, BarChart3, Cpu, HardDrive, MemoryStick, Sparkles, Search, X, Check, CheckCircle2, MapPin, RefreshCw, Monitor, Laptop, AlertTriangle, Star } from 'lucide-react';
 import { generateProductSchema } from '@/lib/structured-data';
@@ -42,11 +41,21 @@ interface AvitoUrlsData {
   }>;
 }
 
+const DEVICE_FAMILIES = [
+  { key: 'macbook', label: 'MacBook', icon: Laptop, prefix: 'MacBook' },
+  { key: 'imac', label: 'iMac', icon: Monitor, prefix: 'iMac' },
+  { key: 'mac-mini', label: 'Mac mini', icon: Cpu, prefix: 'Mac mini' },
+  { key: 'mac-studio', label: 'Mac Studio', icon: HardDrive, prefix: 'Mac Studio' },
+] as const;
+
+type FamilyKey = typeof DEVICE_FAMILIES[number]['key'];
+
 const Sell = () => {
   const [data, setData] = useState<AvitoPricesData | null>(null);
   const [urlsData, setUrlsData] = useState<AvitoUrlsData | null>(null);
   const [totalListings, setTotalListings] = useState(0);
   const [lastUpdate, setLastUpdate] = useState<string>('');
+  const [family, setFamily] = useState<FamilyKey>('macbook');
 
   // Форма
   const [modelName, setModelName] = useState('');
@@ -80,11 +89,15 @@ const Sell = () => {
     });
   }, []);
 
-  // Список моделей из конфигурации
+  // Список моделей из конфигурации (фильтр по семейству)
+  const currentFamily = DEVICE_FAMILIES.find(f => f.key === family);
   const models = useMemo(() => {
     if (!urlsData) return [];
-    return filterModels(getModelsFromConfig(urlsData), modelSearch);
-  }, [urlsData, modelSearch]);
+    const allModels = getModelsFromConfig(urlsData);
+    const prefix = currentFamily?.prefix || 'MacBook';
+    const familyModels = allModels.filter(m => m.startsWith(prefix));
+    return filterModels(familyModels, modelSearch);
+  }, [urlsData, modelSearch, family, currentFamily]);
 
   // Опции процессоров из конфигурации
   const processorOptions = useMemo(() => {
@@ -104,11 +117,15 @@ const Sell = () => {
     return getSsdFromConfig(urlsData, modelName, processor, Number(ram));
   }, [urlsData, modelName, processor, ram]);
 
-  // Есть ли детальные конфиги для выбранной модели (процессор/RAM/SSD)
-  // Если нет — форма работает в упрощённом режиме (только модель + состояние)
-  const hasConfigData = useMemo(() => {
-    return processorOptions.length > 0;
-  }, [processorOptions]);
+  // Сброс при смене семейства
+  useEffect(() => {
+    setModelName('');
+    setModelSearch('');
+    setProcessor('');
+    setRam('');
+    setSsd('');
+    setResult(null);
+  }, [family]);
 
   // Сброс зависимых полей
   useEffect(() => {
@@ -129,11 +146,17 @@ const Sell = () => {
     setResult(null);
   }, [ram]);
 
+  // Есть ли детальные конфиги для выбранной модели (процессор/RAM/SSD)
+  // Если нет — форма работает в упрощённом режиме (только модель + состояние)
+  const hasConfigData = useMemo(() => {
+    return processorOptions.length > 0;
+  }, [processorOptions]);
+
   // Расчет
   const handleCalculate = () => {
     if (!data || !modelName) return;
 
-    // Упрощённый режим (нет конфигов) — ищем по модели без уточнения RAM/SSD
+    // Упрощённый режим — ищем по модели без уточнения RAM/SSD
     if (!hasConfigData) {
       const stat = findPriceStat(data.stats, modelName, 0, 0);
       if (!stat || stat.samples_count < 2) {
@@ -295,14 +318,10 @@ const Sell = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <SEOHead
-        title="Продать MacBook в Москве дорого | Скупка макбуков б/у — BestMac"
-        description="Выкуп Apple MacBook (Pro, Air) за 30 минут. Онлайн-калькулятор оценки стоимости по рынку. Платим наличными или на карту. Скупка старых и сломанных макбуков в Москве."
-        canonical="/sell"
-        keywords="продать macbook, скупка macbook москва, продать макбук дорого, скупка apple macbook, где продать macbook, выкуп macbook бу, сдать macbook на запчасти"
-        schema={schemaGraph}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph) }}
       />
-      <Header />
 
       <div className="container mx-auto px-4 py-8">
         <Breadcrumbs items={[
@@ -364,10 +383,33 @@ const Sell = () => {
                         Параметры устройства
                       </CardTitle>
                       <CardDescription>
-                        Выберите характеристики вашего MacBook
+                        Выберите характеристики вашего {currentFamily?.label || 'устройства'}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-5">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Тип устройства</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {DEVICE_FAMILIES.map((f) => {
+                            const Icon = f.icon;
+                            return (
+                              <button
+                                key={f.key}
+                                onClick={() => setFamily(f.key)}
+                                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
+                                  family === f.key
+                                    ? 'border-primary bg-primary/10 text-primary'
+                                    : 'border-border hover:border-primary/50 hover:bg-muted/50'
+                                }`}
+                              >
+                                <Icon className="w-4 h-4" />
+                                {f.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <label className="text-sm font-medium flex items-center gap-2">
@@ -592,7 +634,7 @@ const Sell = () => {
             <TabsContent value="buyout">
               <div className="max-w-4xl mx-auto space-y-16 mb-16">
                 <motion.div className="grid md:grid-cols-2 gap-4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
-                  <Link to="/sell/macbook-pro" className="block group">
+                  <Link href="/sell/macbook-pro" className="block group">
                     <div className="bg-gradient-to-br from-card to-muted border p-6 rounded-2xl flex items-center gap-4 transition-all duration-300 group-hover:border-primary/50 group-hover:shadow-md">
                       <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                         <Monitor className="w-8 h-8 text-primary" />
@@ -603,7 +645,7 @@ const Sell = () => {
                       </div>
                     </div>
                   </Link>
-                  <Link to="/sell/macbook-air" className="block group">
+                  <Link href="/sell/macbook-air" className="block group">
                     <div className="bg-gradient-to-br from-card to-muted border p-6 rounded-2xl flex items-center gap-4 transition-all duration-300 group-hover:border-primary/50 group-hover:shadow-md">
                       <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                         <Laptop className="w-8 h-8 text-primary" />
@@ -616,48 +658,43 @@ const Sell = () => {
                   </Link>
                 </motion.div>
 
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
-                  <Link to="/sell/broken" className="block w-full">
-                    <div className="bg-gradient-to-r from-destructive/10 to-orange-500/10 border-2 border-destructive/20 hover:border-destructive/40 p-4 rounded-xl flex items-center gap-4 transition-colors">
-                      <div className="bg-destructive/10 p-2 rounded-full hidden sm:block">
-                        <AlertTriangle className="w-6 h-6 text-destructive" />
-                      </div>
-                      <div>
-                        <p className="font-bold text-foreground">Сломался MacBook? Залит водой или заблокирован?</p>
-                        <p className="text-sm text-muted-foreground mt-0.5">Оценим на запчасти по фото за 5 минут. Нажмите здесь →</p>
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-
                 <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
                   <h2 className="text-2xl font-bold mb-6 text-center">Выкупаем другие компьютеры Apple</h2>
-                  <div className="grid md:grid-cols-3 gap-6">
-                    <Link to="/sell/imac" className="block group">
+                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <Link href="/sell/imac-24-2024-m4" className="block group">
                       <div className="bg-card hover:bg-muted/50 transition-colors border p-6 rounded-2xl flex flex-col items-center text-center h-full">
                         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                           <Monitor className="w-8 h-8 text-primary" />
                         </div>
                         <h3 className="font-bold text-lg mb-2">Скупка iMac</h3>
-                        <p className="text-sm text-muted-foreground">Моноблоки 21.5", 27", 24" M1/M3</p>
+                        <p className="text-sm text-muted-foreground">Моноблоки 24" и 27" — с 2017 года</p>
                       </div>
                     </Link>
-                    <Link to="/sell/mac-pro" className="block group">
-                      <div className="bg-card hover:bg-muted/50 transition-colors border p-6 rounded-2xl flex flex-col items-center text-center h-full">
-                        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                          <HardDrive className="w-8 h-8 text-primary" />
-                        </div>
-                        <h3 className="font-bold text-lg mb-2">Скупка Mac Pro</h3>
-                        <p className="text-sm text-muted-foreground">Профессиональные станции Apple</p>
-                      </div>
-                    </Link>
-                    <Link to="/sell/mac-mini" className="block group">
+                    <Link href="/sell/mac-mini-2024-m4" className="block group">
                       <div className="bg-card hover:bg-muted/50 transition-colors border p-6 rounded-2xl flex flex-col items-center text-center h-full">
                         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                           <Cpu className="w-8 h-8 text-primary" />
                         </div>
                         <h3 className="font-bold text-lg mb-2">Скупка Mac mini</h3>
-                        <p className="text-sm text-muted-foreground">Компактные десктопы на Intel и M-чипах</p>
+                        <p className="text-sm text-muted-foreground">Компактные десктопы M1–M4</p>
+                      </div>
+                    </Link>
+                    <Link href="/sell/mac-studio-2024-m4-max" className="block group">
+                      <div className="bg-card hover:bg-muted/50 transition-colors border p-6 rounded-2xl flex flex-col items-center text-center h-full">
+                        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                          <HardDrive className="w-8 h-8 text-primary" />
+                        </div>
+                        <h3 className="font-bold text-lg mb-2">Скупка Mac Studio</h3>
+                        <p className="text-sm text-muted-foreground">M1 Max/Ultra — M4 Max</p>
+                      </div>
+                    </Link>
+                    <Link href="/sell/broken" className="block group">
+                      <div className="bg-card hover:bg-muted/50 transition-colors border p-6 rounded-2xl flex flex-col items-center text-center h-full">
+                        <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                          <AlertTriangle className="w-8 h-8 text-destructive" />
+                        </div>
+                        <h3 className="font-bold text-lg mb-2">На запчасти</h3>
+                        <p className="text-sm text-muted-foreground">Сломанные, залитые, заблокированные</p>
                       </div>
                     </Link>
                   </div>
@@ -666,13 +703,15 @@ const Sell = () => {
                 <motion.section className="grid lg:grid-cols-2 gap-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.25 }}>
                   <div className="space-y-6">
                     <div>
-                      <h2 className="text-2xl font-bold mb-4">Какие MacBook мы выкупаем?</h2>
-                      <p className="text-muted-foreground mb-4">Мы занимаемся узкоспециализированной скупкой ноутбуков Apple в Москве.</p>
+                      <h2 className="text-2xl font-bold mb-4">Какую технику Apple мы выкупаем?</h2>
+                      <p className="text-muted-foreground mb-4">Скупка компьютеров Apple в Москве — ноутбуки, моноблоки, десктопы.</p>
                       <ul className="space-y-2 text-sm">
-                        <li className="flex items-start gap-2"><CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" /><span><strong>MacBook Pro</strong> (13", 14", 16") с 2016 по 2024 год.</span></li>
-                        <li className="flex items-start gap-2"><CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" /><span><strong>MacBook Air</strong> (13", 15") на <strong>M2 и M3</strong>.</span></li>
+                        <li className="flex items-start gap-2"><CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" /><span><strong>MacBook Pro</strong> (13", 14", 16") — M1, M2, M3, M4.</span></li>
+                        <li className="flex items-start gap-2"><CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" /><span><strong>MacBook Air</strong> (13", 15") — M1, M2, M3, M4.</span></li>
+                        <li className="flex items-start gap-2"><CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" /><span><strong>iMac</strong> 24" и 27" — с 2017 года.</span></li>
+                        <li className="flex items-start gap-2"><CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" /><span><strong>Mac mini</strong> — M1, M2, M4.</span></li>
+                        <li className="flex items-start gap-2"><CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" /><span><strong>Mac Studio</strong> — все модели.</span></li>
                         <li className="flex items-start gap-2"><CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" /><span><strong>Любое состояние:</strong> б/у, идеальное, с коробкой и без.</span></li>
-                        <li className="flex items-start gap-2"><CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" /><span><strong>Проблемные:</strong> залитые, разбитые (на запчасти).</span></li>
                       </ul>
                     </div>
                   </div>
@@ -781,7 +820,6 @@ const Sell = () => {
 
         </div>
       </div>
-      <Footer />
     </div>
   );
 };
