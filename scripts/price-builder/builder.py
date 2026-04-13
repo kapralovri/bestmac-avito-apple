@@ -22,6 +22,7 @@ import statistics
 import argparse
 import logging
 from pathlib import Path
+from datetime import datetime, timedelta
 
 # Добавляем scripts/ в path для импорта common
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -333,7 +334,7 @@ class PriceBuilder:
 
         for page_num in range(1, max_pages + 1):
             page_url = f"{url}&p={page_num}" if '?' in url else f"{url}?p={page_num}"
-            time.sleep(random.uniform(3, 6))
+            time.sleep(random.uniform(2, 4))
 
             ok = navigate_with_captcha(self.page, page_url)
             if not ok:
@@ -416,7 +417,7 @@ class PriceBuilder:
                                     config.chip_gen = m.group(1).upper()
                                     if m.group(2):
                                         config.chip_tier = m.group(2).capitalize()
-                            time.sleep(random.uniform(1.5, 3.0))
+                            time.sleep(random.uniform(0.8, 1.8))
 
                     # После deep — если всё ещё нет RAM или SSD → пропускаем
                     if config.ram == 0 or config.ssd == 0:
@@ -535,6 +536,9 @@ def main():
                         help="Фильтр по model_name из Sheets (подстрока), по умолчанию — все")
     parser.add_argument("--family", default=None,
                         help="Фильтр по семейству из Sheets (MacBook, iMac, Mac mini, Mac Studio)")
+    parser.add_argument("--time-limit", type=int, default=0,
+                        help="Мягкий лимит времени в минутах (0 = без лимита). "
+                             "Парсер остановится после завершения текущей модели.")
     args = parser.parse_args()
 
     entries = load_models_config()
@@ -559,14 +563,31 @@ def main():
 
     logger.info(f"🎯 К парсингу: {len(entries)} моделей")
 
+    # Дедлайн по времени
+    deadline: datetime | None = None
+    if args.time_limit > 0:
+        deadline = datetime.now() + timedelta(minutes=args.time_limit)
+        logger.info(f"⏱ Лимит времени: {args.time_limit} мин (дедлайн {deadline.strftime('%H:%M:%S')})")
+
     # Парсим все модели
     all_configs: dict[tuple, dict] = {}
+    models_done = 0
+    time_limit_hit = False
 
     with sync_playwright() as pw:
         builder = PriceBuilder(pw)
         builder.warmup()
 
         for idx, entry in enumerate(entries, 1):
+            # Проверяем дедлайн перед каждой моделью
+            if deadline and datetime.now() >= deadline:
+                logger.warning(
+                    f"⏱ Лимит времени достигнут после {models_done} моделей. "
+                    f"Сохраняем частичный результат."
+                )
+                time_limit_hit = True
+                break
+
             logger.info(f"\n[{idx}/{len(entries)}]")
             try:
                 entry_configs = builder.parse_entry(entry, args.max_pages)
@@ -581,7 +602,12 @@ def main():
                 else:
                     all_configs[key] = {'prices': list(data['prices'])}
 
+            models_done += 1
+
         builder.close()
+
+    if time_limit_hit:
+        logger.info(f"⚠️ Парсинг прерван по таймеру. Обработано {models_done}/{len(entries)} моделей.")
 
     # Мержим с существующей базой (если не --clean)
     existing_data = {"stats": []}

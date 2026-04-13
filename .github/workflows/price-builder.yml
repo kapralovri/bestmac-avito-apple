@@ -28,7 +28,7 @@ env:
 jobs:
   build-prices:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 115
     permissions:
       contents: write
 
@@ -66,7 +66,7 @@ jobs:
           if [ "${{ github.event.inputs.clean }}" = "true" ]; then
             CLEAN="--clean"
           fi
-          ARGS="--max-pages $MAX_PAGES $CLEAN"
+          ARGS="--max-pages $MAX_PAGES --time-limit 100 $CLEAN"
           if [ -n "$MODELS" ]; then
             ARGS="$ARGS --models $MODELS"
           fi
