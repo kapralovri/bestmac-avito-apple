@@ -2,7 +2,8 @@ name: Price Builder v3
 
 on:
   schedule:
-    - cron: '0 3 * * *'   # ежедневно в 03:00 UTC
+    - cron: '0 2 * * *'   # Batch 1: MacBook (02:00 UTC)
+    - cron: '0 8 * * *'   # Batch 2: iMac + Mac mini + Mac Studio (08:00 UTC)
   workflow_dispatch:
     inputs:
       models:
@@ -10,7 +11,7 @@ on:
         default: ''
         type: string
       family:
-        description: 'Семейство из Sheets (MacBook/iMac/Mac mini/Mac Studio) или пусто'
+        description: 'Семейства из Sheets через пробел (MacBook iMac "Mac mini" "Mac Studio") или пусто = все'
         default: ''
         type: string
       max_pages:
@@ -60,19 +61,33 @@ jobs:
         run: |
           cd scripts/price-builder
           MAX_PAGES="${{ github.event.inputs.max_pages || '15' }}"
-          MODELS="${{ github.event.inputs.models }}"
-          FAMILY="${{ github.event.inputs.family }}"
           CLEAN=""
           if [ "${{ github.event.inputs.clean }}" = "true" ]; then
             CLEAN="--clean"
           fi
+
+          # Определяем семейство: из ручного запуска или по расписанию
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            FAMILY="${{ github.event.inputs.family }}"
+          elif [ "${{ github.event.schedule }}" = "0 2 * * *" ]; then
+            FAMILY="MacBook"
+          elif [ "${{ github.event.schedule }}" = "0 8 * * *" ]; then
+            FAMILY="iMac Mac mini Mac Studio"
+          else
+            FAMILY=""
+          fi
+
           ARGS="--max-pages $MAX_PAGES --time-limit 100 $CLEAN"
+
+          MODELS="${{ github.event.inputs.models }}"
           if [ -n "$MODELS" ]; then
             ARGS="$ARGS --models $MODELS"
           fi
           if [ -n "$FAMILY" ]; then
             ARGS="$ARGS --family $FAMILY"
           fi
+
+          echo "Schedule: ${{ github.event.schedule }}"
           echo "Running: python builder.py $ARGS"
           python builder.py $ARGS
 
@@ -82,12 +97,18 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add public/data/avito-prices.json public/data/avito-urls.json public/data/models-config.json
           git diff --staged --quiet && echo "No changes" && exit 0
-          git commit -m "chore: update prices (builder v3) [skip ci]"
+          BATCH_LABEL=""
+          if [ "${{ github.event.schedule }}" = "0 2 * * *" ]; then
+            BATCH_LABEL=" [MacBook]"
+          elif [ "${{ github.event.schedule }}" = "0 8 * * *" ]; then
+            BATCH_LABEL=" [iMac/mini/Studio]"
+          fi
+          git commit -m "chore: update prices (builder v3)${BATCH_LABEL} [skip ci]"
           for i in 1 2 3; do
             git pull --rebase origin main && git push origin main && break
             echo "Retry $i..."
             git rebase --abort 2>/dev/null || true
             git fetch origin main
             git reset --soft origin/main
-            git commit -m "chore: update prices (builder v3) [skip ci]"
+            git commit -m "chore: update prices (builder v3)${BATCH_LABEL} [skip ci]"
           done

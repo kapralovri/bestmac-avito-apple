@@ -534,8 +534,9 @@ def main():
                         help="Не мержить с существующей базой, пересоздать с нуля")
     parser.add_argument("--models", nargs='*', default=None,
                         help="Фильтр по model_name из Sheets (подстрока), по умолчанию — все")
-    parser.add_argument("--family", default=None,
-                        help="Фильтр по семейству из Sheets (MacBook, iMac, Mac mini, Mac Studio)")
+    parser.add_argument("--family", nargs='+', default=None,
+                        help="Семейства из Sheets (MacBook, iMac, Mac mini, Mac Studio). "
+                             "Можно передать несколько: --family MacBook iMac")
     parser.add_argument("--time-limit", type=int, default=0,
                         help="Мягкий лимит времени в минутах (0 = без лимита). "
                              "Парсер остановится после завершения текущей модели.")
@@ -546,8 +547,9 @@ def main():
 
     # Фильтрация
     if args.family:
-        entries = [e for e in entries if e.get('family', '').lower() == args.family.lower()]
-        logger.info(f"   🔍 После фильтра по семейству '{args.family}': {len(entries)}")
+        families_lower = {f.lower() for f in args.family}
+        entries = [e for e in entries if e.get('family', '').lower() in families_lower]
+        logger.info(f"   🔍 После фильтра по семействам {args.family}: {len(entries)}")
 
     if args.models:
         needles = [m.lower() for m in args.models]
