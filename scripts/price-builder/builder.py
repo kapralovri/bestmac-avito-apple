@@ -77,7 +77,7 @@ def is_captcha_page(page) -> bool:
     return page.query_selector('div.firewall-container') is not None
 
 
-def solve_captcha(page) -> bool:
+def solve_captcha(page, target_url: str = None) -> bool:
     if not RUCAPTCHA_API_KEY:
         logger.warning("⚠️ RUCAPTCHA_API_KEY не задан")
         return False
@@ -121,8 +121,12 @@ def solve_captcha(page) -> bool:
             return False
         logger.info("✅ Капча пройдена!")
 
-        page.reload(wait_until='domcontentloaded', timeout=20000)
-        page.wait_for_timeout(3000)
+        # После успешного verify переходим на целевой URL, а не делаем reload
+        # (reload перезагружает страницу капчи и Avito блокирует снова)
+        nav_url = target_url or page.url
+        page.wait_for_timeout(1500)
+        page.goto(nav_url, wait_until='domcontentloaded', timeout=25000)
+        page.wait_for_timeout(random.randint(2000, 4000))
         return not is_captcha_page(page)
 
     except Exception as e:
@@ -145,9 +149,9 @@ def navigate_with_captcha(page, url: str) -> bool:
         if not is_captcha_page(page):
             return True
         logger.warning(f"🛡 Капча (попытка {attempt}/3)")
-        if not solve_captcha(page):
+        if not solve_captcha(page, target_url=url):  # передаём целевой URL
             return False
-        page.wait_for_timeout(3000)
+        page.wait_for_timeout(2000)
 
     return not is_captcha_page(page)
 
