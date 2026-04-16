@@ -7,9 +7,43 @@ on:
   workflow_dispatch:
     inputs:
       models:
-        description: 'Фильтр по model_name (подстрока, через пробел) или пусто = все'
-        default: ''
-        type: string
+        description: 'Модель (одна) или "— все модели —"'
+        default: '— все модели —'
+        type: choice
+        options:
+          - '— все модели —'
+          - 'MacBook Air 13 (2020, M1)'
+          - 'MacBook Air 13 (2022, M2)'
+          - 'MacBook Pro 13 (2020, M1)'
+          - 'MacBook Pro 14 (2021)'
+          - 'MacBook Pro 16 (2021)'
+          - 'MacBook Pro 13 (2022, M2)'
+          - 'MacBook Air 15 (2023, M2)'
+          - 'MacBook Pro 14 (2023)'
+          - 'MacBook Pro 16 (2023)'
+          - 'MacBook Air 13 (2024, M3)'
+          - 'MacBook Air 15 (2024, M3)'
+          - 'MacBook Pro 14 (2024)'
+          - 'MacBook Pro 16 (2024)'
+          - 'MacBook Air 13 (2025, M4)'
+          - 'MacBook Air 15 (2025, M4)'
+          - 'MacBook Pro 14 (2025)'
+          - 'MacBook Pro 16 (2026, M5 Pro)'
+          - 'Macbook Air 13 (2026, M5)'
+          - 'Macbook Air 15 (2026, M5)'
+          - 'imac 24 m1'
+          - 'imac 24 m3'
+          - 'imac 24 m4'
+          - 'Imac 27 2020'
+          - 'Imac 27 2019'
+          - 'Imac 27 2017'
+          - 'Mac Studio m1'
+          - 'Mac Studio m2'
+          - 'Mac Studio m3'
+          - 'Mac Studio m4'
+          - 'mac mini m1'
+          - 'mac mini m2'
+          - 'mac mini m4'
       family:
         description: 'Семейства из Sheets через пробел (MacBook iMac "Mac mini" "Mac Studio") или пусто = все'
         default: ''
@@ -80,8 +114,8 @@ jobs:
           ARGS="--max-pages $MAX_PAGES --time-limit 100 $CLEAN"
 
           MODELS="${{ github.event.inputs.models }}"
-          if [ -n "$MODELS" ]; then
-            ARGS="$ARGS --models $MODELS"
+          if [ -n "$MODELS" ] && [ "$MODELS" != "— все модели —" ]; then
+            ARGS="$ARGS --models \"$MODELS\""
           fi
           if [ -n "$FAMILY" ]; then
             ARGS="$ARGS --family $FAMILY"
