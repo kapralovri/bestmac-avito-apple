@@ -1,5 +1,177 @@
 {
-  "description": "Опции дропдаунов для фронта. Автогенерируется билдером из результатов парсинга.",
+  "description": "Таблица ссылок для парсинга Авито. Синхронизируется из Google Sheets.",
   "updated_at": "2026-04-17",
-  "entries": []
+  "source": "https://docs.google.com/spreadsheets/d/1hq9JqsWLyGVFVtzfWhZbwylSEkWLpSptWBirsh4zsy0",
+  "entries": [
+    {
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Air 13 (2022, M2)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2022_m2-ASgBAgICAkSg5A3yuOsRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3yuOsRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_13_2020_m1-ASgBAgICAkSg5A2QuOsRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A2QuOsRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2021)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_14_2021-ASgBAgICAkSg5A24uOsRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A24uOsRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Pro 16 (2021)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_16_2021-ASgBAgICAkSg5A22uOsRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A22uOsRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2022, M2)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_13_2022_m2-ASgBAgICAkSg5A2~uesRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A2~uesRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Air 15 (2023, M2)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_15_2023_m2-ASgBAgICAkSg5A2muesRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A2muesRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2023)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_14_2023-ASgBAgICAkSg5A3YuesRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3YuesRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Pro 16 (2023)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_16_2023-ASgBAgICAkSg5A30uesRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A30uesRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2024_m3-ASgBAgICAkSg5A2mkv4UqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A2mkv4UqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Air 15 (2024, M3)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_15_2024_m3-ASgBAgICAkSg5A2okv4UqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A2okv4UqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_14_2024-ASgBAgICAkSg5A3AmZYVqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3AmZYVqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Pro 16 (2024)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_16_2024-ASgBAgICAkSg5A2m45cVqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A2m45cVqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Air 13 (2025, M4)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2025_m4-ASgBAgICAkSg5A3owqYVqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3owqYVqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Air 15 (2025, M4)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_15_2025_m4-ASgBAgICAkSg5A3cwqYVqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3cwqYVqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2025)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_14_2025-ASgBAgICAkSg5A3Gn7YVqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Gn7YVqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook 13 Neo (2026)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_13_neo_2026-ASgBAgICAkSg5A2IpMMVqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A2IpMMVqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2026)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_14_2026-ASgBAgICAkSg5A2y3sQVqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A2y3sQVqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Pro 16 (2026, M5 Pro)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_pro_16_2026_m5_pro-ASgBAgICAkSg5A2yqcUVqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A2yqcUVqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "Macbook Air 13 (2026, M5)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2026_m5-ASgBAgICAkSg5A2C88QVqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A2C88QVqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "Macbook Air 15 (2026, M5)",
+      "family": "Macbook",
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_15_2026_m5-ASgBAgICAkSg5A2A88QVqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A2A88QVqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "imac 24 m1",
+      "family": "Imac",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+    },
+    {
+      "model_name": "imac 24 m3",
+      "family": "Imac",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=imac+24+m3"
+    },
+    {
+      "model_name": "imac 24 m4",
+      "family": "Imac",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=imac+24+m4"
+    },
+    {
+      "model_name": "Imac 27 2020",
+      "family": "Imac",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=imac+27+2020"
+    },
+    {
+      "model_name": "Imac 27 2019",
+      "family": "Imac",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=imac+27+2019"
+    },
+    {
+      "model_name": "Imac 27 2017",
+      "family": "Imac",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=imac+27+2017"
+    },
+    {
+      "model_name": "Mac Studio m1",
+      "family": "Mac Studio",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
+    },
+    {
+      "model_name": "Mac Studio m2",
+      "family": "Mac Studio",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+studio+m2"
+    },
+    {
+      "model_name": "Mac Studio m3",
+      "family": "Mac Studio",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+studio+m3"
+    },
+    {
+      "model_name": "Mac Studio m4",
+      "family": "Mac Studio",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+studio+m4"
+    },
+    {
+      "model_name": "mac mini m1",
+      "family": "Mac mini",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
+    },
+    {
+      "model_name": "mac mini m2",
+      "family": "Mac mini",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m2"
+    },
+    {
+      "model_name": "mac mini m4",
+      "family": "Mac mini",
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m4"
+    }
+  ]
 }
