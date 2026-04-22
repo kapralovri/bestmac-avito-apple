@@ -63,7 +63,7 @@ env:
 jobs:
   build-prices:
     runs-on: ubuntu-latest
-    timeout-minutes: 115
+    timeout-minutes: 350
     permissions:
       contents: write
 
@@ -111,7 +111,7 @@ jobs:
             FAMILY=""
           fi
 
-          ARGS="--max-pages $MAX_PAGES --time-limit 100 $CLEAN"
+          ARGS="--max-pages $MAX_PAGES --time-limit 340 $CLEAN"
 
           MODELS="${{ github.event.inputs.models }}"
           if [ -n "$MODELS" ] && [ "$MODELS" != "— все модели —" ]; then
