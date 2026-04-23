@@ -3,181 +3,6 @@
   "updated_at": "2026-04-23",
   "entries": [
     {
-      "model_name": "Imac 27 2017",
-      "processor": "Apple",
-      "ram": 16,
-      "ssd": 1024,
-      "url": ""
-    },
-    {
-      "model_name": "Imac 27 2017",
-      "processor": "Apple",
-      "ram": 32,
-      "ssd": 1024,
-      "url": ""
-    },
-    {
-      "model_name": "Imac 27 2020",
-      "processor": "Apple",
-      "ram": 8,
-      "ssd": 256,
-      "url": ""
-    },
-    {
-      "model_name": "Imac 27 2020",
-      "processor": "Apple Intel",
-      "ram": 32,
-      "ssd": 1024,
-      "url": ""
-    },
-    {
-      "model_name": "Mac Studio m1",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio m1",
-      "processor": "Apple M1 Ultra",
-      "ram": 64,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio m1",
-      "processor": "Apple M4 Max",
-      "ram": 48,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio m1",
-      "processor": "Apple M4 Max",
-      "ram": 128,
-      "ssd": 2048,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio m1",
-      "processor": "Apple M4 Max",
-      "ram": 128,
-      "ssd": 4096,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio m2",
-      "processor": "Apple",
-      "ram": 32,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio m2",
-      "processor": "Apple M2 Max",
-      "ram": 32,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio m2",
-      "processor": "Apple M2 Ultra",
-      "ram": 64,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio m2",
-      "processor": "Apple M4 Max",
-      "ram": 48,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio m2",
-      "processor": "Apple M4 Max",
-      "ram": 128,
-      "ssd": 2048,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio m2",
-      "processor": "Apple M4 Max",
-      "ram": 128,
-      "ssd": 4096,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio m3",
-      "processor": "Apple M3 Ultra",
-      "ram": 96,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio m3",
-      "processor": "Apple M3 Ultra",
-      "ram": 96,
-      "ssd": 2048,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio m4",
-      "processor": "Apple M4 Max",
-      "ram": 36,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio m4",
-      "processor": "Apple M4 Max",
-      "ram": 36,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio m4",
-      "processor": "Apple M4 Max",
-      "ram": 48,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio m4",
-      "processor": "Apple M4 Max",
-      "ram": 64,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio m4",
-      "processor": "Apple M4 Max",
-      "ram": 128,
-      "ssd": 512,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio m4",
-      "processor": "Apple M4 Max",
-      "ram": 128,
-      "ssd": 1024,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio m4",
-      "processor": "Apple M4 Max",
-      "ram": 128,
-      "ssd": 2048,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
-      "model_name": "Mac Studio m4",
-      "processor": "Apple M4 Max",
-      "ram": 128,
-      "ssd": 4096,
-      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
-    },
-    {
       "model_name": "MacBook 13 Neo (2026)",
       "processor": "Apple",
       "ram": 8,
@@ -213,6 +38,27 @@
       "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 512,
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 1024,
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
       "model_name": "MacBook Air 13 (2022, M2)",
       "processor": "Apple M2",
       "ram": 8,
@@ -231,6 +77,13 @@
       "processor": "Apple M2",
       "ram": 16,
       "ssd": 256,
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Air 13 (2022, M2)",
+      "processor": "Apple M2",
+      "ram": 16,
+      "ssd": 512,
       "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
@@ -354,6 +207,13 @@
     },
     {
       "model_name": "MacBook Air 15 (2025, M4)",
+      "processor": "Apple",
+      "ram": 16,
+      "ssd": 256,
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Air 15 (2025, M4)",
       "processor": "Apple M4",
       "ram": 16,
       "ssd": 256,
@@ -364,6 +224,13 @@
       "processor": "Apple M4",
       "ram": 16,
       "ssd": 512,
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Air 15 (2025, M4)",
+      "processor": "Apple M4",
+      "ram": 16,
+      "ssd": 2048,
       "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
@@ -375,6 +242,13 @@
     },
     {
       "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple",
+      "ram": 8,
+      "ssd": 256,
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
       "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
@@ -455,6 +329,13 @@
       "processor": "Apple M1 Pro",
       "ram": 16,
       "ssd": 1024,
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2023)",
+      "processor": "Apple M2",
+      "ram": 16,
+      "ssd": 512,
       "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgICBETwvA2I0jSg5A3Ot~sRqOQN9NlmsLMU_qGPAw&localPriority=0&q=macbook"
     },
     {
@@ -776,209 +657,6 @@
       "model_name": "Macbook Air 15 (2026, M5)",
       "processor": "Apple M5",
       "ram": 16,
-      "ssd": 512,
-      "url": ""
-    },
-    {
-      "model_name": "imac 24 m1",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 256,
-      "url": ""
-    },
-    {
-      "model_name": "imac 24 m1",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 512,
-      "url": ""
-    },
-    {
-      "model_name": "imac 24 m1",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 256,
-      "url": ""
-    },
-    {
-      "model_name": "imac 24 m1",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 512,
-      "url": ""
-    },
-    {
-      "model_name": "imac 24 m1",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 1024,
-      "url": ""
-    },
-    {
-      "model_name": "imac 24 m3",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 256,
-      "url": ""
-    },
-    {
-      "model_name": "imac 24 m3",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 512,
-      "url": ""
-    },
-    {
-      "model_name": "imac 24 m3",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 256,
-      "url": ""
-    },
-    {
-      "model_name": "imac 24 m3",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 512,
-      "url": ""
-    },
-    {
-      "model_name": "imac 24 m3",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 1024,
-      "url": ""
-    },
-    {
-      "model_name": "imac 24 m3",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 2048,
-      "url": ""
-    },
-    {
-      "model_name": "imac 24 m3",
-      "processor": "Apple M3",
-      "ram": 24,
-      "ssd": 1024,
-      "url": ""
-    },
-    {
-      "model_name": "imac 24 m3",
-      "processor": "Apple M3",
-      "ram": 24,
-      "ssd": 2048,
-      "url": ""
-    },
-    {
-      "model_name": "imac 24 m4",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 256,
-      "url": ""
-    },
-    {
-      "model_name": "imac 24 m4",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 512,
-      "url": ""
-    },
-    {
-      "model_name": "mac mini m1",
-      "processor": "Apple Intel",
-      "ram": 16,
-      "ssd": 256,
-      "url": ""
-    },
-    {
-      "model_name": "mac mini m1",
-      "processor": "Apple Intel",
-      "ram": 64,
-      "ssd": 256,
-      "url": ""
-    },
-    {
-      "model_name": "mac mini m1",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 256,
-      "url": ""
-    },
-    {
-      "model_name": "mac mini m1",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 512,
-      "url": ""
-    },
-    {
-      "model_name": "mac mini m1",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 1024,
-      "url": ""
-    },
-    {
-      "model_name": "mac mini m1",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 256,
-      "url": ""
-    },
-    {
-      "model_name": "mac mini m1",
-      "processor": "Apple M1",
-      "ram": 16,
-      "ssd": 1024,
-      "url": ""
-    },
-    {
-      "model_name": "mac mini m1",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "url": ""
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "url": ""
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 512,
-      "url": ""
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2 Pro",
-      "ram": 16,
-      "ssd": 512,
-      "url": ""
-    },
-    {
-      "model_name": "mac mini m4",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 256,
-      "url": ""
-    },
-    {
-      "model_name": "mac mini m4",
-      "processor": "Apple M4",
-      "ram": 16,
-      "ssd": 512,
-      "url": ""
-    },
-    {
-      "model_name": "mac mini m4",
-      "processor": "Apple M4",
-      "ram": 24,
       "ssd": 512,
       "url": ""
     }
