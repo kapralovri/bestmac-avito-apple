@@ -304,11 +304,21 @@ def classify(title: str, specs: Optional[dict] = None) -> AppleConfig:
     )
 
 
-def config_to_db_key(config: AppleConfig) -> Optional[Tuple[str, int, int]]:
+def processor_label(config: AppleConfig) -> str:
+    """`Apple M3 Pro` / `Apple M1`. Совпадает с форматом из price-builder/parser v2."""
+    if not config.chip_gen:
+        return "Apple"
+    base = f"Apple {config.chip_gen}"
+    if config.chip_tier and config.chip_tier != 'base':
+        return f"{base} {config.chip_tier}"
+    return base
+
+
+def config_to_db_key(config: AppleConfig) -> Optional[Tuple[str, str, int, int]]:
     """
     Конвертирует AppleConfig в ключ для поиска в avito-prices.json.
-    Возвращает (model_name_lower, ram, ssd) или None если невалидный.
+    Возвращает (model_name_lower, processor, ram, ssd) или None если невалидный.
     """
     if not config.is_valid:
         return None
-    return (config.model_name.lower(), config.ram, config.ssd)
+    return (config.model_name.lower(), processor_label(config), config.ram, config.ssd)

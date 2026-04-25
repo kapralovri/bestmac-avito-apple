@@ -28,7 +28,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # Добавляем scripts/ в path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from common.classifier import classify, config_to_db_key
+from common.classifier import classify, config_to_db_key, processor_label
 from common.config import (
     SCAN_FAMILIES, JUNK_KEYWORDS, URGENT_KEYWORDS, MOSCOW_MARKERS,
     MIN_PRICE, MAX_PRICE, PRICE_THRESHOLD_FACTOR, MIN_YEARS,
@@ -273,13 +273,19 @@ class AvitoScannerV2:
         self.context = None
         self.page = None
 
-        # База цен
-        self.prices = {}
+        # База цен. Ключ: (model_name_lower, processor, ram, ssd)
+        self.prices: dict = {}
+        self.prices_dirty: bool = False
         if PRICES_FILE.exists():
             with open(PRICES_FILE, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 for s in data.get('stats', []):
-                    key = (s['model_name'].lower(), int(s['ram']), int(s['ssd']))
+                    key = (
+                        s['model_name'].lower(),
+                        s.get('processor', 'Apple'),
+                        int(s.get('ram', 0)),
+                        int(s.get('ssd', 0)),
+                    )
                     self.prices[key] = s
             logger.info(f"📊 База цен: {len(self.prices)} конфигураций")
         else:
@@ -552,24 +558,78 @@ class AvitoScannerV2:
 
         self._send_telegram(text, f"🤝 [{score}] {title[:40]}")
 
-    def notify_not_in_db(self, title, price, ram, ssd, url, age_str, config):
-        """⚠️ Объявление не найдено в базе цен"""
+    def add_config_to_db(self, config, price: int, source_url: str):
+        """
+        Добавляет новую конфигурацию в self.prices и помечает базу dirty.
+        Возвращает stat или None если config невалиден.
+        """
+        if not config.is_valid:
+            return None
+        proc = processor_label(config)
+        key = (config.model_name.lower(), proc, config.ram, config.ssd)
+        if key in self.prices:
+            return self.prices[key]
+
+        stat = {
+            "model_name":   config.model_name,
+            "family":       config.family or "",
+            "processor":    proc,
+            "ram":          int(config.ram),
+            "ssd":          int(config.ssd),
+            "min_price":    int(price),
+            "max_price":    int(price),
+            "median_price": int(price),
+            "buyout_price": max(0, int((price - 12000) // 1000 * 1000)),
+            "samples_count": 1,
+            "updated_at":   datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "added_by_scanner": True,
+            "first_seen_url":   source_url,
+        }
+        self.prices[key] = stat
+        self.prices_dirty = True
+        return stat
+
+    def notify_added_to_db(self, title, price, ram, ssd, url, age_str, config):
+        """🆕 Новая конфигурация добавлена в базу цен"""
         if not TELEGRAM_URL:
             return
         model = config.model_name if config and config.is_valid else "?"
+        proc  = processor_label(config) if config and config.is_valid else "?"
 
         text = (
-            f"⚠️ <b>НЕТ В БАЗЕ</b>\n\n"
+            f"🆕 <b>НОВАЯ КОНФИГУРАЦИЯ В БАЗЕ</b>\n\n"
             f"💻 {title}\n"
-            f"🏷 Модель: {model}\n"
-            f"⚙️ <b>{ram}GB\u202f/\u202f{ssd}GB</b>\n"
+            f"🏷 {model}\n"
+            f"⚙️ <b>{proc} • {ram}GB\u202f/\u202f{ssd}GB</b>\n"
             f"💰 Цена: <b>{price:,}\u202f₽</b>\n"
             f"⏱ {age_str}\n"
-            f"🔗 <a href='{url}'>Открыть на Avito</a>"
+            f"🔗 <a href=\'{url}\'>Открыть на Avito</a>"
         )
-        text = text.replace(',', '\u202f')
+        text = text.replace(",", "\u202f")
 
-        self._send_telegram(text, f"⚠️ Нет в базе: {title[:40]}")
+        self._send_telegram(text, f"🆕 В базу: {title[:40]}")
+
+    def _save_prices_db(self):
+        """Сохраняет self.prices обратно в avito-prices.json (только если есть изменения)."""
+        if not self.prices_dirty:
+            return
+        try:
+            stats = sorted(
+                self.prices.values(),
+                key=lambda s: (s.get("family", ""), s["model_name"],
+                               s.get("processor", ""), s["ram"], s["ssd"]),
+            )
+            output = {
+                "generated_at":   datetime.now().strftime("%Y-%m-%d %H:%M"),
+                "total_listings": sum(s.get("samples_count", 0) for s in stats),
+                "stats":          stats,
+            }
+            PRICES_FILE.parent.mkdir(parents=True, exist_ok=True)
+            with open(PRICES_FILE, "w", encoding="utf-8") as f:
+                json.dump(output, f, ensure_ascii=False, indent=2)
+            logger.info(f"💾 Записано: {PRICES_FILE} ({len(stats)} конфигов)")
+        except Exception as e:
+            logger.error(f"❌ Не удалось сохранить avito-prices.json: {e}")
 
     def _send_telegram(self, text, log_msg):
         try:
@@ -679,10 +739,12 @@ class AvitoScannerV2:
                     stat = self.match_to_db(config)
 
                     if not stat:
-                        logger.warning(f"   ⚠️ Нет в базе: {raw_title[:50]} | {price:,}₽ | "
-                                       f"{config.model_name} {config.ram}/{config.ssd}")
-                        self.notify_not_in_db(raw_title, price, config.ram, config.ssd,
-                                              url_clean, age_str, config)
+                        # Новая конфигурация: добавляем в БД и уведомляем
+                        logger.info(f"   🆕 В базу: {raw_title[:50]} | {price:,}₽ | "
+                                    f"{config.model_name} {config.ram}/{config.ssd}")
+                        self.add_config_to_db(config, price, url_clean)
+                        self.notify_added_to_db(raw_title, price, config.ram, config.ssd,
+                                                url_clean, age_str, config)
                         self.seen.add(url_clean)
                         continue
 
@@ -806,6 +868,7 @@ class AvitoScannerV2:
 
         # Финальное сохранение
         self._save_seen()
+        self._save_prices_db()
 
         # История цен
         HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
