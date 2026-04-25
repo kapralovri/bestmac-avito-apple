@@ -120,12 +120,25 @@ def solve_captcha(page) -> bool:
         if not resp_data.get("result", {}).get("verified", False):
             logger.error(f"   ❌ verified=False, ответ: {resp_data}")
             return False
-        logger.info(f"   [ШАГ 3] 🔄 Перезагрузка страницы")
-        page.reload(wait_until="domcontentloaded", timeout=20000)
-        page.wait_for_timeout(3000)
-        ok = not is_captcha_page(page)
-        logger.info(f"   [ШАГ 3] Результат: {'✅ OK' if ok else '❌ всё ещё капча'}")
-        return ok
+
+        # После verify=True у Avito нужно дождаться когда firewall пропустит куки.
+        # На filter-URL `page.reload()` часто не подхватывает свежие куки —
+        # делаем явный goto на ту же страницу + ретраи с паузами.
+        target_url = page.url
+        logger.info(f"   [ШАГ 3] 🔄 Re-goto: {target_url[:80]}")
+        page.wait_for_timeout(2000)  # дать verify-куки осесть в контексте
+
+        for retry in range(1, 4):
+            try:
+                page.goto(target_url, wait_until="domcontentloaded", timeout=20000)
+            except Exception as e:
+                logger.warning(f"   [ШАГ 3] goto retry {retry} упал: {e}")
+            page.wait_for_timeout(3000 + retry * 1000)
+            if not is_captcha_page(page):
+                logger.info(f"   [ШАГ 3] ✅ Прошли (попытка {retry})")
+                return True
+            logger.warning(f"   [ШАГ 3] ❌ Капча ещё на месте (попытка {retry})")
+        return False
     except Exception as e:
         logger.error(f"   ❌ Капча упала: {type(e).__name__}: {e}")
         return False
