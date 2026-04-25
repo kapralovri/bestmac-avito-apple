@@ -79,16 +79,38 @@ def is_captcha_page(page) -> bool:
     return page.query_selector("div.firewall-container") is not None
 
 
+def _solve_with_retry(page_url: str):
+    """
+    Зовёт RuCaptcha/2captcha с ретраями. На rucaptcha.com бывают 5xx
+    (особенно 521 от Cloudflare) — фоллбэк на 2captcha.com.
+    """
+    from twocaptcha import TwoCaptcha
+    servers = ["rucaptcha.com", "2captcha.com"]
+    last_err = None
+    for attempt in range(1, 5):           # 4 попытки итого
+        server = servers[(attempt - 1) % len(servers)]
+        try:
+            solver = TwoCaptcha(RUCAPTCHA_API_KEY, server=server, defaultTimeout=180)
+            logger.info(f"   [ШАГ 1.{attempt}] 🧩 GeeTest v4 → {server}")
+            return solver.geetest_v4(captcha_id=AVITO_CAPTCHA_ID, url=page_url)
+        except Exception as e:
+            msg = str(e)
+            last_err = e
+            transient = any(x in msg for x in ("521", "522", "503", "504", "bad response", "timed out", "ConnectionError"))
+            logger.warning(f"   [ШАГ 1.{attempt}] {server} упал: {type(e).__name__}: {msg[:120]}")
+            if not transient:
+                raise
+            time.sleep(min(30, 5 * attempt))   # 5,10,15,20s
+    raise last_err  # type: ignore[misc]
+
+
 def solve_captcha(page) -> bool:
     if not RUCAPTCHA_API_KEY:
         logger.warning("⚠️ RUCAPTCHA_API_KEY не задан")
         return False
     try:
-        from twocaptcha import TwoCaptcha
-        solver = TwoCaptcha(RUCAPTCHA_API_KEY, server="rucaptcha.com", defaultTimeout=180)
-        logger.info(f"   [ШАГ 1] 🧩 GeeTest v4 → RuCaptcha (URL: {page.url[:80]})")
-        result = solver.geetest_v4(captcha_id=AVITO_CAPTCHA_ID, url=page.url)
-        logger.info(f"   [ШАГ 1] ✅ Ответ от RuCaptcha получен")
+        result = _solve_with_retry(page.url)
+        logger.info(f"   [ШАГ 1] ✅ Ответ от RuCaptcha/2captcha получен")
         code = result["code"]
         code_data = json.loads(code) if isinstance(code, str) else code
 
