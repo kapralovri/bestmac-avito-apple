@@ -85,8 +85,10 @@ def solve_captcha(page) -> bool:
         return False
     try:
         from twocaptcha import TwoCaptcha
-        solver = TwoCaptcha(RUCAPTCHA_API_KEY, server="rucaptcha.com", defaultTimeout=120)
+        solver = TwoCaptcha(RUCAPTCHA_API_KEY, server="rucaptcha.com", defaultTimeout=180)
+        logger.info(f"   [ШАГ 1] 🧩 GeeTest v4 → RuCaptcha (URL: {page.url[:80]})")
         result = solver.geetest_v4(captcha_id=AVITO_CAPTCHA_ID, url=page.url)
+        logger.info(f"   [ШАГ 1] ✅ Ответ от RuCaptcha получен")
         code = result["code"]
         code_data = json.loads(code) if isinstance(code, str) else code
 
@@ -99,6 +101,7 @@ def solve_captcha(page) -> bool:
             "gen_time":       code_data["gen_time"],
             "captcha_output": code_data["captcha_output"],
         })
+        logger.info(f"   [ШАГ 2] 📤 POST {AVITO_VERIFY_URL}")
         resp_data = page.evaluate(f"""async () => {{
             const resp = await fetch('{AVITO_VERIFY_URL}', {{
                 method: 'POST',
@@ -113,14 +116,18 @@ def solve_captcha(page) -> bool:
             }});
             return await resp.json();
         }}""")
+        logger.info(f"   [ШАГ 2] Ответ verify: {str(resp_data)[:200]}")
         if not resp_data.get("result", {}).get("verified", False):
-            logger.error("❌ verified=False")
+            logger.error(f"   ❌ verified=False, ответ: {resp_data}")
             return False
+        logger.info(f"   [ШАГ 3] 🔄 Перезагрузка страницы")
         page.reload(wait_until="domcontentloaded", timeout=20000)
         page.wait_for_timeout(3000)
-        return not is_captcha_page(page)
+        ok = not is_captcha_page(page)
+        logger.info(f"   [ШАГ 3] Результат: {'✅ OK' if ok else '❌ всё ещё капча'}")
+        return ok
     except Exception as e:
-        logger.error(f"❌ Капча: {e}")
+        logger.error(f"   ❌ Капча упала: {type(e).__name__}: {e}")
         return False
 
 
@@ -293,9 +300,11 @@ class AvitoParser:
         items_all: list[dict] = []
         for page_num in range(1, max_pages + 1):
             page_url = f"{url}&p={page_num}" if "?" in url else f"{url}?p={page_num}"
-            time.sleep(random.uniform(2, 4))
+            time.sleep(random.uniform(4, 7))
+            logger.info(f"   ➡️  GET стр. {page_num}: {page_url[:100]}")
             ok = navigate(self.page, page_url)
             if not ok:
+                logger.warning(f"   ⚠️ navigate→False (стр. {page_num}), прерываем")
                 break
             soup = BeautifulSoup(self.page.content(), "lxml")
 
