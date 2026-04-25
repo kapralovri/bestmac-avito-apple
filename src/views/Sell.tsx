@@ -5,16 +5,16 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   loadAvitoPrices,
-  loadAvitoUrls,
-  getModelsFromConfig,
-  getProcessorsFromConfig,
-  getRamFromConfig,
-  getSsdFromConfig,
+  getModelsByFamily,
+  getProcessorOptions,
+  getRamOptions,
+  getSsdOptions,
   findPriceStat,
   calculateBuyoutPrice,
   formatSsd,
   formatPrice,
-  filterModels
+  filterModels,
+  type FamilyKey,
 } from '@/lib/avito-prices';
 import type { ConditionValue, AvitoPricesData } from '@/types/avito-prices';
 import { CONDITIONS } from '@/types/avito-prices';
@@ -29,33 +29,18 @@ import { Clock, Wallet, TrendingUp, Shield, BarChart3, Cpu, HardDrive, MemorySti
 import { generateProductSchema } from '@/lib/structured-data';
 
 
-interface AvitoUrlsData {
-  description: string;
-  updated_at: string;
-  entries: Array<{
-    model_name: string;
-    processor: string;
-    ram: number;
-    ssd: number;
-    url: string;
-  }>;
-}
-
-const DEVICE_FAMILIES = [
-  { key: 'macbook', label: 'MacBook', icon: Laptop, prefix: 'MacBook' },
-  { key: 'imac', label: 'iMac', icon: Monitor, prefix: 'iMac' },
-  { key: 'mac-mini', label: 'Mac mini', icon: Cpu, prefix: 'Mac mini' },
-  { key: 'mac-studio', label: 'Mac Studio', icon: HardDrive, prefix: 'Mac Studio' },
-] as const;
-
-type FamilyKey = typeof DEVICE_FAMILIES[number]['key'];
+const DEVICE_FAMILIES: ReadonlyArray<{ key: FamilyKey; label: string; icon: typeof Laptop }> = [
+  { key: 'MacBook',    label: 'MacBook',    icon: Laptop  },
+  { key: 'iMac',       label: 'iMac',       icon: Monitor },
+  { key: 'Mac mini',   label: 'Mac mini',   icon: Cpu     },
+  { key: 'Mac Studio', label: 'Mac Studio', icon: HardDrive },
+];
 
 const Sell = () => {
   const [data, setData] = useState<AvitoPricesData | null>(null);
-  const [urlsData, setUrlsData] = useState<AvitoUrlsData | null>(null);
   const [totalListings, setTotalListings] = useState(0);
   const [lastUpdate, setLastUpdate] = useState<string>('');
-  const [family, setFamily] = useState<FamilyKey>('macbook');
+  const [family, setFamily] = useState<FamilyKey>('MacBook');
 
   // Форма
   const [modelName, setModelName] = useState('');
@@ -78,7 +63,6 @@ const Sell = () => {
 
   // Загрузка данных
   useEffect(() => {
-    loadAvitoUrls().then(setUrlsData);
     loadAvitoPrices().then((loadedData) => {
       setData(loadedData);
       setTotalListings(loadedData.total_listings);
@@ -89,33 +73,29 @@ const Sell = () => {
     });
   }, []);
 
-  // Список моделей из конфигурации (фильтр по семейству)
   const currentFamily = DEVICE_FAMILIES.find(f => f.key === family);
+
+  // Опции — все из stats
   const models = useMemo(() => {
-    if (!urlsData) return [];
-    const allModels = getModelsFromConfig(urlsData);
-    const prefix = currentFamily?.prefix || 'MacBook';
-    const familyModels = allModels.filter(m => m.startsWith(prefix));
+    if (!data) return [];
+    const familyModels = getModelsByFamily(data.stats, family);
     return filterModels(familyModels, modelSearch);
-  }, [urlsData, modelSearch, family, currentFamily]);
+  }, [data, family, modelSearch]);
 
-  // Опции процессоров из конфигурации
   const processorOptions = useMemo(() => {
-    if (!urlsData || !modelName) return [];
-    return getProcessorsFromConfig(urlsData, modelName);
-  }, [urlsData, modelName]);
+    if (!data || !modelName) return [];
+    return getProcessorOptions(data.stats, modelName).filter(Boolean);
+  }, [data, modelName]);
 
-  // Опции RAM из конфигурации
   const ramOptions = useMemo(() => {
-    if (!urlsData || !modelName || !processor) return [];
-    return getRamFromConfig(urlsData, modelName, processor);
-  }, [urlsData, modelName, processor]);
+    if (!data || !modelName) return [];
+    return getRamOptions(data.stats, modelName, processor || undefined).filter(r => r > 0);
+  }, [data, modelName, processor]);
 
-  // Опции SSD из конфигурации
   const ssdOptions = useMemo(() => {
-    if (!urlsData || !modelName || !processor || !ram) return [];
-    return getSsdFromConfig(urlsData, modelName, processor, Number(ram));
-  }, [urlsData, modelName, processor, ram]);
+    if (!data || !modelName || !ram) return [];
+    return getSsdOptions(data.stats, modelName, Number(ram), processor || undefined).filter(s => s > 0);
+  }, [data, modelName, ram, processor]);
 
   // Сброс при смене семейства
   useEffect(() => {
@@ -146,38 +126,46 @@ const Sell = () => {
     setResult(null);
   }, [ram]);
 
-  // Есть ли детальные конфиги для выбранной модели (процессор/RAM/SSD)
-  // Если нет — форма работает в упрощённом режиме (только модель + состояние)
-  const hasConfigData = useMemo(() => {
-    return processorOptions.length > 0;
-  }, [processorOptions]);
+  // Автозаполнение единственных опций
+  useEffect(() => {
+    if (!processor && processorOptions.length === 1) setProcessor(processorOptions[0]);
+  }, [processorOptions, processor]);
 
-  // Расчет
+  useEffect(() => {
+    if (!ram && ramOptions.length === 1) setRam(ramOptions[0]);
+  }, [ramOptions, ram]);
+
+  useEffect(() => {
+    if (!ssd && ssdOptions.length === 1) setSsd(ssdOptions[0]);
+  }, [ssdOptions, ssd]);
+
+  // Поле обязательно только если для него вообще есть варианты
+  const requiresProcessor = processorOptions.length > 0;
+  const requiresRam       = ramOptions.length > 0;
+  const requiresSsd       = ssdOptions.length > 0;
+
+  const isFormComplete = Boolean(
+    modelName
+    && (!requiresProcessor || processor)
+    && (!requiresRam       || ram)
+    && (!requiresSsd       || ssd)
+  );
+
+  // Расчёт стоимости
   const handleCalculate = () => {
     if (!data || !modelName) return;
 
-    // Упрощённый режим — ищем по модели без уточнения RAM/SSD
-    if (!hasConfigData) {
-      const stat = findPriceStat(data.stats, modelName, 0, 0);
-      if (!stat || stat.samples_count < 2) {
-        setResult({ marketMin: 0, marketMax: 0, marketMedian: 0, buyoutPrice: 0, samplesCount: stat?.samples_count ?? 0, isRareModel: true });
-        return;
-      }
-      const priceResult = calculateBuyoutPrice(stat, condition);
-      setResult({ marketMin: priceResult.marketMin, marketMax: priceResult.marketMax, marketMedian: priceResult.marketMedian, buyoutPrice: priceResult.buyoutPrice, samplesCount: priceResult.samplesCount, isRareModel: false });
-      return;
-    }
-
-    // Детальный режим — нужен полный конфиг
-    if (!processor || !ram || !ssd) return;
-
-    const stat = findPriceStat(data.stats, modelName, Number(ram), Number(ssd), processor);
+    const stat = findPriceStat(
+      data.stats,
+      modelName,
+      ram ? Number(ram) : 0,
+      ssd ? Number(ssd) : 0,
+      processor || undefined,
+    );
 
     if (!stat || stat.samples_count < 2) {
       setResult({
-        marketMin: 0,
-        marketMax: 0,
-        marketMedian: 0,
+        marketMin: 0, marketMax: 0, marketMedian: 0,
         buyoutPrice: 0,
         samplesCount: stat?.samples_count ?? 0,
         isRareModel: true,
@@ -185,18 +173,18 @@ const Sell = () => {
       return;
     }
 
-    const priceResult = calculateBuyoutPrice(stat, condition);
+    const r = calculateBuyoutPrice(stat, condition);
     setResult({
-      marketMin: priceResult.marketMin,
-      marketMax: priceResult.marketMax,
-      marketMedian: priceResult.marketMedian,
-      buyoutPrice: priceResult.buyoutPrice,
-      samplesCount: priceResult.samplesCount,
-      isRareModel: false,
+      marketMin: r.marketMin, marketMax: r.marketMax, marketMedian: r.marketMedian,
+      buyoutPrice: r.buyoutPrice, samplesCount: r.samplesCount, isRareModel: false,
     });
   };
 
-  const isFormComplete = modelName && (hasConfigData ? (processor && ram && ssd) : true);
+  // Авторасчёт когда форма заполнена
+  useEffect(() => {
+    if (isFormComplete) handleCalculate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFormComplete, modelName, processor, ram, ssd, condition, data]);
 
   const reviews = [
     {
@@ -307,7 +295,7 @@ const Sell = () => {
     setModelSearch('');
   };
 
-  if (!urlsData || !data) {
+  if (!data) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -370,6 +358,34 @@ const Sell = () => {
             </div>
 
             <TabsContent value="evaluation">
+              <motion.div
+                className="mb-8"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+              >
+                <div className="text-sm font-medium mb-3 text-center text-muted-foreground">Тип устройства</div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 max-w-3xl mx-auto">
+                  {DEVICE_FAMILIES.map((f) => {
+                    const Icon = f.icon;
+                    return (
+                      <button
+                        key={f.key}
+                        onClick={() => setFamily(f.key)}
+                        className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
+                          family === f.key
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-border hover:border-primary/50 hover:bg-muted/50'
+                        }`}
+                      >
+                        <Icon className="w-4 h-4" />
+                        {f.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+
               <div className="grid lg:grid-cols-2 gap-8 mb-16">
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
@@ -387,29 +403,6 @@ const Sell = () => {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-5">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Тип устройства</label>
-                        <div className="grid grid-cols-2 gap-2">
-                          {DEVICE_FAMILIES.map((f) => {
-                            const Icon = f.icon;
-                            return (
-                              <button
-                                key={f.key}
-                                onClick={() => setFamily(f.key)}
-                                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
-                                  family === f.key
-                                    ? 'border-primary bg-primary/10 text-primary'
-                                    : 'border-border hover:border-primary/50 hover:bg-muted/50'
-                                }`}
-                              >
-                                <Icon className="w-4 h-4" />
-                                {f.label}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <label className="text-sm font-medium flex items-center gap-2">
@@ -464,8 +457,6 @@ const Sell = () => {
                         )}
                       </div>
 
-                      {hasConfigData && (
-                        <>
                           <div className="space-y-2">
                             <label className="text-sm font-medium flex items-center gap-2">
                               <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">2</span>
@@ -490,7 +481,7 @@ const Sell = () => {
                               <MemoryStick className="w-4 h-4" />
                               Оперативная память
                             </label>
-                            <Select value={ram ? String(ram) : ''} onValueChange={(v) => setRam(Number(v))} disabled={!processor || ramOptions.length === 0}>
+                            <Select value={ram ? String(ram) : ''} onValueChange={(v) => setRam(Number(v))} disabled={!modelName || ramOptions.length === 0}>
                               <SelectTrigger>
                                 <SelectValue placeholder="Выберите RAM" />
                               </SelectTrigger>
@@ -508,7 +499,7 @@ const Sell = () => {
                               <HardDrive className="w-4 h-4" />
                               Накопитель SSD
                             </label>
-                            <Select value={ssd ? String(ssd) : ''} onValueChange={(v) => setSsd(Number(v))} disabled={!ram || ssdOptions.length === 0}>
+                            <Select value={ssd ? String(ssd) : ''} onValueChange={(v) => setSsd(Number(v))} disabled={!modelName || ssdOptions.length === 0}>
                               <SelectTrigger>
                                 <SelectValue placeholder="Выберите SSD" />
                               </SelectTrigger>
@@ -519,12 +510,10 @@ const Sell = () => {
                               </SelectContent>
                             </Select>
                           </div>
-                        </>
-                      )}
 
                       <div className="space-y-2">
                         <label className="text-sm font-medium flex items-center gap-2">
-                          <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">{hasConfigData ? '5' : '2'}</span>
+                          <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">5</span>
                           <Shield className="w-4 h-4" />
                           Состояние
                         </label>
@@ -582,7 +571,7 @@ const Sell = () => {
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }} className="space-y-6">
                           <div className="text-center p-3 bg-muted/50 rounded-lg">
                             <p className="font-medium">{modelName}</p>
-                            <p className="text-sm text-muted-foreground">{processor} / {ram} GB RAM / {formatSsd(Number(ssd))}</p>
+                            <p className="text-sm text-muted-foreground">{[processor, ram ? `${ram} GB RAM` : null, ssd ? formatSsd(Number(ssd)) : null].filter(Boolean).join(' / ') || '—'}</p>
                           </div>
                           <div className="text-center p-6 bg-amber-500/10 rounded-xl border-2 border-amber-500/30">
                             <p className="text-2xl md:text-3xl font-bold text-amber-600 mb-3">🔮 У вас редкая модель!</p>
@@ -599,7 +588,7 @@ const Sell = () => {
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }} className="space-y-6">
                           <div className="text-center p-3 bg-muted/50 rounded-lg">
                             <p className="font-medium">{modelName}</p>
-                            <p className="text-sm text-muted-foreground">{processor} / {ram} GB RAM / {formatSsd(Number(ssd))}</p>
+                            <p className="text-sm text-muted-foreground">{[processor, ram ? `${ram} GB RAM` : null, ssd ? formatSsd(Number(ssd)) : null].filter(Boolean).join(' / ') || '—'}</p>
                           </div>
                           <div className="text-center p-6 bg-muted/30 rounded-xl border">
                             <p className="text-sm text-muted-foreground mb-2">Рыночная цена сейчас</p>

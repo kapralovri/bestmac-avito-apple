@@ -8,6 +8,7 @@
 
 export interface AvitoPriceStat {
   model_name: string;      // "MacBook Air 13 (2020, M1)" - формат каталога Авито
+  family?: string;         // "MacBook" / "iMac" / "Mac mini" / "Mac Studio"
   processor: string;       // "Apple M1", "Apple M1 Pro", etc.
   ram: number;             // GB
   ssd: number;             // GB

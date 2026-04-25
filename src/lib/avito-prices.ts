@@ -109,6 +109,26 @@ export function getModels(data: AvitoPricesData): string[] {
 }
 
 /**
+ * Семейство устройства — case-insensitive, с фоллбэком по префиксу model_name.
+ */
+export const FAMILY_KEYS = ['MacBook', 'iMac', 'Mac mini', 'Mac Studio'] as const;
+export type FamilyKey = typeof FAMILY_KEYS[number];
+
+export function matchFamily(stat: AvitoPriceStat, family: FamilyKey): boolean {
+  const f = (stat.family || '').toLowerCase();
+  if (f) return f === family.toLowerCase();
+  return stat.model_name.toLowerCase().startsWith(family.toLowerCase());
+}
+
+/**
+ * Уникальные модели для семейства.
+ */
+export function getModelsByFamily(stats: AvitoPriceStat[], family: FamilyKey): string[] {
+  const filtered = stats.filter(s => matchFamily(s, family));
+  return [...new Set(filtered.map(s => s.model_name))].sort();
+}
+
+/**
  * Получить уникальные процессоры для модели
  */
 export function getProcessorOptions(stats: AvitoPriceStat[], modelName: string): string[] {
