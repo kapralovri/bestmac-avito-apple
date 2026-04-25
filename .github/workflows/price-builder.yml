@@ -1,9 +1,6 @@
-name: Price Builder v3
+name: Price Builder v3 (disabled — replaced by avito-parser.yml)
 
 on:
-  schedule:
-    - cron: '0 2 * * *'   # Batch 1: MacBook (02:00 UTC)
-    - cron: '0 8 * * *'   # Batch 2: iMac + Mac mini + Mac Studio (08:00 UTC)
   workflow_dispatch:
     inputs:
       models:

@@ -1,94 +1,104 @@
 #!/usr/bin/env python3
 """
-Avito Price Parser
-Playwright + RuCaptcha (GeeTest v4) — тот же подход что и в Scanner.
-Обходит 84 конфигурации, собирает цены, строит avito-prices.json.
+Avito Price Parser v2 — multi-tab parser.
+
+Читает public/data/parser-config.json (4 вкладки) и парсит модели
+в одном из двух режимов:
+
+  • direct (MacBook):
+      В таблице задан конкретный конфиг (model + processor + ram + ssd).
+      Парсер собирает цены со страниц поиска и сохраняет одну запись
+      с этими параметрами.
+
+  • discovery (iMac / Mac mini / Mac Studio):
+      В таблице только модель + URL. Парсер для каждого объявления
+      пытается определить Процессор / RAM / SSD из заголовка, описания
+      или раздела «Технические характеристики» внутри объявления.
+      Группирует цены по уникальной конфигурации и сохраняет записи
+      по каждой найденной комбинации.
+
+Mac mini: фильтрует объявления с процессорами Intel — оставляет только M-серию.
+
+Usage:
+  python parser.py --tab MacBook
+  python parser.py --tab iMac
+  python parser.py --tab "Mac mini"
+  python parser.py --tab "Mac Studio"
+  python parser.py --tab all
 """
-import json
-import os
-import re
-import time
-import random
-import statistics
 import argparse
+import json
 import logging
-from datetime import datetime
+import os
+import random
+import re
+import statistics
+import sys
+import time
+from datetime import datetime, timedelta
 from pathlib import Path
+
+# Добавляем scripts/ в path для импорта common
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 try:
     from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
     from bs4 import BeautifulSoup
 except ImportError:
     print("pip install playwright beautifulsoup4 lxml 2captcha-python && playwright install chromium")
-    exit(1)
+    sys.exit(1)
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+from common.config import VALID_RAM, VALID_SSD, MIN_PRICE, MAX_PRICE, JUNK_KEYWORDS
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("Parser")
 
-# --- КОНФИГУРАЦИЯ ---
-SCRIPT_DIR  = Path(__file__).parent
-URLS_FILE   = SCRIPT_DIR / "../../public/data/avito-urls.json"
-OUTPUT_FILE = SCRIPT_DIR / "../../public/data/avito-prices.json"
+# ─── Пути ────────────────────────────────────────────────────────────────────
+SCRIPT_DIR    = Path(__file__).parent
+CONFIG_FILE   = SCRIPT_DIR / "../../public/data/parser-config.json"
+PRICES_FILE   = SCRIPT_DIR / "../../public/data/avito-prices.json"
+URLS_FILE     = SCRIPT_DIR / "../../public/data/avito-urls.json"
 
-RUCAPTCHA_API_KEY = os.environ.get('RUCAPTCHA_API_KEY', '')
-AVITO_CAPTCHA_ID  = '2d9c743cf7d63dbc9db578a608196bcd'
-AVITO_VERIFY_URL  = 'https://www.avito.ru/web/1/firewallCaptcha/verify'
-USER_AGENT        = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-                     'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36')
+# ─── Настройки парсинга ──────────────────────────────────────────────────────
+RUCAPTCHA_API_KEY = os.environ.get("RUCAPTCHA_API_KEY", "")
+AVITO_CAPTCHA_ID  = "2d9c743cf7d63dbc9db578a608196bcd"
+AVITO_VERIFY_URL  = "https://www.avito.ru/web/1/firewallCaptcha/verify"
+USER_AGENT        = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
 
-JUNK_KEYWORDS = [
-    'mdm', 'залочен', 'разбита', 'разбит', 'ремонт', 'не работает', 'icloud',
-    'запчаст', 'экран', 'матриц', 'дефект', 'аккаунт', 'коробка', 'чехол',
-    'под заказ', 'срок доставки', 'предоплата', 'замена', 'меняли', 'менял',
-    'восстановлен', 'реф', 'refurbished', 'залит', 'глючит', 'полосы', 'пятна',
-    'в разбор', 'на части', 'пароль', 'обход',
-    'трещин', 'вмятин', 'царапин', 'не включ',
-]
+MAX_PAGES_DEFAULT   = 5     # для discovery — больше выборка; для direct хватает 3
+MIN_SAMPLES_DEFAULT = 3
+
+# Mac mini: оставляем только M-серию, отбрасываем Intel
+INTEL_PATTERN = re.compile(r"\b(intel|core\s*i[3579]|\bi[3579]\b)", re.I)
 
 
-# ─────────────────────────────────────────────
-# КАПЧА (из Scanner — тот же подход)
-# ─────────────────────────────────────────────
+# ─── Капча ───────────────────────────────────────────────────────────────────
 
 def is_captcha_page(page) -> bool:
-    return page.query_selector('div.firewall-container') is not None
+    return page.query_selector("div.firewall-container") is not None
 
 
 def solve_captcha(page) -> bool:
     if not RUCAPTCHA_API_KEY:
-        logger.warning("⚠️  RUCAPTCHA_API_KEY не задан")
+        logger.warning("⚠️ RUCAPTCHA_API_KEY не задан")
         return False
     try:
         from twocaptcha import TwoCaptcha
-        solver = TwoCaptcha(RUCAPTCHA_API_KEY, server='rucaptcha.com', defaultTimeout=120)
-
-        logger.info(f"[ШАГ 1] 🧩 GeeTest v4 | captcha_id: {AVITO_CAPTCHA_ID}")
-        logger.info("[ШАГ 1] ⏳ Отправляем в RuCaptcha (20-60 сек)...")
+        solver = TwoCaptcha(RUCAPTCHA_API_KEY, server="rucaptcha.com", defaultTimeout=120)
         result = solver.geetest_v4(captcha_id=AVITO_CAPTCHA_ID, url=page.url)
-        logger.info(f"[ШАГ 1] ✅ RuCaptcha ответила: {str(result)[:100]}")
-
-        code = result['code']
+        code = result["code"]
         code_data = json.loads(code) if isinstance(code, str) else code
-        lot_number     = code_data['lot_number']
-        pass_token     = code_data['pass_token']
-        gen_time       = code_data['gen_time']
-        captcha_output = code_data['captcha_output']
-        logger.info(f"[ШАГ 1] lot_number: {lot_number[:16]}...")
-
-        logger.info("[ШАГ 2] 🍪 Куки из браузера...")
-        cookie_map = {c['name']: c['value'] for c in page.context.cookies()}
-        logger.info(f"[ШАГ 2] Доступные куки: {list(cookie_map.keys())}")
 
         js_payload = json.dumps({
-            'captcha': '',
-            'hCaptchaResponse': '',
-            'captcha_id': AVITO_CAPTCHA_ID,
-            'lot_number': lot_number,
-            'pass_token': pass_token,
-            'gen_time': gen_time,
-            'captcha_output': captcha_output,
+            "captcha": "",
+            "hCaptchaResponse": "",
+            "captcha_id": AVITO_CAPTCHA_ID,
+            "lot_number":     code_data["lot_number"],
+            "pass_token":     code_data["pass_token"],
+            "gen_time":       code_data["gen_time"],
+            "captcha_output": code_data["captcha_output"],
         })
-        logger.info(f"[ШАГ 3] 📤 POST через browser fetch → {AVITO_VERIFY_URL}")
         resp_data = page.evaluate(f"""async () => {{
             const resp = await fetch('{AVITO_VERIFY_URL}', {{
                 method: 'POST',
@@ -97,106 +107,128 @@ def solve_captcha(page) -> bool:
                     'content-type': 'application/json',
                     'origin': 'https://www.avito.ru',
                     'referer': window.location.href,
-                    'x-cube': 'undefined',
                 }},
                 credentials: 'include',
                 body: JSON.stringify({js_payload}),
             }});
             return await resp.json();
         }}""")
-        logger.info(f"[ШАГ 3] Ответ: {str(resp_data)[:200]}")
-
-        if not resp_data.get('result', {}).get('verified', False):
-            logger.error("[ШАГ 3] ❌ verified=False")
+        if not resp_data.get("result", {}).get("verified", False):
+            logger.error("❌ verified=False")
             return False
-        logger.info("[ШАГ 3] ✅ Капча пройдена!")
-
-        logger.info("[ШАГ 4] 🔄 Перезагружаем страницу...")
-        page.reload(wait_until='domcontentloaded', timeout=20000)
+        page.reload(wait_until="domcontentloaded", timeout=20000)
         page.wait_for_timeout(3000)
-        logger.info(f"[ШАГ 4] URL: {page.url[:80]} | Title: {page.title()}")
-        logger.info(f"[ШАГ 4] firewall-container: {is_captcha_page(page)}")
-        return True
-
+        return not is_captcha_page(page)
     except Exception as e:
-        logger.error(f"❌ Ошибка решения капчи: {e}")
+        logger.error(f"❌ Капча: {e}")
         return False
 
 
-def navigate_with_captcha(page, url: str) -> bool:
+def navigate(page, url: str) -> bool:
     try:
-        page.goto(url, wait_until='domcontentloaded', timeout=30000)
+        page.goto(url, wait_until="domcontentloaded", timeout=30000)
         page.wait_for_timeout(random.randint(1500, 3000))
     except PWTimeout:
-        logger.warning(f"⏱ Таймаут: {url[:60]}")
+        logger.warning(f"⏱ Таймаут: {url[:80]}")
         return False
     except Exception as e:
-        logger.warning(f"⚠️  Ошибка goto: {e}")
+        logger.warning(f"⚠️ goto: {e}")
         return False
-
     for attempt in range(1, 4):
         if not is_captcha_page(page):
             return True
-        logger.warning(f"🛡 Капча (попытка {attempt}/3) на {url[:60]}")
+        logger.warning(f"🛡 Капча (попытка {attempt}/3)")
         if not solve_captcha(page):
             return False
-        page.wait_for_timeout(3000)
-
-    # Финальная проверка после последней попытки
-    if not is_captcha_page(page):
-        logger.info("✅ Капча пройдена после финальной проверки")
-        return True
-
-    logger.error("❌ Капча не прошла после 3 попыток")
-    return False
+        page.wait_for_timeout(2000)
+    return not is_captcha_page(page)
 
 
-# ─────────────────────────────────────────────
-# АНАЛИТИКА ЦЕН
-# ─────────────────────────────────────────────
+# ─── Аналитика цен ───────────────────────────────────────────────────────────
 
-def get_market_analysis(prices: list):
+def market_analysis(prices: list[int]) -> tuple[int, int, int]:
     if not prices:
         return 0, 0, 0
     prices = sorted(prices)
     n = len(prices)
-
-    # IQR-фильтр: убираем выбросы по межквартильному размаху
     if n >= 8:
         q1 = prices[n // 4]
         q3 = prices[3 * n // 4]
         iqr = q3 - q1
-        lower = q1 - 1.5 * iqr
-        upper = q3 + 1.5 * iqr
-        clean_prices = [p for p in prices if lower <= p <= upper]
-        if len(clean_prices) < 3:
-            clean_prices = prices  # фоллбэк если слишком агрессивно
+        lo, hi = q1 - 1.5 * iqr, q3 + 1.5 * iqr
+        clean = [p for p in prices if lo <= p <= hi]
+        if len(clean) < 3:
+            clean = prices
     else:
-        clean_prices = prices
-
-    market_low = clean_prices[0]
-    market_high = clean_prices[-1]
-    median = int(statistics.median(clean_prices))
-    return market_low, market_high, median
+        clean = prices
+    return clean[0], clean[-1], int(statistics.median(clean))
 
 
-# ─────────────────────────────────────────────
-# ПАРСЕР
-# ─────────────────────────────────────────────
+# ─── Извлечение конфига из текста ────────────────────────────────────────────
+
+def extract_ram_from_text(text: str) -> int:
+    """Ищет RAM в произвольном тексте: '16/512', '16 ГБ', '16Gb' и т.п."""
+    # Формат "16/512", "16 / 512"
+    m = re.search(r"\b(\d+)\s*/\s*(\d+)", text)
+    if m:
+        v = int(m.group(1))
+        if v in VALID_RAM:
+            return v
+    # Формат "16 ГБ ОЗУ" / "RAM 16" / "16 gb ram"
+    for pat in (r"(\d+)\s*(?:гб|gb)\s*(?:озу|ram|оперативн)",
+                r"(?:озу|ram|оперативн[а-я]*)[^\d]{0,10}(\d+)",
+                r"\b(\d+)\s*(?:gb|гб)\b"):
+        for m in re.finditer(pat, text, re.I):
+            v = int(m.group(1))
+            if v in VALID_RAM:
+                return v
+    return 0
+
+
+def extract_ssd_from_text(text: str) -> int:
+    """Ищет SSD/диск в тексте: '256', '512', '1 ТБ', '1tb', '16/512'."""
+    m = re.search(r"\b\d+\s*/\s*(\d+)", text)
+    if m:
+        v = int(m.group(1))
+        if v in VALID_SSD:
+            return v
+        if v * 1024 in VALID_SSD and v <= 8:    # "1/2/4/8" в ТБ
+            return v * 1024
+    for m in re.finditer(r"(\d+)\s*(тб|tb|гб|gb)", text, re.I):
+        val  = int(m.group(1))
+        unit = m.group(2).lower()
+        if unit.startswith(("т", "t")):
+            val *= 1024
+        if val in VALID_SSD:
+            return val
+    return 0
+
+
+def extract_chip_from_text(text: str) -> str:
+    """Возвращает 'M1' / 'M2 Pro' / 'M3 Max' / 'M4 Ultra' и т.д."""
+    m = re.search(r"\b(m[1-9])\s*(pro|max|ultra)?\b", text, re.I)
+    if not m:
+        return ""
+    base = m.group(1).upper()
+    tier = m.group(2)
+    return f"Apple {base} {tier.capitalize()}" if tier else f"Apple {base}"
+
+
+# ─── Парсер ──────────────────────────────────────────────────────────────────
 
 class AvitoParser:
     def __init__(self, playwright):
         self.browser = playwright.chromium.launch(
             headless=True,
-            args=['--no-sandbox', '--disable-setuid-sandbox',
-                  '--disable-blink-features=AutomationControlled']
+            args=["--no-sandbox", "--disable-setuid-sandbox",
+                  "--disable-blink-features=AutomationControlled"],
         )
         self.context = self.browser.new_context(
-            viewport={'width': 1440, 'height': 900},
+            viewport={"width": 1440, "height": 900},
             user_agent=USER_AGENT,
-            locale='ru-RU',
-            timezone_id='Europe/Moscow',
-            extra_http_headers={'Accept-Language': 'ru-RU,ru;q=0.9'},
+            locale="ru-RU",
+            timezone_id="Europe/Moscow",
+            extra_http_headers={"Accept-Language": "ru-RU,ru;q=0.9"},
         )
         self.context.add_init_script("""
             Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
@@ -206,231 +238,419 @@ class AvitoParser:
         self.page = self.context.new_page()
 
     def warmup(self):
-        """Прогрев: заходим на avito.ru, решаем капчу."""
-        logger.info("🌐 Прогрев: avito.ru...")
-        ok = navigate_with_captcha(self.page, "https://www.avito.ru")
-        if ok:
-            logger.info("✅ Прогрев пройден")
-        else:
-            logger.warning("⚠️  Прогрев не удался, продолжаем...")
+        logger.info("🌐 Прогрев avito.ru...")
+        navigate(self.page, "https://www.avito.ru")
         self.page.wait_for_timeout(random.randint(2000, 4000))
 
-    def parse_config(self, entry: dict) -> dict | None:
-        """
-        Парсит одну модель (1-3 страницы поиска).
-        Возвращает словарь со статистикой цен или None.
-        """
-        model = entry['model_name']
-        url   = entry['url'].strip()
-
-        logger.info(f"🔎 {model}...")
-
-        prices = []
-
-        for page_num in range(1, 4):
-            page_url = f"{url}&p={page_num}"
-            time.sleep(random.uniform(3, 6))
-
-            ok = navigate_with_captcha(self.page, page_url)
+    # ── Открытие объявления и чтение «Технические характеристики» ──
+    def deep_specs(self, listing_url: str) -> dict:
+        result = {"ram": 0, "ssd": 0, "chip": ""}
+        try:
+            detail = self.context.new_page()
+            ok = navigate(detail, listing_url)
             if not ok:
-                logger.warning(f"   ⚠️  Не удалось загрузить стр. {page_num}")
+                detail.close()
+                return result
+            soup = BeautifulSoup(detail.content(), "lxml")
+            detail.close()
+            params = soup.select('[data-marker="item-params"] li')
+            for li in params:
+                text  = li.get_text(" ", strip=True)
+                lower = text.lower()
+                if result["ram"] == 0 and ("оперативн" in lower or "ram" in lower):
+                    m = re.search(r"(\d+)", text)
+                    if m and int(m.group(1)) in VALID_RAM:
+                        result["ram"] = int(m.group(1))
+                elif result["ssd"] == 0 and (
+                    "накопител" in lower or "ssd" in lower or "объ" in lower
+                ):
+                    m = re.search(r"(\d+)\s*(тб|tb|гб|gb)?", text, re.I)
+                    if m:
+                        v = int(m.group(1))
+                        u = (m.group(2) or "").lower()
+                        if u.startswith(("т", "t")):
+                            v *= 1024
+                        if v in VALID_SSD:
+                            result["ssd"] = v
+                elif not result["chip"] and "процессор" in lower:
+                    chip = extract_chip_from_text(text)
+                    if chip:
+                        result["chip"] = chip
+            # Фоллбэк: по тексту страницы целиком
+            if result["ram"] == 0 or result["ssd"] == 0:
+                full = soup.get_text(" ", strip=True)
+                if result["ram"] == 0:
+                    result["ram"] = extract_ram_from_text(full)
+                if result["ssd"] == 0:
+                    result["ssd"] = extract_ssd_from_text(full)
+        except Exception as e:
+            logger.debug(f"deep_specs: {e}")
+        return result
+
+    # ── Сбор объявлений со страниц поиска ──
+    def collect_listings(self, url: str, max_pages: int) -> list[dict]:
+        """Возвращает список {title, snippet, price, listing_url}."""
+        items_all: list[dict] = []
+        for page_num in range(1, max_pages + 1):
+            page_url = f"{url}&p={page_num}" if "?" in url else f"{url}?p={page_num}"
+            time.sleep(random.uniform(2, 4))
+            ok = navigate(self.page, page_url)
+            if not ok:
                 break
+            soup = BeautifulSoup(self.page.content(), "lxml")
 
-            soup = BeautifulSoup(self.page.content(), 'lxml')
-
-            # Убираем блок "объявления есть в других городах" —
-            # цены из регионов сильно искажают московскую статистику
-            other_cities = soup.find(string=re.compile(r'объявлени\S* есть в других городах', re.I))
-            if other_cities:
-                # Удаляем всё после этого блока
-                parent = other_cities.find_parent(['div', 'section', 'h2', 'h3', 'span'])
+            # Отсекаем «есть в других городах»
+            other = soup.find(string=re.compile(r"объявлени\S* есть в других городах", re.I))
+            if other:
+                parent = other.find_parent(["div", "section", "h2", "h3", "span"])
                 if parent:
-                    for sibling in list(parent.find_next_siblings()):
-                        sibling.decompose()
+                    for sib in list(parent.find_next_siblings()):
+                        sib.decompose()
                     parent.decompose()
-                    logger.info(f"   🏙 Отсечены объявления из других городов")
 
             items = soup.select('[data-marker="item"]')
             logger.info(f"   📄 Стр. {page_num}: {len(items)} объявлений")
+            if not items:
+                break
 
             for item in items:
                 try:
                     title_tag = item.select_one('[data-marker="item-title"]')
-                    title = (title_tag.get('title', '') if title_tag else '').lower()
+                    if not title_tag:
+                        continue
+                    title = title_tag.get("title", "") or title_tag.get_text(strip=True)
 
                     snippet_tag = item.select_one('[data-marker="item-description"]')
-                    snippet = snippet_tag.get_text().lower() if snippet_tag else ''
-
-                    check_text = title + ' ' + snippet
-                    if any(w in check_text for w in JUNK_KEYWORDS):
-                        continue
+                    snippet = snippet_tag.get_text(" ", strip=True) if snippet_tag else ""
 
                     price_tag = item.select_one('[itemprop="price"]')
                     if not price_tag:
                         continue
-                    p = int(price_tag['content'])
-                    if 15000 < p < 900000:
-                        prices.append(p)
+                    price = int(price_tag["content"])
+                    if price < MIN_PRICE or price > MAX_PRICE:
+                        continue
+
+                    href = title_tag.get("href", "")
+                    listing_url = ("https://www.avito.ru" + href).split("?")[0] if href else ""
+
+                    items_all.append({
+                        "title": title,
+                        "snippet": snippet,
+                        "price": price,
+                        "url": listing_url,
+                    })
                 except Exception:
                     continue
 
-            # Если мало объявлений — следующая страница пустая
             if len(items) < 10:
                 break
+        return items_all
 
-        if len(prices) < 5:
-            logger.warning(f"   ❌ Мало данных: {len(prices)} цен (нужно ≥5)")
+    # ── Direct mode: один конфиг из таблицы ──
+    def parse_direct(self, entry: dict, max_pages: int) -> dict | None:
+        model     = entry["model"]
+        processor = entry.get("processor", "Apple")
+        ram       = entry.get("ram", 0)
+        ssd       = entry.get("ssd", 0)
+        url       = entry["url"]
+
+        logger.info(f"\n[direct] {model} | {processor} {ram}/{ssd}")
+        listings = self.collect_listings(url, max_pages)
+
+        prices: list[int] = []
+        for it in listings:
+            check = (it["title"] + " " + it["snippet"]).lower()
+            if any(w in check for w in JUNK_KEYWORDS):
+                continue
+            prices.append(it["price"])
+
+        if len(prices) < MIN_SAMPLES_DEFAULT:
+            logger.warning(f"   ⚠️ Мало цен: {len(prices)} < {MIN_SAMPLES_DEFAULT}")
             return None
 
-        low, high, median = get_market_analysis(prices)
-        buyout = int((low - 12000) // 1000 * 1000)
+        return {(model, processor, ram, ssd): prices}
+
+    # ── Discovery mode: разбор объявлений на конфиги ──
+    def parse_discovery(
+        self, entry: dict, family: str, max_pages: int, exclude_intel: bool
+    ) -> dict:
+        model       = entry["model"]
+        url         = entry["url"]
+        seed_chip   = entry.get("processor", "")  # из таблицы (e.g. "m1")
+        seed_ram    = entry.get("ram", 0)
+        seed_ssd    = entry.get("ssd", 0)
+
+        logger.info(f"\n[discovery] {model} (seed: chip={seed_chip!r} ram={seed_ram} ssd={seed_ssd})")
+        listings = self.collect_listings(url, max_pages)
+
+        groups: dict[tuple, list[int]] = {}
+        deep_count   = 0
+        skipped_intel = 0
+        skipped_junk = 0
+        skipped_nospec = 0
+
+        for it in listings:
+            text  = (it["title"] + " " + it["snippet"])
+            lower = text.lower()
+
+            if any(w in lower for w in JUNK_KEYWORDS):
+                skipped_junk += 1
+                continue
+
+            # Mac mini: только M-серия
+            if exclude_intel and INTEL_PATTERN.search(lower):
+                skipped_intel += 1
+                continue
+
+            # Извлекаем чип/ram/ssd из заголовка+описания
+            chip = extract_chip_from_text(text) or (
+                f"Apple {seed_chip.upper()}" if seed_chip else ""
+            )
+            ram = extract_ram_from_text(text) or seed_ram
+            ssd = extract_ssd_from_text(text) or seed_ssd
+
+            # Если чего-то не хватает — открываем объявление
+            if (not chip or not ram or not ssd) and it["url"]:
+                deep = self.deep_specs(it["url"])
+                deep_count += 1
+                if not chip and deep["chip"]:
+                    chip = deep["chip"]
+                if not ram and deep["ram"]:
+                    ram = deep["ram"]
+                if not ssd and deep["ssd"]:
+                    ssd = deep["ssd"]
+                time.sleep(random.uniform(0.8, 1.8))
+
+            # Финальная проверка: должны быть все 3 параметра
+            if not chip or not ram or not ssd:
+                skipped_nospec += 1
+                continue
+
+            # Mac mini: повторно проверяем чип после deep
+            if exclude_intel and not re.search(r"\bm[1-9]\b", chip, re.I):
+                skipped_intel += 1
+                continue
+
+            key = (model, chip, ram, ssd)
+            groups.setdefault(key, []).append(it["price"])
 
         logger.info(
-            f"   ✅ {len(prices)} цен | low={low:,}₽ med={median:,}₽ "
-            f"high={high:,}₽ buyout={buyout:,}₽"
+            f"   📊 {len(listings)} объявл. | "
+            f"deep={deep_count} | intel={skipped_intel} | junk={skipped_junk} | "
+            f"no-specs={skipped_nospec} | конфигов={len(groups)}"
         )
-
-        return {
-            "model_name": entry['model_name'],
-            "family": entry.get('family', ''),
-            "processor": "",
-            "ram": 0,
-            "ssd": 0,
-            "min_price": low,
-            "max_price": high,
-            "median_price": median,
-            "buyout_price": entry.get('buyout_price') or buyout,
-            "samples_count": len(prices),
-            "updated_at": time.ctime(),
-        }
+        return groups
 
     def close(self):
         self.context.close()
         self.browser.close()
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--batch", default="all")
-    parser.add_argument("--total-batches", type=int, default=3)
-    args = parser.parse_args()
+# ─── Загрузка конфига ────────────────────────────────────────────────────────
 
-    if not URLS_FILE.exists():
-        logger.error(f"❌ Файл не найден: {URLS_FILE}")
-        return
+def load_config() -> dict:
+    if not CONFIG_FILE.exists():
+        logger.error(f"❌ Не найден {CONFIG_FILE}. Запусти sync-google-sheet.py")
+        sys.exit(1)
+    with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
 
-    with open(URLS_FILE, 'r', encoding='utf-8') as f:
-        all_entries = json.load(f)['entries']
 
-    batch_env = os.environ.get("BATCH", args.batch)
-    if batch_env == "all":
-        my_entries = all_entries
-        logger.info(f"📦 Режим: ВСЕ конфигурации ({len(my_entries)} шт)")
-    else:
-        b_idx = int(batch_env)
-        chunk = len(all_entries) // args.total_batches
-        start = (b_idx - 1) * chunk
-        end = b_idx * chunk if b_idx < args.total_batches else len(all_entries)
-        my_entries = all_entries[start:end]
-        logger.info(f"📦 Батч {b_idx}/{args.total_batches} ({len(my_entries)} шт)")
+# ─── Сборка статистики и запись в БД ─────────────────────────────────────────
 
-    with sync_playwright() as pw:
-        avito = AvitoParser(pw)
-        avito.warmup()
-
-        new_results = []
-        failed_configs = []
-
-        for i, entry in enumerate(my_entries, 1):
-            logger.info(f"━━━ [{i}/{len(my_entries)}] ━━━")
-            res = avito.parse_config(entry)
-            if res:
-                new_results.append(res)
-            else:
-                failed_configs.append(entry['model_name'])
-
-        avito.close()
-
-    # Мержим с существующей базой.
-    # Допустимые модели — только те, что сейчас есть в конфиге.
-    valid_model_names = {e['model_name'] for e in all_entries}
-
-    existing_data = {"stats": []}
-    if OUTPUT_FILE.exists():
-        try:
-            with open(OUTPUT_FILE, 'r', encoding='utf-8') as f:
-                existing_data = json.load(f)
-        except Exception:
-            pass
-
-    # Оставляем из старой базы только актуальные модели (убираем «призраков»)
-    pruned = [s for s in existing_data.get('stats', []) if s['model_name'] in valid_model_names]
-    pruned_count = len(existing_data.get('stats', [])) - len(pruned)
-    if pruned_count:
-        logger.info(f"🗑 Удалено устаревших записей: {pruned_count}")
-
-    db = {s['model_name']: s for s in pruned}
-    for s in new_results:
-        db[s['model_name']] = s
-
-    final_stats = []
-    total_all_listings = 0
-    repaired_count = 0
-
-    for model_name, stat in db.items():
-        try:
-            median = int(stat.get('median_price', 0))
-            if median < 5000:
-                continue
-
-            if not stat.get('min_price'):
-                stat['min_price'] = int(median * 0.85)
-                repaired_count += 1
-            if not stat.get('max_price'):
-                stat['max_price'] = int(median * 1.15)
-            if not stat.get('buyout_price'):
-                stat['buyout_price'] = int((stat['min_price'] - 12000) // 1000 * 1000)
-
-            clean_item = {
-                "model_name": str(stat['model_name']),
-                "family": str(stat.get('family', '')),
-                "processor": str(stat.get('processor', '')),
-                "ram": int(stat.get('ram', 0)),
-                "ssd": int(stat.get('ssd', 0)),
-                "min_price": int(stat['min_price']),
-                "max_price": int(stat['max_price']),
-                "median_price": int(stat['median_price']),
-                "buyout_price": int(stat['buyout_price']),
-                "samples_count": int(stat.get('samples_count', 0)),
-                "updated_at": str(stat.get('updated_at', time.ctime())),
-            }
-            total_all_listings += clean_item["samples_count"]
-            final_stats.append(clean_item)
-        except Exception:
-            continue
-
-    output_data = {
-        "generated_at": time.ctime(),
-        "total_listings": total_all_listings,
-        "stats": final_stats,
+def build_stat(
+    model: str, processor: str, ram: int, ssd: int,
+    family: str, prices: list[int], buyout_override: int = 0,
+) -> dict:
+    low, high, median = market_analysis(prices)
+    buyout = buyout_override or max(0, int((low - 12000) // 1000 * 1000))
+    return {
+        "model_name":   model,
+        "family":       family,
+        "processor":    processor,
+        "ram":          int(ram),
+        "ssd":          int(ssd),
+        "min_price":    int(low),
+        "max_price":    int(high),
+        "median_price": int(median),
+        "buyout_price": int(buyout),
+        "samples_count": len(prices),
+        "updated_at":   datetime.now().strftime("%Y-%m-%d %H:%M"),
     }
 
-    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-        json.dump(output_data, f, ensure_ascii=False, indent=2)
 
-    print("\n" + "=" * 50)
-    print("📊 ИТОГИ ОБНОВЛЕНИЯ БАЗЫ")
-    print("=" * 50)
-    print(f"✅ Обновлено успешно: {len(new_results)}")
-    print(f"🛠 Отремонтировано: {repaired_count}")
-    print(f"🗑 Удалено устаревших: {pruned_count}")
-    print(f"❌ Не удалось: {len(failed_configs)}")
-    if failed_configs:
-        for c in failed_configs:
-            print(f"   — {c}")
-    print(f"📈 Всего объявлений: {total_all_listings}")
-    print("=" * 50)
+def merge_into_db(
+    db: dict[tuple, dict], new_stats: list[dict]
+) -> tuple[int, int]:
+    new_count = updated_count = 0
+    for s in new_stats:
+        key = (s["model_name"], s["processor"], s["ram"], s["ssd"])
+        if key in db:
+            updated_count += 1
+        else:
+            new_count += 1
+        db[key] = s
+    return new_count, updated_count
+
+
+def build_url_entries(stats: list[dict], tabs_data: dict) -> list[dict]:
+    """Опции дропдаунов для фронта. URL берём из таблицы по семейству."""
+    family_url: dict[str, str] = {}
+    for fam, t in tabs_data.items():
+        for e in t["entries"]:
+            family_url.setdefault(fam, e.get("url", ""))
+
+    out = []
+    seen = set()
+    for s in stats:
+        key = (s["model_name"], s["processor"], s["ram"], s["ssd"])
+        if key in seen:
+            continue
+        seen.add(key)
+        fam = s.get("family", "")
+        out.append({
+            "family":     fam,
+            "model_name": s["model_name"],
+            "processor":  s["processor"],
+            "ram":        s["ram"],
+            "ssd":        s["ssd"],
+            "url":        family_url.get(fam, ""),
+        })
+    out.sort(key=lambda x: (x["family"], x["model_name"], x["processor"], x["ram"], x["ssd"]))
+    return out
+
+
+# ─── Main ────────────────────────────────────────────────────────────────────
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--tab", required=True,
+                    help="MacBook | iMac | 'Mac mini' | 'Mac Studio' | all")
+    ap.add_argument("--max-pages", type=int, default=MAX_PAGES_DEFAULT)
+    ap.add_argument("--clean", action="store_true",
+                    help="Не мержить с БД, очистить только обработанные семейства")
+    ap.add_argument("--time-limit", type=int, default=0,
+                    help="Лимит времени в минутах (0 = без лимита)")
+    args = ap.parse_args()
+
+    cfg = load_config()
+    tabs_cfg = cfg["tabs"]
+
+    if args.tab == "all":
+        target_tabs = list(tabs_cfg.keys())
+    elif args.tab in tabs_cfg:
+        target_tabs = [args.tab]
+    else:
+        logger.error(f"❌ Вкладка '{args.tab}' не найдена. Доступно: {list(tabs_cfg.keys())}")
+        sys.exit(1)
+
+    deadline = None
+    if args.time_limit > 0:
+        deadline = datetime.now() + timedelta(minutes=args.time_limit)
+        logger.info(f"⏱ Лимит {args.time_limit} мин (дедлайн {deadline.strftime('%H:%M:%S')})")
+
+    # Загружаем существующую БД
+    existing = {"stats": []}
+    if PRICES_FILE.exists():
+        try:
+            with open(PRICES_FILE, "r", encoding="utf-8") as f:
+                existing = json.load(f)
+        except Exception:
+            pass
+    db: dict[tuple, dict] = {
+        (s["model_name"], s.get("processor", ""), s["ram"], s["ssd"]): s
+        for s in existing.get("stats", [])
+    }
+    logger.info(f"📥 В БД сейчас: {len(db)} записей")
+
+    # Если --clean — удаляем записи обрабатываемых семейств
+    if args.clean:
+        before = len(db)
+        db = {k: v for k, v in db.items() if v.get("family") not in target_tabs}
+        logger.info(f"🧹 --clean: удалено {before - len(db)} записей семейств {target_tabs}")
+
+    # Парсим
+    new_stats: list[dict] = []
+    with sync_playwright() as pw:
+        ap_obj = AvitoParser(pw)
+        ap_obj.warmup()
+
+        for tab_name in target_tabs:
+            tab = tabs_cfg[tab_name]
+            mode = tab["mode"]
+            entries = tab["entries"]
+            exclude_intel = (tab_name == "Mac mini")
+
+            logger.info(f"\n{'=' * 60}")
+            logger.info(f"📦 Вкладка '{tab_name}' | mode={mode} | строк={len(entries)}")
+            logger.info(f"{'=' * 60}")
+
+            for idx, entry in enumerate(entries, 1):
+                if deadline and datetime.now() >= deadline:
+                    logger.warning(f"⏱ Время вышло, прерываюсь на {idx}/{len(entries)}")
+                    break
+
+                logger.info(f"\n[{tab_name} {idx}/{len(entries)}] {entry['model']}")
+                try:
+                    if mode == "direct":
+                        groups = ap_obj.parse_direct(entry, args.max_pages)
+                        if not groups:
+                            continue
+                        for (m, p, r, s), prices in groups.items():
+                            stat = build_stat(m, p, r, s, tab_name, prices,
+                                              entry.get("buyout_price", 0))
+                            new_stats.append(stat)
+                    else:
+                        groups = ap_obj.parse_discovery(
+                            entry, tab_name, args.max_pages, exclude_intel
+                        )
+                        for (m, p, r, s), prices in groups.items():
+                            if len(prices) < MIN_SAMPLES_DEFAULT:
+                                logger.info(f"   ⏭ {m} | {p} {r}/{s}: {len(prices)} цен < {MIN_SAMPLES_DEFAULT}")
+                                continue
+                            stat = build_stat(m, p, r, s, tab_name, prices)
+                            new_stats.append(stat)
+                except Exception as e:
+                    logger.error(f"   ❌ {entry['model']}: {e}")
+                    continue
+
+        ap_obj.close()
+
+    # Мержим в БД
+    new_count, updated_count = merge_into_db(db, new_stats)
+    final_stats = sorted(db.values(),
+                         key=lambda s: (s.get("family", ""), s["model_name"],
+                                        s["processor"], s["ram"], s["ssd"]))
+    total_listings = sum(s.get("samples_count", 0) for s in final_stats)
+
+    # Пишем avito-prices.json
+    PRICES_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with open(PRICES_FILE, "w", encoding="utf-8") as f:
+        json.dump({
+            "generated_at":   datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "total_listings": total_listings,
+            "stats":          final_stats,
+        }, f, ensure_ascii=False, indent=2)
+
+    # Пишем avito-urls.json (опции для фронта)
+    url_entries = build_url_entries(final_stats, tabs_cfg)
+    with open(URLS_FILE, "w", encoding="utf-8") as f:
+        json.dump({
+            "description": "Опции дропдаунов фронта. Автогенерируется парсером.",
+            "updated_at":  datetime.now().strftime("%Y-%m-%d"),
+            "entries":     url_entries,
+        }, f, ensure_ascii=False, indent=2)
+
+    print("\n" + "=" * 60)
+    print("📊 ИТОГИ")
+    print("=" * 60)
+    print(f"🆕 Новых конфигов:  {new_count}")
+    print(f"🔄 Обновлено:       {updated_count}")
+    print(f"📈 Всего в БД:      {len(final_stats)}")
+    print(f"📊 Всего объявл.:   {total_listings}")
+    print(f"💾 {PRICES_FILE}")
+    print(f"💾 {URLS_FILE}")
+    print("=" * 60)
 
 
 if __name__ == "__main__":
