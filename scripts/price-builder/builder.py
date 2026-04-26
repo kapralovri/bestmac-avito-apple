@@ -652,7 +652,7 @@ def main():
             continue
 
         low, high, median = get_market_analysis(prices)
-        buyout = max(0, int((low - 12000) // 1000 * 1000))
+        buyout = max(0, int(median * 0.80 // 1000 * 1000))
 
         key = (model_name, processor, ram, ssd)
         is_new = key not in db
@@ -692,7 +692,7 @@ def main():
             if not stat.get('max_price'):
                 stat['max_price'] = int(median * 1.15)
             if not stat.get('buyout_price'):
-                stat['buyout_price'] = max(0, int((stat['min_price'] - 12000) // 1000 * 1000))
+                stat['buyout_price'] = max(0, int(stat['median_price'] * 0.80 // 1000 * 1000))
 
             clean_item = {
                 "model_name": str(stat['model_name']),

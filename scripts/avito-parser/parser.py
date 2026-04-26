@@ -481,7 +481,7 @@ def build_stat(
     family: str, prices: list[int], buyout_override: int = 0,
 ) -> dict:
     low, high, median = market_analysis(prices)
-    buyout = buyout_override or max(0, int((low - 12000) // 1000 * 1000))
+    buyout = buyout_override or max(0, int(median * 0.80 // 1000 * 1000))
     return {
         "model_name":   model,
         "family":       family,
