@@ -49,15 +49,17 @@ except ImportError:
     sys.exit(1)
 
 from common.config import VALID_RAM, VALID_SSD, MIN_PRICE, MAX_PRICE, JUNK_KEYWORDS
+from common.classifier import classify
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("Parser")
 
 # ─── Пути ────────────────────────────────────────────────────────────────────
-SCRIPT_DIR    = Path(__file__).parent
-CONFIG_FILE   = SCRIPT_DIR / "../../public/data/parser-config.json"
-PRICES_FILE   = SCRIPT_DIR / "../../public/data/avito-prices.json"
-URLS_FILE     = SCRIPT_DIR / "../../public/data/avito-urls.json"
+SCRIPT_DIR       = Path(__file__).parent
+CONFIG_FILE      = SCRIPT_DIR / "../../public/data/parser-config.json"
+MODELS_CONFIG    = SCRIPT_DIR / "../../public/data/models-config.json"
+PRICES_FILE      = SCRIPT_DIR / "../../public/data/avito-prices.json"
+URLS_FILE        = SCRIPT_DIR / "../../public/data/avito-urls.json"
 
 # ─── Настройки парсинга ──────────────────────────────────────────────────────
 RUCAPTCHA_API_KEY = os.environ.get("RUCAPTCHA_API_KEY", "")
@@ -364,29 +366,57 @@ class AvitoParser:
                 break
         return items_all
 
-    # ── Direct mode: один конфиг из таблицы ──
-    def parse_direct(self, entry: dict, max_pages: int) -> dict | None:
-        model     = entry["model"]
-        processor = entry.get("processor", "Apple")
-        ram       = entry.get("ram", 0)
-        ssd       = entry.get("ssd", 0)
-        url       = entry["url"]
+    # ── Direct mode: пакетный разбор одного URL для нескольких конфигов ──
+    def parse_direct_batch(
+        self, url: str, entries: list[dict], max_pages: int
+    ) -> dict[tuple, list[int]]:
+        """
+        Загружает url один раз, классифицирует каждое объявление и распределяет
+        цены по конфигам (ram, ssd) из entries. Возвращает {(model, proc, ram, ssd): prices}.
+        """
+        processor = entries[0].get("processor", "Apple")
+        model     = entries[0]["model"]
+        logger.info(f"\n[direct] {model} | {processor} | url: {url[:80]}")
+        logger.info(f"  Конфиги из таблицы: " + ", ".join(
+            f"{e.get('ram',0)}/{e.get('ssd',0)}" for e in entries
+        ))
 
-        logger.info(f"\n[direct] {model} | {processor} {ram}/{ssd}")
         listings = self.collect_listings(url, max_pages)
+        logger.info(f"  📦 Собрано {len(listings)} объявлений всего")
 
-        prices: list[int] = []
+        # Карта (ram, ssd) → entry для быстрого поиска
+        entry_map: dict[tuple, dict] = {
+            (e.get("ram", 0), e.get("ssd", 0)): e for e in entries if e.get("ram") and e.get("ssd")
+        }
+
+        groups: dict[tuple, list[int]] = {}
+        skipped_junk = 0
+        unmatched = 0
+
         for it in listings:
-            check = (it["title"] + " " + it["snippet"]).lower()
-            if any(w in check for w in JUNK_KEYWORDS):
+            text  = it["title"] + " " + it["snippet"]
+            lower = text.lower()
+
+            if any(w in lower for w in JUNK_KEYWORDS):
+                skipped_junk += 1
                 continue
-            prices.append(it["price"])
 
-        if len(prices) < MIN_SAMPLES_DEFAULT:
-            logger.warning(f"   ⚠️ Мало цен: {len(prices)} < {MIN_SAMPLES_DEFAULT}")
-            return None
+            cfg = classify(text)
+            key = (cfg.ram, cfg.ssd)
+            if key not in entry_map:
+                unmatched += 1
+                continue
 
-        return {(model, processor, ram, ssd): prices}
+            entry = entry_map[key]
+            full_key = (entry["model"], entry.get("processor", "Apple"), cfg.ram, cfg.ssd)
+            groups.setdefault(full_key, []).append(it["price"])
+
+        logger.info(f"  мусор={skipped_junk} не_в_таблице={unmatched}")
+        for (m, p, r, s), prices in groups.items():
+            logger.info(f"  ✅ {r}/{s}: {len(prices)} цен")
+        if not groups:
+            logger.warning(f"  ⚠️ Ни одного конфига не распознано из {len(listings)} объявлений")
+        return groups
 
     # ── Discovery mode: разбор объявлений на конфиги ──
     def parse_discovery(
@@ -472,6 +502,19 @@ def load_config() -> dict:
         sys.exit(1)
     with open(CONFIG_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+def load_models_url_map() -> dict[str, str]:
+    """Строит карту model_name.lower() → url из models-config.json (price-builder)."""
+    if not MODELS_CONFIG.exists():
+        return {}
+    try:
+        with open(MODELS_CONFIG, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return {e["model_name"].lower(): e["url"] for e in data.get("entries", []) if e.get("url")}
+    except Exception as e:
+        logger.warning(f"⚠️ Не удалось загрузить models-config.json: {e}")
+        return {}
 
 
 # ─── Сборка статистики и запись в БД ─────────────────────────────────────────
@@ -581,6 +624,10 @@ def main():
     }
     logger.info(f"📥 В БД сейчас: {len(db)} записей")
 
+    # Карта model_name.lower() → url из models-config.json (price-builder)
+    models_url_map = load_models_url_map()
+    logger.info(f"🗺  models-config.json: {len(models_url_map)} моделей загружено")
+
     # Если --clean — удаляем записи обрабатываемых семейств
     if args.clean:
         before = len(db)
@@ -603,22 +650,53 @@ def main():
             logger.info(f"📦 Вкладка '{tab_name}' | mode={mode} | строк={len(entries)}")
             logger.info(f"{'=' * 60}")
 
-            for idx, entry in enumerate(entries, 1):
-                if deadline and datetime.now() >= deadline:
-                    logger.warning(f"⏱ Время вышло, прерываюсь на {idx}/{len(entries)}")
-                    break
+            if mode == "direct":
+                # Группируем записи по модели (model_name), используем URL из models-config.
+                # Один запрос к Avito на модель → распределяем по (ram, ssd) через classifier.
+                by_model: dict[str, list[dict]] = {}
+                for e in entries:
+                    by_model.setdefault(e["model"], []).append(e)
 
-                logger.info(f"\n[{tab_name} {idx}/{len(entries)}] {entry['model']}")
-                try:
-                    if mode == "direct":
-                        groups = ap_obj.parse_direct(entry, args.max_pages)
-                        if not groups:
-                            continue
+                for model_idx, (model_name, model_entries) in enumerate(by_model.items(), 1):
+                    if deadline and datetime.now() >= deadline:
+                        logger.warning(f"⏱ Время вышло")
+                        break
+
+                    # Используем URL из models-config.json если есть (надёжнее Avito filter URL)
+                    url = models_url_map.get(model_name.lower()) or model_entries[0].get("url", "")
+                    if not url:
+                        logger.warning(f"⏭ Нет URL для '{model_name}', пропускаем")
+                        continue
+
+                    src = "models-config" if model_name.lower() in models_url_map else "таблица"
+                    logger.info(f"\n[{tab_name} {model_idx}/{len(by_model)}] {model_name} (URL из {src})")
+
+                    try:
+                        groups = ap_obj.parse_direct_batch(url, model_entries, args.max_pages)
                         for (m, p, r, s), prices in groups.items():
+                            if len(prices) < MIN_SAMPLES_DEFAULT:
+                                logger.warning(f"   ⚠️ {r}/{s}: мало цен {len(prices)} < {MIN_SAMPLES_DEFAULT}")
+                                continue
+                            # buyout_price из таблицы для этого конфига (если задан)
+                            entry_match = next(
+                                (e for e in model_entries if e.get("ram") == r and e.get("ssd") == s),
+                                {}
+                            )
                             stat = build_stat(m, p, r, s, tab_name, prices,
-                                              entry.get("buyout_price", 0))
+                                              entry_match.get("buyout_price", 0))
                             new_stats.append(stat)
-                    else:
+                    except Exception as e:
+                        logger.error(f"   ❌ {model_name}: {e}")
+                        continue
+
+            else:
+                for idx, entry in enumerate(entries, 1):
+                    if deadline and datetime.now() >= deadline:
+                        logger.warning(f"⏱ Время вышло, прерываюсь на {idx}/{len(entries)}")
+                        break
+
+                    logger.info(f"\n[{tab_name} {idx}/{len(entries)}] {entry['model']}")
+                    try:
                         groups = ap_obj.parse_discovery(
                             entry, tab_name, args.max_pages, exclude_intel
                         )
@@ -628,9 +706,9 @@ def main():
                                 continue
                             stat = build_stat(m, p, r, s, tab_name, prices)
                             new_stats.append(stat)
-                except Exception as e:
-                    logger.error(f"   ❌ {entry['model']}: {e}")
-                    continue
+                    except Exception as e:
+                        logger.error(f"   ❌ {entry['model']}: {e}")
+                        continue
 
         ap_obj.close()
 
