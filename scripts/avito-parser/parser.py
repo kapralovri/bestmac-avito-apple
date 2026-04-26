@@ -73,35 +73,10 @@ MIN_SAMPLES_DEFAULT = 3
 INTEL_PATTERN = re.compile(r"\b(intel|core\s*i[3579]|\bi[3579]\b)", re.I)
 
 
-# ─── Капча ───────────────────────────────────────────────────────────────────
+# ─── Капча (скопировано из price-builder v3) ────────────────────────────────
 
 def is_captcha_page(page) -> bool:
-    return page.query_selector("div.firewall-container") is not None
-
-
-def _solve_with_retry(page_url: str):
-    """
-    Зовёт RuCaptcha/2captcha с ретраями. На rucaptcha.com бывают 5xx
-    (особенно 521 от Cloudflare) — фоллбэк на 2captcha.com.
-    """
-    from twocaptcha import TwoCaptcha
-    servers = ["rucaptcha.com", "2captcha.com"]
-    last_err = None
-    for attempt in range(1, 5):           # 4 попытки итого
-        server = servers[(attempt - 1) % len(servers)]
-        try:
-            solver = TwoCaptcha(RUCAPTCHA_API_KEY, server=server, defaultTimeout=180)
-            logger.info(f"   [ШАГ 1.{attempt}] 🧩 GeeTest v4 → {server}")
-            return solver.geetest_v4(captcha_id=AVITO_CAPTCHA_ID, url=page_url)
-        except Exception as e:
-            msg = str(e)
-            last_err = e
-            transient = any(x in msg for x in ("521", "522", "503", "504", "bad response", "timed out", "ConnectionError"))
-            logger.warning(f"   [ШАГ 1.{attempt}] {server} упал: {type(e).__name__}: {msg[:120]}")
-            if not transient:
-                raise
-            time.sleep(min(30, 5 * attempt))   # 5,10,15,20s
-    raise last_err  # type: ignore[misc]
+    return page.query_selector('div.firewall-container') is not None
 
 
 def solve_captcha(page, target_url: str = None) -> bool:
@@ -109,21 +84,25 @@ def solve_captcha(page, target_url: str = None) -> bool:
         logger.warning("⚠️ RUCAPTCHA_API_KEY не задан")
         return False
     try:
-        result = _solve_with_retry(page.url)
-        logger.info(f"   [ШАГ 1] ✅ Ответ от RuCaptcha/2captcha получен")
-        code = result["code"]
+        from twocaptcha import TwoCaptcha
+        solver = TwoCaptcha(RUCAPTCHA_API_KEY, server='rucaptcha.com', defaultTimeout=120)
+
+        logger.info(f"[ШАГ 1] 🧩 GeeTest v4 | captcha_id: {AVITO_CAPTCHA_ID}")
+        result = solver.geetest_v4(captcha_id=AVITO_CAPTCHA_ID, url=page.url)
+        logger.info(f"[ШАГ 1] ✅ RuCaptcha ответила")
+
+        code = result['code']
         code_data = json.loads(code) if isinstance(code, str) else code
 
         js_payload = json.dumps({
-            "captcha": "",
-            "hCaptchaResponse": "",
-            "captcha_id": AVITO_CAPTCHA_ID,
-            "lot_number":     code_data["lot_number"],
-            "pass_token":     code_data["pass_token"],
-            "gen_time":       code_data["gen_time"],
-            "captcha_output": code_data["captcha_output"],
+            'captcha': '',
+            'hCaptchaResponse': '',
+            'captcha_id': AVITO_CAPTCHA_ID,
+            'lot_number': code_data['lot_number'],
+            'pass_token': code_data['pass_token'],
+            'gen_time': code_data['gen_time'],
+            'captcha_output': code_data['captcha_output'],
         })
-        logger.info(f"   [ШАГ 2] 📤 POST {AVITO_VERIFY_URL}")
         resp_data = page.evaluate(f"""async () => {{
             const resp = await fetch('{AVITO_VERIFY_URL}', {{
                 method: 'POST',
@@ -138,46 +117,42 @@ def solve_captcha(page, target_url: str = None) -> bool:
             }});
             return await resp.json();
         }}""")
-        logger.info(f"   [ШАГ 2] Ответ verify: {str(resp_data)[:200]}")
-        if not resp_data.get("result", {}).get("verified", False):
-            logger.error(f"   ❌ verified=False, ответ: {resp_data}")
-            return False
-        logger.info("   [ШАГ 2] ✅ Капча пройдена!")
 
-        # После verify=True грузим целевой URL свежим goto. Это критично:
-        # page.url на момент капчи может быть промежуточной/firewall-страницей,
-        # а target_url — то что мы реально хотели открыть. reload() или goto
-        # на page.url возвращает капчу снова. (Логика взята из price-builder v3)
+        if not resp_data.get('result', {}).get('verified', False):
+            logger.error("❌ verified=False")
+            return False
+        logger.info("✅ Капча пройдена!")
+
         nav_url = target_url or page.url
-        logger.info(f"   [ШАГ 3] 🔄 goto target: {nav_url[:80]}")
         page.wait_for_timeout(1500)
-        page.goto(nav_url, wait_until="domcontentloaded", timeout=25000)
+        page.goto(nav_url, wait_until='domcontentloaded', timeout=25000)
         page.wait_for_timeout(random.randint(2000, 4000))
-        ok = not is_captcha_page(page)
-        logger.info(f"   [ШАГ 3] Результат: {'✅ OK' if ok else '❌ всё ещё капча'}")
-        return ok
+        return not is_captcha_page(page)
+
     except Exception as e:
-        logger.error(f"   ❌ Капча упала: {type(e).__name__}: {e}")
+        logger.error(f"❌ Ошибка капчи: {e}")
         return False
 
 
 def navigate(page, url: str) -> bool:
     try:
-        page.goto(url, wait_until="domcontentloaded", timeout=30000)
+        page.goto(url, wait_until='domcontentloaded', timeout=30000)
         page.wait_for_timeout(random.randint(1500, 3000))
     except PWTimeout:
-        logger.warning(f"⏱ Таймаут: {url[:80]}")
+        logger.warning(f"⏱ Таймаут: {url[:60]}")
         return False
     except Exception as e:
-        logger.warning(f"⚠️ goto: {e}")
+        logger.warning(f"⚠️ Ошибка goto: {e}")
         return False
+
     for attempt in range(1, 4):
         if not is_captcha_page(page):
             return True
         logger.warning(f"🛡 Капча (попытка {attempt}/3)")
-        if not solve_captcha(page, target_url=url):    # передаём целевой URL
+        if not solve_captcha(page, target_url=url):
             return False
         page.wait_for_timeout(2000)
+
     return not is_captcha_page(page)
 
 
@@ -275,8 +250,12 @@ class AvitoParser:
         self.page = self.context.new_page()
 
     def warmup(self):
-        logger.info("🌐 Прогрев avito.ru...")
-        navigate(self.page, "https://www.avito.ru")
+        logger.info("🌐 Прогрев: avito.ru...")
+        ok = navigate(self.page, "https://www.avito.ru")
+        if ok:
+            logger.info("✅ Прогрев пройден")
+        else:
+            logger.warning("⚠️ Прогрев не удался, продолжаем...")
         self.page.wait_for_timeout(random.randint(2000, 4000))
 
     # ── Открытие объявления и чтение «Технические характеристики» ──
