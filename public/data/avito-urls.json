@@ -1,6 +1,6 @@
 {
   "description": "Опции дропдаунов фронта. Автогенерируется парсером.",
-  "updated_at": "2026-04-25",
+  "updated_at": "2026-04-26",
   "entries": [
     {
       "family": "Imac",
@@ -665,6 +665,174 @@
       "ram": 0,
       "ssd": 0,
       "url": ""
+    },
+    {
+      "family": "iMac",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+    },
+    {
+      "family": "iMac",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+    },
+    {
+      "family": "iMac",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 1024,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+    },
+    {
+      "family": "iMac",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+    },
+    {
+      "family": "iMac",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 512,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+    },
+    {
+      "family": "iMac",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 1024,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+    },
+    {
+      "family": "iMac",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 24,
+      "ssd": 512,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+    },
+    {
+      "family": "iMac",
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+    },
+    {
+      "family": "iMac",
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 512,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+    },
+    {
+      "family": "iMac",
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 1024,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+    },
+    {
+      "family": "iMac",
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 512,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+    },
+    {
+      "family": "iMac",
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 1024,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+    },
+    {
+      "family": "iMac",
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 2048,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+    },
+    {
+      "family": "iMac",
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 24,
+      "ssd": 1024,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+    },
+    {
+      "family": "iMac",
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 24,
+      "ssd": 2048,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+    },
+    {
+      "family": "iMac",
+      "model_name": "imac 24",
+      "processor": "Apple M4",
+      "ram": 8,
+      "ssd": 256,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+    },
+    {
+      "family": "iMac",
+      "model_name": "imac 24",
+      "processor": "Apple M4",
+      "ram": 8,
+      "ssd": 8192,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+    },
+    {
+      "family": "iMac",
+      "model_name": "imac 24",
+      "processor": "Apple M4",
+      "ram": 16,
+      "ssd": 256,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+    },
+    {
+      "family": "iMac",
+      "model_name": "imac 24",
+      "processor": "Apple M4",
+      "ram": 16,
+      "ssd": 512,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+    },
+    {
+      "family": "iMac",
+      "model_name": "imac 24",
+      "processor": "Apple M4",
+      "ram": 16,
+      "ssd": 1024,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
+    },
+    {
+      "family": "iMac",
+      "model_name": "imac 24",
+      "processor": "Apple M4",
+      "ram": 24,
+      "ssd": 512,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
     }
   ]
 }
