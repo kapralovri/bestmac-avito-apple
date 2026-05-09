@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-08T07:28:22.307872+00:00",
+  "updated_at": "2026-05-09T07:54:57.381656+00:00",
   "categories_found": [
     "iphone_17_pro",
     "macbook_pro",
@@ -341,8 +341,8 @@
       "flags": [],
       "is_activated": false,
       "name": "iPhone 17 Pro 512GB Silver",
-      "price": 122000,
-      "source_price": 117000
+      "price": 123000,
+      "source_price": 118000
     },
     {
       "category": "iphone_17_pro",
@@ -356,19 +356,6 @@
       "name": "iPhone 17 Pro 512GB Silver",
       "price": 119700,
       "source_price": 114700
-    },
-    {
-      "category": "iphone_17_pro",
-      "category_display": "iPhone 17 Pro",
-      "model": "iPhone 17 Pro",
-      "storage": "512GB",
-      "storage_gb": 512,
-      "color": "Silver",
-      "flags": [],
-      "is_activated": false,
-      "name": "iPhone 17 Pro 512GB Silver",
-      "price": 117000,
-      "source_price": 112000
     },
     {
       "category": "iphone_17_pro",
