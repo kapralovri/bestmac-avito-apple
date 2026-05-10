@@ -213,6 +213,14 @@
     {
       "family": "Mac Studio",
       "model_name": "Mac Studio m1",
+      "processor": "Apple M1 Ultra",
+      "ram": 128,
+      "ssd": 1024,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
+    },
+    {
+      "family": "Mac Studio",
+      "model_name": "Mac Studio m1",
       "processor": "Apple M3 Ultra",
       "ram": 64,
       "ssd": 1024,
@@ -367,6 +375,14 @@
       "model_name": "Mac Studio m3",
       "processor": "Apple M3 Ultra",
       "ram": 32,
+      "ssd": 256,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
+    },
+    {
+      "family": "Mac Studio",
+      "model_name": "Mac Studio m3",
+      "processor": "Apple M3 Ultra",
+      "ram": 32,
       "ssd": 1024,
       "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
     },
@@ -422,6 +438,14 @@
       "family": "Mac Studio",
       "model_name": "Mac Studio m3",
       "processor": "Apple M4 Max",
+      "ram": 48,
+      "ssd": 512,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
+    },
+    {
+      "family": "Mac Studio",
+      "model_name": "Mac Studio m3",
+      "processor": "Apple M4 Max",
       "ram": 64,
       "ssd": 512,
       "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
@@ -438,8 +462,56 @@
       "family": "Mac Studio",
       "model_name": "Mac Studio m3",
       "processor": "Apple M4 Max",
+      "ram": 96,
+      "ssd": 512,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
+    },
+    {
+      "family": "Mac Studio",
+      "model_name": "Mac Studio m3",
+      "processor": "Apple M4 Max",
       "ram": 128,
       "ssd": 2048,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
+    },
+    {
+      "family": "Mac Studio",
+      "model_name": "Mac Studio m4",
+      "processor": "Apple M1 Ultra",
+      "ram": 64,
+      "ssd": 1024,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
+    },
+    {
+      "family": "Mac Studio",
+      "model_name": "Mac Studio m4",
+      "processor": "Apple M2 Ultra",
+      "ram": 64,
+      "ssd": 1024,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
+    },
+    {
+      "family": "Mac Studio",
+      "model_name": "Mac Studio m4",
+      "processor": "Apple M3",
+      "ram": 48,
+      "ssd": 1024,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
+    },
+    {
+      "family": "Mac Studio",
+      "model_name": "Mac Studio m4",
+      "processor": "Apple M3 Ultra",
+      "ram": 48,
+      "ssd": 1024,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
+    },
+    {
+      "family": "Mac Studio",
+      "model_name": "Mac Studio m4",
+      "processor": "Apple M3 Ultra",
+      "ram": 96,
+      "ssd": 1024,
       "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
     },
     {
@@ -469,6 +541,14 @@
     {
       "family": "Mac Studio",
       "model_name": "Mac Studio m4",
+      "processor": "Apple M4",
+      "ram": 36,
+      "ssd": 512,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
+    },
+    {
+      "family": "Mac Studio",
+      "model_name": "Mac Studio m4",
       "processor": "Apple M4 Max",
       "ram": 16,
       "ssd": 1024,
@@ -480,6 +560,14 @@
       "processor": "Apple M4 Max",
       "ram": 16,
       "ssd": 2048,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
+    },
+    {
+      "family": "Mac Studio",
+      "model_name": "Mac Studio m4",
+      "processor": "Apple M4 Max",
+      "ram": 16,
+      "ssd": 4096,
       "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
     },
     {
@@ -510,8 +598,32 @@
       "family": "Mac Studio",
       "model_name": "Mac Studio m4",
       "processor": "Apple M4 Max",
+      "ram": 36,
+      "ssd": 4096,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
+    },
+    {
+      "family": "Mac Studio",
+      "model_name": "Mac Studio m4",
+      "processor": "Apple M4 Max",
+      "ram": 48,
+      "ssd": 512,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
+    },
+    {
+      "family": "Mac Studio",
+      "model_name": "Mac Studio m4",
+      "processor": "Apple M4 Max",
       "ram": 48,
       "ssd": 1024,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
+    },
+    {
+      "family": "Mac Studio",
+      "model_name": "Mac Studio m4",
+      "processor": "Apple M4 Max",
+      "ram": 64,
+      "ssd": 512,
       "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
     },
     {
@@ -534,8 +646,32 @@
       "family": "Mac Studio",
       "model_name": "Mac Studio m4",
       "processor": "Apple M4 Max",
+      "ram": 96,
+      "ssd": 512,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
+    },
+    {
+      "family": "Mac Studio",
+      "model_name": "Mac Studio m4",
+      "processor": "Apple M4 Max",
       "ram": 128,
       "ssd": 1024,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
+    },
+    {
+      "family": "Mac Studio",
+      "model_name": "Mac Studio m4",
+      "processor": "Apple M4 Max",
+      "ram": 128,
+      "ssd": 2048,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
+    },
+    {
+      "family": "Mac Studio",
+      "model_name": "Mac Studio m4",
+      "processor": "Apple M4 Max",
+      "ram": 128,
+      "ssd": 4096,
       "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
     },
     {
