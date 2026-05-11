@@ -1,6 +1,6 @@
 {
   "description": "Опции дропдаунов фронта. Автогенерируется парсером.",
-  "updated_at": "2026-05-10",
+  "updated_at": "2026-05-11",
   "entries": [
     {
       "family": "",
@@ -1040,6 +1040,14 @@
       "processor": "Apple M3",
       "ram": 16,
       "ssd": 512,
+      "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgECBESe5A3WzK0QoOQNzrfrEajkDfTZZrCzFP6hjwMDRcaaDBV7ImZyb20iOjI3MDAwLCJ0byI6MH2coRQReyJmcm9tIjo4LCJ0byI6OH2eoRQVeyJmcm9tIjoyNTYsInRvIjoyNTZ9&localPriority=0&q=macbook"
+    },
+    {
+      "family": "MacBook",
+      "model_name": "MacBook Air 15 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 1024,
       "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgECBESe5A3WzK0QoOQNzrfrEajkDfTZZrCzFP6hjwMDRcaaDBV7ImZyb20iOjI3MDAwLCJ0byI6MH2coRQReyJmcm9tIjo4LCJ0byI6OH2eoRQVeyJmcm9tIjoyNTYsInRvIjoyNTZ9&localPriority=0&q=macbook"
     },
     {
