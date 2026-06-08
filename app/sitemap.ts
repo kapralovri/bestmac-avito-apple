@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next';
+import { VYKUP_LANDINGS } from '@/data/vykup-landings';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://bestmac.ru';
@@ -72,6 +73,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: '/moskva/dorogomilovo', changeFrequency: 'monthly', priority: 0.7 },
     { url: '/moskva/arbat', changeFrequency: 'monthly', priority: 0.7 },
     { url: '/moskva/hamovniki', changeFrequency: 'monthly', priority: 0.7 },
+
+    // Vykup — интент-лендинги
+    ...VYKUP_LANDINGS.map((l) => ({
+      url: `/vykup/${l.slug}`,
+      changeFrequency: 'weekly' as const,
+      priority: 0.85,
+    })),
   ];
 
   return pages.map((page) => ({
