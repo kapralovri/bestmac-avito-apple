@@ -9,14 +9,19 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Send, Phone, Mail } from "lucide-react";
 
+// Бэкенд (Express на Vercel). Можно переопределить через NEXT_PUBLIC_API_BASE.
+const API_BASE =
+  (typeof process !== "undefined" && process.env.NEXT_PUBLIC_API_BASE) ||
+  "https://bestmac-avito-back.vercel.app";
+
 interface LeadFormProps {
   title?: string;
   subtitle?: string;
   formType?: 'sell' | 'buy' | 'selection' | 'general';
 }
 
-const LeadForm = ({ 
-  title = "Оставьте заявку", 
+const LeadForm = ({
+  title = "Оставьте заявку",
   subtitle = "Мы свяжемся с вами в течение 15 минут",
   formType = 'general'
 }: LeadFormProps) => {
@@ -31,7 +36,7 @@ const LeadForm = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name || !formData.phone) {
       toast.error('Заполните обязательные поля');
       return;
@@ -39,29 +44,34 @@ const LeadForm = ({
 
     setIsSubmitting(true);
 
-    // Отправка в Telegram
-    const telegramMessage = `
-🔔 Новая заявка с сайта BestMac
-
-👤 Имя: ${formData.name}
-📱 Телефон: ${formData.phone}
-📧 Email: ${formData.email || 'не указан'}
-💻 Модель: ${formData.model || 'не указана'}
-📝 Сообщение: ${formData.message || 'нет'}
-
-📍 Тип заявки: ${formType}
-⏰ Время: ${new Date().toLocaleString('ru-RU')}
-    `.trim();
+    // Бэкенд /api/submit-request принимает { name, phone, message, type }.
+    // Модель и email складываем в текст сообщения, чтобы ничего не потерять.
+    const messageParts: string[] = [];
+    if (formData.model) messageParts.push(`Модель: ${formData.model}`);
+    if (formData.email) messageParts.push(`Email: ${formData.email}`);
+    if (formData.message) messageParts.push(`Комментарий: ${formData.message}`);
+    if (typeof window !== 'undefined') {
+      messageParts.push(`Источник: ${window.location.pathname}`);
+    }
 
     try {
-      // Здесь должна быть отправка в ваш бот Telegram
-      // Пример: await fetch('/api/telegram', { method: 'POST', body: JSON.stringify({ message: telegramMessage }) });
-      
-      console.log('Форма отправлена:', formData);
-      console.log('Telegram message:', telegramMessage);
-      
+      const response = await fetch(`${API_BASE}/api/submit-request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          phone: formData.phone,
+          message: messageParts.join('\n'),
+          type: formType,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server responded ${response.status}`);
+      }
+
       toast.success('Заявка отправлена! Мы свяжемся с вами в ближайшее время.');
-      
+
       // Очистка формы
       setFormData({
         name: '',
@@ -71,7 +81,7 @@ const LeadForm = ({
         message: ''
       });
 
-      // Отправка события в аналитику
+      // Аналитику отправляем ТОЛЬКО после реально успешной заявки
       if (typeof window !== 'undefined') {
         // Google Analytics
         if ((window as any).gtag) {
@@ -81,7 +91,7 @@ const LeadForm = ({
             'value': 1
           });
         }
-        
+
         // Yandex Metrika
         if ((window as any).ym) {
           (window as any).ym(50006968, 'reachGoal', 'lead_form_submit');
@@ -89,7 +99,7 @@ const LeadForm = ({
       }
     } catch (error) {
       console.error('Ошибка отправки формы:', error);
-      toast.error('Ошибка отправки. Попробуйте позвонить нам.');
+      toast.error('Не удалось отправить. Напишите в Telegram @romanmanro или позвоните +7 903 299-00-29.');
     } finally {
       setIsSubmitting(false);
     }
@@ -169,8 +179,8 @@ const LeadForm = ({
           />
         </div>
 
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           className="w-full"
           size="lg"
           disabled={isSubmitting}
