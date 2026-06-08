@@ -22,6 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import PhotoEstimate from "@/components/PhotoEstimate";
 import { Input } from '@/components/ui/input';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import FAQ from '@/components/FAQ';
@@ -617,6 +618,16 @@ const Sell = () => {
                     </CardContent>
                   </Card>
                 </motion.div>
+
+                {/* AI-оценка по фото */}
+                <div className="max-w-3xl mx-auto mt-12">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="flex-1 h-px bg-border" />
+                    <span className="text-sm text-muted-foreground">или загрузите фото</span>
+                    <div className="flex-1 h-px bg-border" />
+                  </div>
+                  <PhotoEstimate />
+                </div>
               </div>
             </TabsContent>
 
