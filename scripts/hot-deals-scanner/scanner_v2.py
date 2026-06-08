@@ -62,6 +62,12 @@ if CURL_AVAILABLE:
 PRICES_FILE  = Path(os.environ.get('PRICES_FILE_PATH', 'public/data/avito-prices.json'))
 SEEN_FILE    = Path(os.environ.get('SEEN_FILE_PATH', 'public/data/seen-hot-deals.json'))
 HISTORY_FILE = Path(os.environ.get('PRICE_HISTORY_PATH', 'public/data/price-history.json'))
+DIGEST_FILE  = Path(os.environ.get('DIGEST_FILE_PATH', 'public/data/pending-digest.json'))
+
+# Точечные алерты: в реальном времени шлём только score >= MIN_NOTIFY_SCORE,
+# лоты 40..74 копим в дайджест (одно сообщение вечером — крон с флагом --digest).
+MIN_NOTIFY_SCORE = int(os.environ.get('MIN_NOTIFY_SCORE', '75'))
+DIGEST_MIN_SCORE = int(os.environ.get('DIGEST_MIN_SCORE', '40'))
 
 TELEGRAM_URL  = os.environ.get('TELEGRAM_NOTIFY_URL')
 RUCAPTCHA_API_KEY = os.environ.get('RUCAPTCHA_API_KEY', '')
@@ -218,15 +224,23 @@ def parse_item_age(item):
 
 # ─── Скоринг ─────────────────────────────────────────────────────────────────
 def calc_score(price, market_low, is_urgent, is_avito_low, price_reduced,
-               cycles, is_private, minutes_ago):
+               cycles, is_private, minutes_ago, buyout=0):
     score = 0
 
+    discount = 0
     if market_low > 0:
         discount = (market_low - price) / market_low
         if discount >= 0.20:   score += 35
         elif discount >= 0.10: score += 25
         elif discount >= 0.05: score += 15
         elif discount >= 0:    score += 5
+
+    # Привязка к выкупной цене — главный бизнес-сигнал «возьму и заработаю»
+    if buyout and buyout > 0:
+        if price <= buyout * 0.80:   score += 50
+        elif price <= buyout * 0.90: score += 35
+        elif price <= buyout:        score += 20
+        elif price > buyout * 1.15:  score -= 20
 
     if price_reduced: score += 20
     if is_urgent:     score += 15
@@ -243,7 +257,14 @@ def calc_score(price, market_low, is_urgent, is_avito_low, price_reduced,
     elif minutes_ago <= 120: score += 7
     elif minutes_ago <= 360: score += 3
 
-    return min(score, 100)
+    # ── Анти-фрод: нереальные скидки = подмена цены / скам ──
+    # (напр. «MacBook Pro 16 за 1100 ₽» = -99% — это не лот, а мусор)
+    if market_low > 0 and discount > 0.60:
+        score -= 60
+    if buyout and buyout > 0 and price < buyout * 0.5:
+        score -= 50
+
+    return max(0, min(score, 100))
 
 
 # ─── Определение локации ─────────────────────────────────────────────────────
@@ -642,6 +663,31 @@ class AvitoScannerV2:
         except Exception as e:
             logger.error(f"❌ Telegram: {e}")
 
+    def _save_digest(self, items):
+        """Копит лоты средней привлекательности (40..74) для вечернего дайджеста."""
+        try:
+            existing = []
+            if DIGEST_FILE.exists():
+                with open(DIGEST_FILE, encoding="utf-8") as f:
+                    existing = json.load(f) or []
+            seen_urls = {x.get("url") for x in existing}
+            for c in items:
+                if c["url"] in seen_urls:
+                    continue
+                existing.append({
+                    "score": c["score"], "title": c["title"], "price": c["price"],
+                    "market_low": c["market_low"], "buyout": c["buyout"],
+                    "url": c["url"], "location": c.get("location", ""),
+                    "ts": datetime.now().isoformat(timespec="seconds"),
+                })
+                seen_urls.add(c["url"])
+            DIGEST_FILE.parent.mkdir(parents=True, exist_ok=True)
+            with open(DIGEST_FILE, "w", encoding="utf-8") as f:
+                json.dump(existing[-200:], f, ensure_ascii=False)
+            logger.info(f"🗂 В дайджест добавлено: {len(items)}")
+        except Exception as e:
+            logger.error(f"❌ Не удалось сохранить дайджест: {e}")
+
     # ─── Основной цикл ───────────────────────────────────────────────────────
 
     def _get_scan_urls(self):
@@ -788,7 +834,7 @@ class AvitoScannerV2:
                     # Скор
                     score = calc_score(
                         price, market_low, is_urgent, is_avito_low,
-                        price_reduced, cycles, is_private, minutes_ago,
+                        price_reduced, cycles, is_private, minutes_ago, buyout,
                     )
 
                     # Определяем тип(ы) уведомления
@@ -842,7 +888,14 @@ class AvitoScannerV2:
             # Сортируем по скору
             candidates.sort(key=lambda x: x['score'], reverse=True)
 
+            digest_items = []
             for c in candidates:
+                # Точечные алерты: в реальном времени только сильные лоты,
+                # средние (40..74) уходят в вечерний дайджест.
+                if c['score'] < MIN_NOTIFY_SCORE:
+                    if c['score'] >= DIGEST_MIN_SCORE:
+                        digest_items.append(c)
+                    continue
                 for ntype in c['notifications']:
                     if ntype == 'fire':
                         self.notify_fire(
@@ -866,6 +919,9 @@ class AvitoScannerV2:
                         )
                     total_notifications += 1
 
+            if digest_items:
+                self._save_digest(digest_items)
+
         # Финальное сохранение
         self._save_seen()
         self._save_prices_db()
@@ -881,8 +937,51 @@ class AvitoScannerV2:
         logger.info(f"\n🏁 Готово. Уведомлений: {total_notifications}")
 
 
-if __name__ == "__main__":
-    from playwright.sync_api import sync_playwright
+def send_digest():
+    """Отправляет накопленный дайджест (лоты 40..74) одним сообщением и очищает файл.
+    Запускать кроном раз в день (напр. 20:00 МСК): python scanner_v2.py --digest"""
+    if not DIGEST_FILE.exists():
+        logger.info("Дайджест пуст")
+        return
+    try:
+        with open(DIGEST_FILE, encoding="utf-8") as f:
+            items = json.load(f) or []
+    except Exception:
+        items = []
+    if not items:
+        logger.info("Дайджест пуст")
+        return
 
-    with sync_playwright() as pw:
-        AvitoScannerV2(pw).run()
+    items.sort(key=lambda x: x.get("score", 0), reverse=True)
+    top = items[:10]
+    lines = [f"👀 <b>Лоты на радаре за сутки</b> (всего {len(items)})\n"]
+    for x in top:
+        loc = f" • {x['location']}" if x.get("location") else ""
+        block = (
+            f"[{x['score']}] {x['title'][:60]}\n"
+            f"   {x['price']:,} ₽ (рынок от {x['market_low']:,} ₽){loc}\n"
+            f"   <a href=\"{x['url']}\">Открыть на Avito</a>"
+        ).replace(",", " ")
+        lines.append(block)
+    text = "\n".join(lines)
+
+    try:
+        std_requests.post(TELEGRAM_URL, json={"text": text, "parse_mode": "HTML"}, timeout=10)
+        logger.info(f"✅ Дайджест отправлен ({len(top)} из {len(items)})")
+        DIGEST_FILE.write_text("[]", encoding="utf-8")
+    except Exception as e:
+        logger.error(f"❌ Дайджест не отправлен: {e}")
+
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--digest", action="store_true",
+                    help="Отправить дайджест лотов 40..74 и выйти (крон в 20:00 МСК)")
+    cli_args = ap.parse_args()
+
+    if cli_args.digest:
+        send_digest()
+    else:
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as pw:
+            AvitoScannerV2(pw).run()
