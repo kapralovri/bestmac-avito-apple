@@ -18,6 +18,7 @@ import random
 import logging
 import statistics
 import argparse
+import html
 import urllib3
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -71,6 +72,11 @@ DIGEST_MIN_SCORE = int(os.environ.get('DIGEST_MIN_SCORE', '40'))
 
 TELEGRAM_URL  = os.environ.get('TELEGRAM_NOTIFY_URL')
 RUCAPTCHA_API_KEY = os.environ.get('RUCAPTCHA_API_KEY', '')
+
+# DeepSeek — для co-pilot (готовое сообщение продавцу). Тот же ключ, что у бэкенда.
+DEEPSEEK_API_KEY  = os.environ.get('DEEPSEEK_API_KEY', '')
+DEEPSEEK_BASE_URL = os.environ.get('DEEPSEEK_BASE_URL', 'https://api.deepseek.com').rstrip('/')
+DEEPSEEK_MODEL    = os.environ.get('DEEPSEEK_MODEL', 'deepseek-v4-pro')
 
 # Env-переменные для scan URL (опционально — если не заданы, берутся из config.py)
 SCAN_URL = os.environ.get('SCAN_URL')  # legacy: одиночный URL
@@ -265,6 +271,51 @@ def calc_score(price, market_low, is_urgent, is_avito_low, price_reduced,
         score -= 50
 
     return max(0, min(score, 100))
+
+
+# ─── Co-pilot: готовое первое сообщение продавцу ─────────────────────────────
+def _fmt_rub(n):
+    return f"{int(n):,}".replace(",", " ")
+
+
+def template_seller_message(title, target):
+    """Детерминированный фолбэк, если DeepSeek недоступен."""
+    short = (title or "устройство")[:60]
+    return (
+        f"Здравствуйте! Интересует ваш «{short}». "
+        f"Готов купить за {_fmt_rub(target)} ₽, могу подъехать сегодня, оплата сразу наличными. "
+        f"Ещё актуально?"
+    )
+
+
+def ai_seller_message(title, asking, target, location):
+    """Просит DeepSeek написать короткое первое сообщение продавцу. None, если нет ключа/ошибка."""
+    if not DEEPSEEK_API_KEY:
+        return None
+    prompt = (
+        "Ты — вежливый частный покупатель техники Apple в Москве. Напиши КОРОТКОЕ (2-3 предложения) "
+        "первое сообщение продавцу на Авито, чтобы начать диалог и быстро договориться о покупке.\n"
+        f"Товар: {title}\n"
+        f"Цена продавца: {asking} ₽\n"
+        f"Моя целевая цена: {target} ₽\n"
+        f"Локация: {location or 'Москва'}\n\n"
+        "Требования: поздоровайся, прояви интерес к КОНКРЕТНОМУ товару, аккуратно предложи цену "
+        f"{target} ₽ (если она ниже цены продавца — мягко, без давления и без слова «скидка»), "
+        "подчеркни готовность купить сегодня и оплату сразу/наличными, предложи встречу или спроси "
+        "актуальность. Только текст сообщения, без markdown, без подписи. По-русски, на «вы»."
+    )
+    try:
+        r = std_requests.post(
+            f"{DEEPSEEK_BASE_URL}/chat/completions",
+            headers={"Authorization": f"Bearer {DEEPSEEK_API_KEY}", "content-type": "application/json"},
+            json={"model": DEEPSEEK_MODEL, "max_tokens": 300,
+                  "messages": [{"role": "user", "content": prompt}]},
+            timeout=30,
+        )
+        return r.json()["choices"][0]["message"]["content"].strip()
+    except Exception as e:
+        logger.error(f"DeepSeek co-pilot fail: {e}")
+        return None
 
 
 # ─── Определение локации ─────────────────────────────────────────────────────
@@ -688,6 +739,28 @@ class AvitoScannerV2:
         except Exception as e:
             logger.error(f"❌ Не удалось сохранить дайджест: {e}")
 
+    def _send_copilot(self, c):
+        """Co-pilot: готовое первое сообщение продавцу для горячего лота."""
+        asking = int(c.get('price') or 0)
+        buyout = int(c.get('buyout') or 0)
+        # Целевая цена: если продавец просит дороже выкупной — целимся в выкупную,
+        # иначе берём по цене продавца (лот уже выгодный).
+        target = buyout if (buyout and asking > buyout) else (asking if asking > 0 else buyout)
+        if target <= 0:
+            return
+
+        draft = ai_seller_message(c['title'], asking, target, c.get('location', '')) \
+            or template_seller_message(c['title'], target)
+        safe = html.escape(draft)
+
+        text = (
+            "✍️ <b>Сообщение продавцу</b> (нажми на текст, чтобы скопировать):\n"
+            f"<pre>{safe}</pre>\n"
+            f"💰 Твоя цель: <b>{_fmt_rub(target)} ₽</b> • у продавца: {_fmt_rub(asking)} ₽\n"
+            f"🔗 <a href=\"{c['url']}\">Открыть объявление → «Написать»</a>"
+        )
+        self._send_telegram(text, f"✍️ Co-pilot: {c['title'][:40]}")
+
     # ─── Основной цикл ───────────────────────────────────────────────────────
 
     def _get_scan_urls(self):
@@ -918,6 +991,10 @@ class AvitoScannerV2:
                             c['age_str'], c['score'], c['location'], c['urgent_words'],
                         )
                     total_notifications += 1
+
+                # Co-pilot: готовое первое сообщение продавцу для горячего лота
+                if c['notifications']:
+                    self._send_copilot(c)
 
             if digest_items:
                 self._save_digest(digest_items)
