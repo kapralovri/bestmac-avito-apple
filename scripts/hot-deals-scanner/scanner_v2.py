@@ -60,6 +60,33 @@ if CURL_AVAILABLE:
     logger.info("✅ curl_cffi доступен")
 
 # ─── Конфигурация ─────────────────────────────────────────────────────────────
+def _load_dotenv():
+    """Минимальный загрузчик .env (рядом со скриптом или в рабочей папке).
+    Без зависимостей. НЕ перетирает уже заданные переменные окружения."""
+    bases = []
+    try:
+        bases.append(Path(__file__).resolve().parent)
+    except NameError:
+        pass
+    bases.append(Path.cwd())
+    for base in bases:
+        envf = base / ".env"
+        if not envf.exists():
+            continue
+        try:
+            for line in envf.read_text(encoding="utf-8").splitlines():
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, _, v = line.partition("=")
+                os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+        except Exception:
+            pass
+
+
+_load_dotenv()
+
+
 PRICES_FILE  = Path(os.environ.get('PRICES_FILE_PATH', 'public/data/avito-prices.json'))
 SEEN_FILE    = Path(os.environ.get('SEEN_FILE_PATH', 'public/data/seen-hot-deals.json'))
 HISTORY_FILE = Path(os.environ.get('PRICE_HISTORY_PATH', 'public/data/price-history.json'))
