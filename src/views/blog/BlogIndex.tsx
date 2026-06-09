@@ -8,6 +8,15 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 // Метаданные существующих статей (из роутов App.tsx)
 const BLOG_POSTS = [
     {
+        id: "zapret-importa-noutbukov-2026",
+        title: "Запрет импорта ноутбуков 2026: почему выгоднее MacBook",
+        description: "С 27 мая 2026 Минпромторг исключил из параллельного импорта Asus, HP, Acer, Intel, Samsung. Apple не затронут — разбираем, что это значит для покупателей.",
+        date: "2026-06-09",
+        readTime: "5 мин",
+        category: "Аналитика",
+        slug: "/blog/zapret-importa-noutbukov-2026"
+    },
+    {
         id: "kak-vybrat-macbook-2024",
         title: "Как выбрать MacBook в 2024 году",
         description: "Полное руководство по выбору MacBook в 2024 году: сравниваем модели M1, M2, M3, M4, подбираем конфигурацию под задачи.",

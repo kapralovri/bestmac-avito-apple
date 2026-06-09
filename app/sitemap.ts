@@ -25,6 +25,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
     // Blog
     { url: '/blog', changeFrequency: 'weekly', priority: 0.8 },
+    { url: '/blog/zapret-importa-noutbukov-2026', changeFrequency: 'monthly', priority: 0.8 },
     { url: '/blog/kak-vybrat-macbook-2024', changeFrequency: 'monthly', priority: 0.8 },
     { url: '/blog/macbook-air-m2-vs-m3', changeFrequency: 'monthly', priority: 0.8 },
     { url: '/blog/proverka-macbook-pered-pokupkoi', changeFrequency: 'monthly', priority: 0.8 },
