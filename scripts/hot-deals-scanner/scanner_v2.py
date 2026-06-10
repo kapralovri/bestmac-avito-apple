@@ -1057,8 +1057,8 @@ def send_digest():
         return
 
     items.sort(key=lambda x: x.get("score", 0), reverse=True)
-    top = items[:10]
-    lines = [f"👀 <b>Лоты на радаре за сутки</b> (всего {len(items)})\n"]
+    top = items[:int(os.environ.get('DIGEST_TOP', '5'))]
+    lines = [f"👀 <b>Лоты на радаре за сутки</b> (всего {len(items)}, показаны лучшие {len(top)})\n"]
     for x in top:
         loc = f" • {x['location']}" if x.get("location") else ""
         block = (
