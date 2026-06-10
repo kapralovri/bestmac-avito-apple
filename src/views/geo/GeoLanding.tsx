@@ -16,9 +16,14 @@ interface GeoLandingProps {
   nearbyAreas: string[];
   landmarks?: string[];
   customDescription?: string;
+  /** Полный H1, напр. «Скупка MacBook в Химках с выездом» */
+  heroTitle?: string;
+  /** Предложный падеж для «в …», напр. «Химках». По умолчанию «районе {district}» */
+  locative?: string;
 }
 
-const GeoLanding = ({ district, metroStation, slug, nearbyAreas, landmarks, customDescription }: GeoLandingProps) => {
+const GeoLanding = ({ district, metroStation, slug, nearbyAreas, landmarks, customDescription, heroTitle, locative }: GeoLandingProps) => {
+  const place = locative || `районе ${district}`;
   const breadcrumbItems = [
     { name: "Главная", url: "/" },
     { name: "Москва", url: "/moskva" },
@@ -28,11 +33,11 @@ const GeoLanding = ({ district, metroStation, slug, nearbyAreas, landmarks, cust
   const faqItems = [
     {
       question: `Где находится ваш офис рядом с ${metroStation}?`,
-      answer: `Наш офис расположен по адресу ул. Дениса Давыдова 3, в шаговой доступности от м. Киевская. Если вы находитесь в районе ${district}, добраться к нам можно за 5–15 минут.`
+      answer: `Наш офис расположен по адресу ул. Дениса Давыдова 3, в шаговой доступности от м. Киевская. Если вы находитесь в ${place}, добраться к нам можно за 5–40 минут.`
     },
     {
-      question: `Вы выезжаете на дом в район ${district}?`,
-      answer: `Да, мы отправляем курьера по всей Москве бесплатно. Для района ${district} выезд обычно занимает 30–60 минут после согласования. Оценка устройства проводится на месте.`
+      question: `Работает ли выезд на дом в ${place}?`,
+      answer: `Да, мы отправляем оценщика бесплатно. Обычно он добирается до вас за 30–90 минут после согласования. Оценка устройства проводится на месте.`
     },
     {
       question: "Какие устройства вы скупаете?",
@@ -43,7 +48,7 @@ const GeoLanding = ({ district, metroStation, slug, nearbyAreas, landmarks, cust
       answer: "Весь процесс от оценки до оплаты занимает 30–60 минут. Оплата наличными или переводом на карту — как вам удобнее."
     },
     {
-      question: `Работаете ли вы в выходные в районе ${district}?`,
+      question: "Работаете ли вы в выходные?",
       answer: "Да, мы работаем ежедневно: пн–пт с 10:00 до 20:00, сб–вс с 11:00 до 18:00. Выезд курьера доступен также по выходным."
     }
   ];
@@ -94,7 +99,7 @@ const GeoLanding = ({ district, metroStation, slug, nearbyAreas, landmarks, cust
     ]
   };
 
-  const desc = customDescription || `Скупка MacBook, iMac, iPhone в районе ${district} (м. ${metroStation}). Выезд курьера бесплатно, оценка за 5 минут, оплата на месте. Работаем ежедневно.`;
+  const desc = customDescription || `Скупка MacBook, iMac, iPhone в ${place} (м. ${metroStation}). Выезд курьера бесплатно, оценка за 5 минут, оплата на месте. Работаем ежедневно.`;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -113,7 +118,7 @@ const GeoLanding = ({ district, metroStation, slug, nearbyAreas, landmarks, cust
             {district}, м. {metroStation}
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Скупка MacBook в районе {district}
+            {heroTitle || `Скупка MacBook в районе ${district}`}
           </h1>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-8">
             {desc}
@@ -159,7 +164,7 @@ const GeoLanding = ({ district, metroStation, slug, nearbyAreas, landmarks, cust
 
         {/* Services */}
         <section className="mb-16">
-          <h2 className="text-3xl font-bold mb-8 text-center">Что мы покупаем в {district}</h2>
+          <h2 className="text-3xl font-bold mb-8 text-center">Что мы покупаем в {place}</h2>
           <div className="grid md:grid-cols-3 gap-6">
             {[
               { title: "MacBook Pro / Air", desc: "Любые модели от 2018 года: M1, M2, M3, M4 и Intel", link: "/sell" },
@@ -191,24 +196,24 @@ const GeoLanding = ({ district, metroStation, slug, nearbyAreas, landmarks, cust
 
         {/* Lead Form */}
         <LeadForm
-          title={`Оценка MacBook в ${district}`}
+          title={`Оценка MacBook в ${place}`}
           subtitle="Узнайте стоимость вашего устройства за 5 минут"
           formType="sell"
         />
 
         {/* FAQ */}
-        <FAQ items={faqItems} title={`Вопросы о скупке в ${district}`} />
+        <FAQ items={faqItems} title={`Вопросы о скупке в ${place}`} />
 
         {/* SEO Text */}
         <section className="prose prose-lg max-w-none mb-16">
-          <h2 className="text-2xl font-bold mb-4">Скупка техники Apple в {district}</h2>
+          <h2 className="text-2xl font-bold mb-4">Скупка техники Apple в {place}</h2>
           <p className="text-muted-foreground">
-            BestMac — профессиональный сервис выкупа техники Apple в Москве. Если вы живёте или работаете
-            в районе {district} (м. {metroStation}), вы можете продать свой MacBook, iMac или iPhone быстро и выгодно.
+            BestMac — профессиональный сервис выкупа техники Apple в Москве и Подмосковье. Если вы живёте или работаете
+            в {place} (рядом м. {metroStation}), вы можете продать свой MacBook, iMac или iPhone быстро и выгодно.
             Наш офис расположен на ул. Дениса Давыдова 3, в нескольких минутах от метро Киевская.
           </p>
           <p className="text-muted-foreground">
-            Мы предлагаем бесплатный выезд курьера по району {district} и прилегающим территориям.
+            Мы предлагаем бесплатный выезд курьера к вам и в прилегающие районы.
             Оценка устройства занимает 5 минут, а полный процесс от встречи до оплаты — не более часа.
             Работаем с физическими лицами и компаниями, оформляем все документы.
           </p>

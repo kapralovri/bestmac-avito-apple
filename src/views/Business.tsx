@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -168,6 +169,26 @@ const Business = () => {
               </Card>
             ))}
           </div>
+
+          {/* Выкуп парка техники */}
+          <Link href="/vykup/dlya-yurlits" className="block mt-8 group">
+            <Card className="border-primary/40 hover:border-primary hover:shadow-lg transition-all">
+              <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-xl font-semibold mb-1 group-hover:text-primary transition-colors">
+                    Выкуп парка техники Apple
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
+                    Продаёте старые MacBook при апгрейде или закрытии офиса? Выкупаем от 3 устройств:
+                    безнал, договор, документы для списания, вывоз в день сделки.
+                  </p>
+                </div>
+                <Badge variant="secondary" className="text-base px-4 py-2 whitespace-nowrap">
+                  КП за 1 день →
+                </Badge>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* Cases */}

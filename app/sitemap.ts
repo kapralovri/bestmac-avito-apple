@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { VYKUP_LANDINGS } from '@/data/vykup-landings';
+import { GEO_LANDINGS } from '@/data/geo-landings';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://bestmac.ru';
@@ -80,6 +81,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `/vykup/${l.slug}`,
       changeFrequency: 'weekly' as const,
       priority: 0.85,
+    })),
+
+    // Geo — районы Москвы и города МО
+    ...GEO_LANDINGS.map((g) => ({
+      url: `/moskva/${g.slug}`,
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
     })),
   ];
 
