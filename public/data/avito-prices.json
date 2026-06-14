@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-14 15:14",
+  "generated_at": "2026-06-14 20:17",
   "total_listings": 3200,
   "stats": [
     {
@@ -304,7 +304,7 @@
       "median_price": 250000,
       "buyout_price": 200000,
       "samples_count": 5,
-      "updated_at": "2026-06-13 20:12"
+      "updated_at": "2026-06-14 20:16"
     },
     {
       "model_name": "Mac Studio m1",
