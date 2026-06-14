@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-14 05:59",
+  "generated_at": "2026-06-14 10:41",
   "total_listings": 3176,
   "stats": [
     {
@@ -2277,10 +2277,10 @@
       "ssd": 256,
       "min_price": 59990,
       "max_price": 100000,
-      "median_price": 79000,
-      "buyout_price": 63000,
+      "median_price": 77777,
+      "buyout_price": 62000,
       "samples_count": 15,
-      "updated_at": "2026-06-13 10:09"
+      "updated_at": "2026-06-14 10:32"
     },
     {
       "model_name": "imac 24",
@@ -2288,12 +2288,12 @@
       "processor": "Apple M1",
       "ram": 8,
       "ssd": 512,
-      "min_price": 75000,
+      "min_price": 79900,
       "max_price": 80000,
-      "median_price": 79950,
-      "buyout_price": 63000,
-      "samples_count": 4,
-      "updated_at": "2026-06-13 10:09"
+      "median_price": 80000,
+      "buyout_price": 64000,
+      "samples_count": 3,
+      "updated_at": "2026-06-14 10:32"
     },
     {
       "model_name": "imac 24",
@@ -2329,10 +2329,10 @@
       "ssd": 512,
       "min_price": 74000,
       "max_price": 96000,
-      "median_price": 85250,
+      "median_price": 85000,
       "buyout_price": 68000,
-      "samples_count": 4,
-      "updated_at": "2026-06-13 10:09"
+      "samples_count": 5,
+      "updated_at": "2026-06-14 10:32"
     },
     {
       "model_name": "imac 24",
