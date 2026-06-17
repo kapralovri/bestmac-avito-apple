@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-17 17:18",
-  "total_listings": 3103,
+  "generated_at": "2026-06-17 21:02",
+  "total_listings": 3108,
   "stats": [
     {
       "model_name": "MacBook Pro 13 (2020, M1)",
@@ -300,11 +300,11 @@
       "ram": 64,
       "ssd": 1024,
       "min_price": 250000,
-      "max_price": 385999,
-      "median_price": 270000,
-      "buyout_price": 216000,
-      "samples_count": 5,
-      "updated_at": "2026-06-16 21:40"
+      "max_price": 279990,
+      "median_price": 260000,
+      "buyout_price": 208000,
+      "samples_count": 4,
+      "updated_at": "2026-06-17 21:00"
     },
     {
       "model_name": "Mac Studio m1",
@@ -639,10 +639,10 @@
       "ssd": 1024,
       "min_price": 399000,
       "max_price": 650000,
-      "median_price": 499990,
-      "buyout_price": 399000,
-      "samples_count": 16,
-      "updated_at": "2026-06-13 20:14"
+      "median_price": 490000,
+      "buyout_price": 392000,
+      "samples_count": 20,
+      "updated_at": "2026-06-17 21:02"
     },
     {
       "model_name": "Mac Studio m3",
@@ -650,12 +650,12 @@
       "processor": "Apple M3 Ultra",
       "ram": 96,
       "ssd": 2048,
-      "min_price": 555555,
-      "max_price": 799999,
-      "median_price": 745000,
-      "buyout_price": 596000,
-      "samples_count": 4,
-      "updated_at": "2026-06-13 20:14"
+      "min_price": 491900,
+      "max_price": 745000,
+      "median_price": 634990,
+      "buyout_price": 507000,
+      "samples_count": 6,
+      "updated_at": "2026-06-17 21:02"
     },
     {
       "model_name": "Mac Studio m3",
