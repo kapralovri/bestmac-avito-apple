@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-19 16:17",
-  "total_listings": 3268,
+  "generated_at": "2026-06-19 20:27",
+  "total_listings": 3279,
   "stats": [
     {
       "model_name": "MacBook Pro 13 (2020, M1)",
@@ -889,7 +889,7 @@
       "median_price": 375000,
       "buyout_price": 300000,
       "samples_count": 5,
-      "updated_at": "2026-06-18 21:27"
+      "updated_at": "2026-06-19 20:27"
     },
     {
       "model_name": "Mac Studio m4",
@@ -902,7 +902,7 @@
       "median_price": 409990,
       "buyout_price": 327000,
       "samples_count": 5,
-      "updated_at": "2026-06-18 21:27"
+      "updated_at": "2026-06-19 20:27"
     },
     {
       "model_name": "Mac Studio m4",
@@ -936,12 +936,12 @@
       "processor": "Apple M4 Max",
       "ram": 36,
       "ssd": 512,
-      "min_price": 181890,
+      "min_price": 175000,
       "max_price": 212480,
-      "median_price": 190000,
-      "buyout_price": 152000,
-      "samples_count": 25,
-      "updated_at": "2026-06-18 21:27"
+      "median_price": 189990,
+      "buyout_price": 151000,
+      "samples_count": 28,
+      "updated_at": "2026-06-19 20:27"
     },
     {
       "model_name": "Mac Studio m4",
@@ -950,11 +950,11 @@
       "ram": 36,
       "ssd": 1024,
       "min_price": 225990,
-      "max_price": 299990,
-      "median_price": 231000,
-      "buyout_price": 184000,
-      "samples_count": 6,
-      "updated_at": "2026-06-18 21:27"
+      "max_price": 300000,
+      "median_price": 234500,
+      "buyout_price": 187000,
+      "samples_count": 7,
+      "updated_at": "2026-06-19 20:27"
     },
     {
       "model_name": "Mac Studio m4",
@@ -1015,11 +1015,11 @@
       "ram": 64,
       "ssd": 1024,
       "min_price": 340000,
-      "max_price": 389990,
-      "median_price": 354950,
-      "buyout_price": 283000,
-      "samples_count": 8,
-      "updated_at": "2026-06-18 21:27"
+      "max_price": 430000,
+      "median_price": 364990,
+      "buyout_price": 291000,
+      "samples_count": 11,
+      "updated_at": "2026-06-19 20:27"
     },
     {
       "model_name": "Mac Studio m4",
@@ -1028,11 +1028,11 @@
       "ram": 64,
       "ssd": 2048,
       "min_price": 380900,
-      "max_price": 414990,
-      "median_price": 407500,
-      "buyout_price": 326000,
-      "samples_count": 4,
-      "updated_at": "2026-06-18 21:27"
+      "max_price": 450000,
+      "median_price": 410000,
+      "buyout_price": 328000,
+      "samples_count": 5,
+      "updated_at": "2026-06-19 20:27"
     },
     {
       "model_name": "Mac Studio m4",
@@ -1054,11 +1054,11 @@
       "ram": 128,
       "ssd": 1024,
       "min_price": 475000,
-      "max_price": 720000,
-      "median_price": 619990,
-      "buyout_price": 495000,
-      "samples_count": 7,
-      "updated_at": "2026-06-18 21:27"
+      "max_price": 800000,
+      "median_price": 699994,
+      "buyout_price": 559000,
+      "samples_count": 10,
+      "updated_at": "2026-06-19 20:27"
     },
     {
       "model_name": "Mac Studio m4",
@@ -1066,12 +1066,12 @@
       "processor": "Apple M4 Max",
       "ram": 128,
       "ssd": 2048,
-      "min_price": 670000,
+      "min_price": 699000,
       "max_price": 820000,
-      "median_price": 714990,
-      "buyout_price": 571000,
-      "samples_count": 6,
-      "updated_at": "2026-06-18 21:27"
+      "median_price": 799999,
+      "buyout_price": 639000,
+      "samples_count": 7,
+      "updated_at": "2026-06-19 20:27"
     },
     {
       "model_name": "Mac Studio m4",
@@ -1079,12 +1079,12 @@
       "processor": "Apple M4 Max",
       "ram": 128,
       "ssd": 4096,
-      "min_price": 710000,
-      "max_price": 710000,
-      "median_price": 710000,
-      "buyout_price": 568000,
-      "samples_count": 4,
-      "updated_at": "2026-05-10 20:36"
+      "min_price": 730000,
+      "max_price": 900000,
+      "median_price": 899990,
+      "buyout_price": 719000,
+      "samples_count": 3,
+      "updated_at": "2026-06-19 20:27"
     },
     {
       "model_name": "Mac Studio m4",
