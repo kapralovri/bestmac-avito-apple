@@ -15,12 +15,12 @@ SCAN_FAMILIES = {
     },
     "macbook_pro": {
         "label": "MacBook Pro",
-        "url": "https://www.avito.ru/moskva_i_mo/noutbuki?q=macbook+pro&s=104",
+        "url": "https://www.avito.ru/moskva_i_mo/noutbuki?context=H4sIAAAAAAAA_wEmANn_YToxOntzOjE6InkiO3M6MTY6ImU2SWZYa3NOZmtHWFVUU28iO33P3cofJgAAAA&f=ASgCAQICAUDW8g70EMahxRWu3sQVyp~2Fb6xnhWq45cVxJmWFbbY7xHY2O8RptjvEZa66xHiuesR~u3tEPzu7RCMpMMV_LjrEdC4Ew&localPriority=0&q=macbook+pro&s=104",
         "category": "noutbuki",
     },
     "imac": {
         "label": "iMac",
-        "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?q=imac&s=104",
+        "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery/monobloki-ASgBAgICAUS02xKOqY0D?cd=1&context=H4sIAAAAAAAA_wEmANn_YToxOntzOjE6InkiO3M6MTY6IlcwZ1dNU0RBSFZuTlZsV0siO30Cm7dZJgAAAA&localPriority=0&q=imac&s=104",
         "category": "nastolnye_kompyutery",
     },
     "mac_mini": {
@@ -69,6 +69,10 @@ URGENT_KEYWORDS = [
 
 # ─── Маркеры Москвы (для определения доставки) ──────────────────────────────
 MOSCOW_MARKERS = ['москва', 'moscow', 'мск', 'московская обл', 'московская область']
+
+# ─── Не выкупаем: MacBook на Intel (берём только Apple Silicon M1+) ──────────
+# iMac на Intel 2017+ допустим — он отсекается только по году (MIN_YEARS["iMac"]).
+EXCLUDE_INTEL_FAMILIES = {"MacBook Air", "MacBook Pro", "MacBook"}
 
 # ─── Порог цены для скоринга ─────────────────────────────────────────────────
 PRICE_THRESHOLD_FACTOR = 1.20

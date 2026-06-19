@@ -227,6 +227,22 @@ mv = next_move(title="iMac 24 M3", asking=90000, target=72000, walk_away=78000,
 check("мусорный LLM-ответ → фолбэк (via_llm False)", mv.via_llm is False and bool(mv.message))
 
 
+# ─── 8. Фильтр Intel-MacBook (перекуп) ───────────────────────────────────────
+print("\n[8] Не берём MacBook на Intel; iMac Intel 2017+ допустим")
+from common.config import EXCLUDE_INTEL_FAMILIES
+
+
+def _excluded_intel(title):
+    c = classify(title)
+    return c.family in EXCLUDE_INTEL_FAMILIES and c.chip_gen == "Intel"
+
+
+check("MacBook Pro Core i5 → исключён", _excluded_intel("MacBook Pro 13 2015 Core i5 8/256"))
+check("MacBook Air i5 → исключён", _excluded_intel("MacBook Air 13 2017 i5 8/256"))
+check("MacBook Pro M1 Pro → НЕ исключён", not _excluded_intel("MacBook Pro 14 M1 Pro 16/512"))
+check("iMac Intel 2019 → НЕ исключён (решает год)", not _excluded_intel("iMac 27 2019 Core i5 16/512"))
+
+
 # ─── Итог ────────────────────────────────────────────────────────────────────
 print()
 if _fails:

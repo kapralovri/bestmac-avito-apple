@@ -44,7 +44,7 @@ from common.config import (
     MIN_PRICE, MAX_PRICE, PRICE_THRESHOLD_FACTOR, MIN_YEARS,
     SCAN_PAGES_PER_FAMILY, MIN_COMPS, MIN_MARGIN, SCAM_FLOOR, BUYOUT_FACTOR,
     BATTERY_HARD, BATTERY_SOFT, CYCLES_HARD, CYCLES_SOFT,
-    STALE_PRICES_HOURS, STALE_ALERT_COOLDOWN_HOURS,
+    STALE_PRICES_HOURS, STALE_ALERT_COOLDOWN_HOURS, EXCLUDE_INTEL_FAMILIES,
 )
 
 try:
@@ -925,6 +925,9 @@ class AvitoScannerV2:
             return None
         cfg = classify(listing['title'])
         if not cfg.is_valid:
+            return None
+        # Перекуп: MacBook на Intel не берём (только Apple Silicon)
+        if cfg.family in EXCLUDE_INTEL_FAMILIES and cfg.chip_gen == 'Intel':
             return None
         min_year = MIN_YEARS.get(cfg.family, 2020)
         if cfg.year and cfg.year < min_year:
