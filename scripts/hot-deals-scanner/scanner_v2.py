@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
 """
-Scanner v2 — автоклассификация + 3 типа уведомлений + multi-URL.
+Scanner v2 — детектор лотов НИЖЕ ЖИВОГО РЫНКА для перекупа.
 
-Изменения vs scanner.py (v1):
-- Вместо match_to_db с маркерами → classifier.classify()
-- 5 поисковых URL (Air, Pro, iMac, Mac mini, Mac Studio) вместо 1
-- 3 типа Telegram-уведомлений: 🔥 выгодная цена, 📦 доставка, 🤝 торг
-- Определение локации (Москва vs доставка)
-- Старый scanner.py сохранён.
+Переделка (vs прежней версии):
+- «Низ рынка» считается не по замороженному снимку базы (min из ~5 устаревших
+  сэмплов), а по ЖИВОЙ выборке: грузим несколько страниц выдачи, строим
+  распределение цен сопоставимых лотов прямо сейчас, сравниваем с медианой + P20.
+  → больше нет «бот зовёт низом рынка лот, ниже которого висит десяток дешевле».
+- Гейт состояния: полное описание объявления анализируется на дефекты, % АКБ,
+  циклы. Жёсткий дефект → лот вообще не уходит в алерт. → больше нет «все
+  присланные аппараты с проблемами».
+- Скоринг перекупа: якорь — выкупная цена и запас маржи; чистое состояние
+  поднимает, подозрительно дешёвое без подтверждения — топится.
+- Сканер больше НЕ пишет одно-сэмпловые конфиги в базу цен (убрано загрязнение).
 """
 import json
 import os
@@ -19,6 +24,7 @@ import logging
 import statistics
 import argparse
 import html
+import hashlib
 import urllib3
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -30,9 +36,15 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from common.classifier import classify, config_to_db_key, processor_label
+from common.condition import analyze_condition
+from common.market import robust_stats, assess_deal
+from common.negotiator import motivation_score
 from common.config import (
     SCAN_FAMILIES, JUNK_KEYWORDS, URGENT_KEYWORDS, MOSCOW_MARKERS,
     MIN_PRICE, MAX_PRICE, PRICE_THRESHOLD_FACTOR, MIN_YEARS,
+    SCAN_PAGES_PER_FAMILY, MIN_COMPS, MIN_MARGIN, SCAM_FLOOR, BUYOUT_FACTOR,
+    BATTERY_HARD, BATTERY_SOFT, CYCLES_HARD, CYCLES_SOFT,
+    STALE_PRICES_HOURS, STALE_ALERT_COOLDOWN_HOURS,
 )
 
 try:
@@ -91,6 +103,9 @@ PRICES_FILE  = Path(os.environ.get('PRICES_FILE_PATH', 'public/data/avito-prices
 SEEN_FILE    = Path(os.environ.get('SEEN_FILE_PATH', 'public/data/seen-hot-deals.json'))
 HISTORY_FILE = Path(os.environ.get('PRICE_HISTORY_PATH', 'public/data/price-history.json'))
 DIGEST_FILE  = Path(os.environ.get('DIGEST_FILE_PATH', 'public/data/pending-digest.json'))
+HEALTH_FILE  = Path(os.environ.get('PARSER_HEALTH_PATH', 'public/data/parser-health.json'))
+# Очередь лидов для бота переговоров (scripts/negotiation-bot/bot.py)
+QUEUE_FILE   = Path(os.environ.get('NEGOTIATION_QUEUE_PATH', 'public/data/negotiation-queue.json'))
 
 # Точечные алерты: в реальном времени шлём только score >= MIN_NOTIFY_SCORE,
 # лоты 40..74 копим в дайджест (одно сообщение вечером — крон с флагом --digest).
@@ -122,6 +137,33 @@ CURL_BROWSERS = ["chrome110", "chrome107", "chrome104", "chrome101", "chrome100"
 
 def clean_url(url):
     return url.split('?')[0]
+
+
+# ─── Контроль свежести базы цен (дохлый-выключатель парсера) ─────────────────
+def parse_generated_at(s):
+    """Парсит generated_at из avito-prices.json. None, если формат не распознан."""
+    if not s:
+        return None
+    for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S", "%a %b %d %H:%M:%S %Y"):
+        try:
+            return datetime.strptime(str(s).strip(), fmt)
+        except (ValueError, TypeError):
+            continue
+    return None
+
+
+def should_alert_stale(age_hours, last_alert_iso, now, threshold_hours, cooldown_hours):
+    """Решает, слать ли алерт о застрявшем парсере (с учётом кулдауна)."""
+    if age_hours is None or age_hours < threshold_hours:
+        return False
+    if last_alert_iso:
+        try:
+            last = datetime.fromisoformat(last_alert_iso)
+            if (now - last).total_seconds() < cooldown_hours * 3600:
+                return False
+        except (ValueError, TypeError):
+            pass
+    return True
 
 
 # ─── Капча (из scanner v1 / parser.py) ───────────────────────────────────────
@@ -255,46 +297,66 @@ def parse_item_age(item):
     return "?", 999
 
 
-# ─── Скоринг ─────────────────────────────────────────────────────────────────
-def calc_score(price, market_low, is_urgent, is_avito_low, price_reduced,
-               cycles, is_private, minutes_ago, buyout=0):
+# ─── Ключ живой выборки рынка ────────────────────────────────────────────────
+def live_key(config):
+    """Каноничный ключ для группировки сопоставимых лотов в живой выборке.
+    Группируем по семейству+чипу+экрану+RAM+SSD — это и есть «такой же аппарат»."""
+    return (
+        config.family,
+        config.chip_gen,
+        config.chip_tier,
+        config.screen,
+        config.ram,
+        config.ssd,
+    )
+
+
+# ─── Скоринг сделки (перекуп: якорь — выкуп + чистота состояния) ──────────────
+def score_deal(price, stats, buyout, condition, is_private, is_moscow,
+               minutes_ago, assess):
+    """
+    Оценивает лот против ЖИВОГО рынка. Состояние — полноправный фактор:
+    чистый аппарат поднимается, проблемный/подозрительно дешёвый — падает.
+
+    stats   — common.market.MarketStats (живая выборка)
+    buyout  — целевая выкупная цена (курируемая или median*BUYOUT_FACTOR)
+    condition — common.condition.ConditionReport
+    assess  — common.market.DealAssessment (margin, is_suspicious)
+    """
     score = 0
 
-    discount = 0
-    if market_low > 0:
-        discount = (market_low - price) / market_low
-        if discount >= 0.20:   score += 35
-        elif discount >= 0.10: score += 25
-        elif discount >= 0.05: score += 15
-        elif discount >= 0:    score += 5
+    # 1) Запас ниже ЖИВОЙ медианы — ядро сигнала «ниже рынка»
+    m = assess.margin
+    if   m >= 0.25: score += 26
+    elif m >= 0.18: score += 20
+    elif m >= 0.12: score += 12
+    elif m >= 0.06: score += 5
 
-    # Привязка к выкупной цене — главный бизнес-сигнал «возьму и заработаю»
+    # 2) Привязка к выкупу — «куплю не дороже выкупа = заработаю»
     if buyout and buyout > 0:
-        if price <= buyout * 0.80:   score += 50
-        elif price <= buyout * 0.90: score += 35
-        elif price <= buyout:        score += 20
-        elif price > buyout * 1.15:  score -= 20
+        if   price <= buyout * 0.92: score += 34
+        elif price <= buyout:        score += 22
+        elif price <= buyout * 1.08: score += 8
+        elif price >  buyout * 1.20: score -= 15
 
-    if price_reduced: score += 20
-    if is_urgent:     score += 15
-    if is_avito_low:  score += 10
+    # 3) Ниже 20-го перцентиля живого рынка — реально дёшево среди ТЕКУЩИХ
+    if price <= stats.p20: score += 12
 
-    if cycles is not None:
-        if cycles < 100:   score += 15
-        elif cycles < 200: score += 10
-        elif cycles < 400: score += 5
+    # 4) Состояние — критично для перекупа (ok:+12/+18, suspect:-25)
+    score += condition.score_delta
 
-    if is_private: score += 10
+    # 5) Доверие к рынку: чем больше живых сопоставимых, тем надёжнее вывод
+    if   stats.n >= 12: score += 8
+    elif stats.n >= 6:  score += 4
 
-    if minutes_ago <= 30:    score += 10
-    elif minutes_ago <= 120: score += 7
-    elif minutes_ago <= 360: score += 3
+    # 6) Продавец / гео / свежесть
+    if is_private:           score += 8
+    if is_moscow:            score += 6
+    if minutes_ago <= 60:    score += 8
+    elif minutes_ago <= 180: score += 4
 
-    # ── Анти-фрод: нереальные скидки = подмена цены / скам ──
-    # (напр. «MacBook Pro 16 за 1100 ₽» = -99% — это не лот, а мусор)
-    if market_low > 0 and discount > 0.60:
-        score -= 60
-    if buyout and buyout > 0 and price < buyout * 0.5:
+    # 7) Антифрод: слишком дёшево БЕЗ подтверждённой чистоты = подмена цены/скам
+    if assess.is_suspicious and not condition.positives:
         score -= 50
 
     return max(0, min(score, 100))
@@ -302,7 +364,7 @@ def calc_score(price, market_low, is_urgent, is_avito_low, price_reduced,
 
 # ─── Co-pilot: готовое первое сообщение продавцу ─────────────────────────────
 def _fmt_rub(n):
-    return f"{int(n):,}".replace(",", " ")
+    return f"{int(n):,}".replace(",", " ")
 
 
 def template_seller_message(title, target):
@@ -372,12 +434,13 @@ class AvitoScannerV2:
         self.context = None
         self.page = None
 
-        # База цен. Ключ: (model_name_lower, processor, ram, ssd)
+        # База цен (только для фолбэка курируемой выкупной цены). Ключ: (model, proc, ram, ssd)
         self.prices: dict = {}
-        self.prices_dirty: bool = False
+        self.prices_generated_at = None
         if PRICES_FILE.exists():
             with open(PRICES_FILE, 'r', encoding='utf-8') as f:
                 data = json.load(f)
+                self.prices_generated_at = data.get('generated_at')
                 for s in data.get('stats', []):
                     key = (
                         s['model_name'].lower(),
@@ -386,9 +449,9 @@ class AvitoScannerV2:
                         int(s.get('ssd', 0)),
                     )
                     self.prices[key] = s
-            logger.info(f"📊 База цен: {len(self.prices)} конфигураций")
+            logger.info(f"📊 База выкупа (фолбэк): {len(self.prices)} конфигураций")
         else:
-            logger.warning("⚠️ База цен не найдена!")
+            logger.warning("⚠️ База цен не найдена — выкуп считаем от живой медианы")
 
         # История просмотренных
         self.seen = set()
@@ -455,7 +518,7 @@ class AvitoScannerV2:
             self.browser.close()
 
     def deep_analyze(self, url):
-        """Заходит в объявление, собирает детали."""
+        """Заходит в объявление, собирает детали (включая полное описание для анализа состояния)."""
         result = {
             "cycles": None,
             "is_urgent": False,
@@ -465,17 +528,19 @@ class AvitoScannerV2:
             "seller_reviews": None,
             "seller_type": "?",
             "location": "",
+            "desc_text": "",   # полный текст описания продавца (для анализа состояния)
         }
-        html = self._load_page(url)
-        if not html:
+        html_content = self._load_page(url)
+        if not html_content:
             return result
 
         try:
-            soup = BeautifulSoup(html, 'lxml')
+            soup = BeautifulSoup(html_content, 'lxml')
 
             # Описание
             desc_tag = soup.find('div', attrs={'data-marker': 'item-description'})
-            desc_text = desc_tag.get_text().lower() if desc_tag else ""
+            desc_text = desc_tag.get_text(' ').lower() if desc_tag else ""
+            result["desc_text"] = desc_text
 
             c_match = re.search(r'(\d+)\s*(?:цикл|cycle|ц\.|cyc)', desc_text)
             if c_match:
@@ -486,7 +551,7 @@ class AvitoScannerV2:
             # Снижение цены
             page_text = soup.get_text().lower()
             result["price_reduced"] = any(x in page_text for x in [
-                'снижена', 'цена снижена', 'скидка', 'снижал цену', 'понизил цену',
+                'снижена', 'цена снижена', 'снижал цену', 'понизил цену',
             ])
 
             # Характеристики
@@ -554,7 +619,7 @@ class AvitoScannerV2:
         return result
 
     def match_to_db(self, config):
-        """Ищет конфигурацию в базе цен через классификатор."""
+        """Ищет конфигурацию в базе цен (для фолбэка выкупной цены)."""
         key = config_to_db_key(config)
         if not key:
             return None
@@ -573,162 +638,56 @@ class AvitoScannerV2:
 
     # ─── Telegram уведомления ─────────────────────────────────────────────────
 
-    def notify_fire(self, title, price, market_low, median, buyout, ram, ssd,
-                    url, cycles, age_str, score, location, seller_type,
-                    seller_reviews, diagonal):
-        """🔥 Выгодная цена"""
-        if not TELEGRAM_URL:
-            return
-        discount_pct = round((1 - price / median) * 100) if median else 0
-        diag = f" {diagonal}\"" if diagonal else ""
-        loc_str = f"📍 {location}" if location else ""
+    def notify(self, c):
+        """Единое уведомление о лоте ниже ЖИВОГО рынка.
 
-        seller = seller_type
-        if seller_reviews is not None:
-            seller = f"{seller_type}, {seller_reviews} отз."
-
-        text = (
-            f"🔥 <b>ВЫГОДНАЯ ЦЕНА</b> [{score}/100]\n\n"
-            f"💻 {title}\n"
-            f"⚙️ <b>{ram}GB\u202f/\u202f{ssd}GB{diag}</b>\n"
-            f"💰 Цена: <b>{price:,}\u202f₽</b> <b>(−{discount_pct}%)</b>\n"
-            f"📉 Низ рынка: {market_low:,}\u202f₽ | Медиана: {median:,}\u202f₽\n"
-            f"🤝 Выкуп: <b>{buyout:,}\u202f₽</b>\n"
-        )
-        if cycles:
-            text += f"🔋 Циклы: {cycles}\n"
-        text += f"👤 {seller}\n"
-        text += f"⏱ {age_str}\n"
-        if loc_str:
-            text += f"{loc_str}\n"
-        text += f"🔗 <a href='{url}'>Открыть на Avito</a>"
-        text = text.replace(',', '\u202f')
-
-        self._send_telegram(text, f"🔥 [{score}] {title[:40]}")
-
-    def notify_delivery(self, title, price, market_low, median, buyout, ram, ssd,
-                        url, cycles, age_str, score, location, seller_type,
-                        seller_reviews, diagonal):
-        """📦 С доставкой — хорошая цена не из Москвы"""
-        if not TELEGRAM_URL:
-            return
-        discount_pct = round((1 - price / median) * 100) if median else 0
-        diag = f" {diagonal}\"" if diagonal else ""
-
-        text = (
-            f"📦 <b>ДОСТАВКА | ХОРОШАЯ ЦЕНА</b> [{score}/100]\n\n"
-            f"💻 {title}\n"
-            f"⚙️ <b>{ram}GB\u202f/\u202f{ssd}GB{diag}</b>\n"
-            f"💰 Цена: <b>{price:,}\u202f₽</b> <b>(−{discount_pct}%)</b>\n"
-            f"📉 Низ рынка: {market_low:,}\u202f₽ | Медиана: {median:,}\u202f₽\n"
-            f"🤝 Выкуп: <b>{buyout:,}\u202f₽</b>\n"
-        )
-        if cycles:
-            text += f"🔋 Циклы: {cycles}\n"
-        text += f"📍 {location} (доставка)\n"
-        text += f"⏱ {age_str}\n"
-        text += f"🔗 <a href='{url}'>Открыть на Avito</a>"
-        text = text.replace(',', '\u202f')
-
-        self._send_telegram(text, f"📦 [{score}] {title[:40]}")
-
-    def notify_bargain(self, title, price, market_low, median, buyout, ram, ssd,
-                       url, age_str, score, location, urgent_words):
-        """🤝 Торг / срочная продажа"""
-        if not TELEGRAM_URL:
-            return
-        diag = ""
-
-        text = (
-            f"🤝 <b>ТОРГ / СРОЧНАЯ ПРОДАЖА</b> [{score}/100]\n\n"
-            f"💻 {title}\n"
-            f"⚙️ <b>{ram}GB\u202f/\u202f{ssd}GB</b>\n"
-            f"💰 Цена: <b>{price:,}\u202f₽</b>\n"
-            f"📉 Низ рынка: {market_low:,}\u202f₽ | Медиана: {median:,}\u202f₽\n"
-            f"🤝 Выкуп: <b>{buyout:,}\u202f₽</b>\n"
-            f"🚨 Ключевые слова: {', '.join(urgent_words)}\n"
-        )
-        loc = f"📍 {location}" if location else ""
-        if loc:
-            text += f"{loc}\n"
-        text += f"⏱ {age_str}\n"
-        text += f"🔗 <a href='{url}'>Открыть на Avito</a>"
-        text = text.replace(',', '\u202f')
-
-        self._send_telegram(text, f"🤝 [{score}] {title[:40]}")
-
-    def add_config_to_db(self, config, price: int, source_url: str):
+        Показывает живую медиану/P20 и число сопоставимых лотов (а не низ
+        замороженного снимка), плюс резюме состояния из описания.
         """
-        Добавляет новую конфигурацию в self.prices и помечает базу dirty.
-        Возвращает stat или None если config невалиден.
-        """
-        if not config.is_valid:
-            return None
-        proc = processor_label(config)
-        key = (config.model_name.lower(), proc, config.ram, config.ssd)
-        if key in self.prices:
-            return self.prices[key]
+        if not TELEGRAM_URL:
+            return
 
-        stat = {
-            "model_name":   config.model_name,
-            "family":       config.family or "",
-            "processor":    proc,
-            "ram":          int(config.ram),
-            "ssd":          int(config.ssd),
-            "min_price":    int(price),
-            "max_price":    int(price),
-            "median_price": int(price),
-            "buyout_price": max(0, int((price - 12000) // 1000 * 1000)),
-            "samples_count": 1,
-            "updated_at":   datetime.now().strftime("%Y-%m-%d %H:%M"),
-            "added_by_scanner": True,
-            "first_seen_url":   source_url,
+        kind = c['kind']
+        headers = {
+            'fire':     "🔥 <b>НИЖЕ РЫНКА</b>",
+            'delivery': "📦 <b>НИЖЕ РЫНКА | ДОСТАВКА</b>",
         }
-        self.prices[key] = stat
-        self.prices_dirty = True
-        return stat
+        header = headers.get(kind, "🔥 <b>НИЖЕ РЫНКА</b>")
 
-    def notify_added_to_db(self, title, price, ram, ssd, url, age_str, config):
-        """🆕 Новая конфигурация добавлена в базу цен"""
-        if not TELEGRAM_URL:
-            return
-        model = config.model_name if config and config.is_valid else "?"
-        proc  = processor_label(config) if config and config.is_valid else "?"
+        price  = c['price']
+        median = c['median']
+        p20    = c['p20']
+        n      = c['n_comps']
+        buyout = c['buyout']
+        cond   = c['condition']
+        diag   = f" {c['diagonal']}\"" if c.get('diagonal') else ""
+        disc   = round((1 - price / median) * 100) if median else 0
+
+        seller = c.get('seller_type') or "?"
+        if c.get('seller_reviews') is not None:
+            seller = f"{seller}, {c['seller_reviews']} отз."
+
+        urgent = " 🚨 торг/срочно" if c.get('urgent') else ""
 
         text = (
-            f"🆕 <b>НОВАЯ КОНФИГУРАЦИЯ В БАЗЕ</b>\n\n"
-            f"💻 {title}\n"
-            f"🏷 {model}\n"
-            f"⚙️ <b>{proc} • {ram}GB\u202f/\u202f{ssd}GB</b>\n"
-            f"💰 Цена: <b>{price:,}\u202f₽</b>\n"
-            f"⏱ {age_str}\n"
-            f"🔗 <a href=\'{url}\'>Открыть на Avito</a>"
+            f"{header} [{c['score']}/100]{urgent}\n\n"
+            f"💻 {c['title']}\n"
+            f"⚙️ <b>{c['ram']}GB / {c['ssd']}GB{diag}</b>\n"
+            f"💰 Цена: <b>{price:,} ₽</b> <b>(−{disc}% к медиане)</b>\n"
+            f"📊 Рынок сейчас: медиана {median:,} ₽ • P20 {p20:,} ₽ (по {n} лотам)\n"
+            f"🤝 Выкуп-цель: <b>{buyout:,} ₽</b>\n"
+            f"🩺 Состояние: {cond.summary()}\n"
         )
-        text = text.replace(",", "\u202f")
+        if kind == 'delivery' and c.get('location'):
+            text += f"📍 {c['location']} (доставка)\n"
+        elif c.get('location'):
+            text += f"📍 {c['location']}\n"
+        text += f"👤 {seller}\n"
+        text += f"⏱ {c['age_str']}\n"
+        text += f"🔗 <a href='{c['url']}'>Открыть на Avito</a>"
+        text = text.replace(',', ' ')
 
-        self._send_telegram(text, f"🆕 В базу: {title[:40]}")
-
-    def _save_prices_db(self):
-        """Сохраняет self.prices обратно в avito-prices.json (только если есть изменения)."""
-        if not self.prices_dirty:
-            return
-        try:
-            stats = sorted(
-                self.prices.values(),
-                key=lambda s: (s.get("family", ""), s["model_name"],
-                               s.get("processor", ""), s["ram"], s["ssd"]),
-            )
-            output = {
-                "generated_at":   datetime.now().strftime("%Y-%m-%d %H:%M"),
-                "total_listings": sum(s.get("samples_count", 0) for s in stats),
-                "stats":          stats,
-            }
-            PRICES_FILE.parent.mkdir(parents=True, exist_ok=True)
-            with open(PRICES_FILE, "w", encoding="utf-8") as f:
-                json.dump(output, f, ensure_ascii=False, indent=2)
-            logger.info(f"💾 Записано: {PRICES_FILE} ({len(stats)} конфигов)")
-        except Exception as e:
-            logger.error(f"❌ Не удалось сохранить avito-prices.json: {e}")
+        self._send_telegram(text, f"[{c['score']}] {c['title'][:40]}")
 
     def _send_telegram(self, text, log_msg):
         try:
@@ -754,7 +713,9 @@ class AvitoScannerV2:
                     continue
                 existing.append({
                     "score": c["score"], "title": c["title"], "price": c["price"],
-                    "market_low": c["market_low"], "buyout": c["buyout"],
+                    "median": c["median"], "p20": c["p20"], "buyout": c["buyout"],
+                    "margin": round(c.get("margin", 0), 3),
+                    "condition": c["condition"].summary(),
                     "url": c["url"], "location": c.get("location", ""),
                     "ts": datetime.now().isoformat(timespec="seconds"),
                 })
@@ -788,254 +749,381 @@ class AvitoScannerV2:
         )
         self._send_telegram(text, f"✍️ Co-pilot: {c['title'][:40]}")
 
+    def _enqueue_lead(self, c):
+        """Кладёт горячий лот в очередь бота переговоров с оценкой мотивации продавца.
+        target — стартовый якорь, walk_away — потолок (выкуп-цель)."""
+        try:
+            url = c['url']
+            lid = hashlib.sha1(url.encode('utf-8')).hexdigest()[:10]
+
+            walk_away = int(c['buyout']) if c.get('buyout') else int(c['median'] * BUYOUT_FACTOR)
+            anchor_base = min(int(c['price']), walk_away)
+            target = max(1, int(anchor_base * 0.95))
+
+            days_listed = int(c['minutes_ago'] / 1440) if c.get('minutes_ago') else None
+            urgent_words = ["срочно/торг"] if c.get('urgent') else []
+            mot = motivation_score(
+                days_listed=days_listed,
+                price_reduced=bool(c.get('urgent')),
+                urgent_words=urgent_words,
+                asking=c['price'], median=c['median'],
+            )
+
+            lead = {
+                "id": lid,
+                "title": c['title'],
+                "asking": int(c['price']),
+                "target": target,
+                "walk_away": walk_away,
+                "location": c.get('location', ''),
+                "url": url,
+                "motivation_score": mot.score,
+                "motivation_label": mot.label,
+                "motivation_signals": mot.signals,
+                "history": [],
+                "ts": datetime.now().isoformat(timespec="seconds"),
+            }
+
+            queue = []
+            if QUEUE_FILE.exists():
+                try:
+                    with open(QUEUE_FILE, encoding="utf-8") as f:
+                        queue = json.load(f) or []
+                except Exception:
+                    queue = []
+            if any(x.get("id") == lid for x in queue):
+                return
+            queue.append(lead)
+            QUEUE_FILE.parent.mkdir(parents=True, exist_ok=True)
+            with open(QUEUE_FILE, "w", encoding="utf-8") as f:
+                json.dump(queue[-100:], f, ensure_ascii=False, indent=2)
+            logger.info(f"🧲 В очередь торга: {c['title'][:40]} (мотивация {mot.score})")
+        except Exception as e:
+            logger.error(f"❌ Не удалось добавить лид в очередь: {e}")
+
+    # ─── Сбор объявлений со страницы выдачи ───────────────────────────────────
+
+    def _collect_listings(self, html_content):
+        """Парсит карточки на странице выдачи в список словарей."""
+        soup = BeautifulSoup(html_content, 'lxml')
+        items = soup.select('[data-marker="item"]')
+        out = []
+        for item in items:
+            try:
+                link_tag = item.select_one('[data-marker="item-title"]')
+                if not link_tag or not link_tag.get('href'):
+                    continue
+                raw_url = urljoin("https://www.avito.ru", link_tag['href'])
+                url_clean = clean_url(raw_url)
+                raw_title = link_tag.get('title', '') or link_tag.get_text(strip=True)
+
+                price_tag = item.select_one('[itemprop="price"]')
+                if not price_tag or not price_tag.get('content'):
+                    continue
+                try:
+                    price = int(price_tag['content'])
+                except (ValueError, TypeError):
+                    continue
+
+                snippet_tag = item.select_one('[data-marker="item-description"]')
+                snippet = snippet_tag.get_text(' ').lower() if snippet_tag else ""
+                age_str, minutes_ago = parse_item_age(item)
+
+                out.append({
+                    'raw_url': raw_url,
+                    'url': url_clean,
+                    'title': raw_title,
+                    'snippet': snippet,
+                    'price': price,
+                    'age_str': age_str,
+                    'minutes_ago': minutes_ago,
+                    'item_text': item.get_text(' ').lower(),
+                })
+            except Exception:
+                continue
+        return out, len(items)
+
     # ─── Основной цикл ───────────────────────────────────────────────────────
 
     def _get_scan_urls(self):
         """Возвращает список URL для сканирования."""
-        # Если задан SCAN_URL в env — используем его (совместимость с v1)
         if SCAN_URL:
             return [{"label": "SCAN_URL", "url": SCAN_URL}]
-
-        # Иначе — 5 семейств из config
         return [
             {"label": fam['label'], "url": fam['url']}
             for fam in SCAN_FAMILIES.values()
         ]
 
+    def _page_url(self, base_url, page_num):
+        if page_num <= 1:
+            return base_url
+        sep = '&' if '?' in base_url else '?'
+        return f"{base_url}{sep}p={page_num}"
+
+    def _check_prices_freshness(self):
+        """Дохлый-выключатель: если база цен застряла — предупреждаем в Telegram.
+        Кулдаун защищает от спама (сканер запускается каждые 15 мин)."""
+        if not TELEGRAM_URL:
+            return
+        now = datetime.now()
+
+        parsed = parse_generated_at(self.prices_generated_at) if PRICES_FILE.exists() else None
+        if PRICES_FILE.exists() and parsed is None:
+            return  # формат generated_at не распознан — не паникуем зря
+
+        age_hours = None if parsed is None else max(0.0, (now - parsed).total_seconds() / 3600)
+
+        # Свежо — выходим
+        if age_hours is not None and age_hours < STALE_PRICES_HOURS:
+            return
+
+        # Кулдаун
+        last_alert = None
+        if HEALTH_FILE.exists():
+            try:
+                with open(HEALTH_FILE, encoding='utf-8') as f:
+                    last_alert = json.load(f).get('last_stale_alert')
+            except Exception:
+                pass
+
+        age_for_check = age_hours if age_hours is not None else float('inf')
+        if not should_alert_stale(age_for_check, last_alert, now,
+                                  STALE_PRICES_HOURS, STALE_ALERT_COOLDOWN_HOURS):
+            return
+
+        if age_hours is None:
+            body = "база цен не найдена — парсер ни разу не создал файл"
+            age_label = "∞"
+        else:
+            body = (f"база цен не обновлялась <b>{int(age_hours)} ч</b> "
+                    f"(с {self.prices_generated_at} UTC)")
+            age_label = f"{int(age_hours)}ч"
+
+        text = (
+            "⚠️ <b>Парсер цен встал</b>\n"
+            f"{body}.\n"
+            "Проверь GitHub Actions → «Avito Price Parser v2» (логи запусков, секреты, лимит минут).\n"
+            "ℹ️ Детектор «ниже рынка» работает (живой рынок), но выкуп-цель считается "
+            "от живой медианы вместо курируемой."
+        )
+        self._send_telegram(text, f"⚠️ parser stale {age_label}")
+
+        try:
+            HEALTH_FILE.parent.mkdir(parents=True, exist_ok=True)
+            with open(HEALTH_FILE, 'w', encoding='utf-8') as f:
+                json.dump({"last_stale_alert": now.isoformat(timespec='seconds')}, f)
+        except Exception as e:
+            logger.warning(f"⚠️ Не удалось записать parser-health: {e}")
+
+    def _passes_prefilter(self, listing):
+        """Дешёвый фильтр: цена в диапазоне, не мусор, валидный конфиг, год ок.
+        Возвращает config или None."""
+        full_preview = (listing['title'] + ' ' + listing['snippet']).lower()
+        if any(w in full_preview for w in JUNK_KEYWORDS):
+            return None
+        if not (MIN_PRICE <= listing['price'] <= MAX_PRICE):
+            return None
+        cfg = classify(listing['title'])
+        if not cfg.is_valid:
+            return None
+        min_year = MIN_YEARS.get(cfg.family, 2020)
+        if cfg.year and cfg.year < min_year:
+            return None
+        return cfg
+
     def run(self):
-        # Запускаем Playwright-браузер
+        # Дохлый-выключатель: проверяем свежесть базы цен ДО скана
+        # (не требует браузера; алерт уйдёт, даже если потом скан упадёт)
+        self._check_prices_freshness()
+
         self._start_browser()
         self._warmup()
 
         scan_urls = self._get_scan_urls()
-        logger.info(f"🎬 Запуск сканера v2 ({len(scan_urls)} URL)...")
+        logger.info(f"🎬 Запуск сканера v2 ({len(scan_urls)} семейств, "
+                    f"{SCAN_PAGES_PER_FAMILY} стр/семейство, живой рынок)...")
 
         total_notifications = 0
 
         for scan_info in scan_urls:
             label = scan_info['label']
-            url = scan_info['url']
+            base_url = scan_info['url']
             logger.info(f"\n{'─'*40}")
-            logger.info(f"🔍 {label}: {url[:60]}...")
+            logger.info(f"🔍 {label}: {base_url[:60]}...")
 
-            time.sleep(random.uniform(2, 5))
+            # ── 1) Грузим N страниц выдачи, собираем все объявления ──────────
+            listings = []
+            for page_num in range(1, SCAN_PAGES_PER_FAMILY + 1):
+                time.sleep(random.uniform(2, 5))
+                page_html = self._load_page(self._page_url(base_url, page_num))
+                if not page_html:
+                    logger.error(f"❌ {label}: не загрузилась стр. {page_num}")
+                    break
+                page_listings, n_items = self._collect_listings(page_html)
+                listings.extend(page_listings)
+                logger.info(f"   📄 стр.{page_num}: {n_items} объявл.")
+                if n_items < 10:
+                    break
 
-            html = self._load_page(url)
-            if not html:
-                logger.error(f"❌ Не удалось загрузить {label}")
+            if not listings:
                 continue
 
-            soup = BeautifulSoup(html, 'lxml')
-            items = soup.select('[data-marker="item"]')
-            logger.info(f"🔎 {label}: {len(items)} объявлений")
+            # ── 2) Строим ЖИВОЙ рынок: цены сопоставимых лотов прямо сейчас ──
+            buckets = {}              # live_key -> [prices]
+            cfg_cache = {}            # url -> config
+            for L in listings:
+                cfg = self._passes_prefilter(L)
+                cfg_cache[L['url']] = cfg
+                if cfg is not None:
+                    buckets.setdefault(live_key(cfg), []).append(L['price'])
+            logger.info(f"   📊 {label}: {len(listings)} лотов → {len(buckets)} живых конфигов")
 
-            if not items:
-                continue
-
+            # ── 3) Детектим сделки против живого рынка ──────────────────────
             candidates = []
-
-            for idx, item in enumerate(items, 1):
+            for L in listings:
                 try:
-                    link_tag = item.select_one('[data-marker="item-title"]')
-                    if not link_tag:
-                        continue
-
-                    raw_url = urljoin("https://www.avito.ru", link_tag['href'])
-                    url_clean = clean_url(raw_url)
-                    raw_title = link_tag.get('title', '')
-
+                    url_clean = L['url']
                     if url_clean in self.seen:
                         continue
 
-                    snippet_tag = item.select_one('[data-marker="item-description"]')
-                    snippet = snippet_tag.get_text().lower() if snippet_tag else ""
-                    full_preview = (raw_title + ' ' + snippet).lower()
-
-                    if any(w in full_preview for w in JUNK_KEYWORDS):
+                    cfg = cfg_cache.get(url_clean)
+                    if cfg is None:
+                        # не прошёл префильтр (мусор / не та цена / невалидный конфиг)
                         self.seen.add(url_clean)
                         continue
 
-                    price_tag = item.select_one('[itemprop="price"]')
-                    if not price_tag:
+                    price = L['price']
+                    key = live_key(cfg)
+                    comps = list(buckets.get(key, []))
+                    if price in comps:
+                        comps.remove(price)   # не сравниваем лот сам с собой
+                    stats = robust_stats(comps)
+                    if not stats or stats.n < 3:
+                        # рынок слишком тонкий — судить не можем, пропускаем тихо
                         continue
-                    price = int(price_tag['content'])
-                    if price < MIN_PRICE or price > MAX_PRICE:
-                        continue
 
-                    age_str, minutes_ago = parse_item_age(item)
+                    assess = assess_deal(price, stats, min_margin=MIN_MARGIN, scam_floor=SCAM_FLOOR)
 
-                    # Классификация из превью
-                    config = classify(raw_title)
-
-                    if not config.is_valid:
+                    # Углублённый анализ только если есть запас ниже рынка
+                    if assess.margin < MIN_MARGIN:
                         self.seen.add(url_clean)
                         continue
 
-                    # Фильтр по году
-                    min_year = MIN_YEARS.get(config.family, 2020)
-                    if config.year and config.year < min_year:
-                        self.seen.add(url_clean)
-                        continue
-
-                    is_avito_low = any(x in item.get_text().lower()
-                                       for x in ["ниже рыночной", "цена ниже", "хорошая цена"])
-                    is_urgent_preview = any(w in full_preview for w in URGENT_KEYWORDS)
-
-                    # Ищем в базе
-                    stat = self.match_to_db(config)
-
-                    if not stat:
-                        # Новая конфигурация: добавляем в БД и уведомляем
-                        logger.info(f"   🆕 В базу: {raw_title[:50]} | {price:,}₽ | "
-                                    f"{config.model_name} {config.ram}/{config.ssd}")
-                        self.add_config_to_db(config, price, url_clean)
-                        self.notify_added_to_db(raw_title, price, config.ram, config.ssd,
-                                                url_clean, age_str, config)
-                        self.seen.add(url_clean)
-                        continue
-
-                    market_low = stat['min_price']
-                    price_ok = price <= int(market_low * PRICE_THRESHOLD_FACTOR)
-
-                    if not (price_ok or is_avito_low or is_urgent_preview):
-                        self.seen.add(url_clean)
-                        continue
-
-                    logger.info(f"   [{idx}] ✅ Кандидат: {raw_title[:50]} | {price:,}₽")
-
-                    # Помечаем как seen
+                    # Помечаем seen до сетевого вызова (защита от повторов при сбое)
                     self.seen.add(url_clean)
                     self._save_seen()
 
-                    # Deep analyze
                     time.sleep(random.uniform(2, 5))
-                    analysis = self.deep_analyze(raw_url)
+                    analysis = self.deep_analyze(L['raw_url'])
 
-                    # Обогащаем config из deep specs
+                    # Уточняем конфиг спеками из карточки и пересчитываем рынок
                     if analysis['specs']:
-                        config_deep = classify(raw_title, analysis['specs'])
-                        stat_deep = self.match_to_db(config_deep)
-                        if stat_deep:
-                            stat = stat_deep
-                            config = config_deep
+                        cfg2 = classify(L['title'], analysis['specs'])
+                        if cfg2.is_valid:
+                            comps2 = list(buckets.get(live_key(cfg2), []))
+                            if price in comps2:
+                                comps2.remove(price)
+                            stats2 = robust_stats(comps2)
+                            if stats2 and stats2.n >= 3:
+                                cfg, stats = cfg2, stats2
+                                assess = assess_deal(price, stats,
+                                                     min_margin=MIN_MARGIN, scam_floor=SCAM_FLOOR)
 
-                    market_low = stat['min_price']
-                    median = stat['median_price']
-                    buyout = stat['buyout_price']
-                    cycles = analysis['cycles']
-                    is_urgent = analysis['is_urgent'] or is_urgent_preview
-                    price_reduced = analysis['price_reduced']
-                    is_private = analysis['is_private']
-                    seller_type = analysis['seller_type']
-                    seller_reviews = analysis['seller_reviews']
-                    location = analysis['location']
-                    diagonal = analysis['specs'].get('diagonal')
+                    if assess.margin < MIN_MARGIN:
+                        continue
 
-                    # Скор
-                    score = calc_score(
-                        price, market_low, is_urgent, is_avito_low,
-                        price_reduced, cycles, is_private, minutes_ago, buyout,
+                    # ── Гейт состояния по ПОЛНОМУ описанию ──────────────────
+                    cond_text = ' '.join([L['title'], L['snippet'], analysis.get('desc_text', '')])
+                    condition = analyze_condition(
+                        cond_text,
+                        battery_hard=BATTERY_HARD, battery_soft=BATTERY_SOFT,
+                        cycles_hard=CYCLES_HARD, cycles_soft=CYCLES_SOFT,
                     )
+                    if condition.cycles is None and analysis.get('cycles'):
+                        condition.cycles = analysis['cycles']
 
-                    # Определяем тип(ы) уведомления
-                    notifications = []
+                    if condition.is_reject:
+                        logger.info(f"   ⛔ {L['title'][:45]} | {price:,}₽ | {condition.summary()}")
+                        continue
 
-                    # 🔥 Выгодная цена (Москва)
-                    if price <= market_low * 1.10 and (not location or is_moscow(location)):
-                        notifications.append('fire')
+                    location = analysis['location']
+                    moscow = (not location) or is_moscow(location)
 
-                    # 📦 Доставка (не Москва + хорошая цена)
-                    if location and not is_moscow(location) and price <= median * 0.95:
-                        notifications.append('delivery')
+                    # Выкуп: курируемый из базы, иначе от живой медианы
+                    stat_db = self.match_to_db(cfg)
+                    if stat_db and stat_db.get('buyout_price'):
+                        buyout = int(stat_db['buyout_price'])
+                    else:
+                        buyout = int(stats.median * BUYOUT_FACTOR)
 
-                    # 🤝 Торг (срочно + цена не сильно выше медианы)
-                    urgent_words = [w for w in URGENT_KEYWORDS if w in full_preview]
-                    if (is_urgent or price_reduced) and price <= median * 1.05:
-                        notifications.append('bargain')
+                    full_preview = (L['title'] + ' ' + L['snippet']).lower()
+                    urgent = (analysis['is_urgent'] or analysis['price_reduced']
+                              or any(w in full_preview for w in URGENT_KEYWORDS))
 
-                    # Если нет специфического типа, но цена ок — 🔥
-                    if not notifications and price_ok:
-                        notifications.append('fire')
+                    score = score_deal(price, stats, buyout, condition,
+                                       analysis['is_private'], moscow,
+                                       L['minutes_ago'], assess)
 
                     candidates.append({
+                        'kind': 'fire' if moscow else 'delivery',
                         'score': score,
-                        'notifications': notifications,
-                        'title': raw_title,
+                        'title': L['title'],
                         'price': price,
-                        'market_low': market_low,
-                        'median': median,
+                        'median': stats.median,
+                        'p20': stats.p20,
+                        'n_comps': stats.n,
+                        'margin': assess.margin,
                         'buyout': buyout,
-                        'ram': config.ram,
-                        'ssd': config.ssd,
+                        'ram': cfg.ram,
+                        'ssd': cfg.ssd,
+                        'diagonal': analysis['specs'].get('diagonal'),
                         'url': url_clean,
-                        'cycles': cycles,
-                        'is_urgent': is_urgent,
-                        'is_avito_low': is_avito_low,
-                        'price_reduced': price_reduced,
-                        'seller_type': seller_type,
-                        'seller_reviews': seller_reviews,
-                        'diagonal': diagonal,
-                        'age_str': age_str,
-                        'minutes_ago': minutes_ago,
+                        'age_str': L['age_str'],
+                        'minutes_ago': L['minutes_ago'],
                         'location': location,
-                        'urgent_words': urgent_words,
+                        'seller_type': analysis['seller_type'],
+                        'seller_reviews': analysis['seller_reviews'],
+                        'is_private': analysis['is_private'],
+                        'condition': condition,
+                        'urgent': urgent,
+                        'suspicious': assess.is_suspicious,
                     })
+                    logger.info(f"   ✅ [{score}] {L['title'][:45]} | {price:,}₽ | "
+                                f"−{assess.margin*100:.0f}% к медиане | {condition.verdict}")
 
                 except Exception as e:
                     logger.error(f"Ошибка: {e}")
                     continue
 
-            # Сортируем по скору
+            # ── 4) Рассылка ─────────────────────────────────────────────────
             candidates.sort(key=lambda x: x['score'], reverse=True)
-
             digest_items = []
             for c in candidates:
-                # Точечные алерты: в реальном времени только сильные лоты,
-                # средние (40..74) уходят в вечерний дайджест.
-                if c['score'] < MIN_NOTIFY_SCORE:
-                    if c['score'] >= DIGEST_MIN_SCORE:
-                        digest_items.append(c)
-                    continue
-                for ntype in c['notifications']:
-                    if ntype == 'fire':
-                        self.notify_fire(
-                            c['title'], c['price'], c['market_low'], c['median'],
-                            c['buyout'], c['ram'], c['ssd'], c['url'], c['cycles'],
-                            c['age_str'], c['score'], c['location'], c['seller_type'],
-                            c['seller_reviews'], c['diagonal'],
-                        )
-                    elif ntype == 'delivery':
-                        self.notify_delivery(
-                            c['title'], c['price'], c['market_low'], c['median'],
-                            c['buyout'], c['ram'], c['ssd'], c['url'], c['cycles'],
-                            c['age_str'], c['score'], c['location'], c['seller_type'],
-                            c['seller_reviews'], c['diagonal'],
-                        )
-                    elif ntype == 'bargain':
-                        self.notify_bargain(
-                            c['title'], c['price'], c['market_low'], c['median'],
-                            c['buyout'], c['ram'], c['ssd'], c['url'],
-                            c['age_str'], c['score'], c['location'], c['urgent_words'],
-                        )
-                    total_notifications += 1
-
-                # Co-pilot: готовое первое сообщение продавцу для горячего лота
-                if c['notifications']:
+                # В realtime НЕ выпускаем:
+                #  - подозрительно дёшево без подтверждённой чистоты (вероятен скам/дефект);
+                #  - тонкий рынок (< MIN_COMPS живых сопоставимых) — вывод ненадёжен.
+                block_realtime = (
+                    (c['suspicious'] and not c['condition'].positives)
+                    or c['n_comps'] < MIN_COMPS
+                )
+                if c['score'] >= MIN_NOTIFY_SCORE and not block_realtime:
+                    self.notify(c)
                     self._send_copilot(c)
+                    self._enqueue_lead(c)
+                    total_notifications += 1
+                elif c['score'] >= DIGEST_MIN_SCORE:
+                    digest_items.append(c)
 
             if digest_items:
                 self._save_digest(digest_items)
 
         # Финальное сохранение
         self._save_seen()
-        self._save_prices_db()
 
-        # История цен
         HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
         with open(HISTORY_FILE, 'w', encoding='utf-8') as f:
             json.dump(self.price_history, f, ensure_ascii=False)
 
-        # Закрываем браузер
         self._close()
 
         logger.info(f"\n🏁 Готово. Уведомлений: {total_notifications}")
@@ -1061,11 +1149,13 @@ def send_digest():
     lines = [f"👀 <b>Лоты на радаре за сутки</b> (всего {len(items)}, показаны лучшие {len(top)})\n"]
     for x in top:
         loc = f" • {x['location']}" if x.get("location") else ""
+        cond = f" • {x['condition']}" if x.get("condition") else ""
+        median = x.get("median", 0)
         block = (
             f"[{x['score']}] {x['title'][:60]}\n"
-            f"   {x['price']:,} ₽ (рынок от {x['market_low']:,} ₽){loc}\n"
+            f"   {x['price']:,} ₽ (медиана рынка {median:,} ₽){loc}{cond}\n"
             f"   <a href=\"{x['url']}\">Открыть на Avito</a>"
-        ).replace(",", " ")
+        ).replace(",", " ")
         lines.append(block)
     text = "\n".join(lines)
 

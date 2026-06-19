@@ -73,6 +73,56 @@ MOSCOW_MARKERS = ['москва', 'moscow', 'мск', 'московская об
 # ─── Порог цены для скоринга ─────────────────────────────────────────────────
 PRICE_THRESHOLD_FACTOR = 1.20
 
+# ─── Параметры детектора «ниже рынка» по ЖИВОЙ выборке (scanner v2) ───────────
+import os as _os
+
+
+def _envf(name, default):
+    try:
+        return float(_os.environ.get(name, default))
+    except (TypeError, ValueError):
+        return float(default)
+
+
+def _envi(name, default):
+    try:
+        return int(_os.environ.get(name, default))
+    except (TypeError, ValueError):
+        return int(default)
+
+
+# Сколько страниц выдачи грузить на семейство, чтобы собрать живой рынок.
+# Чем больше — тем надёжнее медиана, но дольше скан и выше риск капчи.
+SCAN_PAGES_PER_FAMILY = _envi("SCAN_PAGES_PER_FAMILY", 3)
+
+# Минимум живых сопоставимых лотов, чтобы доверять медиане для алерта в реалтайме.
+# При меньшем числе — максимум в дайджест (низкая уверенность).
+MIN_COMPS = _envi("MIN_COMPS", 6)
+
+# Запас маржи: насколько ниже живой медианы должна быть цена, чтобы считаться сделкой.
+# Для перекупа нужен зазор под перепродажу (по умолчанию 10%).
+MIN_MARGIN = _envf("MIN_MARGIN", 0.10)
+
+# Граница «слишком дёшево»: ниже scam_floor * median без чистого состояния —
+# почти всегда скрытый дефект/подмена цены/скам. Не алертим как 🔥.
+SCAM_FLOOR = _envf("SCAM_FLOOR", 0.55)
+
+# Целевая выкупная цена = BUYOUT_FACTOR * живая медиана (если нет курируемой).
+BUYOUT_FACTOR = _envf("BUYOUT_FACTOR", 0.80)
+
+# Пороги состояния (передаются в condition.analyze_condition).
+BATTERY_HARD = _envi("BATTERY_HARD", 80)   # < этого % здоровья АКБ → reject
+BATTERY_SOFT = _envi("BATTERY_SOFT", 85)   # ниже → suspect
+CYCLES_HARD = _envi("CYCLES_HARD", 1000)   # > → reject
+CYCLES_SOFT = _envi("CYCLES_SOFT", 500)    # > → suspect
+
+# ─── Дохлый-выключатель: контроль свежести базы цен ──────────────────────────
+# Если avito-prices.json не обновлялся дольше STALE_PRICES_HOURS — бот шлёт
+# предупреждение в Telegram (парсер встал). Кулдаун — чтобы не спамить (сканер
+# крутится каждые 15 мин).
+STALE_PRICES_HOURS = _envi("STALE_PRICES_HOURS", 36)
+STALE_ALERT_COOLDOWN_HOURS = _envi("STALE_ALERT_COOLDOWN_HOURS", 12)
+
 # ─── URL для Price Builder v2 ────────────────────────────────────────────────
 # Каждый URL — отдельная категория с фильтрами Авито.
 # Пользователь настраивает фильтры на Авито и вставляет URL сюда.

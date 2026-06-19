@@ -30,3 +30,10 @@ out
 # Environment variables
 .env.local
 .env
+
+# Локальное состояние сканера (дохлый-выключатель парсера)
+public/data/parser-health.json
+
+# Локальное состояние бота переговоров
+public/data/negotiation-state.json
+public/data/negotiation-queue.json

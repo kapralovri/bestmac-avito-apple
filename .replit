@@ -46,7 +46,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "while true; do python3 scripts/hot-deals-scanner/scanner.py; sleep 900; done"
+args = "while true; do python3 scripts/hot-deals-scanner/scanner_v2.py; sleep 900; done"
 
 [workflows.workflow.metadata]
 outputType = "console"
