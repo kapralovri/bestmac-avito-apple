@@ -109,7 +109,7 @@ QUEUE_FILE   = Path(os.environ.get('NEGOTIATION_QUEUE_PATH', 'public/data/negoti
 
 # Точечные алерты: в реальном времени шлём только score >= MIN_NOTIFY_SCORE,
 # лоты 40..74 копим в дайджест (одно сообщение вечером — крон с флагом --digest).
-MIN_NOTIFY_SCORE = int(os.environ.get('MIN_NOTIFY_SCORE', '60'))
+MIN_NOTIFY_SCORE = int(os.environ.get('MIN_NOTIFY_SCORE', '50'))
 DIGEST_MIN_SCORE = int(os.environ.get('DIGEST_MIN_SCORE', '40'))
 
 TELEGRAM_URL  = os.environ.get('TELEGRAM_NOTIFY_URL')
