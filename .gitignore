@@ -37,3 +37,4 @@ public/data/parser-health.json
 # Локальное состояние бота переговоров
 public/data/negotiation-state.json
 public/data/negotiation-queue.json
+public/data/listing-registry.json

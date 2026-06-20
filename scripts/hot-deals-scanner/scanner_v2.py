@@ -38,13 +38,14 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from common.classifier import classify, config_to_db_key, processor_label
 from common.condition import analyze_condition
 from common.market import robust_stats, assess_deal, MarketStats
-from common.negotiator import motivation_score
+from common.negotiator import motivation_score, MotivationReport
 from common.config import (
     SCAN_FAMILIES, JUNK_KEYWORDS, URGENT_KEYWORDS, MOSCOW_MARKERS,
     MIN_PRICE, MAX_PRICE, PRICE_THRESHOLD_FACTOR, MIN_YEARS,
     SCAN_PAGES_PER_FAMILY, MIN_COMPS, MIN_MARGIN, SCAM_FLOOR, BUYOUT_FACTOR,
     BATTERY_HARD, BATTERY_SOFT, CYCLES_HARD, CYCLES_SOFT,
     STALE_PRICES_HOURS, STALE_ALERT_COOLDOWN_HOURS, EXCLUDE_INTEL_FAMILIES,
+    STALE_LISTING_DAYS, STALE_MIN_DROP, STALE_SCAN_PAGES, STALE_MAX_LEADS, REGISTRY_MAX,
 )
 
 try:
@@ -106,6 +107,8 @@ DIGEST_FILE  = Path(os.environ.get('DIGEST_FILE_PATH', 'public/data/pending-dige
 HEALTH_FILE  = Path(os.environ.get('PARSER_HEALTH_PATH', 'public/data/parser-health.json'))
 # Очередь лидов для бота переговоров (scripts/negotiation-bot/bot.py)
 QUEUE_FILE   = Path(os.environ.get('NEGOTIATION_QUEUE_PATH', 'public/data/negotiation-queue.json'))
+# Реестр объявлений (для охотника за залежавшимися): когда впервые увидели, история цены
+REGISTRY_FILE = Path(os.environ.get('LISTING_REGISTRY_PATH', 'public/data/listing-registry.json'))
 
 # Точечные алерты: в реальном времени шлём только score >= MIN_NOTIFY_SCORE,
 # лоты 40..74 копим в дайджест (одно сообщение вечером — крон с флагом --digest).
@@ -484,6 +487,16 @@ class AvitoScannerV2:
             except Exception:
                 pass
 
+        # Реестр объявлений (для охотника за залежавшимися)
+        self.registry = {}
+        if REGISTRY_FILE.exists():
+            try:
+                with open(REGISTRY_FILE, 'r', encoding='utf-8') as f:
+                    self.registry = json.load(f)
+                logger.info(f"🗃 Реестр объявлений: {len(self.registry)}")
+            except Exception:
+                pass
+
     def _start_browser(self):
         """Запускает Playwright-браузер."""
         self.browser = self.pw.chromium.launch(
@@ -760,9 +773,10 @@ class AvitoScannerV2:
         )
         self._send_telegram(text, f"✍️ Co-pilot: {c['title'][:40]}")
 
-    def _enqueue_lead(self, c):
-        """Кладёт горячий лот в очередь бота переговоров с оценкой мотивации продавца.
-        target — стартовый якорь, walk_away — потолок (выкуп-цель)."""
+    def _enqueue_lead(self, c, motivation=None):
+        """Кладёт лот в очередь бота переговоров с оценкой мотивации продавца.
+        target — стартовый якорь, walk_away — потолок (выкуп-цель).
+        motivation — готовый MotivationReport (для охотника за залежавшимися)."""
         try:
             url = c['url']
             lid = hashlib.sha1(url.encode('utf-8')).hexdigest()[:10]
@@ -771,14 +785,17 @@ class AvitoScannerV2:
             anchor_base = min(int(c['price']), walk_away)
             target = max(1, int(anchor_base * 0.95))
 
-            days_listed = int(c['minutes_ago'] / 1440) if c.get('minutes_ago') else None
-            urgent_words = ["срочно/торг"] if c.get('urgent') else []
-            mot = motivation_score(
-                days_listed=days_listed,
-                price_reduced=bool(c.get('urgent')),
-                urgent_words=urgent_words,
-                asking=c['price'], median=c['median'],
-            )
+            if motivation is not None:
+                mot = motivation
+            else:
+                days_listed = int(c['minutes_ago'] / 1440) if c.get('minutes_ago') else None
+                urgent_words = ["срочно/торг"] if c.get('urgent') else []
+                mot = motivation_score(
+                    days_listed=days_listed,
+                    price_reduced=bool(c.get('urgent')),
+                    urgent_words=urgent_words,
+                    asking=c['price'], median=c['median'],
+                )
 
             lead = {
                 "id": lid,
@@ -788,6 +805,7 @@ class AvitoScannerV2:
                 "walk_away": walk_away,
                 "location": c.get('location', ''),
                 "url": url,
+                "source": c.get('source_kind', 'deal'),
                 "motivation_score": mot.score,
                 "motivation_label": mot.label,
                 "motivation_signals": mot.signals,
@@ -811,6 +829,158 @@ class AvitoScannerV2:
             logger.info(f"🧲 В очередь торга: {c['title'][:40]} (мотивация {mot.score})")
         except Exception as e:
             logger.error(f"❌ Не удалось добавить лид в очередь: {e}")
+
+    # ─── Реестр объявлений (охотник за залежавшимися) ─────────────────────────
+
+    def _registry_touch(self, L):
+        """Обновляет реестр: первая дата, история цены, сколько раз видели."""
+        url, price = L['url'], L['price']
+        now_iso = datetime.now().isoformat(timespec='seconds')
+        disp_days = int(L.get('minutes_ago', 0) // 1440)
+        e = self.registry.get(url)
+        if not e:
+            self.registry[url] = {
+                'first_seen': now_iso, 'last_seen': now_iso,
+                'first_price': price, 'last_price': price, 'min_price': price,
+                'times_seen': 1, 'title': L['title'], 'max_age_days': disp_days,
+            }
+        else:
+            e['last_seen'] = now_iso
+            e['last_price'] = price
+            e['min_price'] = min(int(e.get('min_price', price)), price)
+            e['times_seen'] = int(e.get('times_seen', 1)) + 1
+            e['max_age_days'] = max(int(e.get('max_age_days', 0)), disp_days)
+            e['title'] = L['title']
+
+    def _save_registry(self):
+        try:
+            items = sorted(self.registry.items(),
+                           key=lambda kv: kv[1].get('last_seen', ''), reverse=True)[:REGISTRY_MAX]
+            self.registry = dict(items)
+            REGISTRY_FILE.parent.mkdir(parents=True, exist_ok=True)
+            with open(REGISTRY_FILE, 'w', encoding='utf-8') as f:
+                json.dump(self.registry, f, ensure_ascii=False)
+        except Exception as e:
+            logger.warning(f"⚠️ Реестр не сохранён: {e}")
+
+    @staticmethod
+    def _entry_days(e, now):
+        d = int(e.get('max_age_days', 0))
+        try:
+            d = max(d, (now - datetime.fromisoformat(e['first_seen'])).days)
+        except Exception:
+            pass
+        return d
+
+    @staticmethod
+    def _entry_drop(e):
+        fp = int(e.get('first_price', 0) or 0)
+        lp = int(e.get('last_price', fp) or fp)
+        return max(0.0, (fp - lp) / fp) if fp > 0 else 0.0
+
+    def run_stale_sweep(self):
+        """Проход «охотника»: залежавшихся/снизивших цену продавцов → в очередь торга."""
+        self._start_browser()
+        self._warmup()
+        now = datetime.now()
+        logger.info(f"🕰 Охота за залежавшимися (>= {STALE_LISTING_DAYS} дн или снижение цены)...")
+
+        # 1) Обход выдачи (глубже обычного) — обновляем реестр, ловим возраст из выдачи
+        seen_now = {}
+        for scan_info in self._get_scan_urls():
+            label, base_url = scan_info['label'], scan_info['url']
+            for page_num in range(1, STALE_SCAN_PAGES + 1):
+                time.sleep(random.uniform(2, 5))
+                page_html = self._load_page(self._page_url(base_url, page_num))
+                page_listings, n_items = self._collect_listings(page_html) if page_html else ([], 0)
+                if page_num == 1 and n_items == 0:
+                    self._warmup()
+                    time.sleep(random.uniform(2, 4))
+                    page_html = self._load_page(self._page_url(base_url, page_num))
+                    page_listings, n_items = self._collect_listings(page_html) if page_html else ([], 0)
+                for L in page_listings:
+                    if self._passes_prefilter(L) is not None:
+                        self._registry_touch(L)
+                        seen_now[L['url']] = L
+                logger.info(f"   🕰 {label} стр.{page_num}: {n_items}")
+                if n_items < 10:
+                    break
+
+        # 2) Кандидаты: возраст или снижение цены (в seen_now — приоритет, точно живые)
+        cands = []
+        for url, e in self.registry.items():
+            days = self._entry_days(e, now)
+            drop = self._entry_drop(e)
+            if days >= STALE_LISTING_DAYS or drop >= STALE_MIN_DROP:
+                cands.append((url, e, days, drop, url in seen_now))
+        cands.sort(key=lambda x: (x[4], x[2] + x[3] * 50), reverse=True)
+
+        existing = set()
+        if QUEUE_FILE.exists():
+            try:
+                existing = {x.get('id') for x in (json.load(open(QUEUE_FILE, encoding='utf-8')) or [])}
+            except Exception:
+                pass
+
+        enqueued = 0
+        for url, e, days, drop, is_live in cands:
+            if enqueued >= STALE_MAX_LEADS:
+                break
+            lid = hashlib.sha1(url.encode('utf-8')).hexdigest()[:10]
+            if lid in existing:
+                continue
+            L = seen_now.get(url)
+            time.sleep(random.uniform(1.5, 3.5))
+            analysis = self.deep_analyze(url)
+            # лот снят/недоступен → пустой разбор, пропускаем
+            if not (analysis.get('desc_text') or analysis.get('specs') or analysis.get('location') or L):
+                continue
+            title = L['title'] if L else e.get('title', '')
+            cfg = classify(title, analysis.get('specs'))
+            if not cfg.is_valid:
+                continue
+            if cfg.family in EXCLUDE_INTEL_FAMILIES and cfg.chip_gen == 'Intel':
+                continue
+            min_year = MIN_YEARS.get(cfg.family, 2020)
+            if cfg.year and cfg.year < min_year:
+                continue
+            cond = analyze_condition(' '.join([title, analysis.get('desc_text', '')]),
+                                     battery_hard=BATTERY_HARD, battery_soft=BATTERY_SOFT,
+                                     cycles_hard=CYCLES_HARD, cycles_soft=CYCLES_SOFT)
+            if cond.is_reject:
+                continue
+            market, _ = self._market_for(cfg, [])
+            if not market:
+                continue
+            asking = int(e.get('last_price') or (L['price'] if L else 0))
+            stat_db = self._db_stat(cfg)
+            buyout = (int(stat_db['buyout_price']) if stat_db and stat_db.get('buyout_price')
+                      else int(market.median * BUYOUT_FACTOR))
+            # нужна комната для торга вниз и не абсурдно переоценено
+            if asking <= 0 or asking <= buyout or asking > market.median * 1.20:
+                continue
+            mot = motivation_score(days_listed=days, price_reduced=drop >= 0.03,
+                                   num_reductions=(1 if drop > 0 else 0),
+                                   reposted=int(e.get('times_seen', 1)) >= 5,
+                                   asking=asking, median=market.median)
+            self._enqueue_lead({
+                'url': url, 'title': title, 'price': asking,
+                'median': market.median, 'buyout': buyout,
+                'location': analysis.get('location', ''), 'source_kind': 'stale',
+            }, motivation=mot)
+            existing.add(lid)
+            enqueued += 1
+            logger.info(f"   🧲 Залежавшийся: {title[:40]} | {asking}₽ | "
+                        f"{days}дн drop {drop*100:.0f}% | мот {mot.score}")
+
+        self._save_registry()
+        self._close()
+        if TELEGRAM_URL and enqueued:
+            self._send_telegram(
+                f"🕰 <b>Залежавшиеся продавцы</b>: {enqueued} новых лидов на торг.\n"
+                f"Открой бота — лоты с кнопкой «▶️ Веду торг».",
+                f"🕰 stale leads: {enqueued}")
+        logger.info(f"🏁 Охота завершена. Новых лидов: {enqueued}")
 
     # ─── Сбор объявлений со страницы выдачи ───────────────────────────────────
 
@@ -1023,6 +1193,7 @@ class AvitoScannerV2:
                 cfg_cache[L['url']] = cfg
                 if cfg is not None:
                     buckets.setdefault(live_key(cfg), []).append(L['price'])
+                    self._registry_touch(L)   # копим историю для охотника за залежавшимися
             logger.info(f"   📊 {label}: {len(listings)} лотов → {len(buckets)} живых конфигов")
 
             # ── 3) Детектим сделки против живого рынка ──────────────────────
@@ -1167,6 +1338,7 @@ class AvitoScannerV2:
 
         # Финальное сохранение
         self._save_seen()
+        self._save_registry()
 
         HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
         with open(HISTORY_FILE, 'w', encoding='utf-8') as f:
@@ -1219,10 +1391,16 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--digest", action="store_true",
                     help="Отправить дайджест лотов 40..74 и выйти (крон в 20:00 МСК)")
+    ap.add_argument("--stale", action="store_true",
+                    help="Охота за залежавшимися продавцами → очередь торга (крон раз в день)")
     cli_args = ap.parse_args()
 
     if cli_args.digest:
         send_digest()
+    elif cli_args.stale:
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as pw:
+            AvitoScannerV2(pw).run_stale_sweep()
     else:
         from playwright.sync_api import sync_playwright
         with sync_playwright() as pw:

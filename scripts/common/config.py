@@ -129,6 +129,15 @@ CYCLES_SOFT = _envi("CYCLES_SOFT", 500)    # > → suspect
 STALE_PRICES_HOURS = _envi("STALE_PRICES_HOURS", 36)
 STALE_ALERT_COOLDOWN_HOURS = _envi("STALE_ALERT_COOLDOWN_HOURS", 12)
 
+# ─── Охотник за залежавшимися продавцами (--stale) ───────────────────────────
+# Лот «залежался» (продавец мотивирован), если висит >= STALE_LISTING_DAYS дней
+# ИЛИ снизил цену на >= STALE_MIN_DROP. Раз в день собираем таких в очередь торга.
+STALE_LISTING_DAYS = _envi("STALE_LISTING_DAYS", 14)
+STALE_MIN_DROP = _envf("STALE_MIN_DROP", 0.05)     # снижение цены >=5% = мотивирован
+STALE_SCAN_PAGES = _envi("STALE_SCAN_PAGES", 6)    # глубина обхода для возраста из выдачи
+STALE_MAX_LEADS = _envi("STALE_MAX_LEADS", 8)      # сколько лидов класть за проход
+REGISTRY_MAX = _envi("REGISTRY_MAX", 8000)         # размер реестра объявлений
+
 # ─── URL для Price Builder v2 ────────────────────────────────────────────────
 # Каждый URL — отдельная категория с фильтрами Авито.
 # Пользователь настраивает фильтры на Авито и вставляет URL сюда.

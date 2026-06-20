@@ -254,6 +254,20 @@ check("MacBook Pro M1 Pro → НЕ исключён", not _excluded_intel("MacBo
 check("iMac Intel 2019 → НЕ исключён (решает год)", not _excluded_intel("iMac 27 2019 Core i5 16/512"))
 
 
+# ─── 9. Реестр объявлений (охотник за залежавшимися) ─────────────────────────
+print("\n[9] Реестр: возраст и снижение цены")
+from scanner_v2 import AvitoScannerV2
+
+now9 = datetime(2026, 6, 20, 12, 0, 0)
+e_old = {"first_seen": (now9 - timedelta(days=20)).isoformat(), "max_age_days": 0}
+e_disp = {"first_seen": now9.isoformat(), "max_age_days": 18}
+check("возраст по first_seen (20 дн)", AvitoScannerV2._entry_days(e_old, now9) == 20)
+check("возраст по выдаче (18 дн), даже если first_seen свежий", AvitoScannerV2._entry_days(e_disp, now9) == 18)
+check("снижение цены 80k→68k = 15%", abs(AvitoScannerV2._entry_drop(
+    {"first_price": 80000, "last_price": 68000}) - 0.15) < 0.01)
+check("без снижения → 0", AvitoScannerV2._entry_drop({"first_price": 80000, "last_price": 80000}) == 0.0)
+
+
 # ─── Итог ────────────────────────────────────────────────────────────────────
 print()
 if _fails:
