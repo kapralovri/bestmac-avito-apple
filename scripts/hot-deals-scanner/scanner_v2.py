@@ -37,7 +37,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from common.classifier import classify, config_to_db_key, processor_label
 from common.condition import analyze_condition
-from common.market import robust_stats, assess_deal
+from common.market import robust_stats, assess_deal, MarketStats
 from common.negotiator import motivation_score
 from common.config import (
     SCAN_FAMILIES, JUNK_KEYWORDS, URGENT_KEYWORDS, MOSCOW_MARKERS,
@@ -109,7 +109,7 @@ QUEUE_FILE   = Path(os.environ.get('NEGOTIATION_QUEUE_PATH', 'public/data/negoti
 
 # Точечные алерты: в реальном времени шлём только score >= MIN_NOTIFY_SCORE,
 # лоты 40..74 копим в дайджест (одно сообщение вечером — крон с флагом --digest).
-MIN_NOTIFY_SCORE = int(os.environ.get('MIN_NOTIFY_SCORE', '75'))
+MIN_NOTIFY_SCORE = int(os.environ.get('MIN_NOTIFY_SCORE', '60'))
 DIGEST_MIN_SCORE = int(os.environ.get('DIGEST_MIN_SCORE', '40'))
 
 TELEGRAM_URL  = os.environ.get('TELEGRAM_NOTIFY_URL')
@@ -325,12 +325,12 @@ def score_deal(price, stats, buyout, condition, is_private, is_moscow,
     """
     score = 0
 
-    # 1) Запас ниже ЖИВОЙ медианы — ядро сигнала «ниже рынка»
+    # 1) Запас ниже медианы рынка — ядро сигнала «ниже рынка»
     m = assess.margin
-    if   m >= 0.25: score += 26
-    elif m >= 0.18: score += 20
-    elif m >= 0.12: score += 12
-    elif m >= 0.06: score += 5
+    if   m >= 0.20: score += 32
+    elif m >= 0.14: score += 24
+    elif m >= 0.10: score += 16
+    elif m >= 0.06: score += 9
 
     # 2) Привязка к выкупу — «куплю не дороже выкупа = заработаю»
     if buyout and buyout > 0:
@@ -934,6 +934,25 @@ class AvitoScannerV2:
             return None
         return cfg
 
+    def _market_for(self, cfg, comps):
+        """Эталон рынка для конфигурации: живая медиана при ≥MIN_COMPS сопоставимых,
+        иначе медиана из базы цен (197 конфигов, обновляется парсером ~ежечасно),
+        иначе тонкая живая выборка (низкая уверенность). Возвращает (MarketStats, source)."""
+        live = robust_stats(comps)
+        if live and live.n >= MIN_COMPS:
+            return live, 'live'
+        db = self.match_to_db(cfg)
+        if db and db.get('median_price'):
+            med = int(db['median_price'])
+            lo = int(db.get('min_price') or med * 0.85)
+            hi = int(db.get('max_price') or med * 1.15)
+            p20 = int(lo + (med - lo) * 0.4)
+            return MarketStats(n=int(db.get('samples_count', 0)) or 1,
+                               median=med, p20=p20, p10=lo, low=lo, high=hi), 'db'
+        if live and live.n >= 3:
+            return live, 'live-thin'
+        return None, None
+
     def run(self):
         # Дохлый-выключатель: проверяем свежесть базы цен ДО скана
         # (не требует браузера; алерт уйдёт, даже если потом скан упадёт)
@@ -996,16 +1015,15 @@ class AvitoScannerV2:
                         continue
 
                     price = L['price']
-                    key = live_key(cfg)
-                    comps = list(buckets.get(key, []))
+                    comps = list(buckets.get(live_key(cfg), []))
                     if price in comps:
                         comps.remove(price)   # не сравниваем лот сам с собой
-                    stats = robust_stats(comps)
-                    if not stats or stats.n < 3:
-                        # рынок слишком тонкий — судить не можем, пропускаем тихо
+                    market, source = self._market_for(cfg, comps)
+                    if not market:
+                        # ни живого рынка, ни базы — судить не можем, пропускаем тихо
                         continue
 
-                    assess = assess_deal(price, stats, min_margin=MIN_MARGIN, scam_floor=SCAM_FLOOR)
+                    assess = assess_deal(price, market, min_margin=MIN_MARGIN, scam_floor=SCAM_FLOOR)
 
                     # Углублённый анализ только если есть запас ниже рынка
                     if assess.margin < MIN_MARGIN:
@@ -1026,10 +1044,10 @@ class AvitoScannerV2:
                             comps2 = list(buckets.get(live_key(cfg2), []))
                             if price in comps2:
                                 comps2.remove(price)
-                            stats2 = robust_stats(comps2)
-                            if stats2 and stats2.n >= 3:
-                                cfg, stats = cfg2, stats2
-                                assess = assess_deal(price, stats,
+                            market2, source2 = self._market_for(cfg2, comps2)
+                            if market2:
+                                cfg, market, source = cfg2, market2, source2
+                                assess = assess_deal(price, market,
                                                      min_margin=MIN_MARGIN, scam_floor=SCAM_FLOOR)
 
                     if assess.margin < MIN_MARGIN:
@@ -1052,18 +1070,18 @@ class AvitoScannerV2:
                     location = analysis['location']
                     moscow = (not location) or is_moscow(location)
 
-                    # Выкуп: курируемый из базы, иначе от живой медианы
+                    # Выкуп: курируемый из базы, иначе от медианы рынка
                     stat_db = self.match_to_db(cfg)
                     if stat_db and stat_db.get('buyout_price'):
                         buyout = int(stat_db['buyout_price'])
                     else:
-                        buyout = int(stats.median * BUYOUT_FACTOR)
+                        buyout = int(market.median * BUYOUT_FACTOR)
 
                     full_preview = (L['title'] + ' ' + L['snippet']).lower()
                     urgent = (analysis['is_urgent'] or analysis['price_reduced']
                               or any(w in full_preview for w in URGENT_KEYWORDS))
 
-                    score = score_deal(price, stats, buyout, condition,
+                    score = score_deal(price, market, buyout, condition,
                                        analysis['is_private'], moscow,
                                        L['minutes_ago'], assess)
 
@@ -1072,9 +1090,11 @@ class AvitoScannerV2:
                         'score': score,
                         'title': L['title'],
                         'price': price,
-                        'median': stats.median,
-                        'p20': stats.p20,
-                        'n_comps': stats.n,
+                        'median': market.median,
+                        'p20': market.p20,
+                        'n_comps': market.n,
+                        'source': source,
+                        'low_conf': source == 'live-thin',
                         'margin': assess.margin,
                         'buyout': buyout,
                         'ram': cfg.ram,
@@ -1092,7 +1112,7 @@ class AvitoScannerV2:
                         'suspicious': assess.is_suspicious,
                     })
                     logger.info(f"   ✅ [{score}] {L['title'][:45]} | {price:,}₽ | "
-                                f"−{assess.margin*100:.0f}% к медиане | {condition.verdict}")
+                                f"−{assess.margin*100:.0f}% к медиане ({source}) | {condition.verdict}")
 
                 except Exception as e:
                     logger.error(f"Ошибка: {e}")
@@ -1104,10 +1124,10 @@ class AvitoScannerV2:
             for c in candidates:
                 # В realtime НЕ выпускаем:
                 #  - подозрительно дёшево без подтверждённой чистоты (вероятен скам/дефект);
-                #  - тонкий рынок (< MIN_COMPS живых сопоставимых) — вывод ненадёжен.
+                #  - тонкая живая выборка без опоры на базу (низкая уверенность).
                 block_realtime = (
                     (c['suspicious'] and not c['condition'].positives)
-                    or c['n_comps'] < MIN_COMPS
+                    or c.get('low_conf')
                 )
                 if c['score'] >= MIN_NOTIFY_SCORE and not block_realtime:
                     self.notify(c)

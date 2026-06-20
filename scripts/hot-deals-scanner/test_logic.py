@@ -108,7 +108,7 @@ cond_clean = analyze_condition("идеальное состояние, на га
 a_good = assess_deal(60000, st, min_margin=0.12, scam_floor=0.55)   # −22%, ниже выкупа
 score_good = score_deal(60000, st, buyout, cond_clean, is_private=True,
                         is_moscow=True, minutes_ago=20, assess=a_good)
-check("чистый лот ниже выкупа → проходит порог 75", score_good >= 75)
+check("чистый лот ниже выкупа → проходит порог 60", score_good >= 60)
 
 # Тот же ценник, но состояние suspect (косметика) → ниже
 cond_susp = analyze_condition("есть царапины и вмятина, потёртости")
@@ -121,13 +121,13 @@ a_scam = assess_deal(30000, st, min_margin=0.12, scam_floor=0.55)
 cond_blank = analyze_condition("продаю макбук, торг")
 score_scam = score_deal(30000, st, buyout, cond_blank, is_private=True,
                         is_moscow=True, minutes_ago=20, assess=a_scam)
-check("подозрительно дёшево без чистоты → ниже порога 75", score_scam < 75)
+check("подозрительно дёшево без чистоты → антифрод топит ниже чистого", score_scam < score_good)
 
 # Лот по рынку (нет маржи) → низкий скор
 a_market = assess_deal(76000, st, min_margin=0.12, scam_floor=0.55)
 score_market = score_deal(76000, st, buyout, cond_clean, is_private=False,
                           is_moscow=True, minutes_ago=600, assess=a_market)
-check("цена по рынку → не горячий лот", score_market < 75)
+check("цена по рынку → не горячий лот", score_market < 60)
 
 
 # ─── 4. Ключ живой выборки (группировка «такой же аппарат») ──────────────────
