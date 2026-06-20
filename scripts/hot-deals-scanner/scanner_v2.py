@@ -1400,16 +1400,134 @@ def send_digest():
         logger.error(f"❌ Дайджест не отправлен: {e}")
 
 
+# ─── Дашборд здоровья (--health, крон раз в сутки) ───────────────────────────
+def _read_recent_log(path, hours=24, max_lines=60000):
+    p = Path(path)
+    if not p.exists():
+        return []
+    try:
+        lines = p.read_text(encoding='utf-8', errors='ignore').splitlines()[-max_lines:]
+    except Exception:
+        return []
+    cutoff = datetime.now() - timedelta(hours=hours)
+    out, keep = [], False
+    for ln in lines:
+        try:
+            t = datetime.strptime(ln[:19], "%Y-%m-%d %H:%M:%S")
+            keep = t >= cutoff
+        except ValueError:
+            pass  # строка-продолжение: наследует keep предыдущей
+        if keep:
+            out.append(ln)
+    return out
+
+
+def compute_health(lines):
+    """Считает метрики из строк лога сканера за период. Чистая функция (тестируемо)."""
+    h = {"runs": 0, "notif": 0, "cands": 0, "rejects": 0, "throttle": 0,
+         "captcha": 0, "faildeliv": 0, "fam": {}}
+    for l in lines:
+        if "🏁 Готово" in l:
+            h["runs"] += 1
+        m = re.search(r"Уведомлений:\s*(\d+)", l)
+        if m:
+            h["notif"] += int(m.group(1))
+        if "✅" in l and "к медиане" in l:
+            h["cands"] += 1
+        if "⛔" in l:
+            h["rejects"] += 1
+        if "троттлинг" in l:
+            h["throttle"] += 1
+        if "RuCaptcha ответила" in l:
+            h["captcha"] += 1
+        if "НЕ доставлено" in l:
+            h["faildeliv"] += 1
+        fm = re.search(r"📊 (MacBook Air|MacBook Pro|iMac|Mac mini|Mac Studio):", l)
+        if fm:
+            h["fam"][fm.group(1)] = h["fam"].get(fm.group(1), 0) + 1
+    return h
+
+
+def _rucaptcha_balance():
+    if not RUCAPTCHA_API_KEY:
+        return None
+    try:
+        r = std_requests.get("https://rucaptcha.com/res.php",
+                             params={"key": RUCAPTCHA_API_KEY, "action": "getbalance"},
+                             timeout=15)
+        return float(r.text.strip().split("|")[-1])
+    except Exception:
+        return None
+
+
+def send_health():
+    """Шлёт суточную сводку здоровья сканера в Telegram."""
+    scn_lines = _read_recent_log(os.environ.get('SCANNER_LOG_PATH', '/var/log/bestmac-scanner.log'))
+    h = compute_health(scn_lines)
+    # капчу решает и охотник за залежавшимися
+    h["captcha"] += sum(1 for l in _read_recent_log(
+        os.environ.get('STALE_LOG_PATH', '/var/log/bestmac-stale.log')) if "RuCaptcha ответила" in l)
+    stale_leads = sum(int(m.group(1)) for l in _read_recent_log(
+        os.environ.get('STALE_LOG_PATH', '/var/log/bestmac-stale.log'))
+        for m in [re.search(r"Новых лидов:\s*(\d+)", l)] if m)
+
+    def _len(path):
+        try:
+            with open(path, encoding='utf-8') as f:
+                return len(json.load(f))
+        except Exception:
+            return 0
+
+    leads = _len(QUEUE_FILE)
+    reg = _len(REGISTRY_FILE)
+    bal = _rucaptcha_balance()
+    fams = ", ".join(f"{k.split()[-1]}:{v}" for k, v in sorted(h["fam"].items())) or "—"
+
+    text = (
+        "🩺 <b>Дашборд за 24 ч</b>\n"
+        f"🔄 Прогонов сканера: <b>{h['runs']}</b>\n"
+        f"🔥 Сделок отправлено: <b>{h['notif']}</b>"
+        + (f" • ❌ не доставлено: {h['faildeliv']}" if h['faildeliv'] else "") + "\n"
+        f"🎯 Кандидатов ниже рынка: {h['cands']} • ⛔ отсеяно по состоянию: {h['rejects']}\n"
+        f"🕰 Лидов-залежавшихся за сутки: {stale_leads}\n"
+        f"📊 Семейства с данными (прогонов): {fams}\n"
+        f"🛡 Троттлинг (пере-прогревов): {h['throttle']}\n"
+        f"🧩 Капча решена: {h['captcha']}"
+        + (f" • баланс RuCaptcha: {bal:.0f} ₽" if bal is not None else "") + "\n"
+        f"🧲 Лидов в очереди бота: {leads} • 🗃 реестр: {reg}"
+    )
+    if h['runs'] == 0:
+        text += "\n\n⚠️ <b>0 прогонов за сутки — сканер мог встать!</b>"
+
+    if not TELEGRAM_URL:
+        print(text)
+        return
+    for attempt in range(1, 4):
+        try:
+            r = std_requests.post(TELEGRAM_URL, json={"text": text, "parse_mode": "HTML"}, timeout=15)
+            if r.json().get("ok", True):
+                logger.info("✅ Дашборд здоровья отправлен")
+                return
+        except Exception as e:
+            logger.warning(f"⚠️ Дашборд (попытка {attempt}): {e}")
+        time.sleep(2 * attempt)
+    logger.error("❌ Дашборд здоровья не отправлен")
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--digest", action="store_true",
                     help="Отправить дайджест лотов 40..74 и выйти (крон в 20:00 МСК)")
     ap.add_argument("--stale", action="store_true",
                     help="Охота за залежавшимися продавцами → очередь торга (крон раз в день)")
+    ap.add_argument("--health", action="store_true",
+                    help="Суточная сводка здоровья сканера в Telegram (крон раз в день)")
     cli_args = ap.parse_args()
 
     if cli_args.digest:
         send_digest()
+    elif cli_args.health:
+        send_health()
     elif cli_args.stale:
         from playwright.sync_api import sync_playwright
         with sync_playwright() as pw:
