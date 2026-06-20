@@ -93,10 +93,21 @@ class TelegramTransport:
             payload["reply_markup"] = {"inline_keyboard": [
                 [{"text": t, "callback_data": d} for (t, d) in row] for row in buttons
             ]}
-        try:
-            self._r.post(f"{self.base}/sendMessage", json=payload, timeout=15)
-        except Exception as e:
-            logger.error(f"sendMessage: {e}")
+        for attempt in range(1, 4):
+            try:
+                r = self._r.post(f"{self.base}/sendMessage", json=payload, timeout=15)
+                try:
+                    ok = r.json().get("ok", True)
+                except Exception:
+                    ok = getattr(r, "ok", True)
+                if ok:
+                    return True
+                logger.warning(f"sendMessage отклонён (попытка {attempt}): {str(r.text)[:160]}")
+            except Exception as e:
+                logger.warning(f"sendMessage сбой (попытка {attempt}): {e}")
+            time.sleep(2 * attempt)
+        logger.error("sendMessage НЕ доставлено после 3 попыток")
+        return False
 
     def answer_callback(self, callback_id, text=None):
         try:

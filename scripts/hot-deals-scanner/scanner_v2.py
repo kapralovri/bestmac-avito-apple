@@ -714,15 +714,28 @@ class AvitoScannerV2:
         self._send_telegram(text, f"[{c['score']}] {c['title'][:40]}")
 
     def _send_telegram(self, text, log_msg):
-        try:
-            std_requests.post(
-                TELEGRAM_URL,
-                json={"text": text, "parse_mode": "HTML"},
-                timeout=10,
-            )
-            logger.info(f"✅ {log_msg}")
-        except Exception as e:
-            logger.error(f"❌ Telegram: {e}")
+        """Отправка с проверкой ответа Telegram и повторами (сеть/троттлинг)."""
+        for attempt in range(1, 4):
+            try:
+                r = std_requests.post(
+                    TELEGRAM_URL,
+                    json={"text": text, "parse_mode": "HTML"},
+                    timeout=15,
+                )
+                ok = True
+                try:
+                    ok = r.json().get("ok", True)
+                except Exception:
+                    ok = getattr(r, "ok", True)
+                if ok:
+                    logger.info(f"✅ {log_msg}")
+                    return True
+                logger.warning(f"⚠️ Telegram отклонил (попытка {attempt}): {str(r.text)[:160]}")
+            except Exception as e:
+                logger.warning(f"⚠️ Telegram сбой отправки (попытка {attempt}): {e}")
+            time.sleep(2 * attempt)
+        logger.error(f"❌ Telegram НЕ доставлено: {log_msg}")
+        return False
 
     def _save_digest(self, items):
         """Копит лоты средней привлекательности (40..74) для вечернего дайджеста."""
