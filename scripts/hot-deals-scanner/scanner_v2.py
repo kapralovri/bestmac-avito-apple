@@ -434,8 +434,11 @@ class AvitoScannerV2:
         self.context = None
         self.page = None
 
-        # База цен (только для фолбэка курируемой выкупной цены). Ключ: (model, proc, ram, ssd)
+        # База цен — фолбэк рыночной медианы и выкупа, когда живых сопоставимых мало.
+        # Индексируем по live_key через тот же классификатор: надёжнее точной сверки
+        # строки model_name (в базе и у классификатора она форматируется по-разному).
         self.prices: dict = {}
+        self.prices_by_livekey: dict = {}
         self.prices_generated_at = None
         if PRICES_FILE.exists():
             with open(PRICES_FILE, 'r', encoding='utf-8') as f:
@@ -449,9 +452,17 @@ class AvitoScannerV2:
                         int(s.get('ssd', 0)),
                     )
                     self.prices[key] = s
-            logger.info(f"📊 База выкупа (фолбэк): {len(self.prices)} конфигураций")
+                    try:
+                        c = classify(f"{s['model_name']} {s.get('processor', '')}",
+                                     {'ram': int(s.get('ram', 0)), 'ssd': int(s.get('ssd', 0))})
+                        if c.is_valid:
+                            self.prices_by_livekey[live_key(c)] = s
+                    except Exception:
+                        pass
+            logger.info(f"📊 База-фолбэк: {len(self.prices)} конфигов, "
+                        f"{len(self.prices_by_livekey)} по live-ключу")
         else:
-            logger.warning("⚠️ База цен не найдена — выкуп считаем от живой медианы")
+            logger.warning("⚠️ База цен не найдена — рынок только из живой выдачи")
 
         # История просмотренных
         self.seen = set()
@@ -934,14 +945,18 @@ class AvitoScannerV2:
             return None
         return cfg
 
+    def _db_stat(self, cfg):
+        """Запись базы по live_key (надёжный матч), иначе по точной строке (фолбэк)."""
+        return self.prices_by_livekey.get(live_key(cfg)) or self.match_to_db(cfg)
+
     def _market_for(self, cfg, comps):
         """Эталон рынка для конфигурации: живая медиана при ≥MIN_COMPS сопоставимых,
-        иначе медиана из базы цен (197 конфигов, обновляется парсером ~ежечасно),
+        иначе медиана из базы цен (обновляется парсером ~ежечасно),
         иначе тонкая живая выборка (низкая уверенность). Возвращает (MarketStats, source)."""
         live = robust_stats(comps)
         if live and live.n >= MIN_COMPS:
             return live, 'live'
-        db = self.match_to_db(cfg)
+        db = self._db_stat(cfg)
         if db and db.get('median_price'):
             med = int(db['median_price'])
             lo = int(db.get('min_price') or med * 0.85)
@@ -1081,7 +1096,7 @@ class AvitoScannerV2:
                     moscow = (not location) or is_moscow(location)
 
                     # Выкуп: курируемый из базы, иначе от медианы рынка
-                    stat_db = self.match_to_db(cfg)
+                    stat_db = self._db_stat(cfg)
                     if stat_db and stat_db.get('buyout_price'):
                         buyout = int(stat_db['buyout_price'])
                     else:
