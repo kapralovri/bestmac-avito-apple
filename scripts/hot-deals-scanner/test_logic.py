@@ -72,6 +72,11 @@ check("«минус дисплей» → reject", r.verdict == "reject")
 r = analyze_condition("MacBook Air, без экрана, на корпус")
 check("«без экрана» → reject", r.verdict == "reject")
 
+r = analyze_condition("MacBook Pro 13 M1, под восстановление, не включается")
+check("«под восстановление» → reject", r.verdict == "reject")
+r = analyze_condition("iMac 27, аппарат на восстановление")
+check("«на восстановление» → reject", r.verdict == "reject")
+
 r = analyze_condition("MacBook Air 13 M3 16/256, отличное состояние")
 check("обычный чистый лот без слов-маркеров → ok", r.verdict == "ok")
 
