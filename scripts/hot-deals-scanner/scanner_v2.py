@@ -978,10 +978,20 @@ class AvitoScannerV2:
             for page_num in range(1, SCAN_PAGES_PER_FAMILY + 1):
                 time.sleep(random.uniform(2, 5))
                 page_html = self._load_page(self._page_url(base_url, page_num))
-                if not page_html:
-                    logger.error(f"❌ {label}: не загрузилась стр. {page_num}")
+                page_listings, n_items = self._collect_listings(page_html) if page_html else ([], 0)
+
+                # Пустая 1-я страница = мягкий бан Авито (троттлинг) → пере-прогрев
+                # (заново решаем капчу, сбрасываем сессию) и одна повторная попытка.
+                if page_num == 1 and n_items == 0:
+                    logger.warning(f"   ⚠️ {label}: 0 объявл. — похоже на троттлинг, пере-прогрев и повтор")
+                    self._warmup()
+                    time.sleep(random.uniform(2, 4))
+                    page_html = self._load_page(self._page_url(base_url, page_num))
+                    page_listings, n_items = self._collect_listings(page_html) if page_html else ([], 0)
+
+                if n_items == 0 and not page_listings:
+                    logger.error(f"❌ {label}: стр. {page_num} пуста даже после повтора")
                     break
-                page_listings, n_items = self._collect_listings(page_html)
                 listings.extend(page_listings)
                 logger.info(f"   📄 стр.{page_num}: {n_items} объявл.")
                 if n_items < 10:
