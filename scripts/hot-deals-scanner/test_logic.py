@@ -66,6 +66,12 @@ check("1200 циклов → reject (> 1000)", r.verdict == "reject")
 r = analyze_condition("MacBook Pro 14, меняли матрицу")
 check("замена матрицы → reject", r.verdict == "reject")
 
+r = analyze_condition("Macbook pro 14 m1pro 16/512 минус дисплей")
+check("«минус дисплей» → reject", r.verdict == "reject")
+
+r = analyze_condition("MacBook Air, без экрана, на корпус")
+check("«без экрана» → reject", r.verdict == "reject")
+
 r = analyze_condition("MacBook Air 13 M3 16/256, отличное состояние")
 check("обычный чистый лот без слов-маркеров → ok", r.verdict == "ok")
 
