@@ -59,6 +59,7 @@ PRICES_FILE   = os.environ.get('PRICES_FILE_PATH', 'public/data/avito-prices.jso
 BUYOUT_FILE   = os.environ.get('BUYOUT_FILE_PATH', 'public/data/buyout.json')
 REFERRAL_BONUS = os.environ.get('REFERRAL_BONUS', '2000')
 BOT_USERNAME  = os.environ.get('QUOTE_BOT_USERNAME', '')   # для реф-ссылки
+SITE_URL      = os.environ.get('SITE_URL', 'https://bestmac.ru')
 
 
 def _money(n):
@@ -100,8 +101,10 @@ class TelegramTransport:
         payload = {"chat_id": chat_id, "text": text, "parse_mode": "HTML",
                    "disable_web_page_preview": True}
         if buttons:
+            def _btn(t, d):
+                return {"text": t, "url": d} if str(d).startswith("http") else {"text": t, "callback_data": d}
             payload["reply_markup"] = {"inline_keyboard": [
-                [{"text": t, "callback_data": d} for (t, d) in row] for row in buttons]}
+                [_btn(t, d) for (t, d) in row] for row in buttons]}
         elif contact_btn:
             payload["reply_markup"] = {"resize_keyboard": True, "one_time_keyboard": True,
                 "keyboard": [[{"text": "📞 Отправить мой номер", "request_contact": True}]]}
@@ -125,13 +128,15 @@ def _load_json(path, default):
 # ─── Бот ─────────────────────────────────────────────────────────────────────
 class QuoteBot:
     def __init__(self, transport, catalog, state_path=STATE_FILE,
-                 leads_chat=None, bot_username="", referral_bonus="2000"):
+                 leads_chat=None, bot_username="", referral_bonus="2000",
+                 site_url="https://bestmac.ru"):
         self.tx = transport
         self.cat = catalog
         self.state_path = Path(state_path)
         self.leads_chat = leads_chat
         self.bot_username = bot_username
         self.referral_bonus = referral_bonus
+        self.site_url = site_url
         st = _load_json(self.state_path, {})
         self.offset = st.get("offset", 0)
         self.users = st.get("users", {})      # chat_id(str) -> session
@@ -152,13 +157,14 @@ class QuoteBot:
 
     # ── рендеры экранов (возвращают (text, buttons)) ──────────────────────────
     def _greet(self):
-        return ("👋 <b>Оценка и срочный выкуп Apple за 1 минуту.</b>\n"
+        return ("👋 <b>BestMac — оценка и выкуп вашего Mac за минуту.</b>\n"
                 "Узнайте цену, не выходя из дома: курьер заберёт технику, деньги сразу, "
                 "договор, <b>сертифицированное стирание данных</b>.\n\n"
                 "Нажмите «Оценить» — это займёт минуту.\n"
                 "💡 Можно просто прислать <b>фото устройства</b> и <b>скриншот «Об этом маке»</b> — "
                 "оценщик учтёт их при подтверждении цены.",
-                [[("▶️ Оценить технику", "go:family")]])
+                [[("▶️ Оценить мой Mac", "go:family")],
+                 [("🌐 О сервисе — bestmac.ru", SITE_URL)]])
 
     def _menu(self, u, kind, options, prompt, back=None):
         u["_menu"] = options
@@ -343,10 +349,12 @@ class QuoteBot:
         ref_link = (f"https://t.me/{self.bot_username}?start=ref_{chat_id}"
                     if self.bot_username else "(ссылка появится после настройки)")
         acts.append({"t": "send", "chat": chat_id,
-                     "text": ("✅ Заявка принята! Оценщик свяжется с вами в ближайшее время, "
+                     "text": ("✅ Заявка принята! Оценщик BestMac свяжется с вами в ближайшее время, "
                               "подтвердит цену и согласует курьера.\n\n"
                               f"🎁 Приведите друга — <b>{self.referral_bonus} ₽ вам и ему</b> после сделки:\n"
-                              f"{ref_link}")})
+                              f"{ref_link}\n\n"
+                              f"🌐 Подробнее о сервисе: {self.site_url}"),
+                     "btn": [[("🌐 bestmac.ru", self.site_url)]]})
         # сброс сессии (реферал сохраняем)
         ref = u.get("ref")
         self.users[str(chat_id)] = {"step": "done", "photos": [], "has_charger": True,
@@ -387,4 +395,5 @@ if __name__ == "__main__":
                 f"{len(cat.base)} конфигов")
     QuoteBot(TelegramTransport(BOT_TOKEN), cat,
              leads_chat=LEADS_CHAT_ID or None,
-             bot_username=BOT_USERNAME, referral_bonus=REFERRAL_BONUS).run_forever()
+             bot_username=BOT_USERNAME, referral_bonus=REFERRAL_BONUS,
+             site_url=SITE_URL).run_forever()
