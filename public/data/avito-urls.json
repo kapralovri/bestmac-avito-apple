@@ -733,6 +733,14 @@
     {
       "family": "Mac mini",
       "model_name": "mac mini m1",
+      "processor": "Apple M4",
+      "ram": 16,
+      "ssd": 256,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
+    },
+    {
+      "family": "Mac mini",
+      "model_name": "mac mini m1",
       "processor": "Apple M4 Pro",
       "ram": 24,
       "ssd": 512,
