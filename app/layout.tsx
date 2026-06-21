@@ -11,6 +11,7 @@ const inter = Inter({
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CookieBanner from '@/components/CookieBanner';
+import TelegramCta from '@/components/TelegramCta';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { organizationSchema } from '@/lib/schema';
@@ -92,6 +93,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Header />
         {children}
         <Footer />
+        <TelegramCta />
         <CookieBanner />
         <Toaster />
         <Sonner />
