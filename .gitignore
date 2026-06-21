@@ -38,3 +38,4 @@ public/data/parser-health.json
 public/data/negotiation-state.json
 public/data/negotiation-queue.json
 public/data/listing-registry.json
+public/data/quote-state.json
