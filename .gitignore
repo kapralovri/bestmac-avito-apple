@@ -39,3 +39,7 @@ public/data/negotiation-state.json
 public/data/negotiation-queue.json
 public/data/listing-registry.json
 public/data/quote-state.json
+
+# Сессии Telethon (содержат доступ к аккаунту — не коммитить!)
+*.session
+*.session-journal

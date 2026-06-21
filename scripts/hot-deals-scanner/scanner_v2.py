@@ -46,6 +46,7 @@ from common.config import (
     BATTERY_HARD, BATTERY_SOFT, CYCLES_HARD, CYCLES_SOFT,
     STALE_PRICES_HOURS, STALE_ALERT_COOLDOWN_HOURS, EXCLUDE_INTEL_FAMILIES,
     STALE_LISTING_DAYS, STALE_MIN_DROP, STALE_SCAN_PAGES, STALE_MAX_LEADS, REGISTRY_MAX,
+    RESELLER_REVIEWS,
 )
 
 try:
@@ -315,8 +316,15 @@ def live_key(config):
 
 
 # ─── Скоринг сделки (перекуп: якорь — выкуп + чистота состояния) ──────────────
+def is_reseller(seller_reviews, seller_type):
+    """Перекупщик: «Магазин» или частник с большим числом отзывов (торг бесполезен)."""
+    if seller_type == "Магазин":
+        return True
+    return bool(seller_reviews is not None and seller_reviews >= RESELLER_REVIEWS)
+
+
 def score_deal(price, stats, buyout, condition, is_private, is_moscow,
-               minutes_ago, assess):
+               minutes_ago, assess, reseller=False):
     """
     Оценивает лот против ЖИВОГО рынка. Состояние — полноправный фактор:
     чистый аппарат поднимается, проблемный/подозрительно дешёвый — падает.
@@ -361,6 +369,10 @@ def score_deal(price, stats, buyout, condition, is_private, is_moscow,
     # 7) Антифрод: слишком дёшево БЕЗ подтверждённой чистоты = подмена цены/скам
     if assess.is_suspicious and not condition.positives:
         score -= 50
+
+    # 8) Перекупщик: торг не работает, частник предпочтительнее
+    if reseller:
+        score -= 10
 
     return max(0, min(score, 100))
 
@@ -690,6 +702,8 @@ class AvitoScannerV2:
         seller = c.get('seller_type') or "?"
         if c.get('seller_reviews') is not None:
             seller = f"{seller}, {c['seller_reviews']} отз."
+        if c.get('reseller'):
+            seller += " ⚠️ перекуп — торг вряд ли"
 
         urgent = " 🚨 торг/срочно" if c.get('urgent') else ""
 
@@ -962,6 +976,8 @@ class AvitoScannerV2:
                                      cycles_hard=CYCLES_HARD, cycles_soft=CYCLES_SOFT)
             if cond.is_reject:
                 continue
+            if is_reseller(analysis.get('seller_reviews'), analysis.get('seller_type')):
+                continue   # перекуп — торг бесполезен
             market, _ = self._market_for(cfg, [])
             if not market:
                 continue
@@ -1289,10 +1305,11 @@ class AvitoScannerV2:
                     full_preview = (L['title'] + ' ' + L['snippet']).lower()
                     urgent = (analysis['is_urgent'] or analysis['price_reduced']
                               or any(w in full_preview for w in URGENT_KEYWORDS))
+                    reseller = is_reseller(analysis['seller_reviews'], analysis['seller_type'])
 
                     score = score_deal(price, market, buyout, condition,
                                        analysis['is_private'], moscow,
-                                       L['minutes_ago'], assess)
+                                       L['minutes_ago'], assess, reseller=reseller)
 
                     candidates.append({
                         'kind': 'fire' if moscow else 'delivery',
@@ -1316,6 +1333,7 @@ class AvitoScannerV2:
                         'seller_type': analysis['seller_type'],
                         'seller_reviews': analysis['seller_reviews'],
                         'is_private': analysis['is_private'],
+                        'reseller': reseller,
                         'condition': condition,
                         'urgent': urgent,
                         'suspicious': assess.is_suspicious,
@@ -1341,7 +1359,9 @@ class AvitoScannerV2:
                 if c['score'] >= MIN_NOTIFY_SCORE and not block_realtime:
                     self.notify(c)
                     self._send_copilot(c)
-                    self._enqueue_lead(c)
+                    # Перекупщику торг бесполезен → в очередь переговоров не кладём
+                    if not c.get('reseller'):
+                        self._enqueue_lead(c)
                     total_notifications += 1
                 elif c['score'] >= DIGEST_MIN_SCORE:
                     digest_items.append(c)

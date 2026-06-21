@@ -116,6 +116,10 @@ SCAM_FLOOR = _envf("SCAM_FLOOR", 0.62)
 # Целевая выкупная цена = BUYOUT_FACTOR * живая медиана (если нет курируемой).
 BUYOUT_FACTOR = _envf("BUYOUT_FACTOR", 0.80)
 
+# Перекупщик: продавец с большим числом отзывов (или «Магазин») — торг бесполезен,
+# в лиды на переговоры не берём, в алерте помечаем. >= этого порога = перекуп.
+RESELLER_REVIEWS = _envi("RESELLER_REVIEWS", 100)
+
 # Пороги состояния (передаются в condition.analyze_condition).
 BATTERY_HARD = _envi("BATTERY_HARD", 80)   # < этого % здоровья АКБ → reject
 BATTERY_SOFT = _envi("BATTERY_SOFT", 85)   # ниже → suspect

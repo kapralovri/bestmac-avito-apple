@@ -140,6 +140,19 @@ score_market = score_deal(76000, st, buyout, cond_clean, is_private=False,
                           is_moscow=True, minutes_ago=600, assess=a_market)
 check("цена по рынку → не горячий лот", score_market < 60)
 
+# перекупщик: ниже скор + детектор
+from scanner_v2 import is_reseller
+check("180 отзывов → перекуп", is_reseller(180, "Частное лицо") is True)
+check("12 отзывов → не перекуп", is_reseller(12, "Частное лицо") is False)
+check("Магазин → перекуп", is_reseller(None, "Магазин") is True)
+cond_plain = analyze_condition("обычный макбук, рабочий")           # ok, без позитивов
+a_mid = assess_deal(65000, st, min_margin=0.12, scam_floor=0.55)    # ~−16%, не упрётся в потолок
+score_mid = score_deal(65000, st, buyout, cond_plain, is_private=False,
+                       is_moscow=True, minutes_ago=600, assess=a_mid)
+score_mid_res = score_deal(65000, st, buyout, cond_plain, is_private=False,
+                           is_moscow=True, minutes_ago=600, assess=a_mid, reseller=True)
+check("перекуп: скор ниже, чем у частника", score_mid_res < score_mid)
+
 
 # ─── 4. Ключ живой выборки (группировка «такой же аппарат») ──────────────────
 print("\n[4] live_key группировка")
