@@ -45,11 +45,8 @@ export const generateReviewSchema = (reviews: ReviewData[]) => ({
   "@context": "https://schema.org",
   "@type": "Product",
   "name": "BestMac - Техника Apple",
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": "4.9",
-    "reviewCount": reviews.length.toString()
-  },
+  // aggregateRating убран: ratingValue 4.9 был захардкожен и не подтверждался
+  // реальными отзывами. Добавлять только с реальным рейтингом.
   "review": reviews.map(review => ({
     "@type": "Review",
     "author": {
@@ -117,7 +114,7 @@ export const generateLocalBusinessSchema = () => ({
   "name": "BestMac",
   "image": "https://bestmac.ru/og-image.jpg",
   "url": "https://bestmac.ru",
-  "telephone": "+7-903-299-00-29",
+  "telephone": "+79032990029",
   "priceRange": "$$",
   "address": {
     "@type": "PostalAddress",
@@ -131,10 +128,6 @@ export const generateLocalBusinessSchema = () => ({
     "latitude": "55.7369",
     "longitude": "37.5165"
   },
-  "description": "Скупка техники Apple в Москве. Выкуп MacBook Pro, Air, Mac Mini, iMac дорого и быстро. Оценка онлайн за 5 минут, оплата наличными.",
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": "4.9",
-    "reviewCount": "156"
-  }
+  "description": "Скупка техники Apple в Москве. Выкуп MacBook Pro, Air, Mac Mini, iMac дорого и быстро. Оценка онлайн за 5 минут, оплата наличными."
+  // aggregateRating убран до появления реальных подтверждаемых отзывов.
 });

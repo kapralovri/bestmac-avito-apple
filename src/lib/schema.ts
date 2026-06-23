@@ -6,7 +6,7 @@ export const organizationSchema = {
   "description": "Купить MacBook, продать MacBook, скупка MacBook в Москве. Продажа подержанной техники Apple с гарантией.",
   "image": "https://bestmac.ru/og-image.jpg",
   "url": "https://bestmac.ru",
-  "telephone": "+7-903-299-00-29",
+  "telephone": "+79032990029",
   "address": {
     "@type": "PostalAddress",
     "streetAddress": "ул. Дениса Давыдова 3",
@@ -35,11 +35,9 @@ export const organizationSchema = {
       "closes": "23:00"
     }
   ],
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": "4.9",
-    "reviewCount": "156"
-  },
+  // aggregateRating намеренно отсутствует: добавить только при наличии
+  // реальных подтверждаемых отзывов (напр. из Яндекс.Карт), иначе это
+  // фальшивая разметка и риск санкций.
   "priceRange": "$$",
   "sameAs": ["https://t.me/romanmanro"],
   "areaServed": {

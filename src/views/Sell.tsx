@@ -187,26 +187,9 @@ const Sell = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFormComplete, modelName, processor, ram, ssd, condition, data]);
 
-  const reviews = [
-    {
-      author: "Андрей, разработчик",
-      rating: 5,
-      text: "Продал MacBook Pro 14 за один визит. Калькулятор показал честный диапазон, в офисе цену не сбили ни на рубль. Деньги получил на карту через 10 минут после диагностики.",
-      source: "Яндекс.Карты"
-    },
-    {
-      author: "Мария, дизайнер",
-      rating: 5,
-      text: "Нужно было быстро продать MacBook Air M1 перед переездом. Написала в Telegram, оценили по фото, вечером уже получила наличные. Без торга и лишних вопросов.",
-      source: "Telegram"
-    },
-    {
-      author: "Игорь",
-      rating: 5,
-      text: "Сдавал старый MacBook, который периодически выключался. Честно рассказали, сколько стоит на запчасти, оформили договор, всё заняло меньше часа.",
-      source: "Офис на м. Киевская"
-    }
-  ];
+  // Отзывы намеренно пусты до подключения реальных (Яндекс.Карты / 2ГИС).
+  // Блок и Review-разметка не рендерятся, пока массив пуст.
+  const reviews: { author: string; rating: number; text: string; source: string }[] = [];
 
   const sellFaqItems = [
     { question: "Сколько стоит выкуп моего MacBook?", answer: "Цена зависит от модели, процессора, объема RAM и SSD, а также состояния устройства. Воспользуйтесь нашим онлайн-калькулятором — он покажет рыночную стоимость и рекомендуемую цену выкупа за 30 секунд. Мы платим до 80% от рыночной цены." },
@@ -236,12 +219,8 @@ const Sell = () => {
       "@type": "GeoCoordinates",
       "latitude": 55.7369,
       "longitude": 37.5165
-    },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "reviewCount": "156"
     }
+    // aggregateRating убран до появления реальных отзывов.
   };
 
   const faqPageSchema = {
@@ -268,19 +247,22 @@ const Sell = () => {
     "@context": "https://schema.org",
     "@graph": [
       productSchema,
-      {
-        ...localBusinessSchema,
-        review: reviews.map((r) => ({
-          "@type": "Review",
-          author: r.author,
-          reviewBody: r.text,
-          reviewRating: {
-            "@type": "Rating",
-            ratingValue: r.rating,
-            bestRating: 5
+      // Review-разметку добавляем только при наличии реальных отзывов.
+      reviews.length > 0
+        ? {
+            ...localBusinessSchema,
+            review: reviews.map((r) => ({
+              "@type": "Review",
+              author: r.author,
+              reviewBody: r.text,
+              reviewRating: {
+                "@type": "Rating",
+                ratingValue: r.rating,
+                bestRating: 5,
+              },
+            })),
           }
-        }))
-      },
+        : localBusinessSchema,
       faqPageSchema
     ]
   };
@@ -726,32 +708,31 @@ const Sell = () => {
                   </div>
                 </motion.section>
 
-                <motion.section
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                  className="bg-muted/30 p-6 md:p-8 rounded-2xl border"
-                >
-                  <h2 className="text-2xl font-bold mb-4 text-center">Отзывы клиентов о скупке MacBook</h2>
-                  <p className="text-sm text-muted-foreground text-center mb-6">
-                    Это живые отзывы клиентов, которые уже продали свои MacBook через BestMac.
-                  </p>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    {reviews.map((review, index) => (
-                      <div key={index} className="bg-background rounded-xl border border-border/60 p-4 flex flex-col h-full">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-semibold text-sm">{review.author}</span>
-                          <span className="flex items-center gap-1 text-xs text-amber-500">
-                            <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
-                            {review.rating.toFixed(1)}
-                          </span>
+                {reviews.length > 0 && (
+                  <motion.section
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                    className="bg-muted/30 p-6 md:p-8 rounded-2xl border"
+                  >
+                    <h2 className="text-2xl font-bold mb-4 text-center">Отзывы клиентов о скупке MacBook</h2>
+                    <div className="grid md:grid-cols-3 gap-4">
+                      {reviews.map((review, index) => (
+                        <div key={index} className="bg-background rounded-xl border border-border/60 p-4 flex flex-col h-full">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-semibold text-sm">{review.author}</span>
+                            <span className="flex items-center gap-1 text-xs text-amber-500">
+                              <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
+                              {review.rating.toFixed(1)}
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mb-3">{review.source}</p>
+                          <p className="text-sm text-foreground flex-1">{review.text}</p>
                         </div>
-                        <p className="text-xs text-muted-foreground mb-3">{review.source}</p>
-                        <p className="text-sm text-foreground flex-1">{review.text}</p>
-                      </div>
-                    ))}
-                  </div>
-                </motion.section>
+                      ))}
+                    </div>
+                  </motion.section>
+                )}
 
                 <FAQ items={[
                   {

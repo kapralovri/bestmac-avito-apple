@@ -29,6 +29,12 @@ const MacbookPro16M3Max = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({ '@context': 'https://schema.org', '@graph': [productSchema, breadcrumbSchema] }),
+        }}
+      />
 <main className="container mx-auto px-4 py-8">
         <Breadcrumbs items={breadcrumbItems} />
         

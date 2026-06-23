@@ -70,6 +70,18 @@ export const POPULAR_MODELS = [
   { name: 'Mac Studio (2024, M4 Max)', slug: 'mac-studio-2024-m4-max' },
 ];
 
+/**
+ * Полный плоский каталог моделей выкупа — единственный источник истины для
+ * canonical-слогов: используется в sitemap, generateStaticParams и при
+ * серверном резолве названия по slug. Sitemap == маршрут == canonical.
+ */
+export const ALL_BUYOUT_MODELS = Object.values(BUYOUT_MODELS).flat();
+
+/** Название модели по canonical-slug из каталога (без обращения к файлам). */
+export function modelNameFromSlug(slug: string): string | undefined {
+  return ALL_BUYOUT_MODELS.find((m) => m.slug === slug)?.name;
+}
+
 /** Короткое название для SEO (без скобок) */
 export function modelShortName(modelName: string): string {
   // "MacBook Air 13 (2020, M1)" → "MacBook Air 13 M1 2020"

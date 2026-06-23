@@ -41,25 +41,35 @@ interface AvitoUrlsData {
   }>;
 }
 
-const SellModel = () => {
-  const { model_slug } = useParams<{ model_slug: string }>();
+interface SellModelProps {
+  /** Название модели, отрезолвленное на сервере по slug (для серверного H1/интро). */
+  modelName?: string;
+  /** slug из серверного маршрута (приоритетнее useParams при SSR). */
+  slug?: string;
+}
+
+const SellModel = ({ modelName: initialModelName = '', slug = '' }: SellModelProps) => {
+  const params = useParams<{ model_slug: string }>();
+  const model_slug = slug || params?.model_slug || '';
   const router = useRouter();
 
   const [data, setData] = useState<AvitoPricesData | null>(null);
   const [urlsData, setUrlsData] = useState<AvitoUrlsData | null>(null);
   const [totalListings, setTotalListings] = useState(0);
   const [lastUpdate, setLastUpdate] = useState<string>('');
-  const [resolvedModel, setResolvedModel] = useState<string>('');
+  // Сеем из серверного props, чтобы H1/интро были в HTML уже при SSR.
+  const [resolvedModel, setResolvedModel] = useState<string>(initialModelName);
 
   // Стараемся резолвить модель синхронно (важно для SEO/валидаторов),
   // чтобы мета-теги не были "пустыми" до загрузки JSON.
   const popularModelName = useMemo(() => {
+    if (initialModelName) return initialModelName;
     if (!model_slug) return '';
     return POPULAR_MODELS.find((m) => m.slug === model_slug)?.name ?? '';
-  }, [model_slug]);
+  }, [model_slug, initialModelName]);
 
   // Форма
-  const [modelName, setModelName] = useState('');
+  const [modelName, setModelName] = useState(initialModelName);
   const [modelSearch, setModelSearch] = useState('');
   const [isModelOpen, setIsModelOpen] = useState(false);
   const [processor, setProcessor] = useState('');
@@ -98,10 +108,15 @@ const SellModel = () => {
     if (matched) {
       setModelName(matched);
       setResolvedModel(matched);
+    } else if (initialModelName) {
+      // Модель валидна (отрезолвлена на сервере из каталога), но её нет в данных
+      // Avito — сохраняем серверное название, без редиректа на /sell.
+      setModelName(initialModelName);
+      setResolvedModel(initialModelName);
     } else {
       router.replace('/sell');
     }
-  }, [urlsData, model_slug, router]);
+  }, [urlsData, model_slug, router, initialModelName]);
 
   // Автовыбор процессора если один
   useEffect(() => {
@@ -154,8 +169,10 @@ const SellModel = () => {
   };
 
   const isFormComplete = modelName && processor && ram && ssd;
-  const shortName = resolvedModel ? modelShortName(resolvedModel) : '';
-  const seoModelName = popularModelName || resolvedModel || '';
+  const shortName = (resolvedModel || initialModelName)
+    ? modelShortName(resolvedModel || initialModelName)
+    : '';
+  const seoModelName = popularModelName || resolvedModel || initialModelName || '';
 
   const seoTitle = useMemo(() => {
     if (model_slug === 'macbook-air-13-2020-m1') {
@@ -207,10 +224,10 @@ const SellModel = () => {
         ]} />
 
         <div className="max-w-5xl mx-auto">
-          {/* Hero */}
+          {/* Hero — стартуем видимым (opacity:1), чтобы H1 был в HTML и не зависел от JS */}
           <motion.div
             className="text-center mb-12"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 1, y: 0 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
