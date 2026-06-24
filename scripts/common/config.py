@@ -10,27 +10,27 @@
 SCAN_FAMILIES = {
     "macbook_air": {
         "label": "MacBook Air",
-        "url": "https://www.avito.ru/moskva_i_mo/noutbuki?q=macbook+air&s=104",
+        "url": "https://www.avito.ru/all/noutbuki?q=macbook+air&s=104",
         "category": "noutbuki",
     },
     "macbook_pro": {
         "label": "MacBook Pro",
-        "url": "https://www.avito.ru/moskva_i_mo/noutbuki?context=H4sIAAAAAAAA_wEmANn_YToxOntzOjE6InkiO3M6MTY6ImU2SWZYa3NOZmtHWFVUU28iO33P3cofJgAAAA&f=ASgCAQICAUDW8g70EMahxRWu3sQVyp~2Fb6xnhWq45cVxJmWFbbY7xHY2O8RptjvEZa66xHiuesR~u3tEPzu7RCMpMMV_LjrEdC4Ew&localPriority=0&q=macbook+pro&s=104",
+        "url": "https://www.avito.ru/all/noutbuki?context=H4sIAAAAAAAA_wEmANn_YToxOntzOjE6InkiO3M6MTY6ImU2SWZYa3NOZmtHWFVUU28iO33P3cofJgAAAA&f=ASgCAQICAUDW8g70EMahxRWu3sQVyp~2Fb6xnhWq45cVxJmWFbbY7xHY2O8RptjvEZa66xHiuesR~u3tEPzu7RCMpMMV_LjrEdC4Ew&localPriority=0&q=macbook+pro&s=104",
         "category": "noutbuki",
     },
     "imac": {
         "label": "iMac",
-        "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery/monobloki-ASgBAgICAUS02xKOqY0D?cd=1&context=H4sIAAAAAAAA_wEmANn_YToxOntzOjE6InkiO3M6MTY6IlcwZ1dNU0RBSFZuTlZsV0siO30Cm7dZJgAAAA&localPriority=0&q=imac&s=104",
+        "url": "https://www.avito.ru/all/nastolnye_kompyutery/monobloki-ASgBAgICAUS02xKOqY0D?cd=1&context=H4sIAAAAAAAA_wEmANn_YToxOntzOjE6InkiO3M6MTY6IlcwZ1dNU0RBSFZuTlZsV0siO30Cm7dZJgAAAA&localPriority=0&q=imac&s=104",
         "category": "nastolnye_kompyutery",
     },
     "mac_mini": {
         "label": "Mac mini",
-        "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?q=mac+mini&s=104",
+        "url": "https://www.avito.ru/all/nastolnye_kompyutery?q=mac+mini&s=104",
         "category": "nastolnye_kompyutery",
     },
     "mac_studio": {
         "label": "Mac Studio",
-        "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?q=mac+studio&s=104",
+        "url": "https://www.avito.ru/all/nastolnye_kompyutery?q=mac+studio&s=104",
         "category": "nastolnye_kompyutery",
     },
 }
@@ -60,6 +60,14 @@ JUNK_KEYWORDS = [
     'восстановлен', 'реф', 'refurbished', 'залит', 'глючит', 'полосы', 'пятна',
     'в разбор', 'на части', 'пароль', 'обход', 'не включается', 'трещин',
     'под восстановл', 'на восстановл',
+]
+
+# ─── Новые/запечатанные: НЕ б/у, искажают медиану рынка → исключаем из базы ──
+# («как новый» НЕ сюда — это б/у в отличном состоянии.)
+NEW_SEALED_KEYWORDS = [
+    'запечатан', 'не вскрыт', 'невскрыт', 'в плёнке', 'в пленке',
+    'новый, не актив', 'новый неактив', 'не активирован', 'новый запакован',
+    'новый в упаковке', 'новый в коробке запечат', 'ростест новый', 'sealed',
 ]
 
 # ─── Ключевые слова срочности / торга ────────────────────────────────────────
@@ -105,8 +113,9 @@ SCAN_PAGES_PER_FAMILY = _envi("SCAN_PAGES_PER_FAMILY", 3)
 MIN_COMPS = _envi("MIN_COMPS", 6)
 
 # Запас маржи: насколько ниже медианы рынка должна быть цена, чтобы считаться сделкой.
-# Для перекупа нужен зазор под перепродажу (по умолчанию 8%).
-MIN_MARGIN = _envf("MIN_MARGIN", 0.08)
+# Синхронизировано с BUYOUT_FACTOR: алерт срабатывает ровно когда цена ≤ выкуп-цель
+# (медиана × (1 − MIN_MARGIN)). 0.20 = берём только лоты с реальным запасом ≥20%.
+MIN_MARGIN = _envf("MIN_MARGIN", 0.20)
 
 # Граница «слишком дёшево»: ниже scam_floor * median без чистого состояния —
 # почти всегда скрытый дефект/подмена цены/скам. Не алертим как 🔥.

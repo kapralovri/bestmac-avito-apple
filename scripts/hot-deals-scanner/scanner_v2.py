@@ -40,7 +40,7 @@ from common.condition import analyze_condition
 from common.market import robust_stats, assess_deal, MarketStats
 from common.negotiator import motivation_score, MotivationReport
 from common.config import (
-    SCAN_FAMILIES, JUNK_KEYWORDS, URGENT_KEYWORDS, MOSCOW_MARKERS,
+    SCAN_FAMILIES, JUNK_KEYWORDS, NEW_SEALED_KEYWORDS, URGENT_KEYWORDS, MOSCOW_MARKERS,
     MIN_PRICE, MAX_PRICE, PRICE_THRESHOLD_FACTOR, MIN_YEARS,
     SCAN_PAGES_PER_FAMILY, MIN_COMPS, MIN_MARGIN, SCAM_FLOOR, BUYOUT_FACTOR,
     BATTERY_HARD, BATTERY_SOFT, CYCLES_HARD, CYCLES_SOFT,
@@ -1130,6 +1130,9 @@ class AvitoScannerV2:
         Возвращает config или None."""
         full_preview = (listing['title'] + ' ' + listing['snippet']).lower()
         if any(w in full_preview for w in JUNK_KEYWORDS):
+            return None
+        # Новые/запечатанные — не б/у: искажают медиану рынка → вон из базы и кандидатов
+        if any(w in full_preview for w in NEW_SEALED_KEYWORDS):
             return None
         if not (MIN_PRICE <= listing['price'] <= MAX_PRICE):
             return None
