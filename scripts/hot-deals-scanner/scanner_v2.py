@@ -46,7 +46,7 @@ from common.config import (
     BATTERY_HARD, BATTERY_SOFT, CYCLES_HARD, CYCLES_SOFT,
     STALE_PRICES_HOURS, STALE_ALERT_COOLDOWN_HOURS, EXCLUDE_INTEL_FAMILIES,
     STALE_LISTING_DAYS, STALE_MIN_DROP, STALE_SCAN_PAGES, STALE_MAX_LEADS, REGISTRY_MAX,
-    RESELLER_REVIEWS,
+    RESELLER_REVIEWS, DELIVERY_MAX_PRICE,
 )
 
 try:
@@ -982,6 +982,9 @@ class AvitoScannerV2:
             if not market:
                 continue
             asking = int(e.get('last_price') or (L['price'] if L else 0))
+            loc = analysis.get('location', '')
+            if loc and not is_moscow(loc) and asking > DELIVERY_MAX_PRICE:
+                continue   # регион дороже лимита Авито Доставки — не выкупить
             stat_db = self._db_stat(cfg)
             buyout = (int(stat_db['buyout_price']) if stat_db and stat_db.get('buyout_price')
                       else int(market.median * BUYOUT_FACTOR))
@@ -1152,12 +1155,9 @@ class AvitoScannerV2:
         return self.prices_by_livekey.get(live_key(cfg)) or self.match_to_db(cfg)
 
     def _market_for(self, cfg, comps):
-        """Эталон рынка для конфигурации: живая медиана при ≥MIN_COMPS сопоставимых,
-        иначе медиана из базы цен (обновляется парсером ~ежечасно),
-        иначе тонкая живая выборка (низкая уверенность). Возвращает (MarketStats, source)."""
-        live = robust_stats(comps)
-        if live and live.n >= MIN_COMPS:
-            return live, 'live'
+        """Эталон рынка = МОСКВА (база цен), т.к. перепродажа в Москве. Поиск идёт по
+        всей России, но цену лота сравниваем с московской медианой из базы.
+        Живая всероссийская выборка — только фолбэк для конфигов, которых нет в базе."""
         db = self._db_stat(cfg)
         if db and db.get('median_price'):
             med = int(db['median_price'])
@@ -1166,6 +1166,9 @@ class AvitoScannerV2:
             p20 = int(lo + (med - lo) * 0.4)
             return MarketStats(n=int(db.get('samples_count', 0)) or 1,
                                median=med, p20=p20, p10=lo, low=lo, high=hi), 'db'
+        live = robust_stats(comps)   # всероссийская — фолбэк (конфиг не в базе)
+        if live and live.n >= MIN_COMPS:
+            return live, 'live'
         if live and live.n >= 3:
             return live, 'live-thin'
         return None, None
@@ -1297,6 +1300,10 @@ class AvitoScannerV2:
 
                     location = analysis['location']
                     moscow = (not location) or is_moscow(location)
+
+                    # Региональный лот дороже лимита Авито Доставки выкупить нельзя
+                    if not moscow and price > DELIVERY_MAX_PRICE:
+                        continue
 
                     # Выкуп: курируемый из базы, иначе от медианы рынка
                     stat_db = self._db_stat(cfg)
