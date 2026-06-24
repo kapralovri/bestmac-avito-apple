@@ -1,6 +1,6 @@
 {
   "description": "Конфигурация парсера Avito (4 вкладки Google Sheets).",
-  "updated_at": "2026-06-23",
+  "updated_at": "2026-06-24",
   "source": "https://docs.google.com/spreadsheets/d/1MTW8WUV096o6mHDB0ZqTyBHTw5SnLVW5FEgpG2o5NUc",
   "tabs": {
     "MacBook": {
