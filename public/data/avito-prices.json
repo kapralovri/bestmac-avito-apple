@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-24 10:43",
-  "total_listings": 3302,
+  "generated_at": "2026-06-24 15:42",
+  "total_listings": 3259,
   "stats": [
     {
       "model_name": "MacBook Pro 13 (2020, M1)",
@@ -1170,12 +1170,12 @@
       "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
-      "min_price": 21000,
-      "max_price": 44800,
-      "median_price": 32000,
-      "buyout_price": 25000,
+      "min_price": 28500,
+      "max_price": 60000,
+      "median_price": 33999,
+      "buyout_price": 27000,
       "samples_count": 7,
-      "updated_at": "2026-06-23 15:52"
+      "updated_at": "2026-06-24 15:36"
     },
     {
       "model_name": "mac mini m1",
@@ -1184,11 +1184,11 @@
       "ram": 8,
       "ssd": 512,
       "min_price": 34500,
-      "max_price": 43333,
-      "median_price": 38000,
+      "max_price": 44990,
+      "median_price": 38499,
       "buyout_price": 30000,
-      "samples_count": 5,
-      "updated_at": "2026-06-23 15:52"
+      "samples_count": 6,
+      "updated_at": "2026-06-24 15:36"
     },
     {
       "model_name": "mac mini m1",
@@ -1210,11 +1210,11 @@
       "ram": 16,
       "ssd": 512,
       "min_price": 38000,
-      "max_price": 51000,
-      "median_price": 45999,
-      "buyout_price": 36000,
-      "samples_count": 4,
-      "updated_at": "2026-06-22 17:43"
+      "max_price": 52222,
+      "median_price": 46999,
+      "buyout_price": 37000,
+      "samples_count": 5,
+      "updated_at": "2026-06-24 15:36"
     },
     {
       "model_name": "mac mini m1",
@@ -1227,7 +1227,7 @@
       "median_price": 35499,
       "buyout_price": 28000,
       "samples_count": 4,
-      "updated_at": "2026-06-23 15:52"
+      "updated_at": "2026-06-24 15:36"
     },
     {
       "model_name": "mac mini m1",
@@ -1274,12 +1274,12 @@
       "processor": "Apple M2",
       "ram": 8,
       "ssd": 256,
-      "min_price": 28026,
-      "max_price": 41890,
-      "median_price": 35000,
-      "buyout_price": 28000,
-      "samples_count": 41,
-      "updated_at": "2026-06-10 16:43"
+      "min_price": 24250,
+      "max_price": 50000,
+      "median_price": 34999,
+      "buyout_price": 27000,
+      "samples_count": 32,
+      "updated_at": "2026-06-24 15:40"
     },
     {
       "model_name": "mac mini m2",
@@ -1287,12 +1287,12 @@
       "processor": "Apple M2",
       "ram": 8,
       "ssd": 512,
-      "min_price": 36500,
-      "max_price": 55000,
+      "min_price": 34000,
+      "max_price": 52890,
       "median_price": 43500,
       "buyout_price": 34000,
-      "samples_count": 10,
-      "updated_at": "2026-06-10 16:43"
+      "samples_count": 7,
+      "updated_at": "2026-06-24 15:40"
     },
     {
       "model_name": "mac mini m2",
@@ -1327,11 +1327,11 @@
       "ram": 16,
       "ssd": 256,
       "min_price": 46000,
-      "max_price": 63500,
-      "median_price": 54990,
-      "buyout_price": 43000,
-      "samples_count": 70,
-      "updated_at": "2026-06-21 15:20"
+      "max_price": 54800,
+      "median_price": 52990,
+      "buyout_price": 42000,
+      "samples_count": 37,
+      "updated_at": "2026-06-24 15:42"
     },
     {
       "model_name": "mac mini m4",
