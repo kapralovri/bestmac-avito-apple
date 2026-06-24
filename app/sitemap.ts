@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { VYKUP_LANDINGS } from '@/data/vykup-landings';
 import { GEO_LANDINGS } from '@/data/geo-landings';
+import { ALL_BUYOUT_MODELS } from '@/lib/model-slugs';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://bestmac.ru';
@@ -52,22 +53,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: '/sell/mac-mini', changeFrequency: 'weekly', priority: 0.7 },
     { url: '/sell/broken', changeFrequency: 'weekly', priority: 0.7 },
 
-    // Sell specific models
-    { url: '/sell/macbook-air-13-2020-m1', changeFrequency: 'weekly', priority: 0.8 },
-    { url: '/sell/macbook-air-13-2022-m2', changeFrequency: 'weekly', priority: 0.8 },
-    { url: '/sell/macbook-air-13-2024-m3', changeFrequency: 'weekly', priority: 0.8 },
-    { url: '/sell/macbook-air-13-2025-m4', changeFrequency: 'weekly', priority: 0.8 },
-    { url: '/sell/macbook-air-15-2023-m2', changeFrequency: 'weekly', priority: 0.8 },
-    { url: '/sell/macbook-air-15-2024-m3', changeFrequency: 'weekly', priority: 0.8 },
-    { url: '/sell/macbook-air-15-2025-m4', changeFrequency: 'weekly', priority: 0.8 },
-    { url: '/sell/macbook-pro-13-2020-m1', changeFrequency: 'weekly', priority: 0.8 },
-    { url: '/sell/macbook-pro-13-2022-m2', changeFrequency: 'weekly', priority: 0.8 },
-    { url: '/sell/macbook-pro-14-2021', changeFrequency: 'weekly', priority: 0.8 },
-    { url: '/sell/macbook-pro-14-2023', changeFrequency: 'weekly', priority: 0.8 },
-    { url: '/sell/macbook-pro-14-2024', changeFrequency: 'weekly', priority: 0.8 },
-    { url: '/sell/macbook-pro-16-2021', changeFrequency: 'weekly', priority: 0.8 },
-    { url: '/sell/macbook-pro-16-2023', changeFrequency: 'weekly', priority: 0.8 },
-    { url: '/sell/macbook-pro-16-2024', changeFrequency: 'weekly', priority: 0.8 },
+    // Sell specific models — генерируются из канонического каталога,
+    // чтобы slug в sitemap == маршрут == canonical (без дублей).
+    ...ALL_BUYOUT_MODELS.map((m) => ({
+      url: `/sell/${m.slug}`,
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    })),
 
     // Geo
     { url: '/moskva', changeFrequency: 'monthly', priority: 0.7 },

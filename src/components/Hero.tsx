@@ -91,21 +91,21 @@ const Hero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            <span className="text-gradient">Техника Apple.</span>
+            <span className="text-gradient">Выкуп и продажа</span>
             <br />
-            <span className="text-gradient-blue">Выгодно.</span>
+            <span className="text-gradient-blue">MacBook в Москве</span>
           </motion.h1>
 
-          {/* Subtitle */}
+          {/* Subtitle — стартует видимым (opacity:1), чтобы текст был в HTML без JS */}
           <motion.p
             className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto mb-10 leading-relaxed"
-            initial={{ opacity: 0 }}
+            initial={{ opacity: 1 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.8 }}
           >
-            Продажа и выкуп б/у техники Apple в Москве.
+            Честная скупка и продажа б/у техники Apple — MacBook, iMac, iPhone.
             <br className="hidden sm:block" />
-            Гарантия · Проверка · Документы
+            Гарантия · Проверка · Документы · Выгодно
           </motion.p>
 
           {/* CTAs */}

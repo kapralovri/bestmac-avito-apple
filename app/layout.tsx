@@ -53,9 +53,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://mc.yandex.ru" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://mc.yandex.ru" />
         <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
-        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <link rel="icon" type="image/png" href="/favicon.png" />
+        <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
@@ -83,7 +82,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a);
             }catch(e){console.warn('Yandex.Metrika loading error:',e);}
           })(window,document,'script','https://mc.yandex.ru/metrika/tag.js','ym');
-          try{ym(50006968,'init',{webvisor:true,clickmap:true,accurateTrackBounce:true,trackLinks:true});}
+          try{ym(50006968,'init',{webvisor:false,clickmap:true,accurateTrackBounce:true,trackLinks:true});}
           catch(e){console.warn('Yandex.Metrika init error:',e);}`}
         </Script>
         <noscript>

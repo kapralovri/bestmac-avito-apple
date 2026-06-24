@@ -49,7 +49,7 @@ const GeoLanding = ({ district, metroStation, slug, nearbyAreas, landmarks, cust
     },
     {
       question: "Работаете ли вы в выходные?",
-      answer: "Да, мы работаем ежедневно: пн–пт с 10:00 до 20:00, сб–вс с 11:00 до 18:00. Выезд курьера доступен также по выходным."
+      answer: "Да, мы работаем ежедневно с 10:00 до 23:00, без выходных. Выезд курьера также доступен по выходным."
     }
   ];
 
@@ -78,12 +78,8 @@ const GeoLanding = ({ district, metroStation, slug, nearbyAreas, landmarks, cust
         "areaServed": {
           "@type": "Place",
           "name": `${district}, Москва`
-        },
-        "aggregateRating": {
-          "@type": "AggregateRating",
-          "ratingValue": "4.9",
-          "reviewCount": "156"
         }
+        // aggregateRating убран до появления реальных отзывов.
       },
       {
         "@type": "FAQPage",

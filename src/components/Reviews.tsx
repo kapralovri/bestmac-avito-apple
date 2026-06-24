@@ -16,63 +16,20 @@ interface ReviewsProps {
   title?: string;
 }
 
-const defaultReviews: Review[] = [
-  {
-    author: "Александр М.",
-    rating: 5,
-    date: "2026-03-18",
-    text: "Купил MacBook Air M3 — отличное состояние, всё работает идеально. Гарантия, документы, быстрая доставка. Рекомендую!",
-    device: "MacBook Air M3"
-  },
-  {
-    author: "Екатерина С.",
-    rating: 5,
-    date: "2026-03-10",
-    text: "Продала свой старый MacBook Pro. Оценили честно, расчёт на месте, оформили все документы. Очень довольна!",
-    device: "MacBook Pro 14"
-  },
-  {
-    author: "Дмитрий К.",
-    rating: 5,
-    date: "2026-02-25",
-    text: "Покупал MacBook Pro 14 M4 Pro. Всё прошло отлично — проверили при мне, дали месяц гарантии. Цена адекватная.",
-    device: "MacBook Pro 14"
-  },
-  {
-    author: "Мария Л.",
-    rating: 5,
-    date: "2026-02-14",
-    text: "Отличный сервис! Быстро ответили, приехали на следующий день, купили мой iMac по хорошей цене. Всё официально.",
-    device: "iMac 24"
-  },
-  {
-    author: "Игорь В.",
-    rating: 5,
-    date: "2026-01-30",
-    text: "Купил MacBook Air M4 для работы. Состояние как новый, батарея держит отлично. Спасибо за честную сделку!",
-    device: "MacBook Air M4"
-  },
-  {
-    author: "Анна П.",
-    rating: 5,
-    date: "2026-01-18",
-    text: "Продала iPhone 16 Pro. Оценили справедливо, без торгов. Деньги сразу, документы на руки. Очень профессионально!",
-    device: "iPhone 16 Pro"
-  }
-];
+// Отзывы намеренно пусты: блок скрыт, пока не подключены РЕАЛЬНЫЕ отзывы
+// (например, выгрузка из Яндекс.Карт / 2ГИС). Прежние тексты были выдуманными,
+// что создавало риск санкций за фальшивую разметку Review/AggregateRating.
+// Чтобы вернуть секцию — передайте реальные отзывы через проп `reviews`.
+const defaultReviews: Review[] = [];
 
 const Reviews = ({ reviews = defaultReviews, title = "Отзывы наших клиентов" }: ReviewsProps) => {
+  // Без реальных отзывов ничего не рендерим и не выводим разметку.
+  if (!reviews.length) return null;
+
   const reviewSchema = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "name": "BestMac",
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "reviewCount": "156",
-      "bestRating": "5",
-      "worstRating": "1"
-    },
     "review": reviews.map(review => ({
       "@type": "Review",
       "author": {
