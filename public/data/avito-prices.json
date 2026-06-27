@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-27 05:01",
-  "total_listings": 3143,
+  "generated_at": "2026-06-27 10:21",
+  "total_listings": 3104,
   "stats": [
     {
       "model_name": "MacBook Pro 13 (2020, M1)",
@@ -2484,12 +2484,12 @@
       "processor": "Apple M3",
       "ram": 8,
       "ssd": 256,
-      "min_price": 112490,
-      "max_price": 129990,
-      "median_price": 121490,
-      "buyout_price": 97000,
-      "samples_count": 52,
-      "updated_at": "2026-06-18 11:18"
+      "min_price": 104990,
+      "max_price": 140000,
+      "median_price": 119900,
+      "buyout_price": 95000,
+      "samples_count": 60,
+      "updated_at": "2026-06-27 09:37"
     },
     {
       "model_name": "imac 24",
@@ -2497,12 +2497,12 @@
       "processor": "Apple M3",
       "ram": 8,
       "ssd": 512,
-      "min_price": 129900,
-      "max_price": 132000,
-      "median_price": 131900,
+      "min_price": 130500,
+      "max_price": 142990,
+      "median_price": 131990,
       "buyout_price": 105000,
-      "samples_count": 22,
-      "updated_at": "2026-06-18 11:18"
+      "samples_count": 25,
+      "updated_at": "2026-06-27 09:37"
     },
     {
       "model_name": "imac 24",
@@ -2511,11 +2511,24 @@
       "ram": 8,
       "ssd": 1024,
       "min_price": 167000,
-      "max_price": 199000,
-      "median_price": 167000,
-      "buyout_price": 133000,
-      "samples_count": 7,
-      "updated_at": "2026-05-09 10:35"
+      "max_price": 207990,
+      "median_price": 170500,
+      "buyout_price": 136000,
+      "samples_count": 8,
+      "updated_at": "2026-06-27 09:37"
+    },
+    {
+      "model_name": "imac 24",
+      "family": "iMac",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 8192,
+      "min_price": 110000,
+      "max_price": 169990,
+      "median_price": 161990,
+      "buyout_price": 129000,
+      "samples_count": 3,
+      "updated_at": "2026-06-27 09:37"
     },
     {
       "model_name": "imac 24",
@@ -2523,12 +2536,12 @@
       "processor": "Apple M3",
       "ram": 16,
       "ssd": 512,
-      "min_price": 80000,
-      "max_price": 115000,
-      "median_price": 114990,
-      "buyout_price": 91000,
-      "samples_count": 4,
-      "updated_at": "2026-06-18 11:18"
+      "min_price": 113500,
+      "max_price": 220000,
+      "median_price": 150690,
+      "buyout_price": 120000,
+      "samples_count": 7,
+      "updated_at": "2026-06-27 09:37"
     },
     {
       "model_name": "imac 24",
@@ -2536,12 +2549,12 @@
       "processor": "Apple M3",
       "ram": 16,
       "ssd": 1024,
-      "min_price": 160900,
-      "max_price": 218990,
-      "median_price": 190450,
-      "buyout_price": 152000,
-      "samples_count": 18,
-      "updated_at": "2026-05-09 10:35"
+      "min_price": 125000,
+      "max_price": 229900,
+      "median_price": 166990,
+      "buyout_price": 133000,
+      "samples_count": 6,
+      "updated_at": "2026-06-27 09:37"
     },
     {
       "model_name": "imac 24",
@@ -2549,12 +2562,12 @@
       "processor": "Apple M3",
       "ram": 16,
       "ssd": 2048,
-      "min_price": 174900,
+      "min_price": 244900,
       "max_price": 265000,
-      "median_price": 174900,
-      "buyout_price": 139000,
-      "samples_count": 4,
-      "updated_at": "2026-05-09 10:35"
+      "median_price": 244900,
+      "buyout_price": 195000,
+      "samples_count": 3,
+      "updated_at": "2026-06-27 09:37"
     },
     {
       "model_name": "imac 24",
@@ -2575,12 +2588,12 @@
       "processor": "Apple M3",
       "ram": 24,
       "ssd": 2048,
-      "min_price": 204400,
-      "max_price": 205900,
-      "median_price": 204400,
-      "buyout_price": 163000,
-      "samples_count": 7,
-      "updated_at": "2026-05-09 10:35"
+      "min_price": 94500,
+      "max_price": 283900,
+      "median_price": 282400,
+      "buyout_price": 225000,
+      "samples_count": 6,
+      "updated_at": "2026-06-27 09:37"
     },
     {
       "model_name": "imac 24",
@@ -2601,12 +2614,12 @@
       "processor": "Apple M4",
       "ram": 8,
       "ssd": 8192,
-      "min_price": 129000,
-      "max_price": 144990,
-      "median_price": 144990,
-      "buyout_price": 115000,
-      "samples_count": 11,
-      "updated_at": "2026-06-19 11:45"
+      "min_price": 111000,
+      "max_price": 140000,
+      "median_price": 129000,
+      "buyout_price": 103000,
+      "samples_count": 6,
+      "updated_at": "2026-06-27 09:38"
     },
     {
       "model_name": "imac 24",
@@ -2614,12 +2627,12 @@
       "processor": "Apple M4",
       "ram": 16,
       "ssd": 256,
-      "min_price": 129990,
-      "max_price": 151500,
-      "median_price": 145900,
-      "buyout_price": 116000,
-      "samples_count": 73,
-      "updated_at": "2026-06-19 11:45"
+      "min_price": 139900,
+      "max_price": 149000,
+      "median_price": 143000,
+      "buyout_price": 114000,
+      "samples_count": 35,
+      "updated_at": "2026-06-27 09:38"
     },
     {
       "model_name": "imac 24",
