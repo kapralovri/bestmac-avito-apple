@@ -1193,8 +1193,11 @@ class AvitoScannerV2:
         try:
             soup = BeautifulSoup(html_content, 'lxml')
             low = soup.get_text(' ').lower()
+            # Только однозначные статус-фразы закрытого объявления. НЕ слово 'продано'
+            # отдельно — оно встречается в описаниях и блоке «похожие» (ложные
+            # срабатывания → лот молча выпадал бы из вотчлиста).
             if any(x in low for x in ['снято с публикации', 'объявление снято',
-                                      'больше не доступно', 'продано']):
+                                      'снято с продажи', 'больше не доступно']):
                 return 'removed', None
             price = None
             tag = soup.select_one('[itemprop="price"]')

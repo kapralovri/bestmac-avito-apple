@@ -532,6 +532,10 @@ check("itemprop price → active", _ls('<html><body><span itemprop="price" conte
 check("фолбэк item-price → active", _ls('<html><body><div data-marker="item-price">90 000 ₽</div></body></html>') == ('active', 90000))
 check("жив, но цены нет → unknown", _ls("<html><body>MacBook Air, отличное состояние</body></html>") == ('unknown', None))
 check("страница не загрузилась → unknown", _ls("") == ('unknown', None))
+check("'продано' в описании активного лота → НЕ removed",
+      _ls('<html><body><span itemprop="price" content="80000">80 000 ₽</span>'
+          '<div data-marker="item-description">комплект полный, ничего не продано отдельно</div>'
+          '</body></html>') == ('active', 80000))
 
 # ─── 18. run_watch_check: removed убираем, unknown оставляем, active триггерит ─
 print("\n[18] run_watch_check (оркестрация)")
