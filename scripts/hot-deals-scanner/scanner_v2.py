@@ -1635,12 +1635,14 @@ class AvitoScannerV2:
                 if cfg is None:
                     self.seen.add(url); continue
                 # В intake живых компов нет (одиночные карточки) → рынок только из базы.
-                # Конфиг, которого нет в базе, оценить нечем — логируем и помечаем seen
-                # (резервный VPS-сканер построит для него живой рынок и поймает отдельно).
+                # Конфиг, которого нет в базе, оценить нечем. НЕ помечаем seen: иначе
+                # резервный VPS-сканер (он пропускает уже-seen url) не сможет построить
+                # для него живой рынок и поймать лот. Расширение дедупит карточки само,
+                # так что повторной обработки тут не будет.
                 market, source = self._market_for(cfg, [])
                 if not market:
                     logger.info(f"   ∅ нет в базе цен: {live_key(cfg)} | {L['title'][:45]}")
-                    self.seen.add(url); continue
+                    continue
                 price = L['price']
                 assess = assess_deal(price, market, min_margin=MIN_MARGIN, scam_floor=SCAM_FLOOR)
                 if assess.margin < MIN_MARGIN:

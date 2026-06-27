@@ -330,8 +330,9 @@ _sv.time.sleep = lambda *a, **k: None   # без задержек в тесте
 
 s = AvitoScannerV2(None)
 s.seen = set()
-_stats = robust_stats([100000] * 12)    # медиана 100k для всех конфигов (заглушка)
-s._market_for = lambda cfg, comps: (_stats, 'db')
+_stats = robust_stats([100000] * 12)    # медиана 100k (заглушка)
+# конфиг с 8 ГБ имитирует «нет в базе цен» (рынок None)
+s._market_for = lambda cfg, comps: ((None, 'none') if cfg.ram == 8 else (_stats, 'db'))
 s._db_stat = lambda cfg: None           # → выкуп = медиана×BUYOUT_FACTOR
 s._start_browser = lambda: None
 s._warmup = lambda: None
@@ -365,7 +366,8 @@ cards = [
     {'url': 'https://www.avito.ru/deal_1',     'title': 'MacBook Air 13 M2 16/512 ГБ', 'price': 75000},
     {'url': 'https://www.avito.ru/reseller_1', 'title': 'MacBook Pro 14 M3 18/512',    'price': 75000},
     {'url': 'https://www.avito.ru/broken_1',   'title': 'MacBook Air 13 M2 16/256',    'price': 70000},
-    {'url': 'https://www.avito.ru/fair_1',     'title': 'MacBook Air 13 M1 8/256',     'price': 96000},
+    {'url': 'https://www.avito.ru/fair_1',     'title': 'MacBook Air 13 M2 16/256',    'price': 96000},
+    {'url': 'https://www.avito.ru/nobase_1',   'title': 'MacBook Air 13 M1 8/256',     'price': 60000},
 ]
 s.process_cards(cards)
 
@@ -375,7 +377,11 @@ check("перекуп → уведомление есть", 'https://www.avito.r
 check("перекуп → в очередь НЕ кладём", 'https://www.avito.ru/reseller_1' not in _enq)
 check("дефект (не включается/разбит) → отсеян", 'https://www.avito.ru/broken_1' not in _notif)
 check("не низ рынка (−4%) → отсеян", 'https://www.avito.ru/fair_1' not in _notif)
-check("все 4 url помечены seen", all(clean_url(c['url']) in s.seen for c in cards))
+check("нет в базе → не уведомляем", 'https://www.avito.ru/nobase_1' not in _notif)
+check("нет в базе → НЕ помечен seen (ловит резервный сканер)",
+      clean_url('https://www.avito.ru/nobase_1') not in s.seen)
+check("обработанные (кроме nobase) помечены seen",
+      all(clean_url(c['url']) in s.seen for c in cards if 'nobase' not in c['url']))
 
 
 # ─── 13. Слияние вотчлиста при гонке с ботом ─────────────────────────────────
