@@ -320,6 +320,63 @@ done_e = {"watch_price": 80000, "added_at": (now11 - timedelta(days=20)).isoform
 check("уже сигналили 2wk → не повторяем", "2wk" not in watch_triggers(done_e, 80000, now11))
 
 
+# ─── 12. Intake: process_cards (мозг от домашнего расширения) ────────────────
+print("\n[12] Intake: process_cards (заглушённый браузер)")
+import scanner_v2 as _sv
+from scanner_v2 import AvitoScannerV2, clean_url, is_reseller
+
+_sv.time.sleep = lambda *a, **k: None   # без задержек в тесте
+
+s = AvitoScannerV2(None)
+s.seen = set()
+_stats = robust_stats([100000] * 12)    # медиана 100k для всех конфигов (заглушка)
+s._market_for = lambda cfg, comps: (_stats, 'db')
+s._db_stat = lambda cfg: None           # → выкуп = медиана×BUYOUT_FACTOR
+s._start_browser = lambda: None
+s._warmup = lambda: None
+s._close = lambda: None
+s._save_seen = lambda: None
+
+_deep = {
+    'deal':     {'is_private': True,  'seller_type': 'Частное лицо', 'seller_reviews': 3,
+                 'location': 'Москва', 'desc_text': 'идеальное состояние, акб 100%, коробка, чек'},
+    'reseller': {'is_private': False, 'seller_type': 'Магазин',      'seller_reviews': 250,
+                 'location': 'Москва', 'desc_text': 'отличное состояние, полный комплект'},
+    'broken':   {'is_private': True,  'seller_type': 'Частное лицо', 'seller_reviews': 1,
+                 'location': 'Москва', 'desc_text': 'не включается, разбит экран'},
+}
+_base = {'cycles': None, 'is_urgent': False, 'specs': {}, 'price_reduced': False}
+
+def _fake_deep(url):
+    for k, v in _deep.items():
+        if k in url:
+            return {**_base, **v}
+    return {**_base, 'is_private': True, 'seller_type': 'Частное лицо',
+            'seller_reviews': 1, 'location': 'Москва', 'desc_text': 'хорошее состояние'}
+s.deep_analyze = _fake_deep
+
+_notif, _enq = [], []
+s.notify = lambda c: _notif.append(c['url'])
+s._send_copilot = lambda c: None
+s._enqueue_lead = lambda c, **kw: _enq.append(c['url'])
+
+cards = [
+    {'url': 'https://www.avito.ru/deal_1',     'title': 'MacBook Air 13 M2 16/512 ГБ', 'price': 75000},
+    {'url': 'https://www.avito.ru/reseller_1', 'title': 'MacBook Pro 14 M3 18/512',    'price': 75000},
+    {'url': 'https://www.avito.ru/broken_1',   'title': 'MacBook Air 13 M2 16/256',    'price': 70000},
+    {'url': 'https://www.avito.ru/fair_1',     'title': 'MacBook Air 13 M1 8/256',     'price': 96000},
+]
+s.process_cards(cards)
+
+check("чистая сделка → уведомление", 'https://www.avito.ru/deal_1' in _notif)
+check("чистая сделка → в очередь бота", 'https://www.avito.ru/deal_1' in _enq)
+check("перекуп → уведомление есть", 'https://www.avito.ru/reseller_1' in _notif)
+check("перекуп → в очередь НЕ кладём", 'https://www.avito.ru/reseller_1' not in _enq)
+check("дефект (не включается/разбит) → отсеян", 'https://www.avito.ru/broken_1' not in _notif)
+check("не низ рынка (−4%) → отсеян", 'https://www.avito.ru/fair_1' not in _notif)
+check("все 4 url помечены seen", all(clean_url(c['url']) in s.seen for c in cards))
+
+
 # ─── Итог ────────────────────────────────────────────────────────────────────
 print()
 if _fails:

@@ -1152,13 +1152,14 @@ class AvitoScannerV2:
         self._warmup()
         now = datetime.now()
         changed, refired, dropped = False, 0, 0
+        dropped_urls = set()   # снятые/проданные — для слияния в конце
 
         for url, e in list(wl.items()):
             try:
                 time.sleep(random.uniform(1.5, 3.5))
                 active, price = self._listing_status(url)
                 if not active:
-                    del wl[url]; dropped += 1; changed = True
+                    dropped_urls.add(url); del wl[url]; dropped += 1; changed = True
                     continue
                 for reason in watch_triggers(e, price, now):
                     self._enqueue_watch_relead(e, price, reason)
@@ -1171,8 +1172,24 @@ class AvitoScannerV2:
                 logger.error(f"watch {url[:40]}: {ex}")
 
         if changed:
+            # Прогон занимает минуты; бот мог за это время добавить/удалить лоты.
+            # Сливаемся с актуальным состоянием на диске, а не перезаписываем снимок.
+            final = {}
+            if WATCHLIST_FILE.exists():
+                try:
+                    final = json.load(open(WATCHLIST_FILE, encoding='utf-8')) or {}
+                except Exception:
+                    final = dict(wl)
+            for u in dropped_urls:
+                final.pop(u, None)            # снятые/проданные — убрать
+            for u, e in wl.items():           # перенести наши обновления полей (если лот ещё на диске)
+                if u in final:
+                    for k in ('last_alert_price', 'alerted_2wk'):
+                        if k in e:
+                            final[u][k] = e[k]
             try:
-                WATCHLIST_FILE.write_text(json.dumps(wl, ensure_ascii=False, indent=2), encoding='utf-8')
+                WATCHLIST_FILE.write_text(json.dumps(final, ensure_ascii=False, indent=2), encoding='utf-8')
+                wl = final
             except Exception as ex:
                 logger.warning(f"watchlist save: {ex}")
         self._close()
@@ -1514,9 +1531,13 @@ class AvitoScannerV2:
                 cfg = self._passes_prefilter(L)
                 if cfg is None:
                     self.seen.add(url); continue
+                # В intake живых компов нет (одиночные карточки) → рынок только из базы.
+                # Конфиг, которого нет в базе, оценить нечем — логируем и помечаем seen
+                # (резервный VPS-сканер построит для него живой рынок и поймает отдельно).
                 market, source = self._market_for(cfg, [])
                 if not market:
-                    continue
+                    logger.info(f"   ∅ нет в базе цен: {live_key(cfg)} | {L['title'][:45]}")
+                    self.seen.add(url); continue
                 price = L['price']
                 assess = assess_deal(price, market, min_margin=MIN_MARGIN, scam_floor=SCAM_FLOOR)
                 if assess.margin < MIN_MARGIN:
