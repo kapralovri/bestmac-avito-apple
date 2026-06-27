@@ -22,6 +22,8 @@ def run():
         {'url': 'u3', 'title': 'D', 'price': '200'},   # строковая цена → int
         {'url': 'u5', 'title': 'E', 'price': 'abc'},   # битая цена → отброс
         None,                                          # мусор → отброс
+        'junk',                                        # строка → отброс (не падаем!)
+        42,                                            # число → отброс (не падаем!)
     ])
     assert added == 2, f'added={added}'
     data = json.loads(tmp.read_text(encoding='utf-8'))

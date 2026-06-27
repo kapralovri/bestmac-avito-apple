@@ -50,3 +50,4 @@ public/data/watchlist.json
 # Входящие карточки от расширения (локальное)
 public/data/incoming-cards.json
 public/data/incoming-cards.processing.json
+public/data/incoming-cards.tmp

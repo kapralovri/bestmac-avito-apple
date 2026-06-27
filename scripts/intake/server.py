@@ -31,10 +31,12 @@ def _append(cards):
             cur = json.loads(INCOMING.read_text(encoding='utf-8')) or []
         except Exception:
             cur = []
-    seen = {c.get('url') for c in cur}
+    seen = {c.get('url') for c in cur if isinstance(c, dict)}
     added = 0
     for c in cards:
-        u = (c or {}).get('url')
+        if not isinstance(c, dict):
+            continue          # мусор (строка/число) — пропускаем, не роняем всю пачку
+        u = c.get('url')
         if not u or u in seen:
             continue
         try:
