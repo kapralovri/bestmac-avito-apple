@@ -515,6 +515,52 @@ _n4, _ok4 = run_intake(_d4 / "none.json", lambda u: None)
 check("пусто → (0, True)", _n4 == 0 and _ok4)
 
 
+# ─── 17. _listing_status: active / removed / unknown ─────────────────────────
+print("\n[17] _listing_status (снято vs не распарсили)")
+s17 = AvitoScannerV2(None)
+def _ls(html):
+    s17._load_page = lambda url: html
+    return s17._listing_status("u")
+check("снято с публикации → removed", _ls("<html><body>Объявление снято с публикации</body></html>") == ('removed', None))
+check("itemprop price → active", _ls('<html><body><span itemprop="price" content="75000">75 000 ₽</span></body></html>') == ('active', 75000))
+check("фолбэк item-price → active", _ls('<html><body><div data-marker="item-price">90 000 ₽</div></body></html>') == ('active', 90000))
+check("жив, но цены нет → unknown", _ls("<html><body>MacBook Air, отличное состояние</body></html>") == ('unknown', None))
+check("страница не загрузилась → unknown", _ls("") == ('unknown', None))
+
+# ─── 18. run_watch_check: removed убираем, unknown оставляем, active триггерит ─
+print("\n[18] run_watch_check (оркестрация)")
+import scanner_v2 as _sv18
+_wd = Path(_tmp.mkdtemp())
+_wf = _wd / "watchlist.json"
+_sv18.WATCHLIST_FILE = _wf
+_now18 = datetime.now().isoformat()
+_wf.write_text(_json.dumps({
+    "https://www.avito.ru/sold": {"url": "https://www.avito.ru/sold", "title": "S", "watch_price": 80000, "added_at": _now18},
+    "https://www.avito.ru/unk":  {"url": "https://www.avito.ru/unk",  "title": "U", "watch_price": 80000, "added_at": _now18},
+    "https://www.avito.ru/drop": {"url": "https://www.avito.ru/drop", "title": "D", "last_alert_price": 80000, "added_at": _now18},
+}, ensure_ascii=False), encoding="utf-8")
+
+s18 = AvitoScannerV2(None)
+s18._start_browser = lambda: None
+s18._warmup = lambda: None
+s18._close = lambda: None
+s18._save_seen = lambda: None
+_statuses = {"https://www.avito.ru/sold": ('removed', None),
+             "https://www.avito.ru/unk": ('unknown', None),
+             "https://www.avito.ru/drop": ('active', 75000)}   # −6% от 80k → drop
+s18._listing_status = lambda url: _statuses[url]
+_releads = []
+s18._enqueue_watch_relead = lambda e, price, reason: _releads.append((e['url'], reason))
+s18.run_watch_check()
+
+_after = _json.loads(_wf.read_text(encoding="utf-8"))
+check("removed → убран из вотчлиста", "https://www.avito.ru/sold" not in _after)
+check("unknown → оставлен (трекинг не потерян)", "https://www.avito.ru/unk" in _after)
+check("active с падением → relead", ("https://www.avito.ru/drop", "drop") in _releads)
+check("unknown НЕ релиднут", not any(u == "https://www.avito.ru/unk" for u, _ in _releads))
+check("drop: last_alert_price обновлён", _after["https://www.avito.ru/drop"].get("last_alert_price") == 75000)
+
+
 # ─── Итог ────────────────────────────────────────────────────────────────────
 print()
 if _fails:

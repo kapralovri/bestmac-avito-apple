@@ -1183,27 +1183,36 @@ class AvitoScannerV2:
         return f"{base_url}{sep}p={page_num}"
 
     def _listing_status(self, url):
-        """Открывает объявление: возвращает (active: bool, price: int|None).
-        active=False, если снято/недоступно."""
+        """Открывает объявление: возвращает (status, price).
+        status: 'active' (цена считана) / 'removed' (снято/продано — явный маркер) /
+        'unknown' (страница не загрузилась или цену не распарсили). 'unknown' НЕ значит
+        «снято» — лот остаётся в наблюдении, чтобы временный сбой не выкинул трекинг."""
         html_content = self._load_page(url)
         if not html_content:
-            return False, None
+            return 'unknown', None
         try:
             soup = BeautifulSoup(html_content, 'lxml')
             low = soup.get_text(' ').lower()
             if any(x in low for x in ['снято с публикации', 'объявление снято',
                                       'больше не доступно', 'продано']):
-                return False, None
-            tag = soup.select_one('[itemprop="price"]')
+                return 'removed', None
             price = None
+            tag = soup.select_one('[itemprop="price"]')
             if tag and tag.get('content'):
                 try:
                     price = int(tag['content'])
                 except (ValueError, TypeError):
                     price = None
-            return (price is not None), price
+            if price is None:                       # фолбэк на видимую цену
+                t2 = soup.select_one('[data-marker="item-price"]')
+                if t2:
+                    digits = re.sub(r'[^0-9]', '', t2.get_text())
+                    price = int(digits) if digits else None
+            if price is not None:
+                return 'active', price
+            return 'unknown', None                  # жив, но цену не достали — не выкидываем
         except Exception:
-            return False, None
+            return 'unknown', None
 
     def _enqueue_watch_relead(self, e, current_price, reason):
         """Кладёт отслеживаемый лот обратно в очередь бота как 🔔-напоминание."""
@@ -1245,10 +1254,12 @@ class AvitoScannerV2:
         for url, e in list(wl.items()):
             try:
                 time.sleep(random.uniform(1.5, 3.5))
-                active, price = self._listing_status(url)
-                if not active:
+                status, price = self._listing_status(url)
+                if status == 'removed':
                     dropped_urls.add(url); del wl[url]; dropped += 1; changed = True
                     continue
+                if status != 'active':
+                    continue   # 'unknown' — оставляем в наблюдении, проверим позже
                 for reason in watch_triggers(e, price, now):
                     self._enqueue_watch_relead(e, price, reason)
                     refired += 1
