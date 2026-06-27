@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "BestMac Avito Collector",
+  "version": "1.0.0",
+  "description": "Собирает новые объявления Mac с Avito (на домашнем браузере) и шлёт на BestMac для оценки.",
+  "permissions": ["storage", "tabs"],
+  "host_permissions": ["*://www.avito.ru/*", "https://bestmac.ru/*"],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://www.avito.ru/*noutbuki*",
+        "*://www.avito.ru/*nastolnye_kompyutery*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": { "default_popup": "popup.html", "default_title": "BestMac Collector" }
+}

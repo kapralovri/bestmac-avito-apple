@@ -46,3 +46,7 @@ public/data/quote-state.json
 
 # Вотчлист (локальное состояние)
 public/data/watchlist.json
+
+# Входящие карточки от расширения (локальное)
+public/data/incoming-cards.json
+public/data/incoming-cards.processing.json

@@ -112,6 +112,8 @@ QUEUE_FILE   = Path(os.environ.get('NEGOTIATION_QUEUE_PATH', 'public/data/negoti
 REGISTRY_FILE = Path(os.environ.get('LISTING_REGISTRY_PATH', 'public/data/listing-registry.json'))
 # Вотчлист: лоты, помеченные «⭐ Слежу» в боте (бот пишет, --watch проверяет)
 WATCHLIST_FILE = Path(os.environ.get('WATCHLIST_PATH', 'public/data/watchlist.json'))
+# Входящие карточки от домашнего расширения (intake-сервер пишет, --intake читает)
+INCOMING_FILE = Path(os.environ.get('INTAKE_CARDS_PATH', 'public/data/incoming-cards.json'))
 
 # Точечные алерты: в реальном времени шлём только score >= MIN_NOTIFY_SCORE,
 # лоты 40..74 копим в дайджест (одно сообщение вечером — крон с флагом --digest).
@@ -1459,28 +1461,7 @@ class AvitoScannerV2:
                     continue
 
             # ── 4) Рассылка ─────────────────────────────────────────────────
-            candidates.sort(key=lambda x: x['score'], reverse=True)
-            digest_items = []
-            for c in candidates:
-                # В realtime НЕ выпускаем:
-                #  - подозрительно дёшево без подтверждённой чистоты (вероятен скам/дефект);
-                #  - тонкая живая выборка без опоры на базу (низкая уверенность).
-                block_realtime = (
-                    (c['suspicious'] and not c['condition'].positives)
-                    or c.get('low_conf')
-                )
-                if c['score'] >= MIN_NOTIFY_SCORE and not block_realtime:
-                    self.notify(c)
-                    self._send_copilot(c)
-                    # Перекупщику торг бесполезен → в очередь переговоров не кладём
-                    if not c.get('reseller'):
-                        self._enqueue_lead(c)
-                    total_notifications += 1
-                elif c['score'] >= DIGEST_MIN_SCORE:
-                    digest_items.append(c)
-
-            if digest_items:
-                self._save_digest(digest_items)
+            total_notifications += self._dispatch_candidates(candidates)
 
         # Финальное сохранение
         self._save_seen()
@@ -1493,6 +1474,104 @@ class AvitoScannerV2:
         self._close()
 
         logger.info(f"\n🏁 Готово. Уведомлений: {total_notifications}")
+
+    def _dispatch_candidates(self, candidates):
+        """Сортировка + рассылка кандидатов (общая для сканера и intake). Возвращает кол-во алертов."""
+        candidates.sort(key=lambda x: x['score'], reverse=True)
+        digest_items, sent = [], 0
+        for c in candidates:
+            block_realtime = (c['suspicious'] and not c['condition'].positives) or c.get('low_conf')
+            if c['score'] >= MIN_NOTIFY_SCORE and not block_realtime:
+                self.notify(c)
+                self._send_copilot(c)
+                if not c.get('reseller'):
+                    self._enqueue_lead(c)
+                sent += 1
+            elif c['score'] >= DIGEST_MIN_SCORE:
+                digest_items.append(c)
+        if digest_items:
+            self._save_digest(digest_items)
+        return sent
+
+    def process_cards(self, cards):
+        """Обрабатывает карточки от домашнего расширения (intake): без сканирования
+        поиска — классификация → рынок (база, Москва) → маржа → deep_analyze →
+        состояние/перекуп → скоринг → рассылка. Поиск делает домашний браузер, а
+        VPS только оценивает кандидатов (мало → троттлинг не страшен)."""
+        self._start_browser()
+        self._warmup()
+        candidates = []
+        for card in cards:
+            try:
+                raw_url = card.get('url') or ''
+                url = clean_url(raw_url)
+                if not url or not card.get('price') or url in self.seen:
+                    continue
+                L = {'url': url, 'raw_url': raw_url, 'title': card.get('title', ''),
+                     'snippet': '', 'price': int(card['price']),
+                     'minutes_ago': 0, 'age_str': card.get('date', 'недавно'),
+                     'item_text': str(card.get('title', '')).lower()}
+                cfg = self._passes_prefilter(L)
+                if cfg is None:
+                    self.seen.add(url); continue
+                market, source = self._market_for(cfg, [])
+                if not market:
+                    continue
+                price = L['price']
+                assess = assess_deal(price, market, min_margin=MIN_MARGIN, scam_floor=SCAM_FLOOR)
+                if assess.margin < MIN_MARGIN:
+                    self.seen.add(url); continue
+                self.seen.add(url); self._save_seen()
+                time.sleep(random.uniform(2, 5))
+                analysis = self.deep_analyze(raw_url)
+                if analysis['specs']:
+                    cfg2 = classify(L['title'], analysis['specs'])
+                    if cfg2.is_valid:
+                        m2, s2 = self._market_for(cfg2, [])
+                        if m2:
+                            cfg, market, source = cfg2, m2, s2
+                            assess = assess_deal(price, market, min_margin=MIN_MARGIN, scam_floor=SCAM_FLOOR)
+                if assess.margin < MIN_MARGIN:
+                    continue
+                condition = analyze_condition(' '.join([L['title'], analysis.get('desc_text', '')]),
+                                              battery_hard=BATTERY_HARD, battery_soft=BATTERY_SOFT,
+                                              cycles_hard=CYCLES_HARD, cycles_soft=CYCLES_SOFT)
+                if condition.cycles is None and analysis.get('cycles'):
+                    condition.cycles = analysis['cycles']
+                if condition.is_reject:
+                    logger.info(f"   ⛔ {L['title'][:45]} | {price:,}₽ | {condition.summary()}")
+                    continue
+                location = analysis['location']
+                moscow = (not location) or is_moscow(location)
+                if not moscow and price > DELIVERY_MAX_PRICE:
+                    continue
+                stat_db = self._db_stat(cfg)
+                buyout = (int(stat_db['buyout_price']) if stat_db and stat_db.get('buyout_price')
+                          else int(market.median * BUYOUT_FACTOR))
+                urgent = analysis['is_urgent'] or analysis['price_reduced']
+                reseller = is_reseller(analysis['seller_reviews'], analysis['seller_type'])
+                score = score_deal(price, market, buyout, condition, analysis['is_private'],
+                                   moscow, L['minutes_ago'], assess, reseller=reseller)
+                candidates.append({
+                    'kind': 'fire' if moscow else 'delivery', 'score': score,
+                    'title': L['title'], 'price': price, 'median': market.median,
+                    'p20': market.p20, 'n_comps': market.n, 'source': source,
+                    'low_conf': source == 'live-thin', 'margin': assess.margin,
+                    'buyout': buyout, 'ram': cfg.ram, 'ssd': cfg.ssd,
+                    'diagonal': analysis['specs'].get('diagonal'), 'url': url,
+                    'age_str': L['age_str'], 'minutes_ago': 0, 'location': location,
+                    'seller_type': analysis['seller_type'], 'seller_reviews': analysis['seller_reviews'],
+                    'is_private': analysis['is_private'], 'reseller': reseller,
+                    'condition': condition, 'urgent': urgent, 'suspicious': assess.is_suspicious,
+                })
+                logger.info(f"   ✅ [{score}] {L['title'][:45]} | {price:,}₽ | "
+                            f"−{assess.margin*100:.0f}% ({source}) | {condition.verdict}")
+            except Exception as e:
+                logger.error(f"intake card: {e}")
+        sent = self._dispatch_candidates(candidates)
+        self._save_seen()
+        self._close()
+        logger.info(f"🏁 Intake: карточек {len(cards)}, кандидатов {len(candidates)}, алертов {sent}")
 
 
 def send_digest():
@@ -1670,10 +1749,38 @@ if __name__ == "__main__":
                     help="Суточная сводка здоровья сканера в Telegram (крон раз в день)")
     ap.add_argument("--watch", action="store_true",
                     help="Проверить вотчлист (⭐): снижение цены / 2 недели → снова в очередь")
+    ap.add_argument("--intake", action="store_true",
+                    help="Обработать карточки от домашнего расширения (incoming-cards.json)")
     cli_args = ap.parse_args()
 
     if cli_args.digest:
         send_digest()
+    elif cli_args.intake:
+        if not INCOMING_FILE.exists():
+            logger.info("intake: входящих карточек нет")
+        else:
+            proc = INCOMING_FILE.with_suffix('.processing.json')
+            try:
+                os.replace(INCOMING_FILE, proc)   # атомарно забираем пачку
+            except Exception:
+                proc = INCOMING_FILE
+            try:
+                cards = json.loads(proc.read_text(encoding='utf-8')) or []
+            except Exception:
+                cards = []
+            seen_u, uniq = set(), []
+            for c in cards:
+                u = (c or {}).get('url')
+                if u and u not in seen_u:
+                    seen_u.add(u); uniq.append(c)
+            if uniq:
+                from playwright.sync_api import sync_playwright
+                with sync_playwright() as pw:
+                    AvitoScannerV2(pw).process_cards(uniq)
+            try:
+                proc.unlink()
+            except Exception:
+                pass
     elif cli_args.health:
         send_health()
     elif cli_args.watch:
