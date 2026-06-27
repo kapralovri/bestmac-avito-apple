@@ -377,6 +377,32 @@ check("не низ рынка (−4%) → отсеян", 'https://www.avito.ru/f
 check("все 4 url помечены seen", all(clean_url(c['url']) in s.seen for c in cards))
 
 
+# ─── 13. Слияние вотчлиста при гонке с ботом ─────────────────────────────────
+print("\n[13] merge_watchlist (бот добавил/удалил за прогон --watch)")
+from scanner_v2 import merge_watchlist
+
+snap = {                                                       # наш снимок после прогона
+    'B': {'added_at': 't_b', 'last_alert_price': 70000, 'alerted_2wk': True},  # обновили поля
+    'D': {'added_at': 't_d', 'alerted_2wk': True},             # был у нас
+    'E': {'added_at': 't_e_old', 'alerted_2wk': True},         # будет пере-добавлен
+}
+disk13 = {                                                     # что на диске сейчас (бот менял)
+    'A': {'added_at': 't_a'},                                  # мы его сняли (продан)
+    'B': {'added_at': 't_b', 'last_alert_price': 80000},       # бот не трогал
+    'C': {'added_at': 't_c'},                                  # бот ДОБАВИЛ ⭐
+    'E': {'added_at': 't_e_new'},                              # бот пере-добавил заново
+    # D бот УДАЛИЛ 👎 — его тут нет
+}
+fin = merge_watchlist(snap, {'A'}, disk13)
+check("проданный A — убран", 'A' not in fin)
+check("добавленный ботом C — сохранён", 'C' in fin)
+check("удалённый ботом D — не воскрешён", 'D' not in fin)
+check("наше обновление цены B перенесено", fin['B'].get('last_alert_price') == 70000)
+check("наш alerted_2wk B перенесён", fin['B'].get('alerted_2wk') is True)
+check("пере-добавленный E — свежий экземпляр", fin['E'].get('added_at') == 't_e_new')
+check("пере-добавленный E — НЕ затёрт нашим alerted_2wk", fin['E'].get('alerted_2wk') is not True)
+
+
 # ─── Итог ────────────────────────────────────────────────────────────────────
 print()
 if _fails:

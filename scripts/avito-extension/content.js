@@ -41,17 +41,25 @@ async function tick() {
     const fresh = scrapeCards().filter((c) => !seen.has(c.url));
     if (fresh.length) {
       try {
-        await fetch(endpoint, {
+        const resp = await fetch(endpoint, {
           method: "POST",
           headers: { "content-type": "application/json", "x-intake-token": cfg.token },
           body: JSON.stringify({ cards: fresh }),
         });
-        fresh.forEach((c) => seen.add(c.url));
-        localStorage.setItem(SEEN_KEY, JSON.stringify([...seen].slice(-4000)));
-        chrome.storage.local.set({
-          sent: (cfg.sent || 0) + fresh.length, lastSent: fresh.length, lastAt: Date.now(),
-        });
-      } catch (e) { /* сеть моргнула — отправим в следующий тик */ }
+        if (resp.ok) {
+          // помечаем seen ТОЛЬКО при успехе, иначе 403/413 «съест» лоты навсегда
+          fresh.forEach((c) => seen.add(c.url));
+          localStorage.setItem(SEEN_KEY, JSON.stringify([...seen].slice(-4000)));
+          chrome.storage.local.set({
+            sent: (cfg.sent || 0) + fresh.length, lastSent: fresh.length, lastAt: Date.now(), lastError: "",
+          });
+        } else {
+          // не помечаем seen — повторим в следующий тик; покажем код в попапе
+          chrome.storage.local.set({ lastError: "HTTP " + resp.status, lastAt: Date.now() });
+        }
+      } catch (e) {
+        chrome.storage.local.set({ lastError: "сеть", lastAt: Date.now() });
+      }
     }
   } catch (e) { /* ignore */ }
   scheduleReload();

@@ -190,6 +190,25 @@ def watch_triggers(entry, current_price, now, drop=WATCH_DROP, days=WATCH_DAYS):
     return reasons
 
 
+def merge_watchlist(snapshot, dropped_urls, disk):
+    """Сливает наш снимок вотчлиста (после прогона) с актуальным состоянием на диске.
+    Прогон --watch идёт минуты; бот за это время мог добавить/удалить лоты (⭐/👎).
+    Правила: диск — источник истины по составу; снятые/проданные (dropped_urls) убираем;
+    наши обновления полей (last_alert_price/alerted_2wk) переносим ТОЛЬКО на тот же
+    экземпляр (совпадает added_at), чтобы не затереть только что пере-добавленный лот.
+    Чистая функция. """
+    final = dict(disk)
+    for u in dropped_urls:
+        final.pop(u, None)
+    for u, e in snapshot.items():
+        cur = final.get(u)
+        if cur is not None and cur.get('added_at') == e.get('added_at'):
+            for k in ('last_alert_price', 'alerted_2wk'):
+                if k in e:
+                    cur[k] = e[k]
+    return final
+
+
 # ─── Капча (из scanner v1 / parser.py) ───────────────────────────────────────
 
 def is_captcha_page(page) -> bool:
@@ -1172,21 +1191,15 @@ class AvitoScannerV2:
                 logger.error(f"watch {url[:40]}: {ex}")
 
         if changed:
-            # Прогон занимает минуты; бот мог за это время добавить/удалить лоты.
-            # Сливаемся с актуальным состоянием на диске, а не перезаписываем снимок.
-            final = {}
+            # Сливаемся с актуальным состоянием на диске, а не перезаписываем снимок
+            # (бот мог добавить/удалить лоты за время прогона). См. merge_watchlist.
+            disk = {}
             if WATCHLIST_FILE.exists():
                 try:
-                    final = json.load(open(WATCHLIST_FILE, encoding='utf-8')) or {}
+                    disk = json.load(open(WATCHLIST_FILE, encoding='utf-8')) or {}
                 except Exception:
-                    final = dict(wl)
-            for u in dropped_urls:
-                final.pop(u, None)            # снятые/проданные — убрать
-            for u, e in wl.items():           # перенести наши обновления полей (если лот ещё на диске)
-                if u in final:
-                    for k in ('last_alert_price', 'alerted_2wk'):
-                        if k in e:
-                            final[u][k] = e[k]
+                    disk = dict(wl)
+            final = merge_watchlist(wl, dropped_urls, disk)
             try:
                 WATCHLIST_FILE.write_text(json.dumps(final, ensure_ascii=False, indent=2), encoding='utf-8')
                 wl = final

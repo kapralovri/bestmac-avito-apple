@@ -2,8 +2,9 @@
 """
 Intake-сервер: принимает карточки Avito от домашнего расширения (через HTTPS-прокси
 bestmac.ru/api/intake) и складывает в incoming-cards.json (дедуп по url).
-Лёгкий, только stdlib. Токен-авторизация. Слушает localhost — наружу не торчит
-(HTTPS-фронт делает Vercel/Caddy).
+Лёгкий, только stdlib. По умолчанию слушает 0.0.0.0 (чтобы дотянулся Vercel-форвард) —
+наружу открыт, безопасность обеспечивают ОБЯЗАТЕЛЬНЫЙ токен + фаервол. HTTPS даёт
+фронт (Vercel/Caddy). Без INTAKE_TOKEN сервер не стартует.
 
 Запуск:  INTAKE_TOKEN=... python3 scripts/intake/server.py
 Обработку карточек делает: scanner_v2.py --intake (по таймеру раз в 1-2 мин).
@@ -67,7 +68,9 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path.split('?')[0] != '/intake':
             return self._send(404, {'ok': False})
-        if not hmac.compare_digest(self.headers.get('x-intake-token', ''), TOKEN):
+        # .encode() с обеих сторон: compare_digest на str падает на не-ASCII токене
+        if not hmac.compare_digest(self.headers.get('x-intake-token', '').encode('utf-8'),
+                                   TOKEN.encode('utf-8')):
             return self._send(403, {'ok': False, 'error': 'token'})
         try:
             n = int(self.headers.get('content-length', 0))

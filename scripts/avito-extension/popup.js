@@ -8,11 +8,12 @@ const FAMILIES = [
 
 const $ = (id) => document.getElementById(id);
 
-chrome.storage.local.get(["endpoint", "token", "sent", "lastAt"], (c) => {
+chrome.storage.local.get(["endpoint", "token", "sent", "lastAt", "lastError"], (c) => {
   $("endpoint").value = c.endpoint || "https://bestmac.ru/api/intake";
   $("token").value = c.token || "";
   const when = c.lastAt ? new Date(c.lastAt).toLocaleTimeString() : "—";
-  $("status").innerHTML = `<small>Отправлено всего: ${c.sent || 0}. Последняя отправка: ${when}</small>`;
+  const err = c.lastError ? ` <span style="color:#c00">⚠️ ${c.lastError}</span>` : "";
+  $("status").innerHTML = `<small>Отправлено всего: ${c.sent || 0}. Последняя отправка: ${when}${err}</small>`;
 });
 
 $("save").onclick = () => {
