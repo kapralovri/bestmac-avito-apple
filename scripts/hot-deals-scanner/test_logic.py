@@ -485,6 +485,36 @@ check("исходный bucket НЕ мутирован (копия)", 75000 in _
 check("seen помечен до сети", 'https://www.avito.ru/run_1' in s2.seen)
 
 
+# ─── 16. run_intake: proc удаляется только при успехе ────────────────────────
+print("\n[16] run_intake: удаление proc только при успехе + восстановление")
+from scanner_v2 import run_intake
+
+_d4 = Path(_tmp.mkdtemp())
+_inc4 = _d4 / "incoming.json"
+_proc4 = _d4 / "incoming.processing.json"
+
+_inc4.write_text(_json.dumps([{"url": "s1", "price": 1}]), encoding="utf-8")
+_got = []
+_n, _ok = run_intake(_inc4, lambda u: _got.append([c["url"] for c in u]))
+check("успех: пачка обработана", _n == 1 and _ok and _got == [["s1"]])
+check("успех: proc удалён", not _proc4.exists())
+
+_inc4.write_text(_json.dumps([{"url": "s2", "price": 2}]), encoding="utf-8")
+def _boom(u):
+    raise RuntimeError("browser fail")
+_n2, _ok2 = run_intake(_inc4, _boom)
+check("краш: ok=False", (not _ok2) and _n2 == 1)
+check("краш: proc сохранён для повтора", _proc4.exists())
+
+_got2 = []
+_n3, _ok3 = run_intake(_inc4, lambda u: _got2.append([c["url"] for c in u]))
+check("повтор: восстановил сохранённую пачку", _ok3 and _got2 == [["s2"]])
+check("повтор: proc удалён после успеха", not _proc4.exists())
+
+_n4, _ok4 = run_intake(_d4 / "none.json", lambda u: None)
+check("пусто → (0, True)", _n4 == 0 and _ok4)
+
+
 # ─── Итог ────────────────────────────────────────────────────────────────────
 print()
 if _fails:

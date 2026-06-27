@@ -251,6 +251,33 @@ def drain_incoming(path):
     return uniq, proc
 
 
+def run_intake(incoming_path, process_fn):
+    """Оркестрация --intake: забрать пачку (с восстановлением), обработать через
+    process_fn(uniq) и удалить proc ТОЛЬКО при успехе (при падении — оставить для
+    повтора). Возвращает (n_cards, ok). Вынесено из CLI ради тестируемости."""
+    uniq, proc = drain_incoming(incoming_path)
+    if not uniq:
+        if proc is not None:
+            try:
+                proc.unlink()       # пусто/битьё — чистим
+            except Exception:
+                pass
+        return 0, True
+    ok = False
+    try:
+        process_fn(uniq)
+        ok = True
+    except Exception as e:
+        # proc НЕ трогаем → следующий прогон подхватит (без потери карточек)
+        logger.error(f"intake: обработка упала, пачка сохранена для повтора: {e}")
+    if ok and proc is not None:
+        try:
+            proc.unlink()           # успех → пачка обработана (вне try обработки)
+        except Exception as e:
+            logger.warning(f"intake: не удалось удалить proc: {e}")
+    return len(uniq), ok
+
+
 # ─── Капча (из scanner v1 / parser.py) ───────────────────────────────────────
 
 def is_captcha_page(page) -> bool:
@@ -1801,23 +1828,13 @@ if __name__ == "__main__":
     if cli_args.digest:
         send_digest()
     elif cli_args.intake:
-        uniq, proc = drain_incoming(INCOMING_FILE)
-        if not uniq:
+        def _process(uniq):
+            from playwright.sync_api import sync_playwright
+            with sync_playwright() as pw:
+                AvitoScannerV2(pw).process_cards(uniq)
+        n, _ok = run_intake(INCOMING_FILE, _process)
+        if n == 0:
             logger.info("intake: входящих карточек нет")
-            if proc is not None:
-                try:
-                    proc.unlink()   # чистим пустую/битую пачку
-                except Exception:
-                    pass
-        else:
-            try:
-                from playwright.sync_api import sync_playwright
-                with sync_playwright() as pw:
-                    AvitoScannerV2(pw).process_cards(uniq)
-                proc.unlink()       # успех → пачка обработана
-            except Exception as e:
-                # НЕ удаляем proc → следующий прогон подхватит (без потери карточек)
-                logger.error(f"intake: обработка упала, пачка сохранена для повтора: {e}")
     elif cli_args.health:
         send_health()
     elif cli_args.watch:
