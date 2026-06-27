@@ -61,6 +61,7 @@ _load_dotenv()
 BOT_TOKEN   = os.environ.get('TELEGRAM_BOT_TOKEN', '')
 STATE_FILE  = Path(os.environ.get('NEGOTIATION_STATE_PATH', 'public/data/negotiation-state.json'))
 QUEUE_FILE  = Path(os.environ.get('NEGOTIATION_QUEUE_PATH', 'public/data/negotiation-queue.json'))
+WATCHLIST_FILE = Path(os.environ.get('WATCHLIST_PATH', 'public/data/watchlist.json'))
 # Ограничить бота одним владельцем (твоим chat_id). Пусто — учится на первом /start.
 OWNER_CHAT_ID = os.environ.get('OWNER_CHAT_ID', '').strip()
 
@@ -128,6 +129,43 @@ def _load_json(path: Path, default):
     return default
 
 
+def _watchlist_add(lead):
+    """Добавляет лот в вотчлист (бот пишет, scanner --watch читает). False, если уже есть."""
+    from datetime import datetime
+    url = lead.get("url")
+    if not url:
+        return False
+    wl = _load_json(WATCHLIST_FILE, {}) or {}
+    if url in wl:
+        return False
+    asking = int(lead.get("asking") or 0)
+    wl[url] = {
+        "url": url, "id": lead.get("id"), "title": lead.get("title", "")[:80],
+        "watch_price": asking, "last_alert_price": asking,
+        "target": lead.get("target"), "walk_away": lead.get("walk_away"),
+        "location": lead.get("location", ""),
+        "added_at": datetime.now().isoformat(timespec="seconds"), "alerted_2wk": False,
+    }
+    try:
+        WATCHLIST_FILE.parent.mkdir(parents=True, exist_ok=True)
+        WATCHLIST_FILE.write_text(json.dumps(wl, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception:
+        return False
+    return True
+
+
+def _watchlist_remove(url):
+    if not url:
+        return
+    wl = _load_json(WATCHLIST_FILE, {}) or {}
+    if url in wl:
+        wl.pop(url, None)
+        try:
+            WATCHLIST_FILE.write_text(json.dumps(wl, ensure_ascii=False, indent=2), encoding="utf-8")
+        except Exception:
+            pass
+
+
 def _save_json(path: Path, data):
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -185,6 +223,7 @@ class NegotiationBot:
         header = {
             "stale": "🕰 <b>ЗАЛЕЖАВШИЙСЯ ПРОДАВЕЦ</b> (мотивирован на торг)",
             "tg": "📲 <b>ЛИД ИЗ TELEGRAM-ЧАТА</b>",
+            "watch": "🔔 <b>ОТСЛЕЖИВАЕМЫЙ ЛОТ ВЕРНУЛСЯ</b>",
         }.get(src, "🧲 <b>Лид на торг</b>")
         return (
             f"{header} {mot}\n"
@@ -211,8 +250,9 @@ class NegotiationBot:
                 continue
             actions.append({"type": "send", "chat_id": owner,
                             "text": self._lead_card(lead),
-                            "buttons": [[("▶️ Веду торг", f"lead:{lid}:start"),
-                                         ("⏭ Пропустить", f"lead:{lid}:skip")]]})
+                            "buttons": [[("▶️ Веду торг", f"lead:{lid}:start")],
+                                        [("⭐ Слежу", f"lead:{lid}:watch"),
+                                         ("👎 Не интересно", f"lead:{lid}:skip")]]})
             # сохраняем лот в conversations, чтобы потом достать по id
             self.state["conversations"][lid] = {
                 "lead": lead, "history": [], "stage": "queued",
@@ -299,8 +339,19 @@ class NegotiationBot:
 
         if scope == "lead" and verb == "skip":
             conv["stage"] = "skipped"
+            _watchlist_remove(conv["lead"].get("url"))
             self._save()
-            actions.append({"type": "send", "chat_id": chat_id, "text": "⏭ Пропущено."})
+            actions.append({"type": "send", "chat_id": chat_id, "text": "👎 Не интересно — больше не покажу."})
+            return actions
+
+        if scope == "lead" and verb == "watch":
+            conv["stage"] = "watching"
+            ok = _watchlist_add(conv["lead"])
+            self._save()
+            actions.append({"type": "send", "chat_id": chat_id,
+                            "text": ("⭐ Слежу за лотом. Верну его, если цена снизится "
+                                     "или он провисит 2 недели непроданным.")
+                                    if ok else "⭐ Уже в наблюдении."})
             return actions
 
         if scope == "conv" and verb == "sent":

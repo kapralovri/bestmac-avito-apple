@@ -43,3 +43,6 @@ public/data/quote-state.json
 # Сессии Telethon (содержат доступ к аккаунту — не коммитить!)
 *.session
 *.session-journal
+
+# Вотчлист (локальное состояние)
+public/data/watchlist.json

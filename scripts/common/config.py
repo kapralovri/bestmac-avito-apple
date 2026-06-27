@@ -133,6 +133,11 @@ DELIVERY_MAX_PRICE = _envi("DELIVERY_MAX_PRICE", 150_000)
 # в лиды на переговоры не берём, в алерте помечаем. >= этого порога = перекуп.
 RESELLER_REVIEWS = _envi("RESELLER_REVIEWS", 100)
 
+# Вотчлист (бот, кнопка «⭐ Слежу»): возвращаем лот, если цена упала на >= WATCH_DROP
+# с прошлого показа ИЛИ он висит >= WATCH_DAYS дней и всё ещё не продан.
+WATCH_DROP = _envf("WATCH_DROP", 0.05)
+WATCH_DAYS = _envi("WATCH_DAYS", 14)
+
 # Пороги состояния (передаются в condition.analyze_condition).
 BATTERY_HARD = _envi("BATTERY_HARD", 80)   # < этого % здоровья АКБ → reject
 BATTERY_SOFT = _envi("BATTERY_SOFT", 85)   # ниже → suspect

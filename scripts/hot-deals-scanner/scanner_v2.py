@@ -46,7 +46,7 @@ from common.config import (
     BATTERY_HARD, BATTERY_SOFT, CYCLES_HARD, CYCLES_SOFT,
     STALE_PRICES_HOURS, STALE_ALERT_COOLDOWN_HOURS, EXCLUDE_INTEL_FAMILIES,
     STALE_LISTING_DAYS, STALE_MIN_DROP, STALE_SCAN_PAGES, STALE_MAX_LEADS, REGISTRY_MAX,
-    RESELLER_REVIEWS, DELIVERY_MAX_PRICE,
+    RESELLER_REVIEWS, DELIVERY_MAX_PRICE, WATCH_DROP, WATCH_DAYS,
 )
 
 try:
@@ -110,6 +110,8 @@ HEALTH_FILE  = Path(os.environ.get('PARSER_HEALTH_PATH', 'public/data/parser-hea
 QUEUE_FILE   = Path(os.environ.get('NEGOTIATION_QUEUE_PATH', 'public/data/negotiation-queue.json'))
 # Реестр объявлений (для охотника за залежавшимися): когда впервые увидели, история цены
 REGISTRY_FILE = Path(os.environ.get('LISTING_REGISTRY_PATH', 'public/data/listing-registry.json'))
+# Вотчлист: лоты, помеченные «⭐ Слежу» в боте (бот пишет, --watch проверяет)
+WATCHLIST_FILE = Path(os.environ.get('WATCHLIST_PATH', 'public/data/watchlist.json'))
 
 # Точечные алерты: в реальном времени шлём только score >= MIN_NOTIFY_SCORE,
 # лоты 40..74 копим в дайджест (одно сообщение вечером — крон с флагом --digest).
@@ -168,6 +170,22 @@ def should_alert_stale(age_hours, last_alert_iso, now, threshold_hours, cooldown
         except (ValueError, TypeError):
             pass
     return True
+
+
+def watch_triggers(entry, current_price, now, drop=WATCH_DROP, days=WATCH_DAYS):
+    """Что сработало по отслеживаемому лоту: 'drop' (цена упала с прошлого показа)
+    и/или '2wk' (висит >= N дней, ещё не сигналили). Чистая функция."""
+    reasons = []
+    base = int(entry.get('last_alert_price') or entry.get('watch_price') or 0)
+    if current_price and base and current_price <= base * (1 - drop):
+        reasons.append('drop')
+    if not entry.get('alerted_2wk'):
+        try:
+            if (now - datetime.fromisoformat(entry['added_at'])).days >= days:
+                reasons.append('2wk')
+        except (ValueError, TypeError, KeyError):
+            pass
+    return reasons
 
 
 # ─── Капча (из scanner v1 / parser.py) ───────────────────────────────────────
@@ -800,13 +818,14 @@ class AvitoScannerV2:
         )
         self._send_telegram(text, f"✍️ Co-pilot: {c['title'][:40]}")
 
-    def _enqueue_lead(self, c, motivation=None):
+    def _enqueue_lead(self, c, motivation=None, lead_id=None, label=None):
         """Кладёт лот в очередь бота переговоров с оценкой мотивации продавца.
         target — стартовый якорь, walk_away — потолок (выкуп-цель).
-        motivation — готовый MotivationReport (для охотника за залежавшимися)."""
+        motivation — готовый MotivationReport; lead_id/label — переопределение
+        (для повторного показа из вотчлиста)."""
         try:
             url = c['url']
-            lid = hashlib.sha1(url.encode('utf-8')).hexdigest()[:10]
+            lid = lead_id or hashlib.sha1(url.encode('utf-8')).hexdigest()[:10]
 
             walk_away = int(c['buyout']) if c.get('buyout') else int(c['median'] * BUYOUT_FACTOR)
             anchor_base = min(int(c['price']), walk_away)
@@ -834,7 +853,7 @@ class AvitoScannerV2:
                 "url": url,
                 "source": c.get('source_kind', 'deal'),
                 "motivation_score": mot.score,
-                "motivation_label": mot.label,
+                "motivation_label": label or mot.label,
                 "motivation_signals": mot.signals,
                 "history": [],
                 "ts": datetime.now().isoformat(timespec="seconds"),
@@ -1072,6 +1091,90 @@ class AvitoScannerV2:
             return base_url
         sep = '&' if '?' in base_url else '?'
         return f"{base_url}{sep}p={page_num}"
+
+    def _listing_status(self, url):
+        """Открывает объявление: возвращает (active: bool, price: int|None).
+        active=False, если снято/недоступно."""
+        html_content = self._load_page(url)
+        if not html_content:
+            return False, None
+        try:
+            soup = BeautifulSoup(html_content, 'lxml')
+            low = soup.get_text(' ').lower()
+            if any(x in low for x in ['снято с публикации', 'объявление снято',
+                                      'больше не доступно', 'продано']):
+                return False, None
+            tag = soup.select_one('[itemprop="price"]')
+            price = None
+            if tag and tag.get('content'):
+                try:
+                    price = int(tag['content'])
+                except (ValueError, TypeError):
+                    price = None
+            return (price is not None), price
+        except Exception:
+            return False, None
+
+    def _enqueue_watch_relead(self, e, current_price, reason):
+        """Кладёт отслеживаемый лот обратно в очередь бота как 🔔-напоминание."""
+        url = e['url']
+        tag = 'снижение' if reason == 'drop' else '2 недели'
+        lid = hashlib.sha1(f"{url}|{reason}|{current_price}".encode()).hexdigest()[:10]
+        if reason == 'drop':
+            label = f"🔔 цена снизилась {e.get('last_alert_price', e.get('watch_price'))}→{current_price} ₽"
+        else:
+            label = "🔔 висит 2 недели — продавец дозрел"
+        c = {
+            'url': url, 'title': e.get('title', '?'), 'price': int(current_price),
+            'median': 0, 'buyout': int(e.get('walk_away') or int(current_price * 0.85)),
+            'location': e.get('location', ''), 'source_kind': 'watch',
+        }
+        mot = MotivationReport(score=80, signals=[tag], is_stale=(reason == '2wk'))
+        # id переопределяем уникальным (повторный показ того же url), label — кастомный
+        self._enqueue_lead({**c}, motivation=mot, lead_id=lid, label=label)
+
+    def run_watch_check(self):
+        """Проверяет отслеживаемые («⭐ Слежу») лоты: снижение цены или 2 недели →
+        снова кладёт в очередь бота. Снятые/проданные — убирает из вотчлиста."""
+        wl = {}
+        if WATCHLIST_FILE.exists():
+            try:
+                wl = json.load(open(WATCHLIST_FILE, encoding='utf-8')) or {}
+            except Exception:
+                wl = {}
+        if not wl:
+            logger.info("⭐ Вотчлист пуст")
+            return
+
+        self._start_browser()
+        self._warmup()
+        now = datetime.now()
+        changed, refired, dropped = False, 0, 0
+
+        for url, e in list(wl.items()):
+            try:
+                time.sleep(random.uniform(1.5, 3.5))
+                active, price = self._listing_status(url)
+                if not active:
+                    del wl[url]; dropped += 1; changed = True
+                    continue
+                for reason in watch_triggers(e, price, now):
+                    self._enqueue_watch_relead(e, price, reason)
+                    refired += 1
+                    if reason == 'drop':
+                        e['last_alert_price'] = int(price); changed = True
+                    if reason == '2wk':
+                        e['alerted_2wk'] = True; changed = True
+            except Exception as ex:
+                logger.error(f"watch {url[:40]}: {ex}")
+
+        if changed:
+            try:
+                WATCHLIST_FILE.write_text(json.dumps(wl, ensure_ascii=False, indent=2), encoding='utf-8')
+            except Exception as ex:
+                logger.warning(f"watchlist save: {ex}")
+        self._close()
+        logger.info(f"⭐ Вотчлист: {len(wl)} в наблюдении, повторно показано {refired}, снято {dropped}")
 
     def _check_prices_freshness(self):
         """Дохлый-выключатель: если база цен застряла — предупреждаем в Telegram.
@@ -1565,12 +1668,18 @@ if __name__ == "__main__":
                     help="Охота за залежавшимися продавцами → очередь торга (крон раз в день)")
     ap.add_argument("--health", action="store_true",
                     help="Суточная сводка здоровья сканера в Telegram (крон раз в день)")
+    ap.add_argument("--watch", action="store_true",
+                    help="Проверить вотчлист (⭐): снижение цены / 2 недели → снова в очередь")
     cli_args = ap.parse_args()
 
     if cli_args.digest:
         send_digest()
     elif cli_args.health:
         send_health()
+    elif cli_args.watch:
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as pw:
+            AvitoScannerV2(pw).run_watch_check()
     elif cli_args.stale:
         from playwright.sync_api import sync_playwright
         with sync_playwright() as pw:

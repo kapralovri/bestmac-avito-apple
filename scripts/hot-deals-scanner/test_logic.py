@@ -304,6 +304,22 @@ check("капча = 1", H["captcha"] == 1)
 check("семейство MacBook Air учтено", H["fam"].get("MacBook Air") == 1)
 
 
+# ─── 11. Вотчлист (⭐ Слежу) ──────────────────────────────────────────────────
+print("\n[11] Вотчлист: триггеры повторного показа")
+from scanner_v2 import watch_triggers
+
+now11 = datetime(2026, 6, 27, 12, 0, 0)
+drop_e = {"last_alert_price": 80000, "added_at": now11.isoformat()}
+check("снижение 80k→75k (−6%) → drop", "drop" in watch_triggers(drop_e, 75000, now11))
+check("78k (−2.5%) → без drop", "drop" not in watch_triggers(drop_e, 78000, now11))
+old_e = {"watch_price": 80000, "added_at": (now11 - timedelta(days=15)).isoformat()}
+check("висит 15 дней → 2wk", "2wk" in watch_triggers(old_e, 80000, now11))
+fresh_e = {"watch_price": 80000, "added_at": (now11 - timedelta(days=5)).isoformat()}
+check("висит 5 дней → без 2wk", "2wk" not in watch_triggers(fresh_e, 80000, now11))
+done_e = {"watch_price": 80000, "added_at": (now11 - timedelta(days=20)).isoformat(), "alerted_2wk": True}
+check("уже сигналили 2wk → не повторяем", "2wk" not in watch_triggers(done_e, 80000, now11))
+
+
 # ─── Итог ────────────────────────────────────────────────────────────────────
 print()
 if _fails:
