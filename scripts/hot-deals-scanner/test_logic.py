@@ -14,7 +14,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))          # hot-deals-sc
 from common.condition import analyze_condition
 from common.market import robust_stats, assess_deal
 # scanner_v2 импортирует playwright только в __main__, score_deal — модульная функция
-from scanner_v2 import score_deal, live_key, parse_generated_at, should_alert_stale
+from scanner_v2 import (score_deal, live_key, parse_generated_at, should_alert_stale,
+                        MIN_MARGIN, SCAM_FLOOR)
 from common.classifier import classify
 from common.negotiator import motivation_score, next_move
 from datetime import datetime, timedelta
@@ -426,6 +427,45 @@ _bad = _d / "bad.json"
 _bad.write_text("{не json", encoding="utf-8")
 _ub, _pb = drain_incoming(_bad)
 check("битый JSON → [] + proc для очистки", _ub == [] and _pb is not None)
+
+
+# ─── 15. _build_candidate: run-путь с живыми компами ─────────────────────────
+print("\n[15] _build_candidate: ветка живых компов (run-путь)")
+# Покрываем единственную ветку, которой нет в [12]: comps_for возвращает НЕпустые
+# живые компы (как из buckets в run()); проверяем, что свою цену исключаем и что
+# исходный bucket не мутируется (lambda отдаёт копию).
+s2 = AvitoScannerV2(None)
+s2.seen = set()
+s2._save_seen = lambda: None
+s2._start_browser = lambda: None
+s2._db_stat = lambda cfg: None
+_stats2 = robust_stats([100000] * 12)
+_recv = {}
+def _mkt(cfg, comps):
+    _recv['comps'] = list(comps)
+    return (_stats2, 'live')
+s2._market_for = _mkt
+s2.deep_analyze = lambda url: {
+    'cycles': None, 'is_urgent': False, 'price_reduced': False,
+    'specs': {'ram': 16, 'ssd': 512, 'diagonal': 13},   # есть спеки → сработает re-classify
+    'is_private': True, 'seller_type': 'Частное лицо', 'seller_reviews': 2,
+    'location': 'Москва', 'desc_text': 'идеальное состояние, акб 100%'}
+
+_L15 = {'url': 'https://www.avito.ru/run_1', 'raw_url': 'https://www.avito.ru/run_1',
+        'title': 'MacBook Air 13 M2 16/512', 'snippet': '', 'price': 75000,
+        'minutes_ago': 0, 'age_str': 'недавно', 'item_text': 'macbook air 13 m2 16/512'}
+_cfg15 = classify(_L15['title'], {'ram': 16, 'ssd': 512})
+_bucket15 = [70000, 75000, 90000, 100000, 110000]      # включает саму цену 75000
+_buckets15 = {live_key(_cfg15): list(_bucket15)}
+_assess15 = assess_deal(75000, _stats2, min_margin=MIN_MARGIN, scam_floor=SCAM_FLOOR)
+
+_cand15 = s2._build_candidate(_L15, _cfg15, _stats2, 'live', _assess15,
+                              comps_for=lambda c: list(_buckets15.get(live_key(c), [])))
+check("кандидат построен (живой путь)", _cand15 is not None and _cand15['url'] == 'https://www.avito.ru/run_1')
+check("ветка живых компов сработала", 70000 in _recv.get('comps', []))
+check("свою цену из компов исключили", 75000 not in _recv.get('comps', []))
+check("исходный bucket НЕ мутирован (копия)", 75000 in _buckets15[live_key(_cfg15)])
+check("seen помечен до сети", 'https://www.avito.ru/run_1' in s2.seen)
 
 
 # ─── Итог ────────────────────────────────────────────────────────────────────
