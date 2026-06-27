@@ -3,14 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <style>
-    body { font: 13px -apple-system, Arial, sans-serif; width: 290px; padding: 12px; }
+    body { font: 13px -apple-system, Arial, sans-serif; width: 300px; padding: 12px; }
     h3 { margin: 0 0 8px; }
     small { color: #666; }
     input { width: 100%; padding: 6px; margin: 3px 0 8px; box-sizing: border-box; }
     button { width: 100%; padding: 9px; margin: 5px 0; cursor: pointer; border: none; border-radius: 6px; }
     .primary { background: #229ED9; color: #fff; }
     .ghost { background: #eef2f5; }
-    #status { margin-top: 6px; }
+    .test { background: #f0e6ff; }
+    #status, #diag { margin-top: 6px; }
+    .err { color: #c00; }
+    .ok { color: #137333; }
   </style>
 </head>
 <body>
@@ -21,7 +24,9 @@
   <input id="token" type="password" placeholder="intake-токен" />
   <button class="ghost" id="save">Сохранить</button>
   <button class="primary" id="open">▶️ Запустить мониторинг (4 вкладки)</button>
+  <button class="test" id="test">🧪 Тест отправки</button>
   <div id="status"><small>—</small></div>
+  <div id="diag"><small></small></div>
   <script src="popup.js"></script>
 </body>
 </html>

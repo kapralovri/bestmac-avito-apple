@@ -1,11 +1,24 @@
 // BestMac Avito Collector — content script.
-// Каждые ~75с: читает карточки из DOM текущей страницы поиска Avito, дедупит
-// (localStorage), шлёт НОВЫЕ на bestmac.ru/api/intake и обновляет страницу.
-// Работает на реальном (домашнем) IP в залогиненном Chrome → без капчи/троттла.
+// Каждые ~75с: читает карточки из DOM страницы поиска Avito, дедупит (localStorage),
+// шлёт НОВЫЕ на bestmac.ru/api/intake и обновляет страницу.
+// Совместимо со старым Chrome (callback-форма chrome.storage, без await-promise API).
 
 const DEFAULT_ENDPOINT = "https://bestmac.ru/api/intake";
 const REFRESH_MS = 75000;
 const SEEN_KEY = "bm_seen_urls";
+
+function log(...a) { try { console.log("[BestMac]", ...a); } catch (e) {} }
+
+// callback-форма работает во всех версиях MV3 (promise-форма — только Chrome 95+)
+function storageGet(keys) {
+  return new Promise((resolve) => {
+    try { chrome.storage.local.get(keys, (r) => resolve(r || {})); }
+    catch (e) { resolve({}); }
+  });
+}
+function storageSet(obj) {
+  try { chrome.storage.local.set(obj); } catch (e) {}
+}
 
 function scrapeCards() {
   const out = [];
@@ -29,39 +42,49 @@ function scrapeCards() {
 }
 
 function scheduleReload() {
-  setTimeout(() => location.reload(), REFRESH_MS + Math.floor(Math.random() * 15000));
+  setTimeout(() => { try { location.reload(); } catch (e) {} },
+            REFRESH_MS + Math.floor(Math.random() * 15000));
 }
 
 async function tick() {
   try {
-    const cfg = await chrome.storage.local.get(["endpoint", "token", "sent"]);
-    if (!cfg.token) { scheduleReload(); return; } // не настроено — просто крутимся
+    const cfg = await storageGet(["endpoint", "token", "sent"]);
+    const scraped = scrapeCards();
+    storageSet({ lastScraped: scraped.length, lastScrapeAt: Date.now() });
+    log("найдено карточек:", scraped.length, "| токен задан:", !!cfg.token);
+
+    if (!cfg.token) { storageSet({ lastError: "нет токена (сохрани в попапе)" }); scheduleReload(); return; }
     const endpoint = cfg.endpoint || DEFAULT_ENDPOINT;
-    const seen = new Set(JSON.parse(localStorage.getItem(SEEN_KEY) || "[]"));
-    const fresh = scrapeCards().filter((c) => !seen.has(c.url));
-    if (fresh.length) {
-      try {
-        const resp = await fetch(endpoint, {
-          method: "POST",
-          headers: { "content-type": "application/json", "x-intake-token": cfg.token },
-          body: JSON.stringify({ cards: fresh }),
-        });
-        if (resp.ok) {
-          // помечаем seen ТОЛЬКО при успехе, иначе 403/413 «съест» лоты навсегда
-          fresh.forEach((c) => seen.add(c.url));
-          localStorage.setItem(SEEN_KEY, JSON.stringify([...seen].slice(-4000)));
-          chrome.storage.local.set({
-            sent: (cfg.sent || 0) + fresh.length, lastSent: fresh.length, lastAt: Date.now(), lastError: "",
-          });
-        } else {
-          // не помечаем seen — повторим в следующий тик; покажем код в попапе
-          chrome.storage.local.set({ lastError: "HTTP " + resp.status, lastAt: Date.now() });
-        }
-      } catch (e) {
-        chrome.storage.local.set({ lastError: "сеть", lastAt: Date.now() });
+
+    let seen;
+    try { seen = new Set(JSON.parse(localStorage.getItem(SEEN_KEY) || "[]")); }
+    catch (e) { seen = new Set(); }
+    const fresh = scraped.filter((c) => !seen.has(c.url));
+
+    if (!fresh.length) { scheduleReload(); return; }
+
+    try {
+      const resp = await fetch(endpoint, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-intake-token": cfg.token },
+        body: JSON.stringify({ cards: fresh }),
+      });
+      if (resp.ok) {
+        fresh.forEach((c) => seen.add(c.url));
+        try { localStorage.setItem(SEEN_KEY, JSON.stringify([...seen].slice(-4000))); } catch (e) {}
+        storageSet({ sent: (cfg.sent || 0) + fresh.length, lastSent: fresh.length, lastAt: Date.now(), lastError: "" });
+        log("отправлено:", fresh.length);
+      } else {
+        storageSet({ lastError: "HTTP " + resp.status, lastAt: Date.now() });
+        log("ошибка отправки HTTP", resp.status);
       }
+    } catch (e) {
+      storageSet({ lastError: "сеть/CORS", lastAt: Date.now() });
+      log("fetch упал:", e && e.message);
     }
-  } catch (e) { /* ignore */ }
+  } catch (e) {
+    log("tick упал:", e && e.message);
+  }
   scheduleReload();
 }
 

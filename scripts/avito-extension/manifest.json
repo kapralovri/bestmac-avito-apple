@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "BestMac Avito Collector",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Собирает новые объявления Mac с Avito (на домашнем браузере) и шлёт на BestMac для оценки.",
   "permissions": ["storage", "tabs"],
   "host_permissions": ["*://www.avito.ru/*", "https://bestmac.ru/*"],
