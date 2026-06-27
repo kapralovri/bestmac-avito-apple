@@ -209,6 +209,33 @@ def merge_watchlist(snapshot, dropped_urls, disk):
     return final
 
 
+def drain_incoming(path):
+    """Атомарно забирает накопленные intake-карточки: переименовывает файл (чтобы сервер
+    тем временем писал в новый), читает, дедупит по url. Возвращает (uniq_cards, proc_path);
+    proc_path = None если файла не было (вызывающий удаляет proc_path после обработки).
+    Пустой/битый JSON → ([], proc_path). Чистая I/O-логика, тестируема."""
+    if not path.exists():
+        return [], None
+    proc = path.with_suffix('.processing.json')
+    try:
+        os.replace(path, proc)   # атомарно забираем пачку
+    except Exception:
+        proc = path
+    try:
+        cards = json.loads(proc.read_text(encoding='utf-8'))
+    except Exception:
+        cards = []
+    if not isinstance(cards, list):
+        cards = []
+    seen_u, uniq = set(), []
+    for c in cards:
+        u = c.get('url') if isinstance(c, dict) else None
+        if u and u not in seen_u:
+            seen_u.add(u)
+            uniq.append(c)
+    return uniq, proc
+
+
 # ─── Капча (из scanner v1 / parser.py) ───────────────────────────────────────
 
 def is_captcha_page(page) -> bool:
@@ -1396,95 +1423,11 @@ class AvitoScannerV2:
                         self.seen.add(url_clean)
                         continue
 
-                    # Помечаем seen до сетевого вызова (защита от повторов при сбое)
-                    self.seen.add(url_clean)
-                    self._save_seen()
-
-                    time.sleep(random.uniform(2, 5))
-                    analysis = self.deep_analyze(L['raw_url'])
-
-                    # Уточняем конфиг спеками из карточки и пересчитываем рынок
-                    if analysis['specs']:
-                        cfg2 = classify(L['title'], analysis['specs'])
-                        if cfg2.is_valid:
-                            comps2 = list(buckets.get(live_key(cfg2), []))
-                            if price in comps2:
-                                comps2.remove(price)
-                            market2, source2 = self._market_for(cfg2, comps2)
-                            if market2:
-                                cfg, market, source = cfg2, market2, source2
-                                assess = assess_deal(price, market,
-                                                     min_margin=MIN_MARGIN, scam_floor=SCAM_FLOOR)
-
-                    if assess.margin < MIN_MARGIN:
-                        continue
-
-                    # ── Гейт состояния по ПОЛНОМУ описанию ──────────────────
-                    cond_text = ' '.join([L['title'], L['snippet'], analysis.get('desc_text', '')])
-                    condition = analyze_condition(
-                        cond_text,
-                        battery_hard=BATTERY_HARD, battery_soft=BATTERY_SOFT,
-                        cycles_hard=CYCLES_HARD, cycles_soft=CYCLES_SOFT,
-                    )
-                    if condition.cycles is None and analysis.get('cycles'):
-                        condition.cycles = analysis['cycles']
-
-                    if condition.is_reject:
-                        logger.info(f"   ⛔ {L['title'][:45]} | {price:,}₽ | {condition.summary()}")
-                        continue
-
-                    location = analysis['location']
-                    moscow = (not location) or is_moscow(location)
-
-                    # Региональный лот дороже лимита Авито Доставки выкупить нельзя
-                    if not moscow and price > DELIVERY_MAX_PRICE:
-                        continue
-
-                    # Выкуп: курируемый из базы, иначе от медианы рынка
-                    stat_db = self._db_stat(cfg)
-                    if stat_db and stat_db.get('buyout_price'):
-                        buyout = int(stat_db['buyout_price'])
-                    else:
-                        buyout = int(market.median * BUYOUT_FACTOR)
-
-                    full_preview = (L['title'] + ' ' + L['snippet']).lower()
-                    urgent = (analysis['is_urgent'] or analysis['price_reduced']
-                              or any(w in full_preview for w in URGENT_KEYWORDS))
-                    reseller = is_reseller(analysis['seller_reviews'], analysis['seller_type'])
-
-                    score = score_deal(price, market, buyout, condition,
-                                       analysis['is_private'], moscow,
-                                       L['minutes_ago'], assess, reseller=reseller)
-
-                    candidates.append({
-                        'kind': 'fire' if moscow else 'delivery',
-                        'score': score,
-                        'title': L['title'],
-                        'price': price,
-                        'median': market.median,
-                        'p20': market.p20,
-                        'n_comps': market.n,
-                        'source': source,
-                        'low_conf': source == 'live-thin',
-                        'margin': assess.margin,
-                        'buyout': buyout,
-                        'ram': cfg.ram,
-                        'ssd': cfg.ssd,
-                        'diagonal': analysis['specs'].get('diagonal'),
-                        'url': url_clean,
-                        'age_str': L['age_str'],
-                        'minutes_ago': L['minutes_ago'],
-                        'location': location,
-                        'seller_type': analysis['seller_type'],
-                        'seller_reviews': analysis['seller_reviews'],
-                        'is_private': analysis['is_private'],
-                        'reseller': reseller,
-                        'condition': condition,
-                        'urgent': urgent,
-                        'suspicious': assess.is_suspicious,
-                    })
-                    logger.info(f"   ✅ [{score}] {L['title'][:45]} | {price:,}₽ | "
-                                f"−{assess.margin*100:.0f}% к медиане ({source}) | {condition.verdict}")
+                    cand = self._build_candidate(
+                        L, cfg, market, source, assess,
+                        comps_for=lambda c: list(buckets.get(live_key(c), [])))
+                    if cand:
+                        candidates.append(cand)
 
                 except Exception as e:
                     logger.error(f"Ошибка: {e}")
@@ -1504,6 +1447,100 @@ class AvitoScannerV2:
         self._close()
 
         logger.info(f"\n🏁 Готово. Уведомлений: {total_notifications}")
+
+    def _build_candidate(self, L, cfg, market, source, assess, comps_for):
+        """Общий хвост оценки кандидата для run() и process_cards: помечает seen,
+        дозаходит в карточку (deep_analyze), уточняет конфиг спеками и пересчитывает
+        рынок (comps_for(cfg) — живые компы: из buckets в run(), [] в intake), гейт
+        состояния, регион/доставка, выкуп, перекуп, скоринг.
+        Возвращает dict кандидата или None (отсев)."""
+        url_clean = L['url']
+        price = L['price']
+        # Помечаем seen до сетевого вызова (защита от повторов при сбое)
+        self.seen.add(url_clean)
+        self._save_seen()
+
+        time.sleep(random.uniform(2, 5))
+        analysis = self.deep_analyze(L['raw_url'])
+
+        # Уточняем конфиг спеками из карточки и пересчитываем рынок
+        if analysis['specs']:
+            cfg2 = classify(L['title'], analysis['specs'])
+            if cfg2.is_valid:
+                comps2 = comps_for(cfg2)
+                if price in comps2:
+                    comps2.remove(price)
+                market2, source2 = self._market_for(cfg2, comps2)
+                if market2:
+                    cfg, market, source = cfg2, market2, source2
+                    assess = assess_deal(price, market, min_margin=MIN_MARGIN, scam_floor=SCAM_FLOOR)
+
+        if assess.margin < MIN_MARGIN:
+            return None
+
+        # ── Гейт состояния по ПОЛНОМУ описанию ──────────────────
+        cond_text = ' '.join([L['title'], L['snippet'], analysis.get('desc_text', '')])
+        condition = analyze_condition(
+            cond_text,
+            battery_hard=BATTERY_HARD, battery_soft=BATTERY_SOFT,
+            cycles_hard=CYCLES_HARD, cycles_soft=CYCLES_SOFT,
+        )
+        if condition.cycles is None and analysis.get('cycles'):
+            condition.cycles = analysis['cycles']
+        if condition.is_reject:
+            logger.info(f"   ⛔ {L['title'][:45]} | {price:,}₽ | {condition.summary()}")
+            return None
+
+        location = analysis['location']
+        moscow = (not location) or is_moscow(location)
+        # Региональный лот дороже лимита Авито Доставки выкупить нельзя
+        if not moscow and price > DELIVERY_MAX_PRICE:
+            return None
+
+        # Выкуп: курируемый из базы, иначе от медианы рынка
+        stat_db = self._db_stat(cfg)
+        if stat_db and stat_db.get('buyout_price'):
+            buyout = int(stat_db['buyout_price'])
+        else:
+            buyout = int(market.median * BUYOUT_FACTOR)
+
+        full_preview = (L['title'] + ' ' + L['snippet']).lower()
+        urgent = (analysis['is_urgent'] or analysis['price_reduced']
+                  or any(w in full_preview for w in URGENT_KEYWORDS))
+        reseller = is_reseller(analysis['seller_reviews'], analysis['seller_type'])
+        score = score_deal(price, market, buyout, condition,
+                           analysis['is_private'], moscow,
+                           L['minutes_ago'], assess, reseller=reseller)
+
+        logger.info(f"   ✅ [{score}] {L['title'][:45]} | {price:,}₽ | "
+                    f"−{assess.margin*100:.0f}% к медиане ({source}) | {condition.verdict}")
+        return {
+            'kind': 'fire' if moscow else 'delivery',
+            'score': score,
+            'title': L['title'],
+            'price': price,
+            'median': market.median,
+            'p20': market.p20,
+            'n_comps': market.n,
+            'source': source,
+            'low_conf': source == 'live-thin',
+            'margin': assess.margin,
+            'buyout': buyout,
+            'ram': cfg.ram,
+            'ssd': cfg.ssd,
+            'diagonal': analysis['specs'].get('diagonal'),
+            'url': url_clean,
+            'age_str': L['age_str'],
+            'minutes_ago': L['minutes_ago'],
+            'location': location,
+            'seller_type': analysis['seller_type'],
+            'seller_reviews': analysis['seller_reviews'],
+            'is_private': analysis['is_private'],
+            'reseller': reseller,
+            'condition': condition,
+            'urgent': urgent,
+            'suspicious': assess.is_suspicious,
+        }
 
     def _dispatch_candidates(self, candidates):
         """Сортировка + рассылка кандидатов (общая для сканера и intake). Возвращает кол-во алертов."""
@@ -1555,51 +1592,10 @@ class AvitoScannerV2:
                 assess = assess_deal(price, market, min_margin=MIN_MARGIN, scam_floor=SCAM_FLOOR)
                 if assess.margin < MIN_MARGIN:
                     self.seen.add(url); continue
-                self.seen.add(url); self._save_seen()
-                time.sleep(random.uniform(2, 5))
-                analysis = self.deep_analyze(raw_url)
-                if analysis['specs']:
-                    cfg2 = classify(L['title'], analysis['specs'])
-                    if cfg2.is_valid:
-                        m2, s2 = self._market_for(cfg2, [])
-                        if m2:
-                            cfg, market, source = cfg2, m2, s2
-                            assess = assess_deal(price, market, min_margin=MIN_MARGIN, scam_floor=SCAM_FLOOR)
-                if assess.margin < MIN_MARGIN:
-                    continue
-                condition = analyze_condition(' '.join([L['title'], analysis.get('desc_text', '')]),
-                                              battery_hard=BATTERY_HARD, battery_soft=BATTERY_SOFT,
-                                              cycles_hard=CYCLES_HARD, cycles_soft=CYCLES_SOFT)
-                if condition.cycles is None and analysis.get('cycles'):
-                    condition.cycles = analysis['cycles']
-                if condition.is_reject:
-                    logger.info(f"   ⛔ {L['title'][:45]} | {price:,}₽ | {condition.summary()}")
-                    continue
-                location = analysis['location']
-                moscow = (not location) or is_moscow(location)
-                if not moscow and price > DELIVERY_MAX_PRICE:
-                    continue
-                stat_db = self._db_stat(cfg)
-                buyout = (int(stat_db['buyout_price']) if stat_db and stat_db.get('buyout_price')
-                          else int(market.median * BUYOUT_FACTOR))
-                urgent = analysis['is_urgent'] or analysis['price_reduced']
-                reseller = is_reseller(analysis['seller_reviews'], analysis['seller_type'])
-                score = score_deal(price, market, buyout, condition, analysis['is_private'],
-                                   moscow, L['minutes_ago'], assess, reseller=reseller)
-                candidates.append({
-                    'kind': 'fire' if moscow else 'delivery', 'score': score,
-                    'title': L['title'], 'price': price, 'median': market.median,
-                    'p20': market.p20, 'n_comps': market.n, 'source': source,
-                    'low_conf': source == 'live-thin', 'margin': assess.margin,
-                    'buyout': buyout, 'ram': cfg.ram, 'ssd': cfg.ssd,
-                    'diagonal': analysis['specs'].get('diagonal'), 'url': url,
-                    'age_str': L['age_str'], 'minutes_ago': 0, 'location': location,
-                    'seller_type': analysis['seller_type'], 'seller_reviews': analysis['seller_reviews'],
-                    'is_private': analysis['is_private'], 'reseller': reseller,
-                    'condition': condition, 'urgent': urgent, 'suspicious': assess.is_suspicious,
-                })
-                logger.info(f"   ✅ [{score}] {L['title'][:45]} | {price:,}₽ | "
-                            f"−{assess.margin*100:.0f}% ({source}) | {condition.verdict}")
+                # Тот же хвост оценки, что и в run(); живых компов нет → comps_for пуст
+                cand = self._build_candidate(L, cfg, market, source, assess, comps_for=lambda c: [])
+                if cand:
+                    candidates.append(cand)
             except Exception as e:
                 logger.error(f"intake card: {e}")
         sent = self._dispatch_candidates(candidates)
@@ -1790,29 +1786,16 @@ if __name__ == "__main__":
     if cli_args.digest:
         send_digest()
     elif cli_args.intake:
-        if not INCOMING_FILE.exists():
-            logger.info("intake: входящих карточек нет")
+        uniq, proc = drain_incoming(INCOMING_FILE)
+        if uniq:
+            from playwright.sync_api import sync_playwright
+            with sync_playwright() as pw:
+                AvitoScannerV2(pw).process_cards(uniq)
         else:
-            proc = INCOMING_FILE.with_suffix('.processing.json')
+            logger.info("intake: входящих карточек нет")
+        if proc is not None:
             try:
-                os.replace(INCOMING_FILE, proc)   # атомарно забираем пачку
-            except Exception:
-                proc = INCOMING_FILE
-            try:
-                cards = json.loads(proc.read_text(encoding='utf-8')) or []
-            except Exception:
-                cards = []
-            seen_u, uniq = set(), []
-            for c in cards:
-                u = (c or {}).get('url')
-                if u and u not in seen_u:
-                    seen_u.add(u); uniq.append(c)
-            if uniq:
-                from playwright.sync_api import sync_playwright
-                with sync_playwright() as pw:
-                    AvitoScannerV2(pw).process_cards(uniq)
-            try:
-                proc.unlink()
+                proc.unlink()   # чистим обработанную/пустую/битую пачку
             except Exception:
                 pass
     elif cli_args.health:

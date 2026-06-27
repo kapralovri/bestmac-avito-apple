@@ -403,6 +403,31 @@ check("пере-добавленный E — свежий экземпляр", f
 check("пере-добавленный E — НЕ затёрт нашим alerted_2wk", fin['E'].get('alerted_2wk') is not True)
 
 
+# ─── 14. drain_incoming (атомарный забор + дедуп intake-пачки) ────────────────
+print("\n[14] drain_incoming (--intake)")
+from scanner_v2 import drain_incoming
+import tempfile as _tmp
+
+_d = Path(_tmp.mkdtemp())
+_miss = _d / "nope.json"
+check("нет файла → ([], None)", drain_incoming(_miss) == ([], None))
+
+_inc = _d / "incoming.json"
+_inc.write_text(_json.dumps([
+    {"url": "a", "price": 1}, {"url": "a", "price": 2},   # дубль url
+    {"url": "b", "price": 3}, {"url": "", "price": 4},     # пустой url
+    "мусор", None,                                          # не-dict
+]), encoding="utf-8")
+_u, _p = drain_incoming(_inc)
+check("дедуп по url → 2 уникальных", [c["url"] for c in _u] == ["a", "b"])
+check("исходный файл забран (переименован)", not _inc.exists() and _p.exists())
+
+_bad = _d / "bad.json"
+_bad.write_text("{не json", encoding="utf-8")
+_ub, _pb = drain_incoming(_bad)
+check("битый JSON → [] + proc для очистки", _ub == [] and _pb is not None)
+
+
 # ─── Итог ────────────────────────────────────────────────────────────────────
 print()
 if _fails:
