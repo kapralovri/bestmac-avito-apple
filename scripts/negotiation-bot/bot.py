@@ -182,9 +182,12 @@ class NegotiationBot:
         sig_line = ("\n🧭 " + "; ".join(sig[:4])) if sig else ""
         src = lead.get("source")
         link_label = "Открыть в Telegram" if src == "tg" else "Открыть на Avito"
-        src_badge = " 📲" if src == "tg" else (" 🕰" if src == "stale" else "")
+        header = {
+            "stale": "🕰 <b>ЗАЛЕЖАВШИЙСЯ ПРОДАВЕЦ</b> (мотивирован на торг)",
+            "tg": "📲 <b>ЛИД ИЗ TELEGRAM-ЧАТА</b>",
+        }.get(src, "🧲 <b>Лид на торг</b>")
         return (
-            f"🧲 <b>Лид на торг</b>{src_badge} {mot}\n"
+            f"{header} {mot}\n"
             f"💻 {lead['title']}\n"
             f"💰 Цена продавца: {_fmt(lead['asking'])} ₽\n"
             f"🎯 Твоя цель: {_fmt(lead['target'])} ₽ • 🧱 потолок: {_fmt(lead['walk_away'])} ₽"

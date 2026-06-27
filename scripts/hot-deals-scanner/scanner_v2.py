@@ -1508,7 +1508,20 @@ def send_health():
         except Exception:
             return 0
 
-    leads = _len(QUEUE_FILE)
+    # Лиды: показываем НЕ показанные ботом (pending), а не всю накопленную очередь
+    try:
+        with open(QUEUE_FILE, encoding='utf-8') as f:
+            queue_list = json.load(f) or []
+    except Exception:
+        queue_list = []
+    state_path = os.environ.get('NEGOTIATION_STATE_PATH', 'public/data/negotiation-state.json')
+    try:
+        with open(state_path, encoding='utf-8') as f:
+            posted = set(json.load(f).get('posted_leads', []))
+    except Exception:
+        posted = set()
+    leads_total = len(queue_list)
+    leads_pending = sum(1 for x in queue_list if x.get('id') not in posted)
     reg = _len(REGISTRY_FILE)
     bal = _rucaptcha_balance()
     fams = ", ".join(f"{k.split()[-1]}:{v}" for k, v in sorted(h["fam"].items())) or "—"
@@ -1524,7 +1537,7 @@ def send_health():
         f"🛡 Троттлинг (пере-прогревов): {h['throttle']}\n"
         f"🧩 Капча решена: {h['captcha']}"
         + (f" • баланс RuCaptcha: {bal:.0f} ₽" if bal is not None else "") + "\n"
-        f"🧲 Лидов в очереди бота: {leads} • 🗃 реестр: {reg}"
+        f"🧲 Лиды боту: {leads_pending} ждут ответа • {leads_total} всего за период • 🗃 реестр: {reg}"
     )
     if h['runs'] == 0:
         text += "\n\n⚠️ <b>0 прогонов за сутки — сканер мог встать!</b>"
