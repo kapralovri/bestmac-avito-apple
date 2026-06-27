@@ -209,30 +209,45 @@ def merge_watchlist(snapshot, dropped_urls, disk):
     return final
 
 
+def _read_cards(p):
+    try:
+        data = json.loads(p.read_text(encoding='utf-8'))
+        return data if isinstance(data, list) else []
+    except Exception:
+        return []
+
+
 def drain_incoming(path):
-    """Атомарно забирает накопленные intake-карточки: переименовывает файл (чтобы сервер
-    тем временем писал в новый), читает, дедупит по url. Возвращает (uniq_cards, proc_path);
-    proc_path = None если файла не было (вызывающий удаляет proc_path после обработки).
-    Пустой/битый JSON → ([], proc_path). Чистая I/O-логика, тестируема."""
-    if not path.exists():
-        return [], None
+    """Атомарно забирает накопленные intake-карточки + ВОССТАНАВЛИВАЕТ остаток от
+    упавшего прошлого прогона (.processing.json, который не успели удалить). Дедупит
+    по url и перезаписывает объединённую пачку в proc — чтобы при падении обработки
+    карточки не потерялись (следующий прогон их подхватит). Возвращает (uniq, proc_path);
+    proc_path=None если ничего нет. Вызывающий удаляет proc_path ТОЛЬКО после успеха."""
     proc = path.with_suffix('.processing.json')
-    try:
-        os.replace(path, proc)   # атомарно забираем пачку
-    except Exception:
-        proc = path
-    try:
-        cards = json.loads(proc.read_text(encoding='utf-8'))
-    except Exception:
-        cards = []
-    if not isinstance(cards, list):
-        cards = []
+    raw = []
+    # 1) остаток от упавшего прогона — читаем ДО перезатирания
+    if proc.exists():
+        raw += _read_cards(proc)
+    # 2) свежая пачка — атомарно забираем (содержимое proc уже в raw)
+    if path.exists():
+        try:
+            os.replace(path, proc)
+        except Exception:
+            proc = path
+        raw += _read_cards(proc)
+    if not raw:
+        return [], (proc if proc.exists() else None)
     seen_u, uniq = set(), []
-    for c in cards:
+    for c in raw:
         u = c.get('url') if isinstance(c, dict) else None
         if u and u not in seen_u:
             seen_u.add(u)
             uniq.append(c)
+    # объединённую пачку фиксируем в proc → переживёт падение process_cards
+    try:
+        proc.write_text(json.dumps(uniq, ensure_ascii=False), encoding='utf-8')
+    except Exception:
+        pass
     return uniq, proc
 
 
@@ -1787,17 +1802,22 @@ if __name__ == "__main__":
         send_digest()
     elif cli_args.intake:
         uniq, proc = drain_incoming(INCOMING_FILE)
-        if uniq:
-            from playwright.sync_api import sync_playwright
-            with sync_playwright() as pw:
-                AvitoScannerV2(pw).process_cards(uniq)
-        else:
+        if not uniq:
             logger.info("intake: входящих карточек нет")
-        if proc is not None:
+            if proc is not None:
+                try:
+                    proc.unlink()   # чистим пустую/битую пачку
+                except Exception:
+                    pass
+        else:
             try:
-                proc.unlink()   # чистим обработанную/пустую/битую пачку
-            except Exception:
-                pass
+                from playwright.sync_api import sync_playwright
+                with sync_playwright() as pw:
+                    AvitoScannerV2(pw).process_cards(uniq)
+                proc.unlink()       # успех → пачка обработана
+            except Exception as e:
+                # НЕ удаляем proc → следующий прогон подхватит (без потери карточек)
+                logger.error(f"intake: обработка упала, пачка сохранена для повтора: {e}")
     elif cli_args.health:
         send_health()
     elif cli_args.watch:

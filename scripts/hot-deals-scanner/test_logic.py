@@ -428,6 +428,23 @@ _bad.write_text("{не json", encoding="utf-8")
 _ub, _pb = drain_incoming(_bad)
 check("битый JSON → [] + proc для очистки", _ub == [] and _pb is not None)
 
+# восстановление после падения: остаток в .processing.json подхватывается
+_d2 = Path(_tmp.mkdtemp())
+_inc2 = _d2 / "incoming.json"
+_proc2 = _d2 / "incoming.processing.json"
+_proc2.write_text(_json.dumps([{"url": "old", "price": 1}]), encoding="utf-8")   # упавший прогон
+_inc2.write_text(_json.dumps([{"url": "new", "price": 2}, {"url": "old", "price": 9}]), encoding="utf-8")
+_u2, _p2 = drain_incoming(_inc2)
+check("остаток+свежие объединены и дедуплены", sorted(c["url"] for c in _u2) == ["new", "old"])
+check("объединённая пачка зафиксирована в proc", _p2.exists())
+check("proc переживёт падение (содержит обе)", sorted(c["url"] for c in _json.loads(_p2.read_text())) == ["new", "old"])
+# только остаток (свежих нет) — тоже восстанавливаем
+_d3 = Path(_tmp.mkdtemp())
+_inc3 = _d3 / "incoming.json"
+(_d3 / "incoming.processing.json").write_text(_json.dumps([{"url": "z", "price": 5}]), encoding="utf-8")
+_u3, _p3 = drain_incoming(_inc3)
+check("только остаток → восстановлен", [c["url"] for c in _u3] == ["z"])
+
 
 # ─── 15. _build_candidate: run-путь с живыми компами ─────────────────────────
 print("\n[15] _build_candidate: ветка живых компов (run-путь)")
