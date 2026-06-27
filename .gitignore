@@ -51,3 +51,6 @@ public/data/watchlist.json
 public/data/incoming-cards.json
 public/data/incoming-cards.processing.json
 public/data/incoming-cards.tmp
+public/data/intake-stats.json
+public/data/intake-stats.json.tmp
+public/data/intake-proc-stats.json

@@ -114,6 +114,8 @@ REGISTRY_FILE = Path(os.environ.get('LISTING_REGISTRY_PATH', 'public/data/listin
 WATCHLIST_FILE = Path(os.environ.get('WATCHLIST_PATH', 'public/data/watchlist.json'))
 # Входящие карточки от домашнего расширения (intake-сервер пишет, --intake читает)
 INCOMING_FILE = Path(os.environ.get('INTAKE_CARDS_PATH', 'public/data/incoming-cards.json'))
+# Пульс обработчика intake (для кнопки «Статус» в боте)
+PROC_STATS_FILE = Path(os.environ.get('INTAKE_PROC_STATS_PATH', 'public/data/intake-proc-stats.json'))
 
 # Точечные алерты: в реальном времени шлём только score >= MIN_NOTIFY_SCORE,
 # лоты 40..74 копим в дайджест (одно сообщение вечером — крон с флагом --digest).
@@ -1659,7 +1661,28 @@ class AvitoScannerV2:
         sent = self._dispatch_candidates(candidates)
         self._save_seen()
         self._close()
+        self._write_proc_stats(len(cards), len(candidates), sent)
         logger.info(f"🏁 Intake: карточек {len(cards)}, кандидатов {len(candidates)}, алертов {sent}")
+
+    def _write_proc_stats(self, n_cards, n_cand, n_alerts):
+        """Пульс обработчика для кнопки «Статус» в боте."""
+        try:
+            s = json.loads(PROC_STATS_FILE.read_text(encoding='utf-8')) if PROC_STATS_FILE.exists() else {}
+            if not isinstance(s, dict):
+                s = {}
+        except Exception:
+            s = {}
+        now = time.time()
+        s.update({'last_run_at': now, 'last_cards': n_cards,
+                  'last_candidates': n_cand, 'last_alerts': n_alerts})
+        s['alerts_total'] = int(s.get('alerts_total', 0)) + n_alerts
+        if n_alerts > 0:
+            s['last_alert_at'] = now
+        try:
+            PROC_STATS_FILE.parent.mkdir(parents=True, exist_ok=True)
+            PROC_STATS_FILE.write_text(json.dumps(s, ensure_ascii=False), encoding='utf-8')
+        except Exception:
+            pass
 
 
 def send_digest():

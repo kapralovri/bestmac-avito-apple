@@ -11,6 +11,7 @@ bestmac.ru/api/intake) и складывает в incoming-cards.json (деду�
 """
 import os
 import sys
+import time
 import hmac
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -20,8 +21,34 @@ PORT = int(os.environ.get('INTAKE_PORT', '8787'))
 HOST = os.environ.get('INTAKE_HOST', '0.0.0.0')   # за Vercel-прокси; токен обязателен
 TOKEN = os.environ.get('INTAKE_TOKEN', '')
 INCOMING = Path(os.environ.get('INTAKE_CARDS_PATH', 'public/data/incoming-cards.json'))
+STATS = Path(os.environ.get('INTAKE_STATS_PATH', 'public/data/intake-stats.json'))
 MAX_CARDS = 3000
 MAX_BODY = 2 * 1024 * 1024   # 2 МБ — защита от раздувания памяти
+
+
+def _bump_stats(n_received, n_added):
+    """Пульс приёмника для кнопки «Статус» в боте: когда последняя отправка от
+    расширения и сколько карточек за окно времени."""
+    try:
+        s = json.loads(STATS.read_text(encoding='utf-8')) if STATS.exists() else {}
+        if not isinstance(s, dict):
+            s = {}
+    except Exception:
+        s = {}
+    now = time.time()
+    s['last_at'] = now
+    s['received_total'] = int(s.get('received_total', 0)) + n_received
+    s['added_total'] = int(s.get('added_total', 0)) + n_added
+    rec = s.get('recent') if isinstance(s.get('recent'), list) else []
+    rec.append([now, n_received])
+    s['recent'] = rec[-1000:]
+    try:
+        tmp = STATS.parent / (STATS.name + '.tmp')
+        STATS.parent.mkdir(parents=True, exist_ok=True)
+        tmp.write_text(json.dumps(s), encoding='utf-8')
+        os.replace(tmp, STATS)
+    except Exception:
+        pass
 
 
 def _append(cards):
@@ -85,7 +112,12 @@ class Handler(BaseHTTPRequestHandler):
             cards = data.get('cards') or []
         except Exception:
             return self._send(400, {'ok': False, 'error': 'json'})
-        added = _append(cards if isinstance(cards, list) else [])
+        card_list = cards if isinstance(cards, list) else []
+        added = _append(card_list)
+        try:
+            _bump_stats(len(card_list), added)
+        except Exception:
+            pass
         self._send(200, {'ok': True, 'added': added})
 
     def do_GET(self):  # healthcheck

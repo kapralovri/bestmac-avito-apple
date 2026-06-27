@@ -117,6 +117,32 @@ wl2 = _json.loads(botmod.WATCHLIST_FILE.read_text()) if botmod.WATCHLIST_FILE.ex
 check("👎 убрал лот из вотчлиста", not any("avito.ru/x" in u for u in wl2))
 
 
+print("\n[9] collector_status_text — статус домашнего коллектора")
+_sd = tmp.parent
+_rx = _sd / "intake-stats.json"
+_pr = _sd / "intake-proc-stats.json"
+_now = 1_000_000.0
+_rx.write_text(_json.dumps({
+    "last_at": _now - 120,                                  # 2 мин назад → 🟢
+    "recent": [[_now - 100, 50], [_now - 7200, 40], [_now - 100000, 20]],
+}))
+_pr.write_text(_json.dumps({
+    "last_run_at": _now - 60, "last_cards": 58, "last_candidates": 2,
+    "last_alerts": 1, "alerts_total": 3, "last_alert_at": _now - 200,
+}))
+_st = botmod.collector_status_text(now=_now, intake_stats=_rx, proc_stats=_pr)
+check("вердикт 🟢 при свежей отправке", "🟢" in _st)
+check("окно 1ч = 50", "за 1ч — 50" in _st)
+check("окно 24ч = 90", "за 24ч — 90" in _st)
+check("показан разбор 58 карт", "58 карт" in _st)
+check("алертов всего 3", "Алертов всего: 3" in _st)
+_st2 = botmod.collector_status_text(now=_now, intake_stats=_sd / "nope1.json", proc_stats=_sd / "nope2.json")
+check("нет данных → 🔴 молчит", "🔴" in _st2 and "молчит" in _st2)
+_rx.write_text(_json.dumps({"last_at": _now - 5000, "recent": []}))   # >1ч назад
+_st3 = botmod.collector_status_text(now=_now, intake_stats=_rx, proc_stats=_sd / "nope2.json")
+check("отправка >1ч назад → 🔴", "🔴" in _st3)
+
+
 print()
 if _fails:
     print(f"❌ ПРОВАЛЕНО {len(_fails)}: " + "; ".join(_fails))

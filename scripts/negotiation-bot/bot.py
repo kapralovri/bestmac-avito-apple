@@ -62,12 +62,86 @@ BOT_TOKEN   = os.environ.get('TELEGRAM_BOT_TOKEN', '')
 STATE_FILE  = Path(os.environ.get('NEGOTIATION_STATE_PATH', 'public/data/negotiation-state.json'))
 QUEUE_FILE  = Path(os.environ.get('NEGOTIATION_QUEUE_PATH', 'public/data/negotiation-queue.json'))
 WATCHLIST_FILE = Path(os.environ.get('WATCHLIST_PATH', 'public/data/watchlist.json'))
+# Пульс домашнего коллектора (приёмник + обработчик пишут, кнопка «Статус» читает)
+INTAKE_STATS_FILE = Path(os.environ.get('INTAKE_STATS_PATH', 'public/data/intake-stats.json'))
+PROC_STATS_FILE = Path(os.environ.get('INTAKE_PROC_STATS_PATH', 'public/data/intake-proc-stats.json'))
 # Ограничить бота одним владельцем (твоим chat_id). Пусто — учится на первом /start.
 OWNER_CHAT_ID = os.environ.get('OWNER_CHAT_ID', '').strip()
 
 
 def _fmt(n) -> str:
     return f"{int(n):,}".replace(",", " ")
+
+
+def _ago(seconds) -> str:
+    if seconds is None:
+        return "—"
+    s = int(seconds)
+    if s < 0:
+        s = 0
+    if s < 60:
+        return f"{s} сек назад"
+    if s < 3600:
+        return f"{s // 60} мин назад"
+    if s < 86400:
+        return f"{s // 3600} ч назад"
+    return f"{s // 86400} дн назад"
+
+
+def collector_status_text(now=None, intake_stats=None, proc_stats=None) -> str:
+    """Текст для кнопки «🩺 Статус коллектора»: жив ли домашний сборщик (приёмник)
+    и что делает обработчик. Читает файлы-пульс, которые пишут intake-сервер и --intake."""
+    now = now or time.time()
+    rx = _load_json(intake_stats or INTAKE_STATS_FILE, {}) or {}
+    pr = _load_json(proc_stats or PROC_STATS_FILE, {}) or {}
+
+    last_at = rx.get("last_at")
+    recent = rx.get("recent") if isinstance(rx.get("recent"), list) else []
+
+    def window(sec):
+        cut = now - sec
+        total = 0
+        for item in recent:
+            try:
+                ts, n = item[0], item[1]
+            except (TypeError, IndexError):
+                continue
+            if ts >= cut:
+                total += int(n)
+        return total
+
+    lines = ["🩺 <b>Статус коллектора</b>", ""]
+    lines.append("📥 <b>Приёмник</b> (расширение → VPS):")
+    if last_at:
+        lines.append(f"  Последняя отправка: {_ago(now - last_at)}")
+        lines.append(f"  Карточек: за 1ч — {window(3600)}, за 24ч — {window(86400)}")
+    else:
+        lines.append("  Данных ещё не было.")
+
+    lines.append("")
+    lines.append("🧠 <b>Обработка</b> (--intake):")
+    lr = pr.get("last_run_at")
+    if lr:
+        lines.append(f"  Последний разбор: {_ago(now - lr)} — "
+                     f"{pr.get('last_cards', 0)} карт, {pr.get('last_candidates', 0)} кандид., "
+                     f"{pr.get('last_alerts', 0)} алертов")
+        la = pr.get("last_alert_at")
+        tail = f" (последний {_ago(now - la)})" if la else ""
+        lines.append(f"  Алертов всего: {pr.get('alerts_total', 0)}{tail}")
+    else:
+        lines.append("  Ещё не обрабатывал карточки.")
+
+    lines.append("")
+    if not last_at:
+        verdict = "🔴 расширение молчит — открой 4 вкладки и не давай Mac уснуть"
+    elif now - last_at < 600:
+        verdict = "🟢 коллектор активен"
+    elif now - last_at < 3600:
+        verdict = "🟡 нет отправок >10 мин — проверь вкладки"
+    else:
+        verdict = "🔴 нет отправок больше часа — расширение/Mac не работает"
+    lines.append(f"Итог: {verdict}")
+    return "\n".join(lines)
 
 
 # ─── Тонкий сетевой слой (инъектируется в тестах) ────────────────────────────
@@ -288,15 +362,23 @@ class NegotiationBot:
             return [{"type": "send", "chat_id": chat_id,
                      "text": "✅ Бот переговоров подключён. Лоты на торг буду присылать сюда.\n"
                              "Жми «▶️ Веду торг», отправляй продавцу мой текст, "
-                             "а его ответы — пересылай мне обычным сообщением."}]
+                             "а его ответы — пересылай мне обычным сообщением.\n\n"
+                             "Команда /status — проверить домашний коллектор Avito.",
+                     "buttons": [[("🩺 Статус коллектора", "status:refresh")]]}]
 
         if not self._is_owner(chat_id):
             return []   # игнорируем чужих
 
+        if text.startswith("/status"):
+            return [{"type": "send", "chat_id": chat_id,
+                     "text": collector_status_text(),
+                     "buttons": [[("🔄 Обновить", "status:refresh")]]}]
+
         if text.startswith("/help"):
             return [{"type": "send", "chat_id": chat_id,
                      "text": "Петля: ▶️ Веду торг → отправляешь мой текст продавцу → "
-                             "«✅ Отправил» → пересылаешь мне ответ продавца → я даю следующий ход."}]
+                             "«✅ Отправил» → пересылаешь мне ответ продавца → я даю следующий ход.\n"
+                             "/status — статус домашнего коллектора Avito."}]
 
         # Обычный текст = ответ продавца для активного диалога
         active = self.state.get("active_lead")
@@ -312,6 +394,12 @@ class NegotiationBot:
         actions: List[dict] = [{"type": "answer_callback", "id": cq_id}]
 
         if chat_id and not self._is_owner(chat_id):
+            return actions
+
+        if data == "status:refresh":
+            actions.append({"type": "send", "chat_id": chat_id,
+                            "text": collector_status_text(),
+                            "buttons": [[("🔄 Обновить", "status:refresh")]]})
             return actions
 
         parts = data.split(":")
