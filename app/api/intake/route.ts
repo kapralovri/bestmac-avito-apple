@@ -26,7 +26,17 @@ export async function OPTIONS() {
 }
 
 export async function POST(req: NextRequest) {
-  const token = req.headers.get('x-intake-token') || '';
+  // Тело читаем как текст и парсим вручную: расширение шлёт content-type text/plain,
+  // чтобы запрос был «простым» (без CORS-preflight на старом Chrome).
+  let body: { token?: unknown; cards?: unknown };
+  try {
+    const raw = await req.text();
+    body = raw ? JSON.parse(raw) : {};
+  } catch {
+    return NextResponse.json({ ok: false, error: 'json' }, { status: 400, headers: CORS });
+  }
+  // токен из тела (простой запрос) или из заголовка (обратная совместимость)
+  const token = (typeof body.token === 'string' ? body.token : '') || req.headers.get('x-intake-token') || '';
   if (!tokenOk(token, process.env.INTAKE_TOKEN)) {
     return NextResponse.json({ ok: false, error: 'token' }, { status: 403, headers: CORS });
   }
@@ -34,18 +44,12 @@ export async function POST(req: NextRequest) {
   if (!vps) {
     return NextResponse.json({ ok: false, error: 'no vps url' }, { status: 500, headers: CORS });
   }
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ ok: false, error: 'json' }, { status: 400, headers: CORS });
-  }
+  const cards = Array.isArray(body.cards) ? body.cards : [];
   try {
     const r = await fetch(vps, {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-intake-token': token },
-      body: JSON.stringify(body),
-      // короткий таймаут, чтобы не висеть
+      body: JSON.stringify({ cards }),
       signal: AbortSignal.timeout(10000),
     });
     const j = await r.json().catch(() => ({ ok: true }));

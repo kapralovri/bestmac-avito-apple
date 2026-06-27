@@ -45,8 +45,8 @@ $("test").onclick = () => {
   $("status").innerHTML = "<small>🧪 Отправляю тест…</small>";
   fetch(endpoint, {
     method: "POST",
-    headers: { "content-type": "application/json", "x-intake-token": token },
-    body: JSON.stringify({ cards: [{ url: "https://www.avito.ru/__popuptest__", title: "popup test", price: 1 }] }),
+    headers: { "content-type": "text/plain;charset=UTF-8" },  // простой запрос → без preflight
+    body: JSON.stringify({ token, cards: [{ url: "https://www.avito.ru/__popuptest__", title: "popup test", price: 1 }] }),
   })
     .then((r) => r.text().then((t) => ({ status: r.status, ok: r.ok, body: t })))
     .then((res) => {

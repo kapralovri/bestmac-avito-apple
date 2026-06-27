@@ -66,8 +66,8 @@ async function tick() {
     try {
       const resp = await fetch(endpoint, {
         method: "POST",
-        headers: { "content-type": "application/json", "x-intake-token": cfg.token },
-        body: JSON.stringify({ cards: fresh }),
+        headers: { "content-type": "text/plain;charset=UTF-8" },  // простой запрос → без CORS-preflight
+        body: JSON.stringify({ token: cfg.token, cards: fresh }),
       });
       if (resp.ok) {
         fresh.forEach((c) => seen.add(c.url));
