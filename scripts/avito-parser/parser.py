@@ -214,8 +214,10 @@ def market_analysis(prices: list[int]) -> tuple[int, int, int]:
             clean = prices
     else:
         clean = prices
-    # «Медиана» теперь = центр плотного кластера (устойчив к перекуп-хвосту)
-    return clean[0], clean[-1], modal_center(clean)
+    # ВНИМАНИЕ: пока обычная медиана. modal_center() готова и протестирована, но
+    # глобальная раскатка «модальной медианы» придержана до проверки на mini M4.
+    # Чтобы включить для всех конфигов — заменить на: modal_center(clean)
+    return clean[0], clean[-1], int(statistics.median(clean))
 
 
 # ─── Извлечение конфига из текста ────────────────────────────────────────────

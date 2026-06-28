@@ -43,7 +43,7 @@ check("оверрайд выкупа применился", st2["buyout_price"] 
 
 P.PRICE_OVERRIDES = {}
 st3 = P.build_stat("mac mini m4", "Apple M4", 16, 256, "Mac mini", skew)
-check("без оверрайда median = модальная", st3["median_price"] == P.modal_center(skew))
+check("без оверрайда median = расчёт market_analysis", st3["median_price"] == P.market_analysis(skew)[2])
 
 print()
 if _fails:
