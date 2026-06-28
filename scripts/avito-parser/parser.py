@@ -60,6 +60,21 @@ CONFIG_FILE      = SCRIPT_DIR / "../../public/data/parser-config.json"
 MODELS_CONFIG    = SCRIPT_DIR / "../../public/data/models-config.json"
 PRICES_FILE      = SCRIPT_DIR / "../../public/data/avito-prices.json"
 URLS_FILE        = SCRIPT_DIR / "../../public/data/avito-urls.json"
+OVERRIDES_FILE   = SCRIPT_DIR / "../../public/data/price-overrides.json"
+
+
+def _load_price_overrides() -> dict:
+    """Ручные оверрайды медианы/выкупа по конфигам, которые ты знаешь лучше парсера.
+    Ключ: 'model_name|ram|ssd' (в нижнем регистре). Значение: {"median": N, "buyout": N}.
+    Применяются ПОВЕРХ авто-расчёта на каждом прогоне → переживают парсинг."""
+    try:
+        raw = json.load(open(OVERRIDES_FILE, encoding="utf-8")) if OVERRIDES_FILE.exists() else {}
+    except Exception:
+        raw = {}
+    return {str(k).lower(): v for k, v in raw.items()} if isinstance(raw, dict) else {}
+
+
+PRICE_OVERRIDES = _load_price_overrides()
 
 # ─── Настройки парсинга ──────────────────────────────────────────────────────
 RUCAPTCHA_API_KEY = os.environ.get("RUCAPTCHA_API_KEY", "")
@@ -160,6 +175,30 @@ def navigate(page, url: str) -> bool:
 
 # ─── Аналитика цен ───────────────────────────────────────────────────────────
 
+def modal_center(prices, window=None):
+    """Центр самого ПЛОТНОГО ценового кластера (где предложений больше всего в
+    коридоре шириной `window`). Для скошенных вправо распределений (хвост перекупов
+    и комплектов «+SSD/клавиатура») даёт цифру у «горба», а не серединную медиану,
+    задранную хвостом. По умолчанию окно = 12% от медианы (~5–10тр в нашем сегменте)."""
+    prices = sorted(prices)
+    n = len(prices)
+    if n < 4:
+        return int(statistics.median(prices)) if prices else 0
+    if window is None:
+        window = max(5000, int(statistics.median(prices) * 0.12))
+    best_cnt, best_i = -1, 0
+    for i in range(n):
+        hi = prices[i] + window
+        j = i
+        while j < n and prices[j] <= hi:
+            j += 1
+        if (j - i) > best_cnt:
+            best_cnt, best_i = j - i, i
+    hi = prices[best_i] + window
+    cluster = [p for p in prices if prices[best_i] <= p <= hi]
+    return int(statistics.median(cluster))
+
+
 def market_analysis(prices: list[int]) -> tuple[int, int, int]:
     if not prices:
         return 0, 0, 0
@@ -175,7 +214,8 @@ def market_analysis(prices: list[int]) -> tuple[int, int, int]:
             clean = prices
     else:
         clean = prices
-    return clean[0], clean[-1], int(statistics.median(clean))
+    # «Медиана» теперь = центр плотного кластера (устойчив к перекуп-хвосту)
+    return clean[0], clean[-1], modal_center(clean)
 
 
 # ─── Извлечение конфига из текста ────────────────────────────────────────────
@@ -524,7 +564,14 @@ def build_stat(
     family: str, prices: list[int], buyout_override: int = 0,
 ) -> dict:
     low, high, median = market_analysis(prices)
-    buyout = buyout_override or max(0, int(median * 0.80 // 1000 * 1000))
+    # Ручной оверрайд медианы/выкупа (если задан для этого конфига)
+    ov = PRICE_OVERRIDES.get(f"{str(model).lower()}|{int(ram)}|{int(ssd)}", {})
+    if ov.get("median"):
+        median = int(ov["median"])
+    if ov.get("buyout"):
+        buyout = int(ov["buyout"])
+    else:
+        buyout = buyout_override or max(0, int(median * 0.80 // 1000 * 1000))
     return {
         "model_name":   model,
         "family":       family,

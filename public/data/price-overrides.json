@@ -1,0 +1,4 @@
+{
+  "__comment__": "Ручные оверрайды медианы/выкупа по конфигам, которые ты знаешь лучше парсера. Ключ: 'model_name|ram|ssd' в нижнем регистре (model_name как в avito-prices.json). Значение: {\"median\": N} и/или {\"buyout\": N}. Применяется парсером на каждом прогоне И мгновенно через scripts/avito-parser/apply_overrides.py.",
+  "mac mini m4|16|256": { "median": 50000 }
+}
