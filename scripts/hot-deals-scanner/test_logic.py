@@ -592,6 +592,26 @@ sN.notify({**_base_c})
 check("лот от VPS-сканера → без тега", 'из браузера' not in _cap.get('text', ''))
 
 
+# ─── 20. modal_center (scanner) + накопитель цен коллектора ───────────────────
+print("\n[20] modal_center + накопитель (коллектор)")
+import statistics as _stt
+from scanner_v2 import modal_center as _mc
+import scanner_v2 as _svR
+_skew20 = sorted([44000, 45000, 46000, 47000, 48000, 48000, 49000, 50000, 50000, 51000]
+                 + [60000, 62000, 64000, 66000, 68000, 70000, 72000, 74000, 76000, 78000])
+check("scanner modal_center ниже обычной медианы", _mc(_skew20) < int(_stt.median(_skew20)))
+check("scanner modal_center пусто → 0", _mc([]) == 0)
+_rawf = Path(_tmp.mkdtemp()) / "raw.json"
+_svR.RAW_PRICES_FILE = _rawf
+_svR.RAW_CAP = 5
+_sA = AvitoScannerV2(None)
+_sA._accumulate_raw({"k1": [40000, 41000], "k2": [50000]})
+_sA._accumulate_raw({"k1": [42000, 43000, 44000, 45000]})   # k1 → 6 цен, cap=5
+_store20 = _json.loads(_rawf.read_text())
+check("накопитель: cap отрезает старые (последние 5)", _store20["k1"] == [41000, 42000, 43000, 44000, 45000])
+check("накопитель: другой ключ сохранён", _store20["k2"] == [50000])
+
+
 # ─── Итог ────────────────────────────────────────────────────────────────────
 print()
 if _fails:

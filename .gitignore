@@ -54,3 +54,5 @@ public/data/incoming-cards.tmp
 public/data/intake-stats.json
 public/data/intake-stats.json.tmp
 public/data/intake-proc-stats.json
+public/data/intake-raw-prices.json
+public/data/intake-raw-prices.json.tmp

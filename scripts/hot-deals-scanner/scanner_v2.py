@@ -116,6 +116,31 @@ WATCHLIST_FILE = Path(os.environ.get('WATCHLIST_PATH', 'public/data/watchlist.js
 INCOMING_FILE = Path(os.environ.get('INTAKE_CARDS_PATH', 'public/data/incoming-cards.json'))
 # Пульс обработчика intake (для кнопки «Статус» в боте)
 PROC_STATS_FILE = Path(os.environ.get('INTAKE_PROC_STATS_PATH', 'public/data/intake-proc-stats.json'))
+# Сырые цены по конфигам из потока коллектора (без троттлинга) → для --modal-report
+RAW_PRICES_FILE = Path(os.environ.get('INTAKE_RAW_PRICES_PATH', 'public/data/intake-raw-prices.json'))
+RAW_CAP = 400   # максимум цен на конфиг (скользящее окно)
+
+
+def modal_center(prices, window=None):
+    """Центр самого плотного ценового кластера (устойчив к перекуп-хвосту).
+    То же, что в парсере; используется для отчёта по данным коллектора."""
+    prices = sorted(prices)
+    n = len(prices)
+    if n < 4:
+        return int(statistics.median(prices)) if prices else 0
+    if window is None:
+        window = max(5000, int(statistics.median(prices) * 0.12))
+    best_cnt, best_i = -1, 0
+    for i in range(n):
+        hi = prices[i] + window
+        j = i
+        while j < n and prices[j] <= hi:
+            j += 1
+        if (j - i) > best_cnt:
+            best_cnt, best_i = j - i, i
+    hi = prices[best_i] + window
+    cluster = [p for p in prices if prices[best_i] <= p <= hi]
+    return int(statistics.median(cluster))
 
 # Точечные алерты: в реальном времени шлём только score >= MIN_NOTIFY_SCORE,
 # лоты 40..74 копим в дайджест (одно сообщение вечером — крон с флагом --digest).
@@ -1628,6 +1653,7 @@ class AvitoScannerV2:
         self._start_browser()
         self._warmup()
         candidates = []
+        raw_batch = {}   # live_key -> [цены] для накопителя (--modal-report)
         for card in cards:
             try:
                 raw_url = card.get('url') or ''
@@ -1641,6 +1667,8 @@ class AvitoScannerV2:
                 cfg = self._passes_prefilter(L)
                 if cfg is None:
                     self.seen.add(url); continue
+                # Копим цену по конфигу (все валидные б/у лоты, без троттлинга) для модальной
+                raw_batch.setdefault(str(live_key(cfg)), []).append(L['price'])
                 # В intake живых компов нет (одиночные карточки) → рынок только из базы.
                 # Конфиг, которого нет в базе, оценить нечем. НЕ помечаем seen: иначе
                 # резервный VPS-сканер (он пропускает уже-seen url) не сможет построить
@@ -1665,7 +1693,30 @@ class AvitoScannerV2:
         self._save_seen()
         self._close()
         self._write_proc_stats(len(cards), len(candidates), sent)
+        self._accumulate_raw(raw_batch)
         logger.info(f"🏁 Intake: карточек {len(cards)}, кандидатов {len(candidates)}, алертов {sent}")
+
+    def _accumulate_raw(self, raw_batch):
+        """Дописывает цены партии в intake-raw-prices.json (скользящее окно RAW_CAP на конфиг)."""
+        if not raw_batch:
+            return
+        try:
+            store = json.loads(RAW_PRICES_FILE.read_text(encoding='utf-8')) if RAW_PRICES_FILE.exists() else {}
+            if not isinstance(store, dict):
+                store = {}
+        except Exception:
+            store = {}
+        for key, prices in raw_batch.items():
+            cur = store.get(key) if isinstance(store.get(key), list) else []
+            cur.extend(int(p) for p in prices)
+            store[key] = cur[-RAW_CAP:]
+        try:
+            RAW_PRICES_FILE.parent.mkdir(parents=True, exist_ok=True)
+            tmp = RAW_PRICES_FILE.parent / (RAW_PRICES_FILE.name + '.tmp')
+            tmp.write_text(json.dumps(store, ensure_ascii=False), encoding='utf-8')
+            os.replace(tmp, RAW_PRICES_FILE)
+        except Exception as e:
+            logger.warning(f"raw-prices save: {e}")
 
     def _write_proc_stats(self, n_cards, n_cand, n_alerts):
         """Пульс обработчика для кнопки «Статус» в боте."""
@@ -1686,6 +1737,47 @@ class AvitoScannerV2:
             PROC_STATS_FILE.write_text(json.dumps(s, ensure_ascii=False), encoding='utf-8')
         except Exception:
             pass
+
+
+def modal_report(min_n=None):
+    """Печатает модальную медиану по данным коллектора (без троттлинга) против базы.
+    Помогает вручную выставить оверрайды, не завися от парсера с капчей."""
+    min_n = min_n if min_n is not None else MIN_COMPS
+    if not RAW_PRICES_FILE.exists():
+        print("Накопитель пуст — коллектор ещё не собрал цены (нужно ~час сбора).")
+        return
+    try:
+        raw = json.loads(RAW_PRICES_FILE.read_text(encoding='utf-8')) or {}
+    except Exception:
+        print("Не прочитать intake-raw-prices.json")
+        return
+    # индекс медиан базы по str(live_key)
+    dbidx = {}
+    if PRICES_FILE.exists():
+        try:
+            d = json.load(open(PRICES_FILE, encoding='utf-8'))
+            for s in d.get('stats', []):
+                c = classify(f"{s['model_name']} {s.get('processor', '')}",
+                             {'ram': int(s.get('ram', 0)), 'ssd': int(s.get('ssd', 0))})
+                if c.is_valid:
+                    dbidx[str(live_key(c))] = s
+        except Exception:
+            pass
+    rows = []
+    for key, prices in raw.items():
+        if not isinstance(prices, list) or len(prices) < min_n:
+            continue
+        med = int(statistics.median(sorted(prices)))
+        mod = modal_center(prices)
+        db_med = dbidx.get(key, {}).get('median_price')
+        rows.append((len(prices), key, med, mod, db_med))
+    rows.sort(key=lambda r: -r[0])
+    print(f"{'n':>4}  {'конфиг (live_key)':46} {'медиана':>8} {'модальн.':>9} {'база':>8}")
+    for n, key, med, mod, db_med in rows:
+        dbs = str(db_med) if db_med else "—"
+        print(f"{n:>4}  {key:46} {med:>8} {mod:>9} {dbs:>8}")
+    print(f"\nКонфигов с ≥{min_n} ценами: {len(rows)}  (окно кластера ~12% медианы)")
+    print("Чтобы закрепить: добавь в price-overrides.json 'model|ram|ssd': {\"median\": N}")
 
 
 def send_digest():
@@ -1865,10 +1957,14 @@ if __name__ == "__main__":
                     help="Проверить вотчлист (⭐): снижение цены / 2 недели → снова в очередь")
     ap.add_argument("--intake", action="store_true",
                     help="Обработать карточки от домашнего расширения (incoming-cards.json)")
+    ap.add_argument("--modal-report", action="store_true", dest="modal_report",
+                    help="Модальная медиана по данным коллектора (intake-raw-prices.json) vs база")
     cli_args = ap.parse_args()
 
     if cli_args.digest:
         send_digest()
+    elif cli_args.modal_report:
+        modal_report()
     elif cli_args.intake:
         def _process(uniq):
             from playwright.sync_api import sync_playwright
