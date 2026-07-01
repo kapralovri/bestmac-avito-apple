@@ -571,6 +571,27 @@ check("unknown НЕ релиднут", not any(u == "https://www.avito.ru/unk" f
 check("drop: last_alert_price обновлён", _after["https://www.avito.ru/drop"].get("last_alert_price") == 75000)
 
 
+# ─── 19. notify: тег «из браузера» для лотов от расширения ────────────────────
+print("\n[19] notify: тег источника (Chrome-коллектор)")
+import scanner_v2 as _svN
+from common.condition import analyze_condition as _ac
+_svN.TELEGRAM_URL = "http://x"          # чтобы notify не вышел рано
+sN = AvitoScannerV2(None)
+_cap = {}
+sN._send_telegram = lambda text, log: _cap.update(text=text)
+_base_c = {'kind': 'fire', 'score': 80, 'title': 'Mac mini M4 16/256', 'price': 40000,
+           'median': 50000, 'p20': 45000, 'n_comps': 10, 'buyout': 40000,
+           'condition': _ac("отличное состояние"), 'ram': 16, 'ssd': 256, 'diagonal': None,
+           'url': 'https://www.avito.ru/x', 'age_str': '1 час', 'location': 'Москва',
+           'seller_type': 'Частное лицо', 'seller_reviews': 3, 'is_private': True,
+           'reseller': False, 'urgent': False}
+sN.notify({**_base_c, 'source_kind': 'browser'})
+check("браузерный лот → тег «из браузера»", 'из браузера' in _cap.get('text', ''))
+_cap.clear()
+sN.notify({**_base_c})
+check("лот от VPS-сканера → без тега", 'из браузера' not in _cap.get('text', ''))
+
+
 # ─── Итог ────────────────────────────────────────────────────────────────────
 print()
 if _fails:

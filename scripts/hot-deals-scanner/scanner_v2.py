@@ -799,6 +799,8 @@ class AvitoScannerV2:
             'delivery': "📦 <b>НИЖЕ РЫНКА | ДОСТАВКА</b>",
         }
         header = headers.get(kind, "🔥 <b>НИЖЕ РЫНКА</b>")
+        # Тег источника: лот пришёл от домашнего браузера-коллектора (Chrome) или от VPS-сканера
+        src_tag = "\n🌐 <i>из браузера (Chrome-коллектор)</i>" if c.get('source_kind') == 'browser' else ""
 
         price  = c['price']
         median = c['median']
@@ -818,7 +820,7 @@ class AvitoScannerV2:
         urgent = " 🚨 торг/срочно" if c.get('urgent') else ""
 
         text = (
-            f"{header} [{c['score']}/100]{urgent}\n\n"
+            f"{header} [{c['score']}/100]{urgent}{src_tag}\n\n"
             f"💻 {c['title']}\n"
             f"⚙️ <b>{c['ram']}GB / {c['ssd']}GB{diag}</b>\n"
             f"💰 Цена: <b>{price:,} ₽</b> <b>(−{disc}% к медиане)</b>\n"
@@ -1655,6 +1657,7 @@ class AvitoScannerV2:
                 # Тот же хвост оценки, что и в run(); живых компов нет → comps_for пуст
                 cand = self._build_candidate(L, cfg, market, source, assess, comps_for=lambda c: [])
                 if cand:
+                    cand['source_kind'] = 'browser'   # лот от домашнего расширения → тег в уведомлении
                     candidates.append(cand)
             except Exception as e:
                 logger.error(f"intake card: {e}")
