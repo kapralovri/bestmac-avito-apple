@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-01 15:51",
-  "total_listings": 3167,
+  "generated_at": "2026-07-01 20:48",
+  "total_listings": 3162,
   "stats": [
     {
       "model_name": "MacBook Pro 13 (2020, M1)",
@@ -266,7 +266,7 @@
       "median_price": 107000,
       "buyout_price": 85000,
       "samples_count": 3,
-      "updated_at": "2026-07-01 13:19"
+      "updated_at": "2026-07-01 20:46"
     },
     {
       "model_name": "Mac Studio m1",
@@ -292,7 +292,7 @@
       "median_price": 270000,
       "buyout_price": 216000,
       "samples_count": 3,
-      "updated_at": "2026-07-01 13:19"
+      "updated_at": "2026-07-01 20:46"
     },
     {
       "model_name": "Mac Studio m1",
@@ -690,12 +690,12 @@
       "processor": "Apple M3 Ultra",
       "ram": 96,
       "ssd": 1024,
-      "min_price": 399000,
-      "max_price": 650000,
-      "median_price": 519990,
-      "buyout_price": 415000,
-      "samples_count": 22,
-      "updated_at": "2026-06-25 20:56"
+      "min_price": 425000,
+      "max_price": 684990,
+      "median_price": 580000,
+      "buyout_price": 464000,
+      "samples_count": 17,
+      "updated_at": "2026-07-01 20:48"
     },
     {
       "model_name": "Mac Studio m3",
@@ -703,12 +703,12 @@
       "processor": "Apple M3 Ultra",
       "ram": 96,
       "ssd": 2048,
-      "min_price": 504990,
-      "max_price": 679990,
-      "median_price": 542772,
-      "buyout_price": 434000,
+      "min_price": 529990,
+      "max_price": 799999,
+      "median_price": 562772,
+      "buyout_price": 450000,
       "samples_count": 6,
-      "updated_at": "2026-06-25 20:56"
+      "updated_at": "2026-07-01 20:48"
     },
     {
       "model_name": "Mac Studio m3",
@@ -781,12 +781,12 @@
       "processor": "Apple M4 Max",
       "ram": 64,
       "ssd": 1024,
-      "min_price": 340000,
-      "max_price": 490000,
-      "median_price": 340000,
-      "buyout_price": 272000,
+      "min_price": 380000,
+      "max_price": 399990,
+      "median_price": 380000,
+      "buyout_price": 304000,
       "samples_count": 3,
-      "updated_at": "2026-06-13 20:14"
+      "updated_at": "2026-07-01 20:48"
     },
     {
       "model_name": "Mac Studio m3",
