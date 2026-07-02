@@ -28,7 +28,7 @@ const KakProdatMacbookVygodno = () => {
         <Breadcrumbs
           items={[
             { name: "Главная", url: "/" },
-            { name: "Блог", url: "/#blog" },
+            { name: "Блог", url: "/blog" },
             { name: "Как продать MacBook выгодно", url: "/blog/kak-prodat-macbook-vygodno" }
           ]}
         />

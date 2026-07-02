@@ -22,7 +22,7 @@ interface BlogPreviewProps {
 const defaultPosts: BlogPost[] = [
   {
     slug: "macbook-m4-obzor",
-    title: "MacBook M4: подробный обзор 2024",
+    title: "MacBook M4: подробный обзор",
     excerpt: "Новый MacBook Pro на чипе M4 - революция или эволюция? Обзор характеристик, производительности и цен.",
     date: "2024-01-20",
     author: "Роман Капралов"

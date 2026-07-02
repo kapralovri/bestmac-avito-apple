@@ -34,7 +34,7 @@ const MacbookVsWindows = () => {
 <main className="flex-grow container mx-auto px-4 py-12">
         <Breadcrumbs items={[
           { name: "Главная", url: "/" },
-          { name: "Блог", url: "/#blog" },
+          { name: "Блог", url: "/blog" },
           { name: "MacBook или Windows", url: "/blog/macbook-vs-windows" }
         ]} />
 

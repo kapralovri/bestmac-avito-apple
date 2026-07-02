@@ -19,7 +19,7 @@ const KakVybratMacbook2024 = () => {
         dangerouslySetInnerHTML={{ __html: JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Article",
-    "headline": "Как выбрать MacBook в 2024 году — полный гид",
+    "headline": "Как выбрать MacBook в 2026 году — полный гид",
     "description": "Подробный гид по выбору MacBook. Сравнение Air и Pro, помощь в выборе.",
     "image": "https://bestmac.ru/og-image.jpg",
     "datePublished": "2025-09-20",
@@ -44,17 +44,17 @@ const KakVybratMacbook2024 = () => {
           transition={{ duration: 0.6 }}
         >
           <h1 className="text-4xl md:text-5xl font-bold font-apple mb-6">
-            Как выбрать MacBook в 2024 году: полный гайд
+            Как выбрать MacBook в 2026 году: полный гайд
           </h1>
           <p className="text-xl text-muted-foreground mb-8">
-            Руководство по выбору правильного MacBook для ваших задач в 2024 году
+            Руководство по выбору правильного MacBook для ваших задач в 2026 году
           </p>
 
           <div className="space-y-8">
             <section>
-              <h2 className="text-2xl font-bold mb-4">Обзор линейки MacBook 2024</h2>
+              <h2 className="text-2xl font-bold mb-4">Обзор актуальной линейки MacBook</h2>
               <p className="text-muted-foreground mb-4">
-                В 2024 году Apple предлагает несколько серий ноутбуков с разными процессорами: 
+                Сегодня Apple предлагает несколько серий ноутбуков с разными процессорами: 
                 от базового M1 до мощного M4. Каждая модель имеет свои преимущества и подходит 
                 для определенных задач.
               </p>
@@ -165,7 +165,7 @@ const KakVybratMacbook2024 = () => {
                 <p className="font-semibold mb-2">Лучшее соотношение цена/качество</p>
                 <p className="text-sm text-muted-foreground">
                   MacBook Air M2 с 16GB RAM и 512GB SSD — идеальный баланс производительности, 
-                  портативности и цены для большинства задач в 2024 году.
+                  портативности и цены для большинства задач в 2026 году.
                 </p>
               </div>
             </section>

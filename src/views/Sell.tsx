@@ -37,10 +37,23 @@ const DEVICE_FAMILIES: ReadonlyArray<{ key: FamilyKey; label: string; icon: type
   { key: 'Mac Studio', label: 'Mac Studio', icon: HardDrive },
 ];
 
-const Sell = () => {
-  const [data, setData] = useState<AvitoPricesData | null>(null);
-  const [totalListings, setTotalListings] = useState(0);
-  const [lastUpdate, setLastUpdate] = useState<string>('');
+interface SellProps {
+  /** Данные, прочитанные сервером при сборке: контент попадает в SSR-HTML
+   * (без этого краулеры видели только спиннер «Загрузка данных...»). */
+  initialData?: AvitoPricesData | null;
+}
+
+const formatUpdate = (generatedAt?: string) => {
+  if (!generatedAt) return '';
+  const d = new Date(generatedAt);
+  return isNaN(d.getTime()) ? '' :
+    d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+};
+
+const Sell = ({ initialData = null }: SellProps) => {
+  const [data, setData] = useState<AvitoPricesData | null>(initialData);
+  const [totalListings, setTotalListings] = useState(initialData?.total_listings ?? 0);
+  const [lastUpdate, setLastUpdate] = useState<string>(formatUpdate(initialData?.generated_at));
   const [family, setFamily] = useState<FamilyKey>('MacBook');
 
   // Форма
@@ -62,16 +75,15 @@ const Sell = () => {
     isRareModel?: boolean;
   } | null>(null);
 
-  // Загрузка данных
+  // Загрузка данных (только если сервер не передал initialData)
   useEffect(() => {
+    if (initialData) return;
     loadAvitoPrices().then((loadedData) => {
       setData(loadedData);
       setTotalListings(loadedData.total_listings);
-      if (loadedData.generated_at) {
-        const date = new Date(loadedData.generated_at);
-        setLastUpdate(date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }));
-      }
+      setLastUpdate(formatUpdate(loadedData.generated_at));
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const currentFamily = DEVICE_FAMILIES.find(f => f.key === family);
@@ -309,7 +321,7 @@ const Sell = () => {
             transition={{ duration: 0.5 }}
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Скупка MacBook в Москве дорого
+              Выкуп MacBook в Москве дорого
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
               Узнайте реальную рыночную стоимость в онлайн-калькуляторе.

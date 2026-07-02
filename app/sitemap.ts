@@ -1,10 +1,27 @@
 import type { MetadataRoute } from 'next';
+import { readFile } from 'fs/promises';
+import path from 'path';
 import { VYKUP_LANDINGS } from '@/data/vykup-landings';
 import { GEO_LANDINGS } from '@/data/geo-landings';
 import { ALL_BUYOUT_MODELS } from '@/lib/model-slugs';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+// Дата последней правки статей блога (см. dateModified в Article-схемах)
+const BLOG_LASTMOD = new Date('2026-03-31');
+
+// Дата обновления ценовых данных: ценовые страницы реально меняются вместе с ней
+async function pricesLastmod(): Promise<Date | undefined> {
+  try {
+    const raw = await readFile(path.join(process.cwd(), 'public/data/avito-prices.json'), 'utf-8');
+    const d = new Date(JSON.parse(raw).generated_at);
+    return isNaN(d.getTime()) ? undefined : d;
+  } catch {
+    return undefined;
+  }
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://bestmac.ru';
+  const pricesDate = await pricesLastmod();
 
   const pages: Array<{
     url: string;
@@ -83,10 +100,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })),
   ];
 
-  return pages.map((page) => ({
-    url: `${baseUrl}${page.url}`,
-    lastModified: new Date(),
-    changeFrequency: page.changeFrequency,
-    priority: page.priority,
-  }));
+  // Реальный lastmod вместо фиктивного new Date() для всех URL:
+  //  - ценовые страницы (/sell*, /buy*, /vykup/*) меняются с обновлением данных;
+  //  - блог — дата последней правки статей;
+  //  - статика — без lastmod (честнее, чем выдуманная дата).
+  const lastmodFor = (url: string): Date | undefined => {
+    if (url.startsWith('/blog/')) return BLOG_LASTMOD;
+    if (url.startsWith('/sell') || url.startsWith('/buy') || url.startsWith('/vykup/')) {
+      return pricesDate;
+    }
+    return undefined;
+  };
+
+  return pages.map((page) => {
+    const lastModified = lastmodFor(page.url);
+    return {
+      url: `${baseUrl}${page.url}`,
+      ...(lastModified ? { lastModified } : {}),
+      changeFrequency: page.changeFrequency,
+      priority: page.priority,
+    };
+  });
 }

@@ -19,20 +19,19 @@ export const organizationSchema = {
     "latitude": "55.7369",
     "longitude": "37.5165"
   },
+  // Часы синхронизированы со страницей контактов (единый NAP: сайт/schema/llms.txt)
   "openingHoursSpecification": [
     {
       "@type": "OpeningHoursSpecification",
-      "dayOfWeek": [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday"
-      ],
+      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
       "opens": "10:00",
-      "closes": "23:00"
+      "closes": "20:00"
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Saturday", "Sunday"],
+      "opens": "11:00",
+      "closes": "18:00"
     }
   ],
   // aggregateRating намеренно отсутствует: добавить только при наличии
