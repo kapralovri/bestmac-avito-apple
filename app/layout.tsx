@@ -40,6 +40,7 @@ export const metadata: Metadata = {
     language: 'ru',
   },
   verification: {
+    google: 'hlJ8fNZ-OXOGBQ5bFLI-UTheo-N2qAeCoCWDyocOS7I',
     other: {
       'yandex-verification': '04218115450e5747',
     },

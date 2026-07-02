@@ -38,7 +38,12 @@ export const organizationSchema = {
   // реальных подтверждаемых отзывов (напр. из Яндекс.Карт), иначе это
   // фальшивая разметка и риск санкций.
   "priceRange": "$$",
-  "sameAs": ["https://t.me/romanmanro"],
+  // Entity-сигналы: связываем бренд с внешними профилями (важно для локальной
+  // выдачи и AI-ассистентов — Алиса/YandexGPT берут данные из Я.Бизнеса)
+  "sameAs": [
+    "https://t.me/romanmanro",
+    "https://yandex.ru/profile/215912324656",
+  ],
   "areaServed": {
     "@type": "City",
     "name": "Москва"
