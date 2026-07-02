@@ -29,6 +29,8 @@ const nextConfig: NextConfig = {
         destination: `/sell/${to}`,
         permanent: true,
       })),
+      // Битые URL, найденные Яндекс.Вебмастером (404 в «Исключённых»)
+      { source: '/macbook', destination: '/sell', permanent: true },
     ];
   },
 
