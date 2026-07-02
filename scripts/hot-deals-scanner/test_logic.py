@@ -605,11 +605,20 @@ _rawf = Path(_tmp.mkdtemp()) / "raw.json"
 _svR.RAW_PRICES_FILE = _rawf
 _svR.RAW_CAP = 5
 _sA = AvitoScannerV2(None)
-_sA._accumulate_raw({"k1": [40000, 41000], "k2": [50000]})
-_sA._accumulate_raw({"k1": [42000, 43000, 44000, 45000]})   # k1 → 6 цен, cap=5
+_sA._accumulate_raw({"k1": [40000, 41000], "k2": [50000]})            # легаси-числа
+_sA._accumulate_raw({"k1": [[42000, 1000, 1], [43000, 1000, 0], [44000, 1000, None], [45000, 1000, 1]]})
 _store20 = _json.loads(_rawf.read_text())
-check("накопитель: cap отрезает старые (последние 5)", _store20["k1"] == [41000, 42000, 43000, 44000, 45000])
-check("накопитель: другой ключ сохранён", _store20["k2"] == [50000])
+_p20 = [e[0] for e in _store20["k1"]]
+check("накопитель: cap отрезает старые (последние 5)", _p20 == [41000, 42000, 43000, 44000, 45000])
+check("накопитель: записи нормализованы [цена,ts,мск]", all(isinstance(e, list) and len(e) == 3 for e in _store20["k1"]))
+check("накопитель: москва-флаг сохранён", _store20["k1"][1][2] == 1 and _store20["k1"][2][2] == 0)
+check("накопитель: другой ключ сохранён", [e[0] for e in _store20["k2"]] == [50000])
+
+from scanner_v2 import title_city
+check("город из хвоста заголовка", title_city("Macbook air m1 8/256 в Казани") == "Казани")
+check("двусловный город", title_city("MacBook Pro 14 M3 в Нижнем Новгороде") == "Нижнем Новгороде")
+check("без города → пусто", title_city("Mac mini m4 16gb 256gb") == "")
+check("«в идеальном состоянии» — не город", title_city("MacBook Air в идеальном состоянии") == "")
 
 
 # ─── 21. Протухшая база → живой рынок; компы из накопителя ────────────────────

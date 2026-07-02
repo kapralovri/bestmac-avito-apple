@@ -577,6 +577,25 @@ def is_moscow(location):
     return any(m in loc for m in MOSCOW_MARKERS)
 
 
+# В всероссийской выдаче Авито дописывает город в конец заголовка: «… в Казани»
+_TITLE_CITY_RE = re.compile(r'\sв\s([А-ЯЁ][А-Яа-яЁё-]*(?:\s[А-ЯЁа-яё][А-Яа-яЁё-]*)?)\s*$')
+
+
+def title_city(title):
+    """Город из хвоста заголовка карточки («… в Нижнем Новгороде» → «Нижнем Новгороде»).
+    Пусто, если города в заголовке нет (тогда регион неизвестен)."""
+    m = _TITLE_CITY_RE.search(title or '')
+    return m.group(1) if m else ''
+
+
+def _norm_raw_entry(e, now_ts=None):
+    """Запись накопителя → [цена, unix_ts, москва(1/0/None)].
+    Легаси-формат (голое число) получает текущее время и неизвестный регион."""
+    if isinstance(e, list) and len(e) >= 3:
+        return [int(e[0]), int(e[1]), e[2]]
+    return [int(e[0] if isinstance(e, list) else e), int(now_ts or time.time()), None]
+
+
 def extract_location(soup):
     """Извлекает город из страницы объявления."""
     for selector in [
@@ -1428,8 +1447,10 @@ class AvitoScannerV2:
                 self._raw_prices_cache = data if isinstance(data, dict) else {}
             except Exception:
                 self._raw_prices_cache = {}
-        prices = self._raw_prices_cache.get(str(live_key(cfg)))
-        return [int(p) for p in prices] if isinstance(prices, list) else []
+        entries = self._raw_prices_cache.get(str(live_key(cfg)))
+        if not isinstance(entries, list):
+            return []
+        return [int(e[0]) if isinstance(e, list) else int(e) for e in entries]
 
     def _market_for(self, cfg, comps):
         """Эталон рынка = МОСКВА (база цен), т.к. перепродажа в Москве. Поиск идёт по
@@ -1705,8 +1726,12 @@ class AvitoScannerV2:
                 cfg = self._passes_prefilter(L)
                 if cfg is None:
                     self.seen.add(url); continue
-                # Копим цену по конфигу (все валидные б/у лоты, без троттлинга) для модальной
-                raw_batch.setdefault(str(live_key(cfg)), []).append(L['price'])
+                # Копим цену по конфигу (все валидные б/у лоты, без троттлинга):
+                # [цена, время, москва] — для модальной и автосинка базы
+                loc = title_city(L['title'])
+                msk = 1 if (loc and is_moscow(loc)) else (0 if loc else None)
+                raw_batch.setdefault(str(live_key(cfg)), []).append(
+                    [L['price'], int(time.time()), msk])
                 # Рынок: база (Москва) → при её отсутствии/протухании — накопитель
                 # коллектора (живые всероссийские цены). Если рынка нет совсем —
                 # НЕ помечаем seen: резервный VPS-сканер построит живой рынок из
@@ -1748,9 +1773,11 @@ class AvitoScannerV2:
                 store = {}
         except Exception:
             store = {}
-        for key, prices in raw_batch.items():
+        now_ts = int(time.time())
+        for key, entries in raw_batch.items():
             cur = store.get(key) if isinstance(store.get(key), list) else []
-            cur.extend(int(p) for p in prices)
+            cur = [_norm_raw_entry(e, now_ts) for e in cur]   # миграция легаси-чисел
+            cur.extend(_norm_raw_entry(e, now_ts) for e in entries)
             store[key] = cur[-RAW_CAP:]
         try:
             RAW_PRICES_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -1806,18 +1833,20 @@ def modal_report(min_n=None):
         except Exception:
             pass
     rows = []
-    for key, prices in raw.items():
-        if not isinstance(prices, list) or len(prices) < min_n:
+    for key, entries in raw.items():
+        if not isinstance(entries, list) or len(entries) < min_n:
             continue
+        prices = [int(e[0]) if isinstance(e, list) else int(e) for e in entries]
+        n_msk = sum(1 for e in entries if isinstance(e, list) and len(e) >= 3 and e[2] == 1)
         med = int(statistics.median(sorted(prices)))
         mod = modal_center(prices)
         db_med = dbidx.get(key, {}).get('median_price')
-        rows.append((len(prices), key, med, mod, db_med))
+        rows.append((len(prices), n_msk, key, med, mod, db_med))
     rows.sort(key=lambda r: -r[0])
-    print(f"{'n':>4}  {'конфиг (live_key)':46} {'медиана':>8} {'модальн.':>9} {'база':>8}")
-    for n, key, med, mod, db_med in rows:
+    print(f"{'n':>4} {'мск':>4}  {'конфиг (live_key)':46} {'медиана':>8} {'модальн.':>9} {'база':>8}")
+    for n, n_msk, key, med, mod, db_med in rows:
         dbs = str(db_med) if db_med else "—"
-        print(f"{n:>4}  {key:46} {med:>8} {mod:>9} {dbs:>8}")
+        print(f"{n:>4} {n_msk:>4}  {key:46} {med:>8} {mod:>9} {dbs:>8}")
     print(f"\nКонфигов с ≥{min_n} ценами: {len(rows)}  (окно кластера ~12% медианы)")
     print("Чтобы закрепить: добавь в price-overrides.json 'model|ram|ssd': {\"median\": N}")
 
