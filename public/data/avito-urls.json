@@ -1483,6 +1483,14 @@
       "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/applemacbook_air_13_2020_m1-ASgBAgICAkSg5A3Ot~sRqOQN9Nlm?cd=1&f=ASgBAgECBESe5A3WzK0QoOQNzrfrEajkDfTZZrCzFP6hjwMDRcaaDBV7ImZyb20iOjI3MDAwLCJ0byI6MH2coRQReyJmcm9tIjo4LCJ0byI6OH2eoRQVeyJmcm9tIjoyNTYsInRvIjoyNTZ9&localPriority=0&q=macbook"
     },
     {
+      "family": "MacBook Air",
+      "model_name": "MacBook Air 13 M5",
+      "processor": "Apple M5",
+      "ram": 16,
+      "ssd": 512,
+      "url": ""
+    },
+    {
       "family": "iMac",
       "model_name": "imac 24",
       "processor": "Apple M1",
