@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-01T09:42:08.421735+00:00",
+  "updated_at": "2026-07-02T08:53:35.689606+00:00",
   "categories_found": [
     "iphone_17_pro"
   ],
@@ -14,8 +14,8 @@
       "flags": [],
       "is_activated": false,
       "name": "iPhone 17 Pro 256GB Silver",
-      "price": 104000,
-      "source_price": 99000
+      "price": 103700,
+      "source_price": 98700
     },
     {
       "category": "iphone_17_pro",
@@ -27,8 +27,8 @@
       "flags": [],
       "is_activated": false,
       "name": "iPhone 17 Pro 256GB Silver",
-      "price": 96000,
-      "source_price": 91000
+      "price": 94000,
+      "source_price": 89000
     },
     {
       "category": "iphone_17_pro",
@@ -53,8 +53,21 @@
       "flags": [],
       "is_activated": false,
       "name": "iPhone 17 Pro 256GB Orange",
-      "price": 95000,
-      "source_price": 90000
+      "price": 93000,
+      "source_price": 88000
+    },
+    {
+      "category": "iphone_17_pro",
+      "category_display": "iPhone 17 Pro",
+      "model": "iPhone 17 Pro",
+      "storage": "256GB",
+      "storage_gb": 256,
+      "color": "Orange",
+      "flags": [],
+      "is_activated": false,
+      "name": "iPhone 17 Pro 256GB Orange",
+      "price": 91000,
+      "source_price": 86000
     },
     {
       "category": "iphone_17_pro",
@@ -66,8 +79,8 @@
       "flags": [],
       "is_activated": false,
       "name": "iPhone 17 Pro 256GB Blue",
-      "price": 104000,
-      "source_price": 99000
+      "price": 102500,
+      "source_price": 97500
     },
     {
       "category": "iphone_17_pro",
@@ -79,8 +92,21 @@
       "flags": [],
       "is_activated": false,
       "name": "iPhone 17 Pro 256GB Blue",
-      "price": 96000,
-      "source_price": 91000
+      "price": 93800,
+      "source_price": 88800
+    },
+    {
+      "category": "iphone_17_pro",
+      "category_display": "iPhone 17 Pro",
+      "model": "iPhone 17 Pro",
+      "storage": "256GB",
+      "storage_gb": 256,
+      "color": "Blue",
+      "flags": [],
+      "is_activated": false,
+      "name": "iPhone 17 Pro 256GB Blue",
+      "price": 91000,
+      "source_price": 86000
     },
     {
       "category": "iphone_17_pro",
@@ -92,21 +118,8 @@
       "flags": [],
       "is_activated": false,
       "name": "iPhone 17 Pro 512GB Silver",
-      "price": 122500,
-      "source_price": 117500
-    },
-    {
-      "category": "iphone_17_pro",
-      "category_display": "iPhone 17 Pro",
-      "model": "iPhone 17 Pro",
-      "storage": "512GB",
-      "storage_gb": 512,
-      "color": "Silver",
-      "flags": [],
-      "is_activated": false,
-      "name": "iPhone 17 Pro 512GB Silver",
-      "price": 114500,
-      "source_price": 109500
+      "price": 122000,
+      "source_price": 117000
     },
     {
       "category": "iphone_17_pro",
@@ -131,8 +144,8 @@
       "flags": [],
       "is_activated": false,
       "name": "iPhone 17 Pro 512GB Orange",
-      "price": 118000,
-      "source_price": 113000
+      "price": 117000,
+      "source_price": 112000
     },
     {
       "category": "iphone_17_pro",
@@ -144,8 +157,8 @@
       "flags": [],
       "is_activated": false,
       "name": "iPhone 17 Pro 512GB Orange",
-      "price": 113500,
-      "source_price": 108500
+      "price": 109500,
+      "source_price": 104500
     },
     {
       "category": "iphone_17_pro",
@@ -183,8 +196,8 @@
       "flags": [],
       "is_activated": false,
       "name": "iPhone 17 Pro 512GB Blue",
-      "price": 120500,
-      "source_price": 115500
+      "price": 119000,
+      "source_price": 114000
     },
     {
       "category": "iphone_17_pro",
@@ -196,8 +209,21 @@
       "flags": [],
       "is_activated": false,
       "name": "iPhone 17 Pro 512GB Blue",
-      "price": 114000,
-      "source_price": 109000
+      "price": 110000,
+      "source_price": 105000
+    },
+    {
+      "category": "iphone_17_pro",
+      "category_display": "iPhone 17 Pro",
+      "model": "iPhone 17 Pro",
+      "storage": "512GB",
+      "storage_gb": 512,
+      "color": "Blue",
+      "flags": [],
+      "is_activated": false,
+      "name": "iPhone 17 Pro 512GB Blue",
+      "price": 104000,
+      "source_price": 99000
     },
     {
       "category": "iphone_17_pro",
@@ -248,8 +274,8 @@
       "flags": [],
       "is_activated": false,
       "name": "iPhone 17 Pro Max 256GB Orange",
-      "price": 103500,
-      "source_price": 98500
+      "price": 101700,
+      "source_price": 96700
     },
     {
       "category": "iphone_17_pro",
@@ -261,8 +287,8 @@
       "flags": [],
       "is_activated": false,
       "name": "iPhone 17 Pro Max 256GB Orange",
-      "price": 102500,
-      "source_price": 97500
+      "price": 99000,
+      "source_price": 94000
     },
     {
       "category": "iphone_17_pro",
@@ -287,8 +313,8 @@
       "flags": [],
       "is_activated": false,
       "name": "iPhone 17 Pro Max 256GB Blue",
-      "price": 104000,
-      "source_price": 99000
+      "price": 101700,
+      "source_price": 96700
     },
     {
       "category": "iphone_17_pro",
@@ -300,8 +326,8 @@
       "flags": [],
       "is_activated": false,
       "name": "iPhone 17 Pro Max 256GB Blue",
-      "price": 103000,
-      "source_price": 98000
+      "price": 99000,
+      "source_price": 94000
     },
     {
       "category": "iphone_17_pro",
@@ -326,8 +352,8 @@
       "flags": [],
       "is_activated": false,
       "name": "iPhone 17 Pro Max 512GB Silver",
-      "price": 126000,
-      "source_price": 121000
+      "price": 120500,
+      "source_price": 115500
     },
     {
       "category": "iphone_17_pro",
@@ -352,8 +378,8 @@
       "flags": [],
       "is_activated": false,
       "name": "iPhone 17 Pro Max 512GB Orange",
-      "price": 122500,
-      "source_price": 117500
+      "price": 118500,
+      "source_price": 113500
     },
     {
       "category": "iphone_17_pro",
@@ -365,8 +391,8 @@
       "flags": [],
       "is_activated": false,
       "name": "iPhone 17 Pro Max 512GB Orange",
-      "price": 119000,
-      "source_price": 114000
+      "price": 118000,
+      "source_price": 113000
     },
     {
       "category": "iphone_17_pro",
@@ -391,8 +417,8 @@
       "flags": [],
       "is_activated": false,
       "name": "iPhone 17 Pro Max 512GB Blue",
-      "price": 129000,
-      "source_price": 124000
+      "price": 128500,
+      "source_price": 123500
     },
     {
       "category": "iphone_17_pro",
@@ -404,8 +430,8 @@
       "flags": [],
       "is_activated": false,
       "name": "iPhone 17 Pro Max 512GB Blue",
-      "price": 124500,
-      "source_price": 119500
+      "price": 119000,
+      "source_price": 114000
     }
   ]
 }
