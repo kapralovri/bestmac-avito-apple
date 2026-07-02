@@ -187,6 +187,20 @@ def parse_generated_at(s):
     return None
 
 
+STALE_DB_DAYS = 7   # запись базы старше — не доверяем ей при наличии живых данных
+
+
+def db_entry_is_stale(updated_at, now=None, max_days=STALE_DB_DAYS):
+    """True, если запись базы протухла (CI-парсер троттлится и неделями не обновляет
+    горячие конфиги — старая медиана на падающем рынке завышена → ложно-выгодные).
+    Нераспознанная/отсутствующая дата = протухла (perestrahovka)."""
+    dt = parse_generated_at(updated_at)
+    if dt is None:
+        return True
+    now = now or datetime.now()
+    return (now - dt).days >= max_days
+
+
 def should_alert_stale(age_hours, last_alert_iso, now, threshold_hours, cooldown_hours):
     """Решает, слать ли алерт о застрявшем парсере (с учётом кулдауна)."""
     if age_hours is None or age_hours < threshold_hours:
@@ -643,6 +657,9 @@ class AvitoScannerV2:
                 logger.info(f"🗃 Реестр объявлений: {len(self.registry)}")
             except Exception:
                 pass
+
+        # Кэш накопителя цен коллектора (живые компы для intake); грузится лениво
+        self._raw_prices_cache = None
 
     def _start_browser(self):
         """Запускает Playwright-браузер."""
@@ -1401,19 +1418,40 @@ class AvitoScannerV2:
         """Запись базы по live_key (надёжный матч), иначе по точной строке (фолбэк)."""
         return self.prices_by_livekey.get(live_key(cfg)) or self.match_to_db(cfg)
 
+    def _raw_comps(self, cfg):
+        """Живые компы из накопителя коллектора (intake-raw-prices.json) — цены,
+        собранные домашним браузером без троттлинга. Используются в intake, где
+        страниц выдачи нет: закрывают конфиги без базы (новые M5) и протухшую базу."""
+        if self._raw_prices_cache is None:
+            try:
+                data = json.loads(RAW_PRICES_FILE.read_text(encoding='utf-8')) if RAW_PRICES_FILE.exists() else {}
+                self._raw_prices_cache = data if isinstance(data, dict) else {}
+            except Exception:
+                self._raw_prices_cache = {}
+        prices = self._raw_prices_cache.get(str(live_key(cfg)))
+        return [int(p) for p in prices] if isinstance(prices, list) else []
+
     def _market_for(self, cfg, comps):
         """Эталон рынка = МОСКВА (база цен), т.к. перепродажа в Москве. Поиск идёт по
         всей России, но цену лота сравниваем с московской медианой из базы.
-        Живая всероссийская выборка — только фолбэк для конфигов, которых нет в базе."""
+        Живая выборка (страницы выдачи в run(), накопитель коллектора в intake) —
+        фолбэк для конфигов без базы И замена ПРОТУХШЕЙ базы: CI-парсер троттлится
+        и неделями не обновляет горячие конфиги, а старая медиана на падающем рынке
+        завышена → ложно-выгодные алерты. Живая медиана всероссийская (ниже
+        московской) — для перекупа это консервативно: ложных срабатываний не даёт."""
         db = self._db_stat(cfg)
+        live = robust_stats(comps)
         if db and db.get('median_price'):
-            med = int(db['median_price'])
-            lo = int(db.get('min_price') or med * 0.85)
-            hi = int(db.get('max_price') or med * 1.15)
-            p20 = int(lo + (med - lo) * 0.4)
-            return MarketStats(n=int(db.get('samples_count', 0)) or 1,
-                               median=med, p20=p20, p10=lo, low=lo, high=hi), 'db'
-        live = robust_stats(comps)   # всероссийская — фолбэк (конфиг не в базе)
+            # ручной оверрайд не протухает: курируемая цифра главнее живого рынка
+            db_fresh = db.get('manual_override') or not db_entry_is_stale(db.get('updated_at'))
+            if db_fresh or not (live and live.n >= MIN_COMPS):
+                med = int(db['median_price'])
+                lo = int(db.get('min_price') or med * 0.85)
+                hi = int(db.get('max_price') or med * 1.15)
+                p20 = int(lo + (med - lo) * 0.4)
+                return MarketStats(n=int(db.get('samples_count', 0)) or 1,
+                                   median=med, p20=p20, p10=lo, low=lo, high=hi), 'db'
+            # база протухла, живых данных достаточно → живой рынок надёжнее
         if live and live.n >= MIN_COMPS:
             return live, 'live'
         if live and live.n >= 3:
@@ -1669,21 +1707,25 @@ class AvitoScannerV2:
                     self.seen.add(url); continue
                 # Копим цену по конфигу (все валидные б/у лоты, без троттлинга) для модальной
                 raw_batch.setdefault(str(live_key(cfg)), []).append(L['price'])
-                # В intake живых компов нет (одиночные карточки) → рынок только из базы.
-                # Конфиг, которого нет в базе, оценить нечем. НЕ помечаем seen: иначе
-                # резервный VPS-сканер (он пропускает уже-seen url) не сможет построить
-                # для него живой рынок и поймать лот. Расширение дедупит карточки само,
-                # так что повторной обработки тут не будет.
-                market, source = self._market_for(cfg, [])
-                if not market:
-                    logger.info(f"   ∅ нет в базе цен: {live_key(cfg)} | {L['title'][:45]}")
-                    continue
+                # Рынок: база (Москва) → при её отсутствии/протухании — накопитель
+                # коллектора (живые всероссийские цены). Если рынка нет совсем —
+                # НЕ помечаем seen: резервный VPS-сканер построит живой рынок из
+                # выдачи и поймает лот отдельно (расширение дедупит карточки само).
                 price = L['price']
+                comps = self._raw_comps(cfg)
+                if price in comps:
+                    comps.remove(price)   # не сравниваем лот сам с собой
+                market, source = self._market_for(cfg, comps)
+                if not market:
+                    logger.info(f"   ∅ нет рынка (база пуста, компов коллектора {len(comps)}): "
+                                f"{live_key(cfg)} | {L['title'][:45]}")
+                    continue
                 assess = assess_deal(price, market, min_margin=MIN_MARGIN, scam_floor=SCAM_FLOOR)
                 if assess.margin < MIN_MARGIN:
                     self.seen.add(url); continue
-                # Тот же хвост оценки, что и в run(); живых компов нет → comps_for пуст
-                cand = self._build_candidate(L, cfg, market, source, assess, comps_for=lambda c: [])
+                # Тот же хвост оценки, что и в run(); компы — из накопителя коллектора
+                cand = self._build_candidate(L, cfg, market, source, assess,
+                                             comps_for=lambda c: self._raw_comps(c))
                 if cand:
                     cand['source_kind'] = 'browser'   # лот от домашнего расширения → тег в уведомлении
                     candidates.append(cand)

@@ -37,6 +37,7 @@ def main():
             s["median_price"] = int(o["median"])
         s["buyout_price"] = (int(o["buyout"]) if o.get("buyout")
                              else max(0, int(s["median_price"] * 0.80 // 1000 * 1000)))
+        s["manual_override"] = True   # ручная цифра не «протухает» для сканера
         changed += 1
         print(f"  ✓ {key} → median {s['median_price']}, buyout {s['buyout_price']}")
 

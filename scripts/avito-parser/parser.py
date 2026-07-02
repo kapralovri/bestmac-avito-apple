@@ -574,6 +574,8 @@ def build_stat(
     else:
         buyout = buyout_override or max(0, int(median * 0.80 // 1000 * 1000))
     return {
+        # метка для сканера: ручная цифра не «протухает» и не заменяется живым рынком
+        **({"manual_override": True} if ov else {}),
         "model_name":   model,
         "family":       family,
         "processor":    processor,

@@ -612,6 +612,57 @@ check("накопитель: cap отрезает старые (последни
 check("накопитель: другой ключ сохранён", _store20["k2"] == [50000])
 
 
+# ─── 21. Протухшая база → живой рынок; компы из накопителя ────────────────────
+print("\n[21] _market_for: свежая/протухшая база + _raw_comps")
+from scanner_v2 import db_entry_is_stale, parse_generated_at
+
+_now21 = datetime(2026, 7, 2, 12, 0)
+check("свежая запись (вчера) → не протухла",
+      not db_entry_is_stale("2026-07-01 14:47", now=_now21))
+check("запись 27.06 (5 дней) → не протухла (порог 7)",
+      not db_entry_is_stale("2026-06-27 14:47", now=_now21))
+check("ctime-формат от 26 апреля → протухла",
+      db_entry_is_stale("Sun Apr 26 16:08:28 2026", now=_now21))
+check("мусорная дата → протухла (перестраховка)",
+      db_entry_is_stale("когда-то", now=_now21))
+check("нет даты → протухла", db_entry_is_stale(None, now=_now21))
+
+s21 = AvitoScannerV2(None)
+_cfg21 = classify("MacBook Air 13 M2", {'ram': 16, 'ssd': 512})
+_comps21 = [80000, 81000, 82000, 83000, 84000, 85000, 86000, 87000]   # 8 живых цен
+
+# свежая база → 'db' даже при живых компах
+s21.prices_by_livekey = {live_key(_cfg21): {
+    'median_price': 100000, 'min_price': 90000, 'max_price': 110000,
+    'samples_count': 30, 'updated_at': datetime.now().strftime("%Y-%m-%d %H:%M")}}
+_m, _src = s21._market_for(_cfg21, list(_comps21))
+check("свежая база побеждает живые компы", _src == 'db' and _m.median == 100000)
+
+# протухшая база + достаточные компы → 'live'
+s21.prices_by_livekey[live_key(_cfg21)]['updated_at'] = "2026-01-01 10:00"
+_m2, _src2 = s21._market_for(_cfg21, list(_comps21))
+check("протухшая база → живой рынок", _src2 == 'live' and _m2.median < 100000)
+
+# протухшая база + мало компов → всё же 'db' (лучше старая Москва, чем ничего)
+_m3, _src3 = s21._market_for(_cfg21, [80000, 81000])
+check("протухшая база + тонкие компы → остаёмся на базе", _src3 == 'db')
+
+# ручной оверрайд не протухает: даже старый + живые компы → 'db'
+s21.prices_by_livekey[live_key(_cfg21)]['manual_override'] = True
+_m4, _src4 = s21._market_for(_cfg21, list(_comps21))
+check("ручной оверрайд главнее живого рынка", _src4 == 'db' and _m4.median == 100000)
+del s21.prices_by_livekey[live_key(_cfg21)]['manual_override']
+
+# _raw_comps: читает накопитель по live_key
+_rawf21 = Path(_tmp.mkdtemp()) / "raw21.json"
+_svR.RAW_PRICES_FILE = _rawf21
+_rawf21.write_text(_json.dumps({str(live_key(_cfg21)): [70000, 71000, 72000]}))
+s21._raw_prices_cache = None
+check("_raw_comps отдаёт цены конфига", s21._raw_comps(_cfg21) == [70000, 71000, 72000])
+_cfg21b = classify("Mac mini M4", {'ram': 16, 'ssd': 256})
+check("_raw_comps: нет данных → []", s21._raw_comps(_cfg21b) == [])
+
+
 # ─── Итог ────────────────────────────────────────────────────────────────────
 print()
 if _fails:

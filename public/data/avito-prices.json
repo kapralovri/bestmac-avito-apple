@@ -1319,7 +1319,8 @@
       "median_price": 50000,
       "buyout_price": 40000,
       "samples_count": 73,
-      "updated_at": "2026-06-27 14:47"
+      "updated_at": "2026-06-27 14:47",
+      "manual_override": true
     },
     {
       "model_name": "mac mini m4",
