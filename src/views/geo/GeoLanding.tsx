@@ -20,9 +20,11 @@ interface GeoLandingProps {
   heroTitle?: string;
   /** Предложный падеж для «в …», напр. «Химках». По умолчанию «районе {district}» */
   locative?: string;
+  /** Уникальные локальные блоки района (анти-doorway: страницы не должны быть шаблонными) */
+  uniqueBlocks?: Array<{ heading: string; text: string }>;
 }
 
-const GeoLanding = ({ district, metroStation, slug, nearbyAreas, landmarks, customDescription, heroTitle, locative }: GeoLandingProps) => {
+const GeoLanding = ({ district, metroStation, slug, nearbyAreas, landmarks, customDescription, heroTitle, locative, uniqueBlocks }: GeoLandingProps) => {
   const place = locative || `районе ${district}`;
   const breadcrumbItems = [
     { name: "Главная", url: "/" },
@@ -189,6 +191,18 @@ const GeoLanding = ({ district, metroStation, slug, nearbyAreas, landmarks, cust
             </p>
           )}
         </section>
+
+        {/* Уникальный локальный контент района */}
+        {uniqueBlocks && uniqueBlocks.length > 0 && (
+          <section className="mb-16">
+            {uniqueBlocks.map((b, i) => (
+              <div key={i} className="mb-8">
+                <h2 className="text-2xl font-bold mb-3">{b.heading}</h2>
+                <p className="text-muted-foreground leading-relaxed">{b.text}</p>
+              </div>
+            ))}
+          </section>
+        )}
 
         {/* Lead Form */}
         <LeadForm

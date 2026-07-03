@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { GEO_LANDINGS, getGeoLanding } from '@/data/geo-landings';
+import { GEO_UNIQUE } from '@/data/geo-unique';
 import GeoLanding from '@/views/geo/GeoLanding';
 
 export function generateStaticParams() {
@@ -40,6 +41,7 @@ export default async function GeoDistrictPage({
       customDescription={geo.customDescription}
       heroTitle={geo.heroTitle}
       locative={geo.locative}
+      uniqueBlocks={GEO_UNIQUE[geo.slug]}
     />
   );
 }

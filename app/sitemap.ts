@@ -7,6 +7,11 @@ import { ALL_BUYOUT_MODELS } from '@/lib/model-slugs';
 
 // Дата последней правки статей блога (см. dateModified в Article-схемах)
 const BLOG_LASTMOD = new Date('2026-03-31');
+// Точечные правки отдельных статей (расширены 03.07.2026)
+const BLOG_LASTMOD_OVERRIDES: Record<string, Date> = {
+  '/blog/kak-prodat-macbook-vygodno': new Date('2026-07-03'),
+  '/blog/proverka-macbook-pered-pokupkoi': new Date('2026-07-03'),
+};
 
 // Дата обновления ценовых данных: ценовые страницы реально меняются вместе с ней
 async function pricesLastmod(): Promise<Date | undefined> {
@@ -106,7 +111,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   //  - блог — дата последней правки статей;
   //  - статика — без lastmod (честнее, чем выдуманная дата).
   const lastmodFor = (url: string): Date | undefined => {
-    if (url.startsWith('/blog/')) return BLOG_LASTMOD;
+    if (url.startsWith('/blog/')) return BLOG_LASTMOD_OVERRIDES[url] || BLOG_LASTMOD;
     if (url.startsWith('/sell') || url.startsWith('/buy') || url.startsWith('/vykup/')) {
       return pricesDate;
     }
