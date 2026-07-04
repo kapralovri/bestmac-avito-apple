@@ -2675,6 +2675,34 @@
       "buyout_price": 130000,
       "samples_count": 6,
       "updated_at": "2026-05-09 10:38"
+    },
+    {
+      "model_name": "MacBook Air 15 M5",
+      "family": "MacBook Air",
+      "processor": "Apple M5",
+      "ram": 16,
+      "ssd": 512,
+      "min_price": 92990,
+      "max_price": 124950,
+      "median_price": 106000,
+      "buyout_price": 84000,
+      "samples_count": 25,
+      "updated_at": "2026-07-04 05:10",
+      "collector_synced": true
+    },
+    {
+      "model_name": "MacBook Air 15 M5",
+      "family": "MacBook Air",
+      "processor": "Apple M5",
+      "ram": 24,
+      "ssd": 1024,
+      "min_price": 114990,
+      "max_price": 169000,
+      "median_price": 128800,
+      "buyout_price": 103000,
+      "samples_count": 24,
+      "updated_at": "2026-07-04 05:10",
+      "collector_synced": true
     }
   ]
 }
