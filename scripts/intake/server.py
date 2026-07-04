@@ -14,8 +14,9 @@ import sys
 import time
 import hmac
 import json
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from threading import Lock
 
 PORT = int(os.environ.get('INTAKE_PORT', '8787'))
 HOST = os.environ.get('INTAKE_HOST', '0.0.0.0')   # за Vercel-прокси; токен обязателен
@@ -85,7 +86,16 @@ def _append(cards):
     return added
 
 
+# _append/_bump_stats делают read-modify-write файлов; в многопоточном сервере
+# параллельные POST могли бы терять карточки — сериализуем записи.
+_WRITE_LOCK = Lock()
+
+
 class Handler(BaseHTTPRequestHandler):
+    # Таймаут сокета на запрос: молчащий клиент (порт-сканер, оборванное соединение)
+    # раньше вешал однопоточный сервер НАВСЕГДА — сервис жив, но не отвечает
+    # (инцидент 04.07: ConnectionResetError + зависание в recv).
+    timeout = 20
     def _send(self, code, obj):
         b = json.dumps(obj).encode('utf-8')
         self.send_response(code)
@@ -113,11 +123,12 @@ class Handler(BaseHTTPRequestHandler):
         except Exception:
             return self._send(400, {'ok': False, 'error': 'json'})
         card_list = cards if isinstance(cards, list) else []
-        added = _append(card_list)
-        try:
-            _bump_stats(len(card_list), added)
-        except Exception:
-            pass
+        with _WRITE_LOCK:
+            added = _append(card_list)
+            try:
+                _bump_stats(len(card_list), added)
+            except Exception:
+                pass
         self._send(200, {'ok': True, 'added': added})
 
     def do_GET(self):  # healthcheck
@@ -132,4 +143,5 @@ if __name__ == '__main__':
         # Fail-safe: сервер слушает наружу (0.0.0.0) — без токена приём был бы открыт всем.
         sys.exit('❌ INTAKE_TOKEN не задан — отказ запуска (иначе приём открыт всем).')
     print(f'🛰 Intake-сервер на {HOST}:{PORT} → {INCOMING}')
-    HTTPServer((HOST, PORT), Handler).serve_forever()
+    # ThreadingHTTPServer: медленный/молчащий клиент больше не блокирует остальных
+    ThreadingHTTPServer((HOST, PORT), Handler).serve_forever()
