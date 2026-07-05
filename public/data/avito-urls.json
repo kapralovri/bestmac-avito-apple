@@ -1502,7 +1502,23 @@
       "family": "MacBook Air",
       "model_name": "MacBook Air 13 M5",
       "processor": "Apple M5",
+      "ram": 16,
+      "ssd": 1024,
+      "url": ""
+    },
+    {
+      "family": "MacBook Air",
+      "model_name": "MacBook Air 13 M5",
+      "processor": "Apple M5",
       "ram": 24,
+      "ssd": 1024,
+      "url": ""
+    },
+    {
+      "family": "MacBook Air",
+      "model_name": "MacBook Air 13 M5",
+      "processor": "Apple M5",
+      "ram": 32,
       "ssd": 1024,
       "url": ""
     },
@@ -1518,9 +1534,41 @@
       "family": "MacBook Air",
       "model_name": "MacBook Air 15 M5",
       "processor": "Apple M5",
+      "ram": 16,
+      "ssd": 1024,
+      "url": ""
+    },
+    {
+      "family": "MacBook Air",
+      "model_name": "MacBook Air 15 M5",
+      "processor": "Apple M5",
       "ram": 24,
       "ssd": 1024,
       "url": ""
+    },
+    {
+      "family": "MacBook Air",
+      "model_name": "MacBook Air 15 M5",
+      "processor": "Apple M5",
+      "ram": 32,
+      "ssd": 512,
+      "url": ""
+    },
+    {
+      "family": "MacBook Air",
+      "model_name": "MacBook Air 15 M5",
+      "processor": "Apple M5",
+      "ram": 32,
+      "ssd": 1024,
+      "url": ""
+    },
+    {
+      "family": "iMac",
+      "model_name": "iMac 24 M4",
+      "processor": "Apple M4",
+      "ram": 24,
+      "ssd": 512,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgECAUSwsxT~oY8DAUXGmgwVeyJmcm9tIjo1MDAwMCwidG8iOjB9&localPriority=0&q=imac+24+m1"
     },
     {
       "family": "iMac",
