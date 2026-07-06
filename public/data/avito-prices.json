@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-06 05:20",
-  "total_listings": 3285,
+  "generated_at": "2026-07-06 11:44",
+  "total_listings": 3230,
   "stats": [
     {
       "model_name": "MacBook Pro 13 (2020, M1)",
@@ -2642,11 +2642,11 @@
       "ram": 8,
       "ssd": 256,
       "min_price": 104990,
-      "max_price": 142010,
-      "median_price": 119200,
-      "buyout_price": 95000,
-      "samples_count": 62,
-      "updated_at": "2026-07-02 10:20"
+      "max_price": 121490,
+      "median_price": 117490,
+      "buyout_price": 93000,
+      "samples_count": 34,
+      "updated_at": "2026-07-06 11:43"
     },
     {
       "model_name": "imac 24",
@@ -2654,12 +2654,12 @@
       "processor": "Apple M3",
       "ram": 8,
       "ssd": 512,
-      "min_price": 119490,
-      "max_price": 152000,
-      "median_price": 131990,
-      "buyout_price": 105000,
-      "samples_count": 27,
-      "updated_at": "2026-07-02 10:20"
+      "min_price": 112000,
+      "max_price": 121000,
+      "median_price": 119490,
+      "buyout_price": 95000,
+      "samples_count": 4,
+      "updated_at": "2026-07-06 11:43"
     },
     {
       "model_name": "imac 24",
@@ -2693,12 +2693,12 @@
       "processor": "Apple M3",
       "ram": 16,
       "ssd": 512,
-      "min_price": 119990,
-      "max_price": 220000,
-      "median_price": 120000,
-      "buyout_price": 96000,
-      "samples_count": 7,
-      "updated_at": "2026-07-02 10:20"
+      "min_price": 114990,
+      "max_price": 120000,
+      "median_price": 119990,
+      "buyout_price": 95000,
+      "samples_count": 3,
+      "updated_at": "2026-07-06 11:43"
     },
     {
       "model_name": "imac 24",
