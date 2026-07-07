@@ -1519,6 +1519,14 @@
       "model_name": "MacBook Air 13 M5",
       "processor": "Apple M5",
       "ram": 32,
+      "ssd": 512,
+      "url": ""
+    },
+    {
+      "family": "MacBook Air",
+      "model_name": "MacBook Air 13 M5",
+      "processor": "Apple M5",
+      "ram": 32,
       "ssd": 1024,
       "url": ""
     },
