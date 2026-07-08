@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-08 15:29",
-  "total_listings": 3323,
+  "generated_at": "2026-07-08 20:18",
+  "total_listings": 3321,
   "stats": [
     {
       "model_name": "MacBook Pro 13 (2020, M1)",
@@ -291,10 +291,10 @@
       "ssd": 1024,
       "min_price": 250000,
       "max_price": 385999,
-      "median_price": 255000,
-      "buyout_price": 204000,
-      "samples_count": 5,
-      "updated_at": "2026-07-07 20:46"
+      "median_price": 279990,
+      "buyout_price": 223000,
+      "samples_count": 3,
+      "updated_at": "2026-07-08 20:18"
     },
     {
       "model_name": "Mac Studio m1",
