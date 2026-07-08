@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-08 09:31",
-  "total_listings": 3314,
+  "generated_at": "2026-07-08 15:29",
+  "total_listings": 3323,
   "stats": [
     {
       "model_name": "MacBook Pro 13 (2020, M1)",
@@ -1160,12 +1160,12 @@
       "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
-      "min_price": 26000,
+      "min_price": 27999,
       "max_price": 44800,
-      "median_price": 28499,
-      "buyout_price": 22000,
-      "samples_count": 24,
-      "updated_at": "2026-07-06 16:26"
+      "median_price": 29050,
+      "buyout_price": 23000,
+      "samples_count": 28,
+      "updated_at": "2026-07-08 15:28"
     },
     {
       "model_name": "mac mini m1",
@@ -1174,11 +1174,11 @@
       "ram": 8,
       "ssd": 512,
       "min_price": 30000,
-      "max_price": 51500,
-      "median_price": 38999,
+      "max_price": 39990,
+      "median_price": 39000,
       "buyout_price": 31000,
-      "samples_count": 10,
-      "updated_at": "2026-07-06 16:26"
+      "samples_count": 14,
+      "updated_at": "2026-07-08 15:28"
     },
     {
       "model_name": "mac mini m1",
@@ -1188,10 +1188,10 @@
       "ssd": 256,
       "min_price": 33870,
       "max_price": 44000,
-      "median_price": 34990,
+      "median_price": 34430,
       "buyout_price": 27000,
-      "samples_count": 3,
-      "updated_at": "2026-07-06 16:26"
+      "samples_count": 5,
+      "updated_at": "2026-07-08 15:28"
     },
     {
       "model_name": "mac mini m1",
@@ -1199,12 +1199,12 @@
       "processor": "Apple M1",
       "ram": 16,
       "ssd": 512,
-      "min_price": 35000,
-      "max_price": 52222,
+      "min_price": 38000,
+      "max_price": 48999,
       "median_price": 48000,
       "buyout_price": 38000,
-      "samples_count": 6,
-      "updated_at": "2026-07-06 16:26"
+      "samples_count": 5,
+      "updated_at": "2026-07-08 15:28"
     },
     {
       "model_name": "mac mini m1",
@@ -1217,7 +1217,7 @@
       "median_price": 35999,
       "buyout_price": 28000,
       "samples_count": 3,
-      "updated_at": "2026-07-06 16:26"
+      "updated_at": "2026-07-08 15:28"
     },
     {
       "model_name": "mac mini m1",
