@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-08 20:18",
+  "generated_at": "2026-07-09 05:11",
   "total_listings": 3321,
   "stats": [
     {
@@ -1465,7 +1465,7 @@
       "median_price": 30000,
       "buyout_price": 24000,
       "samples_count": 9,
-      "updated_at": "2026-07-08 04:18"
+      "updated_at": "2026-07-09 05:09"
     },
     {
       "model_name": "MacBook Air 13 (2020, M1)",
@@ -1478,7 +1478,7 @@
       "median_price": 24990,
       "buyout_price": 19000,
       "samples_count": 3,
-      "updated_at": "2026-07-08 04:18"
+      "updated_at": "2026-07-09 05:09"
     },
     {
       "model_name": "MacBook Air 13 (2020, M1)",
