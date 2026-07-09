@@ -1540,10 +1540,11 @@
       "ssd": 256,
       "min_price": 51000,
       "max_price": 52784,
-      "median_price": 52500,
-      "buyout_price": 42000,
+      "median_price": 55000,
+      "buyout_price": 44000,
       "samples_count": 3,
-      "updated_at": "2026-07-01 05:27"
+      "updated_at": "2026-07-09 05:10",
+      "collector_synced": true
     },
     {
       "model_name": "MacBook Air 13 (2022, M2)",
