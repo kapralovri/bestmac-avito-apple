@@ -2270,10 +2270,11 @@
       "ssd": 1024,
       "min_price": 165000,
       "max_price": 169500,
-      "median_price": 165000,
-      "buyout_price": 85000,
+      "median_price": 220000,
+      "buyout_price": 176000,
       "samples_count": 3,
-      "updated_at": "2026-07-03 04:49"
+      "updated_at": "2026-07-10 05:10",
+      "collector_synced": true
     },
     {
       "model_name": "MacBook Pro 16 (2023)",
@@ -2415,10 +2416,10 @@
       "ssd": 512,
       "min_price": 70000,
       "max_price": 100900,
-      "median_price": 88990,
-      "buyout_price": 71000,
+      "median_price": 86990,
+      "buyout_price": 69000,
       "samples_count": 18,
-      "updated_at": "2026-07-02 22:53",
+      "updated_at": "2026-07-10 05:10",
       "collector_synced": true
     },
     {
@@ -2443,10 +2444,10 @@
       "ssd": 1024,
       "min_price": 117000,
       "max_price": 141990,
-      "median_price": 133245,
+      "median_price": 133300,
       "buyout_price": 106000,
       "samples_count": 39,
-      "updated_at": "2026-07-03 05:10",
+      "updated_at": "2026-07-10 05:10",
       "collector_synced": true
     },
     {
