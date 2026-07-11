@@ -2484,10 +2484,10 @@
       "ssd": 512,
       "min_price": 92990,
       "max_price": 124950,
-      "median_price": 106000,
-      "buyout_price": 84000,
+      "median_price": 108990,
+      "buyout_price": 87000,
       "samples_count": 25,
-      "updated_at": "2026-07-04 05:10",
+      "updated_at": "2026-07-11 05:10",
       "collector_synced": true
     },
     {
@@ -2515,7 +2515,7 @@
       "median_price": 128800,
       "buyout_price": 103000,
       "samples_count": 24,
-      "updated_at": "2026-07-04 05:10",
+      "updated_at": "2026-07-11 05:10",
       "collector_synced": true
     },
     {
