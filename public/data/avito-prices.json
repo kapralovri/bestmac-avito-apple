@@ -120,7 +120,7 @@
       "median_price": 267895,
       "buyout_price": 214000,
       "samples_count": 4,
-      "updated_at": "2026-07-05 05:10",
+      "updated_at": "2026-07-12 05:10",
       "collector_synced": true
     },
     {
@@ -169,7 +169,7 @@
       "median_price": 126000,
       "buyout_price": 100000,
       "samples_count": 16,
-      "updated_at": "2026-07-05 05:10",
+      "updated_at": "2026-07-12 05:10",
       "collector_synced": true
     },
     {
@@ -2428,10 +2428,10 @@
       "ssd": 1024,
       "min_price": 99990,
       "max_price": 122375,
-      "median_price": 108400,
-      "buyout_price": 86000,
+      "median_price": 113490,
+      "buyout_price": 90000,
       "samples_count": 12,
-      "updated_at": "2026-07-05 05:10",
+      "updated_at": "2026-07-12 05:10",
       "collector_synced": true
     },
     {
@@ -2473,7 +2473,7 @@
       "median_price": 161000,
       "buyout_price": 128000,
       "samples_count": 27,
-      "updated_at": "2026-07-05 05:10",
+      "updated_at": "2026-07-12 05:10",
       "collector_synced": true
     },
     {
@@ -2501,7 +2501,7 @@
       "median_price": 142990,
       "buyout_price": 114000,
       "samples_count": 13,
-      "updated_at": "2026-07-05 05:10",
+      "updated_at": "2026-07-12 05:10",
       "collector_synced": true
     },
     {
@@ -2529,7 +2529,7 @@
       "median_price": 190900,
       "buyout_price": 152000,
       "samples_count": 15,
-      "updated_at": "2026-07-05 05:10",
+      "updated_at": "2026-07-12 05:10",
       "collector_synced": true
     },
     {
@@ -2543,7 +2543,7 @@
       "median_price": 204995,
       "buyout_price": 163000,
       "samples_count": 23,
-      "updated_at": "2026-07-05 05:10",
+      "updated_at": "2026-07-12 05:10",
       "collector_synced": true
     },
     {
@@ -2557,7 +2557,7 @@
       "median_price": 242890,
       "buyout_price": 194000,
       "samples_count": 16,
-      "updated_at": "2026-07-05 05:10",
+      "updated_at": "2026-07-12 05:10",
       "collector_synced": true
     },
     {
@@ -2818,7 +2818,7 @@
       "median_price": 222890,
       "buyout_price": 178000,
       "samples_count": 6,
-      "updated_at": "2026-07-05 05:10",
+      "updated_at": "2026-07-12 05:10",
       "collector_synced": true
     }
   ]
