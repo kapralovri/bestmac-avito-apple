@@ -686,6 +686,14 @@
       "family": "Mac Studio",
       "model_name": "Mac Studio m4",
       "processor": "Apple M4 Max",
+      "ram": 64,
+      "ssd": 4096,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
+    },
+    {
+      "family": "Mac Studio",
+      "model_name": "Mac Studio m4",
+      "processor": "Apple M4 Max",
       "ram": 96,
       "ssd": 512,
       "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
