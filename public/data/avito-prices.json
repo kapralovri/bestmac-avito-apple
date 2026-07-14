@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-14 04:10",
+  "generated_at": "2026-07-14 09:14",
   "total_listings": 3236,
   "stats": [
     {
@@ -2580,10 +2580,10 @@
       "ssd": 256,
       "min_price": 60000,
       "max_price": 105000,
-      "median_price": 72000,
-      "buyout_price": 57000,
-      "samples_count": 11,
-      "updated_at": "2026-07-13 10:35"
+      "median_price": 80000,
+      "buyout_price": 64000,
+      "samples_count": 12,
+      "updated_at": "2026-07-14 09:13"
     },
     {
       "model_name": "imac 24",
@@ -2622,7 +2622,7 @@
       "median_price": 82450,
       "buyout_price": 65000,
       "samples_count": 4,
-      "updated_at": "2026-07-13 10:35"
+      "updated_at": "2026-07-14 09:13"
     },
     {
       "model_name": "imac 24",
@@ -2644,11 +2644,11 @@
       "ram": 16,
       "ssd": 1024,
       "min_price": 89000,
-      "max_price": 105000,
+      "max_price": 95000,
       "median_price": 90000,
       "buyout_price": 72000,
-      "samples_count": 4,
-      "updated_at": "2026-07-13 10:35"
+      "samples_count": 3,
+      "updated_at": "2026-07-14 09:13"
     },
     {
       "model_name": "imac 24",
