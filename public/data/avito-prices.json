@@ -2814,10 +2814,11 @@
       "ssd": 256,
       "min_price": 129990,
       "max_price": 149990,
-      "median_price": 146000,
-      "buyout_price": 116000,
+      "median_price": 156390,
+      "buyout_price": 125000,
       "samples_count": 33,
-      "updated_at": "2026-07-07 10:31"
+      "updated_at": "2026-07-15 05:10",
+      "collector_synced": true
     },
     {
       "model_name": "imac 24",
