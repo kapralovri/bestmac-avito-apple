@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-16 04:16",
-  "total_listings": 3257,
+  "generated_at": "2026-07-16 09:26",
+  "total_listings": 3325,
   "stats": [
     {
       "model_name": "MacBook Pro 13 (2020, M1)",
@@ -2578,12 +2578,12 @@
       "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
-      "min_price": 60000,
-      "max_price": 105000,
-      "median_price": 70000,
-      "buyout_price": 56000,
-      "samples_count": 13,
-      "updated_at": "2026-07-15 09:19"
+      "min_price": 56000,
+      "max_price": 175990,
+      "median_price": 175990,
+      "buyout_price": 140000,
+      "samples_count": 35,
+      "updated_at": "2026-07-16 09:26"
     },
     {
       "model_name": "imac 24",
@@ -2591,12 +2591,12 @@
       "processor": "Apple M1",
       "ram": 8,
       "ssd": 512,
-      "min_price": 70400,
-      "max_price": 80000,
-      "median_price": 71000,
-      "buyout_price": 56000,
-      "samples_count": 3,
-      "updated_at": "2026-07-11 08:55"
+      "min_price": 181000,
+      "max_price": 196990,
+      "median_price": 189000,
+      "buyout_price": 151000,
+      "samples_count": 20,
+      "updated_at": "2026-07-16 09:26"
     },
     {
       "model_name": "imac 24",
@@ -2617,12 +2617,12 @@
       "processor": "Apple M1",
       "ram": 16,
       "ssd": 256,
-      "min_price": 69500,
-      "max_price": 85000,
-      "median_price": 82450,
-      "buyout_price": 65000,
-      "samples_count": 4,
-      "updated_at": "2026-07-15 09:19"
+      "min_price": 174000,
+      "max_price": 227990,
+      "median_price": 174000,
+      "buyout_price": 139000,
+      "samples_count": 17,
+      "updated_at": "2026-07-16 09:26"
     },
     {
       "model_name": "imac 24",
@@ -2631,11 +2631,11 @@
       "ram": 16,
       "ssd": 512,
       "min_price": 84000,
-      "max_price": 87500,
-      "median_price": 85000,
-      "buyout_price": 68000,
-      "samples_count": 3,
-      "updated_at": "2026-07-15 09:19"
+      "max_price": 265990,
+      "median_price": 176000,
+      "buyout_price": 140000,
+      "samples_count": 16,
+      "updated_at": "2026-07-16 09:26"
     },
     {
       "model_name": "imac 24",
@@ -2644,11 +2644,11 @@
       "ram": 16,
       "ssd": 1024,
       "min_price": 89000,
-      "max_price": 105000,
+      "max_price": 285000,
       "median_price": 90000,
       "buyout_price": 72000,
-      "samples_count": 4,
-      "updated_at": "2026-07-15 09:19"
+      "samples_count": 7,
+      "updated_at": "2026-07-16 09:26"
     },
     {
       "model_name": "imac 24",
