@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-17 04:14",
-  "total_listings": 3319,
+  "generated_at": "2026-07-17 09:31",
+  "total_listings": 3320,
   "stats": [
     {
       "model_name": "MacBook Pro 13 (2020, M1)",
@@ -2799,12 +2799,12 @@
       "processor": "Apple M4",
       "ram": 8,
       "ssd": 8192,
-      "min_price": 111000,
-      "max_price": 148000,
+      "min_price": 125000,
+      "max_price": 140000,
       "median_price": 140000,
       "buyout_price": 112000,
-      "samples_count": 5,
-      "updated_at": "2026-07-07 10:31"
+      "samples_count": 3,
+      "updated_at": "2026-07-17 09:17"
     },
     {
       "model_name": "imac 24",
@@ -2814,11 +2814,10 @@
       "ssd": 256,
       "min_price": 129990,
       "max_price": 149990,
-      "median_price": 156390,
-      "buyout_price": 125000,
-      "samples_count": 33,
-      "updated_at": "2026-07-15 05:10",
-      "collector_synced": true
+      "median_price": 147000,
+      "buyout_price": 117000,
+      "samples_count": 36,
+      "updated_at": "2026-07-17 09:17"
     },
     {
       "model_name": "imac 24",
