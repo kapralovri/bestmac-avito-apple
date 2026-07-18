@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-17 20:01",
-  "total_listings": 3263,
+  "generated_at": "2026-07-18 04:01",
+  "total_listings": 3246,
   "stats": [
     {
       "model_name": "MacBook Pro 13 (2020, M1)",
@@ -1473,12 +1473,12 @@
       "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
-      "min_price": 21500,
-      "max_price": 31900,
-      "median_price": 30000,
-      "buyout_price": 24000,
-      "samples_count": 11,
-      "updated_at": "2026-07-17 04:11"
+      "min_price": 21440,
+      "max_price": 30000,
+      "median_price": 29750,
+      "buyout_price": 23000,
+      "samples_count": 9,
+      "updated_at": "2026-07-18 03:58"
     },
     {
       "model_name": "MacBook Air 13 (2020, M1)",
@@ -1850,12 +1850,12 @@
       "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
-      "min_price": 34700,
-      "max_price": 45000,
-      "median_price": 40000,
+      "min_price": 29500,
+      "max_price": 40000,
+      "median_price": 38750,
       "buyout_price": 35000,
-      "samples_count": 28,
-      "updated_at": "2026-07-16 04:14"
+      "samples_count": 14,
+      "updated_at": "2026-07-18 03:59"
     },
     {
       "model_name": "MacBook Pro 13 (2020, M1)",
@@ -1915,12 +1915,12 @@
       "processor": "Apple M2",
       "ram": 8,
       "ssd": 256,
-      "min_price": 45390,
+      "min_price": 40000,
       "max_price": 55000,
       "median_price": 52900,
       "buyout_price": 45000,
-      "samples_count": 18,
-      "updated_at": "2026-07-16 04:14"
+      "samples_count": 17,
+      "updated_at": "2026-07-18 03:59"
     },
     {
       "model_name": "MacBook Pro 13 (2022, M2)",
@@ -1933,7 +1933,7 @@
       "median_price": 56710,
       "buyout_price": 50000,
       "samples_count": 7,
-      "updated_at": "2026-07-16 04:14"
+      "updated_at": "2026-07-18 03:59"
     },
     {
       "model_name": "MacBook Pro 13 (2022, M2)",
