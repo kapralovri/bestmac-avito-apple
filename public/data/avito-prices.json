@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-18 04:01",
-  "total_listings": 3246,
+  "generated_at": "2026-07-18 08:54",
+  "total_listings": 3298,
   "stats": [
     {
       "model_name": "MacBook Pro 13 (2020, M1)",
@@ -2562,6 +2562,34 @@
       "collector_synced": true
     },
     {
+      "model_name": "MacBook Pro 14 M5",
+      "family": "MacBook Pro",
+      "processor": "Apple M5",
+      "ram": 24,
+      "ssd": 1024,
+      "min_price": 144000,
+      "max_price": 184990,
+      "median_price": 165999,
+      "buyout_price": 132000,
+      "samples_count": 30,
+      "updated_at": "2026-07-18 05:10",
+      "collector_synced": true
+    },
+    {
+      "model_name": "MacBook Pro 14 M5",
+      "family": "MacBook Pro",
+      "processor": "Apple M5",
+      "ram": 32,
+      "ssd": 1024,
+      "min_price": 162990,
+      "max_price": 217990,
+      "median_price": 212000,
+      "buyout_price": 169000,
+      "samples_count": 22,
+      "updated_at": "2026-07-18 05:10",
+      "collector_synced": true
+    },
+    {
       "model_name": "iMac 24 M4",
       "family": "iMac",
       "processor": "Apple M4",
@@ -2834,34 +2862,6 @@
       "buyout_price": 178000,
       "samples_count": 6,
       "updated_at": "2026-07-12 05:10",
-      "collector_synced": true
-    },
-    {
-      "model_name": "MacBook Pro 14 M5",
-      "family": "MacBook Pro",
-      "processor": "Apple M5",
-      "ram": 24,
-      "ssd": 1024,
-      "min_price": 144000,
-      "max_price": 184990,
-      "median_price": 165999,
-      "buyout_price": 132000,
-      "samples_count": 30,
-      "updated_at": "2026-07-18 05:10",
-      "collector_synced": true
-    },
-    {
-      "model_name": "MacBook Pro 14 M5",
-      "family": "MacBook Pro",
-      "processor": "Apple M5",
-      "ram": 32,
-      "ssd": 1024,
-      "min_price": 162990,
-      "max_price": 217990,
-      "median_price": 212000,
-      "buyout_price": 169000,
-      "samples_count": 22,
-      "updated_at": "2026-07-18 05:10",
       "collector_synced": true
     }
   ]
