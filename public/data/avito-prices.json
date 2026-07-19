@@ -121,7 +121,7 @@
       "median_price": 267895,
       "buyout_price": 214000,
       "samples_count": 4,
-      "updated_at": "2026-07-12 05:10",
+      "updated_at": "2026-07-19 05:10",
       "collector_synced": true
     },
     {
@@ -170,7 +170,7 @@
       "median_price": 126000,
       "buyout_price": 100000,
       "samples_count": 16,
-      "updated_at": "2026-07-12 05:10",
+      "updated_at": "2026-07-19 05:10",
       "collector_synced": true
     },
     {
@@ -1646,10 +1646,11 @@
       "ssd": 256,
       "min_price": 61000,
       "max_price": 76000,
-      "median_price": 68000,
-      "buyout_price": 54000,
+      "median_price": 70000,
+      "buyout_price": 56000,
       "samples_count": 21,
-      "updated_at": "2026-07-12 04:28"
+      "updated_at": "2026-07-19 05:10",
+      "collector_synced": true
     },
     {
       "model_name": "MacBook Air 13 (2025, M4)",
@@ -2364,10 +2365,11 @@
       "ssd": 1024,
       "min_price": 230000,
       "max_price": 255000,
-      "median_price": 242500,
-      "buyout_price": 150000,
+      "median_price": 272890,
+      "buyout_price": 218000,
       "samples_count": 8,
-      "updated_at": "2026-07-12 04:31"
+      "updated_at": "2026-07-19 05:10",
+      "collector_synced": true
     },
     {
       "model_name": "MacBook Pro 16 (2024)",
@@ -2377,10 +2379,11 @@
       "ssd": 1024,
       "min_price": 270000,
       "max_price": 320000,
-      "median_price": 299000,
-      "buyout_price": 165000,
+      "median_price": 300000,
+      "buyout_price": 240000,
       "samples_count": 10,
-      "updated_at": "2026-07-12 04:31"
+      "updated_at": "2026-07-19 05:10",
+      "collector_synced": true
     },
     {
       "model_name": "MacBook Pro 16 (2024)",
@@ -2416,10 +2419,11 @@
       "ssd": 512,
       "min_price": 185500,
       "max_price": 214900,
-      "median_price": 206950,
-      "buyout_price": 130000,
+      "median_price": 233900,
+      "buyout_price": 187000,
       "samples_count": 5,
-      "updated_at": "2026-07-12 04:31"
+      "updated_at": "2026-07-19 05:10",
+      "collector_synced": true
     },
     {
       "model_name": "MacBook Air 13 M5",
@@ -2443,10 +2447,10 @@
       "ssd": 1024,
       "min_price": 99990,
       "max_price": 122375,
-      "median_price": 113490,
-      "buyout_price": 90000,
+      "median_price": 109990,
+      "buyout_price": 87000,
       "samples_count": 12,
-      "updated_at": "2026-07-12 05:10",
+      "updated_at": "2026-07-19 05:10",
       "collector_synced": true
     },
     {
@@ -2485,10 +2489,10 @@
       "ssd": 1024,
       "min_price": 149990,
       "max_price": 200400,
-      "median_price": 161000,
+      "median_price": 160500,
       "buyout_price": 128000,
       "samples_count": 27,
-      "updated_at": "2026-07-12 05:10",
+      "updated_at": "2026-07-19 05:10",
       "collector_synced": true
     },
     {
@@ -2516,7 +2520,7 @@
       "median_price": 142990,
       "buyout_price": 114000,
       "samples_count": 13,
-      "updated_at": "2026-07-12 05:10",
+      "updated_at": "2026-07-19 05:10",
       "collector_synced": true
     },
     {
@@ -2544,7 +2548,7 @@
       "median_price": 190900,
       "buyout_price": 152000,
       "samples_count": 15,
-      "updated_at": "2026-07-12 05:10",
+      "updated_at": "2026-07-19 05:10",
       "collector_synced": true
     },
     {
@@ -2558,7 +2562,7 @@
       "median_price": 204995,
       "buyout_price": 163000,
       "samples_count": 23,
-      "updated_at": "2026-07-12 05:10",
+      "updated_at": "2026-07-19 05:10",
       "collector_synced": true
     },
     {
@@ -2600,7 +2604,7 @@
       "median_price": 242890,
       "buyout_price": 194000,
       "samples_count": 16,
-      "updated_at": "2026-07-12 05:10",
+      "updated_at": "2026-07-19 05:10",
       "collector_synced": true
     },
     {
@@ -2861,7 +2865,7 @@
       "median_price": 222890,
       "buyout_price": 178000,
       "samples_count": 6,
-      "updated_at": "2026-07-12 05:10",
+      "updated_at": "2026-07-19 05:10",
       "collector_synced": true
     }
   ]
