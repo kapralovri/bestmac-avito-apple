@@ -2144,10 +2144,11 @@
       "ssd": 512,
       "min_price": 100000,
       "max_price": 180000,
-      "median_price": 134000,
-      "buyout_price": 110000,
+      "median_price": 162994,
+      "buyout_price": 130000,
       "samples_count": 14,
-      "updated_at": "2026-07-15 04:10"
+      "updated_at": "2026-07-22 05:10",
+      "collector_synced": true
     },
     {
       "model_name": "MacBook Pro 14 (2024)",
@@ -2396,10 +2397,11 @@
       "ssd": 512,
       "min_price": 155000,
       "max_price": 195000,
-      "median_price": 162000,
-      "buyout_price": 129000,
+      "median_price": 167995,
+      "buyout_price": 134000,
       "samples_count": 13,
-      "updated_at": "2026-07-12 04:31"
+      "updated_at": "2026-07-22 05:10",
+      "collector_synced": true
     },
     {
       "model_name": "MacBook Pro 16 (2024)",
@@ -2800,10 +2802,11 @@
       "ssd": 1024,
       "min_price": 174900,
       "max_price": 195900,
-      "median_price": 194000,
+      "median_price": 194990,
       "buyout_price": 155000,
       "samples_count": 3,
-      "updated_at": "2026-05-09 10:35"
+      "updated_at": "2026-07-22 05:10",
+      "collector_synced": true
     },
     {
       "model_name": "imac 24",
