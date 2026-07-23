@@ -1579,6 +1579,14 @@
       "url": ""
     },
     {
+      "family": "MacBook Air",
+      "model_name": "MacBook Air M1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "url": ""
+    },
+    {
       "family": "MacBook Pro",
       "model_name": "MacBook Pro 14 M5",
       "processor": "Apple M5",
