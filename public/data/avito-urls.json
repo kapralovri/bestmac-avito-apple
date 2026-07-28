@@ -1590,6 +1590,14 @@
       "family": "MacBook Pro",
       "model_name": "MacBook Pro 14 M5",
       "processor": "Apple M5",
+      "ram": 16,
+      "ssd": 1024,
+      "url": ""
+    },
+    {
+      "family": "MacBook Pro",
+      "model_name": "MacBook Pro 14 M5",
+      "processor": "Apple M5",
       "ram": 24,
       "ssd": 1024,
       "url": ""
