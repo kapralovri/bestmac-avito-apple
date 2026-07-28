@@ -1530,10 +1530,10 @@
       "ssd": 256,
       "min_price": 43000,
       "max_price": 55000,
-      "median_price": 48499,
-      "buyout_price": 38000,
+      "median_price": 46000,
+      "buyout_price": 36000,
       "samples_count": 35,
-      "updated_at": "2026-07-21 05:10",
+      "updated_at": "2026-07-28 05:10",
       "collector_synced": true
     },
     {
@@ -2364,7 +2364,7 @@
       "median_price": 155000,
       "buyout_price": 124000,
       "samples_count": 3,
-      "updated_at": "2026-07-21 05:10",
+      "updated_at": "2026-07-28 05:10",
       "collector_synced": true
     },
     {
@@ -2489,7 +2489,7 @@
       "median_price": 159990,
       "buyout_price": 127000,
       "samples_count": 13,
-      "updated_at": "2026-07-21 05:10",
+      "updated_at": "2026-07-28 05:10",
       "collector_synced": true
     },
     {
@@ -2893,6 +2893,20 @@
       "buyout_price": 178000,
       "samples_count": 6,
       "updated_at": "2026-07-26 05:10",
+      "collector_synced": true
+    },
+    {
+      "model_name": "MacBook Pro 14 M5",
+      "family": "MacBook Pro",
+      "processor": "Apple M5",
+      "ram": 16,
+      "ssd": 1024,
+      "min_price": 140000,
+      "max_price": 167990,
+      "median_price": 150000,
+      "buyout_price": 120000,
+      "samples_count": 12,
+      "updated_at": "2026-07-28 05:10",
       "collector_synced": true
     }
   ]
