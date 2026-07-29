@@ -2152,7 +2152,7 @@
       "median_price": 162994,
       "buyout_price": 130000,
       "samples_count": 14,
-      "updated_at": "2026-07-22 05:10",
+      "updated_at": "2026-07-29 05:10",
       "collector_synced": true
     },
     {
@@ -2403,10 +2403,10 @@
       "ssd": 512,
       "min_price": 155000,
       "max_price": 195000,
-      "median_price": 167995,
-      "buyout_price": 134000,
+      "median_price": 165000,
+      "buyout_price": 132000,
       "samples_count": 13,
-      "updated_at": "2026-07-22 05:10",
+      "updated_at": "2026-07-29 05:10",
       "collector_synced": true
     },
     {
@@ -2839,7 +2839,7 @@
       "median_price": 194990,
       "buyout_price": 155000,
       "samples_count": 3,
-      "updated_at": "2026-07-22 05:10",
+      "updated_at": "2026-07-29 05:10",
       "collector_synced": true
     },
     {
