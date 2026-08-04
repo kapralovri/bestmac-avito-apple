@@ -1530,10 +1530,10 @@
       "ssd": 256,
       "min_price": 43000,
       "max_price": 55000,
-      "median_price": 46000,
-      "buyout_price": 36000,
+      "median_price": 46950,
+      "buyout_price": 37000,
       "samples_count": 35,
-      "updated_at": "2026-07-28 05:10",
+      "updated_at": "2026-08-04 05:10",
       "collector_synced": true
     },
     {
