@@ -1347,10 +1347,11 @@
       "ssd": 512,
       "min_price": 70499,
       "max_price": 74100,
-      "median_price": 71999,
-      "buyout_price": 57000,
+      "median_price": 74990,
+      "buyout_price": 59000,
       "samples_count": 21,
-      "updated_at": "2026-07-05 14:51"
+      "updated_at": "2026-08-05 05:10",
+      "collector_synced": true
     },
     {
       "model_name": "mac mini m4",
@@ -1386,10 +1387,11 @@
       "ssd": 512,
       "min_price": 75000,
       "max_price": 112990,
-      "median_price": 95000,
-      "buyout_price": 76000,
+      "median_price": 103000,
+      "buyout_price": 82000,
       "samples_count": 33,
-      "updated_at": "2026-06-27 14:47"
+      "updated_at": "2026-08-05 05:10",
+      "collector_synced": true
     },
     {
       "model_name": "mac mini m4",
@@ -1399,10 +1401,11 @@
       "ssd": 512,
       "min_price": 117999,
       "max_price": 118999,
-      "median_price": 118499,
-      "buyout_price": 94000,
+      "median_price": 103000,
+      "buyout_price": 82000,
       "samples_count": 3,
-      "updated_at": "2026-06-27 14:47"
+      "updated_at": "2026-08-05 05:10",
+      "collector_synced": true
     },
     {
       "model_name": "mac mini m4",
@@ -2152,10 +2155,10 @@
       "ssd": 512,
       "min_price": 100000,
       "max_price": 180000,
-      "median_price": 162994,
+      "median_price": 162990,
       "buyout_price": 130000,
       "samples_count": 14,
-      "updated_at": "2026-07-29 05:10",
+      "updated_at": "2026-08-05 05:10",
       "collector_synced": true
     },
     {
@@ -2870,7 +2873,7 @@
       "median_price": 194990,
       "buyout_price": 155000,
       "samples_count": 3,
-      "updated_at": "2026-07-29 05:10",
+      "updated_at": "2026-08-05 05:10",
       "collector_synced": true
     },
     {
