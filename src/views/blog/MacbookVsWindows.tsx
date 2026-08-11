@@ -1,19 +1,9 @@
 "use client";
 
 import Breadcrumbs from "@/components/Breadcrumbs";
-import { generateArticleSchema } from "@/lib/structured-data";
 import Link from "next/link";
 
 const MacbookVsWindows = () => {
-  const article = generateArticleSchema({
-    title: "MacBook или Windows ноутбук: что выбрать в 2024 году",
-    description: "Сравнение MacBook и Windows ноутбуков по производительности, цене, экосистеме и долговечности. Помогаем сделать правильный выбор.",
-    datePublished: "2024-01-15",
-    dateModified: "2024-01-15",
-    author: "BestMac",
-    url: "/blog/macbook-vs-windows",
-  });
-
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <script
@@ -41,10 +31,12 @@ const MacbookVsWindows = () => {
         <article className="max-w-4xl mx-auto prose prose-lg">
           <h1 className="text-4xl font-bold mb-6">MacBook или Windows ноутбук: что выбрать в 2024 году</h1>
           
-          <img 
-            src="/macbook_air_m4_price_head.jpg" 
+          <img
+            src="/macbook_air_m4_price_head.jpg"
             alt="Сравнение MacBook и Windows ноутбуков"
-            className="w-full rounded-lg mb-8"
+            className="w-full h-auto rounded-lg mb-8"
+            width={3072}
+            height={2048}
             loading="lazy"
           />
 
@@ -218,6 +210,21 @@ const MacbookVsWindows = () => {
               Рассматриваете покупку б/у MacBook? Мы предлагаем проверенные устройства с гарантией 
               от 70,000₽ и выкупаем ваш старый ноутбук по выгодной цене.
             </p>
+          </section>
+
+          <section className="mb-8 bg-gradient-primary text-white p-6 rounded-lg">
+            <h2 className="text-2xl font-semibold mb-3">Готовы перейти на Mac?</h2>
+            <p className="mb-4 opacity-90">
+              Подберём проверенный MacBook с гарантией от 70 000 ₽ или выкупим ваш старый ноутбук в зачёт покупки.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <Link href="/buy" className="inline-flex items-center justify-center rounded-lg bg-white text-primary font-semibold px-6 py-3 hover:bg-white/90 transition">
+                Купить б/у MacBook в Москве
+              </Link>
+              <Link href="/sell" className="inline-flex items-center justify-center rounded-lg border border-white text-white font-semibold px-6 py-3 hover:bg-white/10 transition">
+                Продать ноутбук выгодно
+              </Link>
+            </div>
           </section>
         </article>
       </main>
