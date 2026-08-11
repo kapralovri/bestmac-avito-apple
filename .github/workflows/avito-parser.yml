@@ -87,6 +87,8 @@ jobs:
           python scripts/avito-parser/parser.py --tab "$TAB" --max-pages "$MAX_PAGES" --time-limit 340 $CLEAN_FLAG
 
       - name: Commit and push
+        env:
+          VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
@@ -110,3 +112,17 @@ jobs:
             git reset --soft origin/main
             git commit -m "chore: update prices${LABEL} [skip ci]"
           done
+
+          # Пересборка Vercel для свежих SSG-цен (GST-5): страницы /ceny/* и /sell/*
+          # пекут avito-prices.json в HTML на этапе сборки, а коммит помечен [skip ci],
+          # поэтому git-интеграция Vercel сама не пересобирает. Deploy Hook даёт
+          # ежедневно свежий SSG-HTML. Достигается только когда данные реально
+          # изменились (шаг доходит сюда лишь после успешного commit+push).
+          if [ -n "${VERCEL_DEPLOY_HOOK_URL}" ]; then
+            echo "Triggering Vercel rebuild for fresh SSG price pages..."
+            curl -fsS -X POST "${VERCEL_DEPLOY_HOOK_URL}" > /dev/null \
+              && echo "Deploy hook OK" \
+              || echo "Deploy hook failed (non-fatal)"
+          else
+            echo "VERCEL_DEPLOY_HOOK_URL secret not set — SSG price pages will refresh only on the next real deploy."
+          fi
