@@ -125,12 +125,64 @@ Persistent=true
 WantedBy=timers.target
 EOF
 
+# ── Intake-приёмник: всегда онлайн, слушает ТОЛЬКО localhost (за Caddy-TLS) ──
+# TLS/наружу — через Caddy (scripts/intake/setup-tls.sh); порт 8787 не открывается.
+write_unit bestmac-intake.service <<EOF
+[Unit]
+Description=BestMac intake receiver (localhost, behind Caddy TLS)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=$RUN_USER
+WorkingDirectory=$REPO_DIR
+EnvironmentFile=$REPO_DIR/.env
+Environment=INTAKE_HOST=127.0.0.1
+ExecStart=$PYTHON scripts/intake/server.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# ── Обработчик накопленных карточек: разовый прогон (запускается таймером) ──
+write_unit bestmac-intake-proc.service <<EOF
+[Unit]
+Description=BestMac intake processor (scanner_v2 --intake, one run)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=$RUN_USER
+WorkingDirectory=$REPO_DIR
+EnvironmentFile=$REPO_DIR/.env
+ExecStart=$PYTHON scripts/hot-deals-scanner/scanner_v2.py --intake
+EOF
+
+write_unit bestmac-intake-proc.timer <<EOF
+[Unit]
+Description=Process accumulated intake cards every 2 minutes
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=2min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+
 echo
 echo "🔄 Перезагружаю systemd и включаю сервисы..."
 $SUDO systemctl daemon-reload
 $SUDO systemctl enable --now bestmac-bot.service
 $SUDO systemctl enable --now bestmac-scanner.timer
 $SUDO systemctl enable --now bestmac-digest.timer
+$SUDO systemctl enable --now bestmac-intake.service
+$SUDO systemctl enable --now bestmac-intake-proc.timer
 
 echo
 echo "✅ Готово. Состояние:"

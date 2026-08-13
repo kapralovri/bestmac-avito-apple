@@ -1,0 +1,30 @@
+# TLS-фронт для intake-сервера (GST-10, P0-3).
+# Caddy сам получает и продлевает сертификат Let's Encrypt для поддомена и
+# проксирует запросы на localhost, где слушает scripts/intake/server.py.
+#
+# Требование: DNS A-запись intake.bestmac.ru → IP VPS (84.54.28.114).
+# Порт 8787 при этом НЕ открыт наружу (server.py слушает 127.0.0.1).
+#
+# Установка/обновление: bash scripts/intake/setup-tls.sh
+
+intake.bestmac.ru {
+	# Проксируем на локальный intake-сервер (INTAKE_HOST=127.0.0.1, порт 8787).
+	reverse_proxy 127.0.0.1:8787
+
+	# Ограничиваем размер тела на фронте (server.py и сам режет по 2 МБ).
+	request_body {
+		max_size 2MB
+	}
+
+	encode gzip
+
+	# Убираем баннер сервера.
+	header -Server
+
+	log {
+		output file /var/log/caddy/intake.log {
+			roll_size 10MB
+			roll_keep 5
+		}
+	}
+}

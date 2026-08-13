@@ -22,19 +22,31 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 print = functools.partial(print, flush=True)   # сразу видеть активность в консоли
 
 PORT = int(os.environ.get('RELAY_PORT', '8765'))
-VPS_URL = os.environ.get('RELAY_VPS_URL', 'http://84.54.28.114:8787/intake')
-CORS = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'content-type, x-intake-token',
-}
+# Форвардим на TLS-фронт intake (Caddy на поддомене), а не на голый HTTP-порт VPS.
+# Python-ssl на старом Mac валидирует Let's Encrypt-цепочку (в отличие от системного
+# браузера), поэтому HTTPS отсюда работает даже там, где Chrome/Safari не могут.
+VPS_URL = os.environ.get('RELAY_VPS_URL', 'https://intake.bestmac.ru/intake')
+# CORS сужён до origin страницы, где работает расширение (по умолчанию Avito).
+_ALLOWED = {o.strip() for o in os.environ.get(
+    'RELAY_ALLOWED_ORIGINS', 'https://www.avito.ru,https://m.avito.ru').split(',') if o.strip()}
+
+
+def _cors(origin):
+    h = {
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'content-type, x-intake-token',
+        'Vary': 'Origin',
+    }
+    if origin in _ALLOWED:
+        h['Access-Control-Allow-Origin'] = origin
+    return h
 
 
 class Handler(BaseHTTPRequestHandler):
     def _send(self, code, obj):
         b = json.dumps(obj).encode('utf-8')
         self.send_response(code)
-        for k, v in CORS.items():
+        for k, v in _cors(self.headers.get('Origin', '')).items():
             self.send_header(k, v)
         self.send_header('content-type', 'application/json')
         self.send_header('content-length', str(len(b)))
@@ -43,7 +55,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_OPTIONS(self):
         self.send_response(204)
-        for k, v in CORS.items():
+        for k, v in _cors(self.headers.get('Origin', '')).items():
             self.send_header(k, v)
         self.end_headers()
 
@@ -56,7 +68,8 @@ class Handler(BaseHTTPRequestHandler):
             data = json.loads(self.rfile.read(n) or b'{}')
         except Exception:
             return self._send(400, {'ok': False, 'error': 'json'})
-        token = data.get('token') or self.headers.get('x-intake-token', '')
+        # Токен — из заголовка (новое расширение шлёт так); тело оставлено фолбэком.
+        token = self.headers.get('x-intake-token', '') or data.get('token', '')
         cards = data.get('cards') or []
         try:
             req = urllib.request.Request(
