@@ -62,6 +62,8 @@ jobs:
       - name: Run parser
         env:
           RUCAPTCHA_API_KEY: ${{ secrets.RUCAPTCHA_API_KEY }}
+          # Канарейка (GST-9): алерт в Telegram при 0 листингов / устаревшей базе.
+          TELEGRAM_NOTIFY_URL: ${{ secrets.TELEGRAM_NOTIFY_URL }}
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             TAB="${{ github.event.inputs.tab }}"

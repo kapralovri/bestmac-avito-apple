@@ -50,6 +50,7 @@ except ImportError:
 
 from common.config import VALID_RAM, VALID_SSD, MIN_PRICE, MAX_PRICE, JUNK_KEYWORDS
 from common.classifier import classify
+from common.canary import run_canary
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("Parser")
@@ -768,15 +769,21 @@ def main():
                          key=lambda s: (s.get("family", ""), s["model_name"],
                                         s["processor"], s["ram"], s["ssd"]))
     total_listings = sum(s.get("samples_count", 0) for s in final_stats)
+    # Листинги, собранные ИМЕННО этим прогоном (до merge со старой БД).
+    # Именно 0 здесь — сигнал сломанных селекторов/капчи; total_listings по всей
+    # БД это скрывает, т.к. merge сохраняет семейства прошлых прогонов (GST-9).
+    run_listings = sum(s.get("samples_count", 0) for s in new_stats)
+
+    prices_payload = {
+        "generated_at":   datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "total_listings": total_listings,
+        "stats":          final_stats,
+    }
 
     # Пишем avito-prices.json
     PRICES_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(PRICES_FILE, "w", encoding="utf-8") as f:
-        json.dump({
-            "generated_at":   datetime.now().strftime("%Y-%m-%d %H:%M"),
-            "total_listings": total_listings,
-            "stats":          final_stats,
-        }, f, ensure_ascii=False, indent=2)
+        json.dump(prices_payload, f, ensure_ascii=False, indent=2)
 
     # Пишем avito-urls.json (опции для фронта)
     url_entries = build_url_entries(final_stats, tabs_cfg)
@@ -797,6 +804,18 @@ def main():
     print(f"💾 {PRICES_FILE}")
     print(f"💾 {URLS_FILE}")
     print("=" * 60)
+
+    # ─── Канарейка (GST-9): алерт при 0 листингов / устаревшей базе ──────────
+    # Не роняем прогон из-за ошибок алерт-канала — сбор данных важнее.
+    try:
+        run_canary(
+            prices=prices_payload,
+            run_listings=run_listings,
+            tab=args.tab,
+            logger=logger,
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"⚠️ Канарейка упала (не критично): {e}")
 
 
 if __name__ == "__main__":
