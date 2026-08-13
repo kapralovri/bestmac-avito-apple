@@ -2,9 +2,11 @@
 """
 Intake-сервер: принимает карточки Avito от домашнего расширения (через HTTPS-прокси
 bestmac.ru/api/intake) и складывает в incoming-cards.json (дедуп по url).
-Лёгкий, только stdlib. По умолчанию слушает 0.0.0.0 (чтобы дотянулся Vercel-форвард) —
-наружу открыт, безопасность обеспечивают ОБЯЗАТЕЛЬНЫЙ токен + фаервол. HTTPS даёт
-фронт (Vercel/Caddy). Без INTAKE_TOKEN сервер не стартует.
+Лёгкий, только stdlib. По умолчанию слушает 127.0.0.1 — наружу порт НЕ открыт,
+TLS терминирует Caddy на поддомене (intake.bestmac.ru) и проксирует на localhost:8787
+(см. scripts/intake/Caddyfile). Безопасность: TLS + ОБЯЗАТЕЛЬНЫЙ токен в заголовке.
+INTAKE_HOST=0.0.0.0 — только как временный escape-hatch (тогда обязательно закрой
+порт фаерволом). Без INTAKE_TOKEN сервер не стартует.
 
 Запуск:  INTAKE_TOKEN=... python3 scripts/intake/server.py
 Обработку карточек делает: scanner_v2.py --intake (по таймеру раз в 1-2 мин).
@@ -19,7 +21,7 @@ from pathlib import Path
 from threading import Lock
 
 PORT = int(os.environ.get('INTAKE_PORT', '8787'))
-HOST = os.environ.get('INTAKE_HOST', '0.0.0.0')   # за Vercel-прокси; токен обязателен
+HOST = os.environ.get('INTAKE_HOST', '127.0.0.1')  # за Caddy-TLS на localhost; токен обязателен
 TOKEN = os.environ.get('INTAKE_TOKEN', '')
 INCOMING = Path(os.environ.get('INTAKE_CARDS_PATH', 'public/data/incoming-cards.json'))
 STATS = Path(os.environ.get('INTAKE_STATS_PATH', 'public/data/intake-stats.json'))
@@ -140,7 +142,7 @@ class Handler(BaseHTTPRequestHandler):
 
 if __name__ == '__main__':
     if not TOKEN:
-        # Fail-safe: сервер слушает наружу (0.0.0.0) — без токена приём был бы открыт всем.
+        # Fail-safe: без токена приём был бы открыт (особенно если INTAKE_HOST=0.0.0.0).
         sys.exit('❌ INTAKE_TOKEN не задан — отказ запуска (иначе приём открыт всем).')
     print(f'🛰 Intake-сервер на {HOST}:{PORT} → {INCOMING}')
     # ThreadingHTTPServer: медленный/молчащий клиент больше не блокирует остальных

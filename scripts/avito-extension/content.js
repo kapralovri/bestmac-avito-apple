@@ -64,10 +64,12 @@ async function tick() {
     if (!fresh.length) { scheduleReload(); return; }
 
     try {
+      // Токен — в заголовке поверх HTTPS (не в теле). Кастомный заголовок делает
+      // запрос «непростым» → браузер шлёт CORS-preflight (OPTIONS), фронт его обслуживает.
       const resp = await fetch(endpoint, {
         method: "POST",
-        headers: { "content-type": "text/plain;charset=UTF-8" },  // простой запрос → без CORS-preflight
-        body: JSON.stringify({ token: cfg.token, cards: fresh }),
+        headers: { "content-type": "application/json", "x-intake-token": cfg.token },
+        body: JSON.stringify({ cards: fresh }),
       });
       if (resp.ok) {
         fresh.forEach((c) => seen.add(c.url));
