@@ -57,5 +57,6 @@ externalPort = 80
 
 [userenv]
 
-[userenv.shared]
-PROXY_URL = "46.161.28.47:33348:s2CLdF5uXB:dCYAAdWF7Y"
+# PROXY_URL НЕ хранится здесь. Это Secret — задаётся в Replit Secrets
+# (Tools → Secrets) и на VPS/CI через переменные окружения.
+# Формат: host:port:user:pass — читается кодом из os.environ['PROXY_URL'].

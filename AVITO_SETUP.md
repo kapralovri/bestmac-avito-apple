@@ -5,9 +5,13 @@
 У вас есть следующие ключи для интеграции с Avito:
 
 ### Интеграция с сайтом (используем эти)
-- **Client ID**: `Hml9UQaKjFgO-FCDY0uN`
-- **Client Secret**: `EImmFaJKSPO6fY0Bpe4SivPvxdIP8--WqzCEzli4`
+- **Client ID**: `<ваш_client_id>` (задаётся через env `VITE_AVITO_CLIENT_ID`)
+- **Client Secret**: `<ваш_client_secret>` — **НЕ коммитить!** Хранить в `.env.local` / Secrets CI / VPS
 - **Redirect URL**: `https://bestmac.ru`
+
+> ⚠️ **Безопасность:** реальные значения ключей запрещено хранить в git. Они
+> задаются только через переменные окружения (`.env.local`, Replit Secrets,
+> секреты CI/VPS). `.env.local` уже в `.gitignore`.
 
 ## 🚀 Настройка
 
@@ -17,8 +21,8 @@
 
 ```bash
 # Avito API Configuration
-VITE_AVITO_CLIENT_ID=Hml9UQaKjFgO-FCDY0uN
-VITE_AVITO_CLIENT_SECRET=EImmFaJKSPO6fY0Bpe4SivPvxdIP8--WqzCEzli4
+VITE_AVITO_CLIENT_ID=<ваш_client_id>
+VITE_AVITO_CLIENT_SECRET=<ваш_client_secret>
 VITE_AVITO_REDIRECT_URL=https://bestmac.ru
 
 # Другие настройки
