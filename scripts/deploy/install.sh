@@ -125,12 +125,49 @@ Persistent=true
 WantedBy=timers.target
 EOF
 
+# ── Закупочные сигналы «докупать»: дайджест раз в сутки (GST-56/GST-58) ──
+# Шлёт топ сигналов в ТОТ ЖЕ бот @bestmac_hunter_bot. Node-скрипт сам читает .env,
+# токен переиспользуется — новых секретов не нужно.
+NODE_BIN="$(command -v node || true)"
+NPM_BIN="$(command -v npm || true)"
+if [ -n "$NPM_BIN" ]; then
+  write_unit bestmac-sourcing.service <<EOF
+[Unit]
+Description=BestMac sourcing buy-signals digest -> @bestmac_hunter_bot (one run)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=$RUN_USER
+WorkingDirectory=$REPO_DIR
+EnvironmentFile=-$REPO_DIR/.env
+ExecStart=$NPM_BIN run sourcing:push
+EOF
+
+  write_unit bestmac-sourcing.timer <<EOF
+[Unit]
+Description=Send BestMac sourcing buy-signals once a day (server time 09:30)
+
+[Timer]
+OnCalendar=*-*-* 09:30:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+else
+  echo "⚠️  node/npm не найдены — пропускаю bestmac-sourcing.timer."
+  echo "    Установите Node 18+ и перезапустите install.sh, чтобы включить дайджест сигналов."
+fi
+
 echo
 echo "🔄 Перезагружаю systemd и включаю сервисы..."
 $SUDO systemctl daemon-reload
 $SUDO systemctl enable --now bestmac-bot.service
 $SUDO systemctl enable --now bestmac-scanner.timer
 $SUDO systemctl enable --now bestmac-digest.timer
+[ -n "$NPM_BIN" ] && $SUDO systemctl enable --now bestmac-sourcing.timer
 
 echo
 echo "✅ Готово. Состояние:"

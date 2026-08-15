@@ -1,54 +1,67 @@
-# Раннбук доставки сорсинг-сигналов основателю (GST-58 → GST-32 / GST-49)
+# Раннбук доставки сорсинг-сигналов основателю (GST-56 / GST-58)
 
 Движок готов и **15 живых сигналов уже в боевой БД** (Supabase `sxitdundeblljudxrvpa`).
-Осталась одна вещь — секреты. Их держит основатель/CEO. Ниже — как ты сам добавишь их
-и получишь первый сигнал. Секреты **никуда не коммитятся**, только в окружение.
+Доставка идёт в **уже работающий бот основателя `@bestmac_hunter_bot`** — новый бот
+заводить НЕ нужно. Токен (`TELEGRAM_BOT_TOKEN`) и `OWNER_CHAT_ID` уже лежат в `.env`
+на VPS (тот же файл, что читает `scripts/negotiation-bot/bot.py`). Node-скрипт
+`push-telegram.mjs` теперь сам подхватывает этот `.env` — переиспользуем всё как есть.
 
-Есть два канала. **Telegram — самый быстрый** (5 минут, без деплоя). Кабинет/API — второй слой.
+Есть два канала. **Telegram — самый быстрый** (одна команда). Кабинет/API — второй слой.
 
 ---
 
-## Канал A — Telegram (рекомендуется, ~5 минут, деплой не нужен)
+## Канал A — Telegram через @bestmac_hunter_bot (рекомендуется)
 
-### Что понадобится (4 секрета)
+### Что понадобится
 
-| Переменная | Где взять |
+**Ничего нового.** Токен бота и chat id уже прописаны в `.env` на VPS
+(`@bestmac_hunter_bot`), а данные скрипт читает публичным anon-ключом (витрина
+`sourcing_signal_feed` открыта только на чтение, базовые таблицы закрыты RLS —
+ключ зашит в скрипт как безопасный дефолт).
+
+| Переменная | Статус |
 |---|---|
-| `SUPABASE_URL` | `https://sxitdundeblljudxrvpa.supabase.co` (уже известно) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → проект `sxitdundeblljudxrvpa` → **Project Settings → API → `service_role` secret** |
-| `TELEGRAM_BOT_TOKEN` | Открой [@BotFather](https://t.me/BotFather) → `/newbot` → назови бота → он вернёт токен вида `123456:ABC...` |
-| `OWNER_CHAT_ID` | Напиши своему новому боту любое сообщение, потом открой [@userinfobot](https://t.me/userinfobot) → он покажет твой `Id` (число) |
+| `TELEGRAM_BOT_TOKEN` | ✅ уже в `.env` (@bestmac_hunter_bot) |
+| `OWNER_CHAT_ID` | ✅ уже в `.env` (@bestmac_hunter_bot) |
+| Supabase URL / ключ | ✅ публичные дефолты в скрипте, ничего добавлять не нужно |
 
-> `service_role` даёт полный доступ к БД — **никому не пересылай, не коммить**. Он живёт только в env.
+> Хочешь читать под сервисной ролью — можно задать `SUPABASE_SERVICE_ROLE_KEY` в `.env`
+> (переопределит anon). Это необязательно и по умолчанию не нужно.
 
-### Шаг 1. Сначала dry-run (проверка без отправки, нужны только 2 секрета Supabase)
+### Шаг 1. Dry-run (проверка без отправки)
 
 ```bash
 cd bestmac-avito-apple
-npm install   # если ещё не ставил зависимости
-
-SUPABASE_URL="https://sxitdundeblljudxrvpa.supabase.co" \
-SUPABASE_SERVICE_ROLE_KEY="<твой service_role key>" \
+npm install                 # если зависимости ещё не стоят
 DRY_RUN=1 npm run sourcing:push
 ```
 
-Ожидаемо: в консоль печатается готовое сообщение с топ-6 сигналами. Ничего не отправляется.
+Ожидаемо: в консоль печатается готовое сообщение с топ-сигналами. Ничего не отправляется.
 
-### Шаг 2. Реальная отправка в Telegram (все 4 секрета)
+### Шаг 2. Реальная отправка в @bestmac_hunter_bot (одна команда)
 
 ```bash
-SUPABASE_URL="https://sxitdundeblljudxrvpa.supabase.co" \
-SUPABASE_SERVICE_ROLE_KEY="<service_role key>" \
-TELEGRAM_BOT_TOKEN="<токен от BotFather>" \
-OWNER_CHAT_ID="<твой chat id>" \
-npm run sourcing:push
+npm run sourcing:push          # или: npm run sourcing:digest
 ```
 
-Ожидаемо: `✅ Отправлено в Telegram: 6 сигнал(ов)` и сообщение в чате с ботом.
+Ожидаемо: `✅ Отправлено в Telegram: N сигнал(ов)` и сообщение в чате с ботом.
 
-**Это и есть DoD GST-58: первый реальный сигнал «докупать» у основателя.**
+**Это и есть DoD GST-56/GST-58: первый реальный сигнал «докупать» у основателя,
+в его же боте, без единого нового секрета.**
 
 Опции: `SIGNAL_LIMIT=10` (сколько сигналов), `HOT_ONLY=1` (только 🔥).
+
+### Шаг 3. Автоматизация — раз в сутки (уже в install.sh)
+
+`scripts/deploy/install.sh` ставит таймер `bestmac-sourcing.timer` (09:30 по времени
+сервера) рядом с существующими сканером и вечерним дайджестом. Дайджест сигналов
+начнёт уходить в `@bestmac_hunter_bot` сам:
+
+```bash
+bash scripts/deploy/install.sh
+systemctl list-timers 'bestmac-*'      # проверить расписание
+systemctl start bestmac-sourcing.service   # разовый прогон прямо сейчас
+```
 
 ---
 
