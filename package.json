@@ -10,7 +10,9 @@
     "lint": "next lint",
     "prebuild": "node scripts/build-buyout-data.mjs && (node scripts/build-avito-offers.mjs || echo 'Scraping skipped') || echo 'Data builds skipped'",
     "export:buyout": "node scripts/export-macbook-csv.mjs",
-    "export:buyout:xlsx": "node scripts/export-macbook-xlsx.mjs"
+    "export:buyout:xlsx": "node scripts/export-macbook-xlsx.mjs",
+    "sourcing:build": "node scripts/sourcing/build-signals.mjs",
+    "sourcing:push": "node scripts/sourcing/push-telegram.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
