@@ -50,6 +50,7 @@ except ImportError:
 
 from common.config import VALID_RAM, VALID_SSD, MIN_PRICE, MAX_PRICE, JUNK_KEYWORDS
 from common.classifier import classify
+from common.canary import run_canary
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("Parser")
@@ -60,6 +61,7 @@ CONFIG_FILE      = SCRIPT_DIR / "../../public/data/parser-config.json"
 MODELS_CONFIG    = SCRIPT_DIR / "../../public/data/models-config.json"
 PRICES_FILE      = SCRIPT_DIR / "../../public/data/avito-prices.json"
 URLS_FILE        = SCRIPT_DIR / "../../public/data/avito-urls.json"
+LISTINGS_FILE    = SCRIPT_DIR / "../../public/data/avito-listings.json"  # GST-61: сырые лоты со ссылками
 OVERRIDES_FILE   = SCRIPT_DIR / "../../public/data/price-overrides.json"
 
 
@@ -291,6 +293,24 @@ class AvitoParser:
             window.chrome = { runtime: {} };
         """)
         self.page = self.context.new_page()
+        # GST-61: сырые объявления {model_name, processor, ram, ssd, price, url, title}
+        # для каждого распознанного лота — чтобы сигнал стал кликабельным (ссылки на живые лоты).
+        self.listings_out: list[dict] = []
+
+    def _record_listing(self, model, processor, ram, ssd, it):
+        """GST-61: сохраняет одно распознанное объявление с ссылкой для листингового фида."""
+        url = (it.get("url") or "").strip()
+        if not url:
+            return  # без ссылки лот бесполезен для «докупать»
+        self.listings_out.append({
+            "model_name": model,
+            "processor":  processor,
+            "ram":        int(ram),
+            "ssd":        int(ssd),
+            "price":      int(it["price"]),
+            "url":        url,
+            "title":      (it.get("title") or "")[:200],
+        })
 
     def warmup(self):
         logger.info("🌐 Прогрев: avito.ru...")
@@ -449,8 +469,10 @@ class AvitoParser:
                 continue
 
             entry = entry_map[key]
-            full_key = (entry["model"], entry.get("processor", "Apple"), cfg.ram, cfg.ssd)
+            proc = entry.get("processor", "Apple")
+            full_key = (entry["model"], proc, cfg.ram, cfg.ssd)
             groups.setdefault(full_key, []).append(it["price"])
+            self._record_listing(entry["model"], proc, cfg.ram, cfg.ssd, it)  # GST-61
 
         logger.info(f"  мусор={skipped_junk} не_в_таблице={unmatched}")
         for (m, p, r, s), prices in groups.items():
@@ -522,6 +544,7 @@ class AvitoParser:
 
             key = (model, chip, ram, ssd)
             groups.setdefault(key, []).append(it["price"])
+            self._record_listing(model, chip, ram, ssd, it)  # GST-61
 
         logger.info(
             f"   📊 {len(listings)} объявл. | "
@@ -768,15 +791,21 @@ def main():
                          key=lambda s: (s.get("family", ""), s["model_name"],
                                         s["processor"], s["ram"], s["ssd"]))
     total_listings = sum(s.get("samples_count", 0) for s in final_stats)
+    # Листинги, собранные ИМЕННО этим прогоном (до merge со старой БД).
+    # Именно 0 здесь — сигнал сломанных селекторов/капчи; total_listings по всей
+    # БД это скрывает, т.к. merge сохраняет семейства прошлых прогонов (GST-9).
+    run_listings = sum(s.get("samples_count", 0) for s in new_stats)
+
+    prices_payload = {
+        "generated_at":   datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "total_listings": total_listings,
+        "stats":          final_stats,
+    }
 
     # Пишем avito-prices.json
     PRICES_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(PRICES_FILE, "w", encoding="utf-8") as f:
-        json.dump({
-            "generated_at":   datetime.now().strftime("%Y-%m-%d %H:%M"),
-            "total_listings": total_listings,
-            "stats":          final_stats,
-        }, f, ensure_ascii=False, indent=2)
+        json.dump(prices_payload, f, ensure_ascii=False, indent=2)
 
     # Пишем avito-urls.json (опции для фронта)
     url_entries = build_url_entries(final_stats, tabs_cfg)
@@ -785,6 +814,29 @@ def main():
             "description": "Опции дропдаунов фронта. Автогенерируется парсером.",
             "updated_at":  datetime.now().strftime("%Y-%m-%d"),
             "entries":     url_entries,
+        }, f, ensure_ascii=False, indent=2)
+
+    # ─── Пишем avito-listings.json (GST-61: сырые лоты со ссылками) ──────────
+    # Только объявления конфигов, попавших в статистику этого прогона (те же, что
+    # порождают сигналы). Дедуп по url — одно объявление может встретиться на
+    # нескольких страницах. seen_at = метка прогона (для фильтра свежести в БД).
+    run_config_keys = {
+        (s["model_name"], s.get("processor", ""), s["ram"], s["ssd"]) for s in new_stats
+    }
+    seen_at = datetime.now().strftime("%Y-%m-%d %H:%M")
+    by_url: dict[str, dict] = {}
+    for lst in ap_obj.listings_out:
+        cfg_key = (lst["model_name"], lst["processor"], lst["ram"], lst["ssd"])
+        if cfg_key not in run_config_keys:
+            continue  # конфиг не прошёл MIN_SAMPLES / не даёт сигнала
+        by_url[lst["url"]] = {**lst, "seen_at": seen_at}  # дедуп: оставляем последнее
+    listings_final = sorted(by_url.values(),
+                            key=lambda x: (x["model_name"], x["processor"], x["ram"], x["ssd"], x["price"]))
+    with open(LISTINGS_FILE, "w", encoding="utf-8") as f:
+        json.dump({
+            "generated_at": seen_at,
+            "count":        len(listings_final),
+            "listings":     listings_final,
         }, f, ensure_ascii=False, indent=2)
 
     print("\n" + "=" * 60)
@@ -796,7 +848,20 @@ def main():
     print(f"📊 Всего объявл.:   {total_listings}")
     print(f"💾 {PRICES_FILE}")
     print(f"💾 {URLS_FILE}")
+    print(f"💾 {LISTINGS_FILE} ({len(listings_final)} лотов со ссылками)")
     print("=" * 60)
+
+    # ─── Канарейка (GST-9): алерт при 0 листингов / устаревшей базе ──────────
+    # Не роняем прогон из-за ошибок алерт-канала — сбор данных важнее.
+    try:
+        run_canary(
+            prices=prices_payload,
+            run_listings=run_listings,
+            tab=args.tab,
+            logger=logger,
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"⚠️ Канарейка упала (не критично): {e}")
 
 
 if __name__ == "__main__":

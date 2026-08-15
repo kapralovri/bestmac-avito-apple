@@ -41,7 +41,7 @@ const MARGIN_THRESHOLD_RUB = 15000; // matches schema default sourcing_signal.ma
 const MIN_SAMPLE = 30;              // below this, confidence is low
 const STALE_DAYS = 60;              // market snapshot older than this => stale_market
 
-function slugify(s) {
+export function slugify(s) {
   return String(s)
     .toLowerCase()
     .replace(/[()]/g, '')
@@ -56,14 +56,14 @@ function slugify(s) {
 // the M4 Pro 24/512 base (~160k) with the M4 Max 128GB (~320k), producing a
 // meaningless median of 195k. Buying against that median loses money on the
 // cheap configs. These buckets must NEVER drive a buy target or a hot signal.
-function isCatchAllBucket(row) {
+export function isCatchAllBucket(row) {
   const hasProc = String(row.processor || '').trim().length > 0;
   const hasRam = Number(row.ram) > 0;
   const hasSsd = Number(row.ssd) > 0;
   return !hasProc && !hasRam && !hasSsd;
 }
 
-function buildModelKey(row, used) {
+export function buildModelKey(row, used) {
   const parts = [slugify(row.model_name)];
   if (row.processor && String(row.processor).trim()) parts.push(slugify(row.processor));
   if (row.ram && Number(row.ram) > 0) parts.push(`${Number(row.ram)}gb`);
@@ -74,6 +74,43 @@ function buildModelKey(row, used) {
   while (used.has(key)) key = `${base}-${n++}`; // guarantee uniqueness (PK model_key)
   used.add(key);
   return key;
+}
+
+// Config identity shared by an aggregate stat row and any individual listing of
+// that config. Normalised (trim/lower) so the parser's per-listing tuple lines up
+// with the stat that seeds the signal. Keep in lockstep with buildModelKey inputs.
+export function configKey(row) {
+  return [
+    String(row.model_name).trim().toLowerCase(),
+    String(row.processor || '').trim().toLowerCase(),
+    Number(row.ram) || 0,
+    Number(row.ssd) || 0,
+  ].join('|');
+}
+
+// The rows that actually seed the engine, each tagged with its model_key, in the
+// SAME order and with the SAME `used`-set dedup as seeding. Single source of truth
+// for model_key — reused by build-listings.mjs so listing keys never drift from
+// signal keys. Skips F1 (median<=0) and catch-all buckets (see isCatchAllBucket).
+export function eligibleRows(stats) {
+  const used = new Set();
+  const out = [];
+  let skippedCatchAll = 0;
+  for (const row of stats) {
+    const median = Number(row.median_price) || 0;
+    if (median <= 0) continue;
+    if (isCatchAllBucket(row)) { skippedCatchAll++; continue; }
+    out.push({ row, modelKey: buildModelKey(row, used) });
+  }
+  out.skippedCatchAll = skippedCatchAll;
+  return out;
+}
+
+// Map: config identity -> model_key, for joining listings to signals.
+export function buildModelKeyMap(stats) {
+  const map = new Map();
+  for (const { row, modelKey } of eligibleRows(stats)) map.set(configKey(row), modelKey);
+  return map;
 }
 
 function computeSignal(row, marketAgeDays) {
@@ -139,22 +176,15 @@ function main() {
   const gen = generatedAt ? new Date(generatedAt) : null;
   const marketAgeDays = asOf && gen ? Math.round((asOf - gen) / 86400000) : 0;
 
-  const used = new Set();
   const marketRows = [];
   const signalRows = [];
 
-  let skippedCatchAll = 0;
-  for (const row of stats) {
+  // GST-60: catch-all buckets and F1 (median<=0) are excluded inside eligibleRows,
+  // the single source of truth for model_key (also used by build-listings.mjs).
+  const eligible = eligibleRows(stats);
+  const skippedCatchAll = eligible.skippedCatchAll;
+  for (const { row, modelKey } of eligible) {
     const median = Number(row.median_price) || 0;
-    if (median <= 0) continue; // F1 guard at the source too
-    // GST-60: exclude cross-configuration catch-all buckets. Their blended
-    // median is not a valid resale anchor for any single device, so it must not
-    // seed model_market_stats nor emit a sourcing_signal (see isCatchAllBucket).
-    if (isCatchAllBucket(row)) {
-      skippedCatchAll++;
-      continue;
-    }
-    const modelKey = buildModelKey(row, used);
     const spread = (Number(row.max_price) || 0) - (Number(row.min_price) || 0);
     marketRows.push({
       model_key: modelKey,
@@ -204,4 +234,7 @@ function emitSql(marketRows, signalRows, generatedAt) {
   return out;
 }
 
-main();
+// Run as a script, but stay importable (build-listings.mjs reuses the exports above).
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
+  main();
+}

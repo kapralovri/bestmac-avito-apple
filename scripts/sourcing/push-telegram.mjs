@@ -60,6 +60,7 @@ const SUPABASE_KEY =
 
 const LIMIT = Number(SIGNAL_LIMIT) > 0 ? Number(SIGNAL_LIMIT) : 6;
 const isDryRun = DRY_RUN === '1';
+const MAX_LOTS_PER_MODEL = 3; // GST-61: до 3 живых лотов под каждой моделью
 
 function die(msg) {
   console.error(`✖ ${msg}`);
@@ -75,11 +76,13 @@ function escapeHtml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-async function fetchSignals() {
+function supabaseClient() {
   // URL и ключ всегда есть: либо из окружения, либо публичные дефолты выше.
-  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-    auth: { persistSession: false },
-  });
+  return createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
+}
+
+async function fetchSignals() {
+  const supabase = supabaseClient();
 
   let query = supabase
     .from('sourcing_signal_feed')
@@ -98,7 +101,29 @@ async function fetchSignals() {
   return data ?? [];
 }
 
-function renderMessage(signals) {
+// GST-61: конкретные живые лоты (price<=target_buy, свежие) для показанных моделей.
+// Возвращает Map model_key -> [лоты], до MAX_LOTS_PER_MODEL, по убыванию прибыли.
+async function fetchListings(modelKeys) {
+  const keys = [...new Set((modelKeys || []).filter(Boolean))];
+  if (!keys.length) return new Map();
+  const supabase = supabaseClient();
+  const { data, error } = await supabase
+    .from('sourcing_listing_feed')
+    .select('model_key, url, price_rub, unit_profit_rub, resale_median_rub, is_hot, profit_rank')
+    .in('model_key', keys)
+    .lte('profit_rank', MAX_LOTS_PER_MODEL)
+    .order('model_key', { ascending: true })
+    .order('profit_rank', { ascending: true });
+  if (error) die(`Запрос лотов к Supabase упал: ${error.message}`);
+  const byModel = new Map();
+  for (const r of data ?? []) {
+    if (!byModel.has(r.model_key)) byModel.set(r.model_key, []);
+    byModel.get(r.model_key).push(r);
+  }
+  return byModel;
+}
+
+function renderMessage(signals, listingsByModel = new Map()) {
   if (!signals.length) {
     return '📉 <b>Сорсинг</b>: выгодных моделей для выкупа под перепродажу сейчас нет (везде маржа ниже порога 15 000 ₽).';
   }
@@ -111,6 +136,7 @@ function renderMessage(signals) {
       'указанную прибыль с устройства.',
   );
   lines.push('');
+  let anyLots = false;
   for (const s of signals) {
     const name = escapeHtml(s.display_name || s.model_key);
     const fire = s.is_hot ? ' 🔥' : '';
@@ -119,18 +145,33 @@ function renderMessage(signals) {
     lines.push(
       `  ▸ выкупать ≤ <b>${rub(s.target_buy_price_rub)}</b> · перепродажа ≈ ${rub(s.resale_median_rub)} · так торгуется ${s.sample_size ?? '—'} объявл.`,
     );
+    // GST-61: конкретные живые лоты дешевле цены выкупа — прямые ссылки
+    const lots = listingsByModel.get(s.model_key) || [];
+    if (lots.length) {
+      anyLots = true;
+      for (const lot of lots.slice(0, MAX_LOTS_PER_MODEL)) {
+        const url = escapeHtml(lot.url || '');
+        const prof = lot.unit_profit_rub != null ? ` · прибыль ~<b>${rub(lot.unit_profit_rub)}</b>` : '';
+        lines.push(`     • <a href="${url}">лот за ${rub(lot.price_rub)}</a>${prof}`);
+      }
+    } else {
+      lines.push('     • живых лотов дешевле цены выкупа сейчас нет');
+    }
   }
   lines.push('');
   lines.push(
     '<b>Как читать:</b> «выкупать ≤» — максимум, что платим за устройство; ' +
       '«прибыль» — что остаётся после перепродажи и издержек (3 000 ₽/шт); ' +
+      'лоты — реальные объявления Avito, замеченные за последние 48 ч; ' +
       '🔥 — самые ходовые и маржинальные.',
   );
-  lines.push('');
-  lines.push(
-    '⚠️ Пока это сигнал <b>по моделям</b> (что покупать), без ссылок на конкретные ' +
-      'объявления. Ссылки на живые лоты Avito — следующий шаг.',
-  );
+  if (!anyLots) {
+    lines.push('');
+    lines.push(
+      'ℹ️ Свежих лотов дешевле цены выкупа сейчас нет — как появятся, они встанут ' +
+        'прямыми ссылками под моделью.',
+    );
+  }
   return lines.join('\n');
 }
 
@@ -157,7 +198,9 @@ async function sendTelegram(text) {
 
 async function main() {
   const signals = await fetchSignals();
-  const message = renderMessage(signals);
+  // GST-61: под каждой моделью — до 3 конкретных живых лотов со ссылками
+  const listingsByModel = await fetchListings(signals.map((s) => s.model_key));
+  const message = renderMessage(signals, listingsByModel);
 
   if (isDryRun) {
     console.log('--- DRY RUN (сообщение НЕ отправлено) ---\n');

@@ -93,7 +93,7 @@ def escape_html(s):
     )
 
 
-def fetch_signals(limit, hot_only):
+def _supabase_conf():
     base_url = os.environ.get("SUPABASE_URL") or DEFAULT_SUPABASE_URL
     key = (
         os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
@@ -101,19 +101,12 @@ def fetch_signals(limit, hot_only):
         or os.environ.get("SUPABASE_KEY")
         or DEFAULT_SUPABASE_ANON_KEY
     )
-    params = [
-        (
-            "select",
-            "model_key,display_name,family,resale_median_rub,target_buy_price_rub,"
-            "expected_spread_rub,sample_size,is_hot,confidence,is_recommended",
-        ),
-        ("is_recommended", "eq.true"),
-        ("order", "is_hot.desc,expected_spread_rub.desc.nullslast"),
-        ("limit", str(limit)),
-    ]
-    if hot_only:
-        params.append(("is_hot", "eq.true"))
-    url = f"{base_url}/rest/v1/sourcing_signal_feed?" + urllib.parse.urlencode(params)
+    return base_url, key
+
+
+def _rest_get(view, params):
+    base_url, key = _supabase_conf()
+    url = f"{base_url}/rest/v1/{view}?" + urllib.parse.urlencode(params)
     req = urllib.request.Request(
         url,
         headers={"apikey": key, "Authorization": f"Bearer {key}", "Accept": "application/json"},
@@ -128,7 +121,51 @@ def fetch_signals(limit, hot_only):
         die(f"Запрос к Supabase упал: {e}")
 
 
-def render_message(signals):
+# GST-61: до 3 живых лотов на модель, сгруппированных по model_key
+MAX_LOTS_PER_MODEL = 3
+
+
+def fetch_signals(limit, hot_only):
+    params = [
+        (
+            "select",
+            "model_key,display_name,family,resale_median_rub,target_buy_price_rub,"
+            "expected_spread_rub,sample_size,is_hot,confidence,is_recommended",
+        ),
+        ("is_recommended", "eq.true"),
+        ("order", "is_hot.desc,expected_spread_rub.desc.nullslast"),
+        ("limit", str(limit)),
+    ]
+    if hot_only:
+        params.append(("is_hot", "eq.true"))
+    return _rest_get("sourcing_signal_feed", params)
+
+
+def fetch_listings(model_keys):
+    """GST-61: конкретные живые лоты (price<=target_buy, свежие) для показанных моделей.
+    Возвращает {model_key: [лоты...]} — до MAX_LOTS_PER_MODEL на модель, по убыванию прибыли."""
+    keys = [k for k in model_keys if k]
+    if not keys:
+        return {}
+    # model_key — slug (a-z0-9-), спецсимволов нет → in.(...) без экранирования
+    params = [
+        (
+            "select",
+            "model_key,url,price_rub,unit_profit_rub,resale_median_rub,is_hot,profit_rank",
+        ),
+        ("model_key", "in.(" + ",".join(keys) + ")"),
+        ("profit_rank", f"lte.{MAX_LOTS_PER_MODEL}"),
+        ("order", "model_key,profit_rank"),
+    ]
+    rows = _rest_get("sourcing_listing_feed", params)
+    by_model = {}
+    for r in rows:
+        by_model.setdefault(r["model_key"], []).append(r)
+    return by_model
+
+
+def render_message(signals, listings_by_model=None):
+    listings_by_model = listings_by_model or {}
     if not signals:
         return (
             "\U0001F4C9 <b>Сорсинг</b>: выгодных моделей для выкупа под перепродажу "
@@ -144,6 +181,7 @@ def render_message(signals):
         ),
         "",
     ]
+    any_lots = False
     for s in signals:
         name = escape_html(s.get("display_name") or s.get("model_key"))
         fire = " \U0001F525" if s.get("is_hot") else ""
@@ -156,17 +194,32 @@ def render_message(signals):
             f"{rub(s.get('target_buy_price_rub'))}</b> · перепродажа ≈ "
             f"{rub(s.get('resale_median_rub'))} · так торгуется {sample} объявл."
         )
+        # GST-61: конкретные живые лоты дешевле цены выкупа — прямые ссылки
+        lots = listings_by_model.get(s.get("model_key")) or []
+        if lots:
+            any_lots = True
+            for lot in lots[:MAX_LOTS_PER_MODEL]:
+                url = escape_html(lot.get("url") or "")
+                prof = lot.get("unit_profit_rub")
+                prof_txt = f" · прибыль ~<b>{rub(prof)}</b>" if prof is not None else ""
+                lines.append(
+                    f'     • <a href="{url}">лот за {rub(lot.get("price_rub"))}</a>{prof_txt}'
+                )
+        else:
+            lines.append("     • живых лотов дешевле цены выкупа сейчас нет")
     lines.append("")
     lines.append(
         "<b>Как читать:</b> «выкупать ≤» — максимум, что платим за устройство; "
         "«прибыль» — что остаётся после перепродажи и издержек (3\u00a0000\u00a0₽/шт); "
+        "лоты — реальные объявления Avito, замеченные за последние 48\u00a0ч; "
         "\U0001F525 — самые ходовые и маржинальные."
     )
-    lines.append("")
-    lines.append(
-        "⚠️ Пока это сигнал <b>по моделям</b> (что покупать), без ссылок на "
-        "конкретные объявления. Ссылки на живые лоты Avito — следующий шаг."
-    )
+    if not any_lots:
+        lines.append("")
+        lines.append(
+            "ℹ️ Свежих лотов дешевле цены выкупа сейчас нет — как появятся, "
+            "они встанут прямыми ссылками под моделью."
+        )
     return "\n".join(lines)
 
 
@@ -216,7 +269,9 @@ def main():
     is_dry_run = os.environ.get("DRY_RUN") == "1"
 
     signals = fetch_signals(limit, hot_only)
-    message = render_message(signals)
+    # GST-61: под каждой моделью — до 3 конкретных живых лотов со ссылками
+    listings_by_model = fetch_listings([s.get("model_key") for s in signals])
+    message = render_message(signals, listings_by_model)
 
     if is_dry_run:
         print("--- DRY RUN (сообщение НЕ отправлено) ---\n")
