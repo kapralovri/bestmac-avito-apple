@@ -169,6 +169,26 @@ $SUDO systemctl enable --now bestmac-scanner.timer
 $SUDO systemctl enable --now bestmac-digest.timer
 [ -n "$NPM_BIN" ] && $SUDO systemctl enable --now bestmac-sourcing.timer
 
+# ── GST-60: первый живой сигнал прямо при деплое (не ждать таймера в 09:30) ──
+# Основатель дал добро «выполнить при деплое». Таймер выше пошлёт дайджест лишь
+# завтра в 09:30 — а DoD требует ПЕРВЫЙ сигнал сейчас. Поэтому шлём дайджест
+# 6 горячих сигналов немедленно, подхватив токены из $REPO_DIR/.env. Если токенов
+# нет — не падаем (set -e обойдён через if), а подсказываем ручной повтор.
+if [ -n "$NPM_BIN" ]; then
+  echo
+  echo "📨 GST-60: отправляю первый живой дайджест в @bestmac_hunter_bot..."
+  set -a
+  # shellcheck disable=SC1091
+  [ -f "$REPO_DIR/.env" ] && . "$REPO_DIR/.env"
+  set +a
+  if (cd "$REPO_DIR" && HOT_ONLY=1 SIGNAL_LIMIT=6 "$NPM_BIN" run --silent sourcing:push); then
+    echo "✅ Первый сигнал доставлен в @bestmac_hunter_bot."
+  else
+    echo "⚠️  Первый дайджест не ушёл — проверьте TELEGRAM_BOT_TOKEN / OWNER_CHAT_ID в $REPO_DIR/.env"
+    echo "    Ручной повтор:  HOT_ONLY=1 SIGNAL_LIMIT=6 npm run sourcing:push"
+  fi
+fi
+
 echo
 echo "✅ Готово. Состояние:"
 $SUDO systemctl --no-pager status bestmac-bot.service | head -5 || true
