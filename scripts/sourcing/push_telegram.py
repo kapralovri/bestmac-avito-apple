@@ -131,24 +131,41 @@ def fetch_signals(limit, hot_only):
 def render_message(signals):
     if not signals:
         return (
-            "\U0001F4C9 <b>Сорсинг</b>: рекомендованных сигналов «докупать» сейчас нет "
-            "(все ниже порога маржи)."
+            "\U0001F4C9 <b>Сорсинг</b>: выгодных моделей для выкупа под перепродажу "
+            "сейчас нет (везде маржа ниже порога 15\u00a0000\u00a0₽)."
         )
-    lines = ["\U0001F3AF <b>Сигналы «докупать» — живые данные Avito</b>", ""]
+    lines = [
+        "\U0001F3AF <b>Какие Mac сейчас выгодно выкупать под перепродажу</b>",
+        "",
+        (
+            "Эти модели на Avito в рознице продаются дороже, чем стоит их выкупить. "
+            "Купив экземпляр по цене «выкупать ≤», после наших издержек мы "
+            "зарабатываем указанную прибыль с устройства."
+        ),
+        "",
+    ]
     for s in signals:
         name = escape_html(s.get("display_name") or s.get("model_key"))
         fire = " \U0001F525" if s.get("is_hot") else ""
-        lines.append(f"<b>{name}</b>{fire}")
+        spread = s.get("expected_spread_rub")
+        profit = f" · прибыль ~<b>{rub(spread)}</b>/шт" if spread is not None else ""
+        lines.append(f"<b>{name}</b>{fire}{profit}")
+        sample = s.get("sample_size") if s.get("sample_size") is not None else "—"
         lines.append(
-            "  ▸ Выкупать ≤ <b>"
-            f"{rub(s.get('target_buy_price_rub'))}</b> · медиана "
-            f"{rub(s.get('resale_median_rub'))} · спред ~<b>"
-            f"{rub(s.get('expected_spread_rub'))}</b> · выборка "
-            f"{s.get('sample_size') if s.get('sample_size') is not None else '—'}"
+            "  ▸ выкупать ≤ <b>"
+            f"{rub(s.get('target_buy_price_rub'))}</b> · перепродажа ≈ "
+            f"{rub(s.get('resale_median_rub'))} · так торгуется {sample} объявл."
         )
     lines.append("")
     lines.append(
-        "Канал: органический выкуп с Avito. Порог маржи 15 000 ₽, издержки 3 000 ₽/шт."
+        "<b>Как читать:</b> «выкупать ≤» — максимум, что платим за устройство; "
+        "«прибыль» — что остаётся после перепродажи и издержек (3\u00a0000\u00a0₽/шт); "
+        "\U0001F525 — самые ходовые и маржинальные."
+    )
+    lines.append("")
+    lines.append(
+        "⚠️ Пока это сигнал <b>по моделям</b> (что покупать), без ссылок на "
+        "конкретные объявления. Ссылки на живые лоты Avito — следующий шаг."
     )
     return "\n".join(lines)
 

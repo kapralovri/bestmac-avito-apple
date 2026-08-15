@@ -100,21 +100,37 @@ async function fetchSignals() {
 
 function renderMessage(signals) {
   if (!signals.length) {
-    return '📉 <b>Сорсинг</b>: рекомендованных сигналов «докупать» сейчас нет (все ниже порога маржи).';
+    return '📉 <b>Сорсинг</b>: выгодных моделей для выкупа под перепродажу сейчас нет (везде маржа ниже порога 15 000 ₽).';
   }
   const lines = [];
-  lines.push('🎯 <b>Сигналы «докупать» — живые данные Avito</b>');
+  lines.push('🎯 <b>Какие Mac сейчас выгодно выкупать под перепродажу</b>');
+  lines.push('');
+  lines.push(
+    'Эти модели на Avito в рознице продаются дороже, чем стоит их выкупить. ' +
+      'Купив экземпляр по цене «выкупать ≤», после наших издержек мы зарабатываем ' +
+      'указанную прибыль с устройства.',
+  );
   lines.push('');
   for (const s of signals) {
     const name = escapeHtml(s.display_name || s.model_key);
     const fire = s.is_hot ? ' 🔥' : '';
-    lines.push(`<b>${name}</b>${fire}`);
+    const profit = s.expected_spread_rub != null ? ` · прибыль ~<b>${rub(s.expected_spread_rub)}</b>/шт` : '';
+    lines.push(`<b>${name}</b>${fire}${profit}`);
     lines.push(
-      `  ▸ Выкупать ≤ <b>${rub(s.target_buy_price_rub)}</b> · медиана ${rub(s.resale_median_rub)} · спред ~<b>${rub(s.expected_spread_rub)}</b> · выборка ${s.sample_size ?? '—'}`,
+      `  ▸ выкупать ≤ <b>${rub(s.target_buy_price_rub)}</b> · перепродажа ≈ ${rub(s.resale_median_rub)} · так торгуется ${s.sample_size ?? '—'} объявл.`,
     );
   }
   lines.push('');
-  lines.push('Канал: органический выкуп с Avito. Порог маржи 15 000 ₽, издержки 3 000 ₽/шт.');
+  lines.push(
+    '<b>Как читать:</b> «выкупать ≤» — максимум, что платим за устройство; ' +
+      '«прибыль» — что остаётся после перепродажи и издержек (3 000 ₽/шт); ' +
+      '🔥 — самые ходовые и маржинальные.',
+  );
+  lines.push('');
+  lines.push(
+    '⚠️ Пока это сигнал <b>по моделям</b> (что покупать), без ссылок на конкретные ' +
+      'объявления. Ссылки на живые лоты Avito — следующий шаг.',
+  );
   return lines.join('\n');
 }
 
