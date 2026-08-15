@@ -50,6 +50,19 @@ function slugify(s) {
     .replace(/-+/g, '-');
 }
 
+// A "catch-all" bucket is a row where the parser could NOT resolve the exact
+// configuration (processor + RAM + SSD all empty). Its median blends different
+// chips / RAM / SSD tiers into one number — e.g. "MacBook Pro 16 (2024)" mixes
+// the M4 Pro 24/512 base (~160k) with the M4 Max 128GB (~320k), producing a
+// meaningless median of 195k. Buying against that median loses money on the
+// cheap configs. These buckets must NEVER drive a buy target or a hot signal.
+function isCatchAllBucket(row) {
+  const hasProc = String(row.processor || '').trim().length > 0;
+  const hasRam = Number(row.ram) > 0;
+  const hasSsd = Number(row.ssd) > 0;
+  return !hasProc && !hasRam && !hasSsd;
+}
+
 function buildModelKey(row, used) {
   const parts = [slugify(row.model_name)];
   if (row.processor && String(row.processor).trim()) parts.push(slugify(row.processor));
@@ -130,9 +143,17 @@ function main() {
   const marketRows = [];
   const signalRows = [];
 
+  let skippedCatchAll = 0;
   for (const row of stats) {
     const median = Number(row.median_price) || 0;
     if (median <= 0) continue; // F1 guard at the source too
+    // GST-60: exclude cross-configuration catch-all buckets. Their blended
+    // median is not a valid resale anchor for any single device, so it must not
+    // seed model_market_stats nor emit a sourcing_signal (see isCatchAllBucket).
+    if (isCatchAllBucket(row)) {
+      skippedCatchAll++;
+      continue;
+    }
     const modelKey = buildModelKey(row, used);
     const spread = (Number(row.max_price) || 0) - (Number(row.min_price) || 0);
     marketRows.push({
@@ -149,7 +170,7 @@ function main() {
   }
 
   if (mode === 'json') {
-    process.stdout.write(JSON.stringify({ marketAgeDays, marketRows, signalRows }, null, 2));
+    process.stdout.write(JSON.stringify({ marketAgeDays, skippedCatchAll, marketRows, signalRows }, null, 2));
     return;
   }
   process.stdout.write(emitSql(marketRows, signalRows, generatedAt));
