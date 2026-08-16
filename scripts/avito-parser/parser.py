@@ -61,6 +61,7 @@ CONFIG_FILE      = SCRIPT_DIR / "../../public/data/parser-config.json"
 MODELS_CONFIG    = SCRIPT_DIR / "../../public/data/models-config.json"
 PRICES_FILE      = SCRIPT_DIR / "../../public/data/avito-prices.json"
 URLS_FILE        = SCRIPT_DIR / "../../public/data/avito-urls.json"
+LISTINGS_FILE    = SCRIPT_DIR / "../../public/data/avito-listings.json"  # GST-61: сырые лоты со ссылками
 OVERRIDES_FILE   = SCRIPT_DIR / "../../public/data/price-overrides.json"
 
 
@@ -292,6 +293,24 @@ class AvitoParser:
             window.chrome = { runtime: {} };
         """)
         self.page = self.context.new_page()
+        # GST-61: сырые объявления {model_name, processor, ram, ssd, price, url, title}
+        # для каждого распознанного лота — чтобы сигнал стал кликабельным (ссылки на живые лоты).
+        self.listings_out: list[dict] = []
+
+    def _record_listing(self, model, processor, ram, ssd, it):
+        """GST-61: сохраняет одно распознанное объявление с ссылкой для листингового фида."""
+        url = (it.get("url") or "").strip()
+        if not url:
+            return  # без ссылки лот бесполезен для «докупать»
+        self.listings_out.append({
+            "model_name": model,
+            "processor":  processor,
+            "ram":        int(ram),
+            "ssd":        int(ssd),
+            "price":      int(it["price"]),
+            "url":        url,
+            "title":      (it.get("title") or "")[:200],
+        })
 
     def warmup(self):
         logger.info("🌐 Прогрев: avito.ru...")
@@ -450,8 +469,10 @@ class AvitoParser:
                 continue
 
             entry = entry_map[key]
-            full_key = (entry["model"], entry.get("processor", "Apple"), cfg.ram, cfg.ssd)
+            proc = entry.get("processor", "Apple")
+            full_key = (entry["model"], proc, cfg.ram, cfg.ssd)
             groups.setdefault(full_key, []).append(it["price"])
+            self._record_listing(entry["model"], proc, cfg.ram, cfg.ssd, it)  # GST-61
 
         logger.info(f"  мусор={skipped_junk} не_в_таблице={unmatched}")
         for (m, p, r, s), prices in groups.items():
@@ -523,6 +544,7 @@ class AvitoParser:
 
             key = (model, chip, ram, ssd)
             groups.setdefault(key, []).append(it["price"])
+            self._record_listing(model, chip, ram, ssd, it)  # GST-61
 
         logger.info(
             f"   📊 {len(listings)} объявл. | "
@@ -794,6 +816,29 @@ def main():
             "entries":     url_entries,
         }, f, ensure_ascii=False, indent=2)
 
+    # ─── Пишем avito-listings.json (GST-61: сырые лоты со ссылками) ──────────
+    # Только объявления конфигов, попавших в статистику этого прогона (те же, что
+    # порождают сигналы). Дедуп по url — одно объявление может встретиться на
+    # нескольких страницах. seen_at = метка прогона (для фильтра свежести в БД).
+    run_config_keys = {
+        (s["model_name"], s.get("processor", ""), s["ram"], s["ssd"]) for s in new_stats
+    }
+    seen_at = datetime.now().strftime("%Y-%m-%d %H:%M")
+    by_url: dict[str, dict] = {}
+    for lst in ap_obj.listings_out:
+        cfg_key = (lst["model_name"], lst["processor"], lst["ram"], lst["ssd"])
+        if cfg_key not in run_config_keys:
+            continue  # конфиг не прошёл MIN_SAMPLES / не даёт сигнала
+        by_url[lst["url"]] = {**lst, "seen_at": seen_at}  # дедуп: оставляем последнее
+    listings_final = sorted(by_url.values(),
+                            key=lambda x: (x["model_name"], x["processor"], x["ram"], x["ssd"], x["price"]))
+    with open(LISTINGS_FILE, "w", encoding="utf-8") as f:
+        json.dump({
+            "generated_at": seen_at,
+            "count":        len(listings_final),
+            "listings":     listings_final,
+        }, f, ensure_ascii=False, indent=2)
+
     print("\n" + "=" * 60)
     print("📊 ИТОГИ")
     print("=" * 60)
@@ -803,6 +848,7 @@ def main():
     print(f"📊 Всего объявл.:   {total_listings}")
     print(f"💾 {PRICES_FILE}")
     print(f"💾 {URLS_FILE}")
+    print(f"💾 {LISTINGS_FILE} ({len(listings_final)} лотов со ссылками)")
     print("=" * 60)
 
     # ─── Канарейка (GST-9): алерт при 0 листингов / устаревшей базе ──────────

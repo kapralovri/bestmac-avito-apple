@@ -157,7 +157,7 @@ const models: MacBookModel[] = [
     display: "16.2\" Liquid Retina XDR (3456×2234) 120Hz",
     weight: "2.14 кг",
     battery: "до 22 часов",
-    price: "от 250,000₽ б/у",
+    price: "от 280,000₽ б/у",
     performance: 100,
     portability: 70,
     value: 70,

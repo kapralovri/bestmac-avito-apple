@@ -5,7 +5,6 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { generateArticleSchema } from "@/lib/structured-data";
 
 const MacbookM4Obzor = () => {
   const breadcrumbItems = [
@@ -13,20 +12,22 @@ const MacbookM4Obzor = () => {
     { name: "MacBook M4: что нового и стоит ли обновляться", url: "/blog/macbook-m4-obzor" }
   ];
 
-  const articleSchema = generateArticleSchema({
-    title: "MacBook M4: что нового и стоит ли обновляться с M2/M3",
-    description: "Полный обзор нового процессора Apple M4 в MacBook. Сравнение с M2 и M3, тесты производительности, стоит ли обновляться.",
-    datePublished: "2024-11-22",
-    dateModified: "2024-11-22",
-    author: "BestMac",
-    url: "/blog/macbook-m4-obzor"
-  });
-
   return (
     <div className="min-h-screen bg-background text-foreground">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Обзор MacBook M4 — стоит ли покупать",
+    "description": "Подробный обзор MacBook с чипом M4. Характеристики, тесты, цены.",
+    "image": "https://bestmac.ru/og-image.jpg",
+    "datePublished": "2025-11-08",
+    "dateModified": "2026-07-03",
+    "author": { "@type": "Person", "name": "Роман Капралов" },
+    "publisher": { "@type": "Organization", "name": "BestMac", "logo": { "@type": "ImageObject", "url": "https://bestmac.ru/favicon.png" } },
+    "mainEntityOfPage": { "@type": "WebPage", "@id": "https://bestmac.ru/blog/macbook-m4-obzor" }
+  }) }}
       />
 <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Breadcrumbs items={breadcrumbItems} />

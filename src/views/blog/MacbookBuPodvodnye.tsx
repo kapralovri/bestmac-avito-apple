@@ -1,19 +1,10 @@
 "use client";
 
 import Breadcrumbs from "@/components/Breadcrumbs";
-import { generateArticleSchema } from "@/lib/structured-data";
 import { AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import Link from "next/link";
 
 const MacbookBuPodvodnye = () => {
-  const article = generateArticleSchema({
-    title: "Подводные камни покупки б/у MacBook: чего опасаться",
-    description: "Распространенные проблемы при покупке б/у MacBook, красные флаги, как избежать обмана и проверить устройство перед покупкой.",
-    datePublished: "2024-01-10",
-    dateModified: "2024-01-10",
-    author: "BestMac",
-    url: "/blog/macbook-bu-podvodnye",
-  });
-
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <script
@@ -257,6 +248,21 @@ const MacbookBuPodvodnye = () => {
               BestMac предлагает б/у MacBook с полной диагностикой, гарантией и юридической чистотой. 
               Цены от 70,000₽, трейд-in вашего старого устройства.
             </p>
+          </section>
+
+          <section className="mb-8 bg-gradient-primary text-white p-6 rounded-lg">
+            <h2 className="text-2xl font-semibold mb-3">Купить б/у MacBook без рисков</h2>
+            <p className="mb-4 opacity-90">
+              Все устройства проходят полную диагностику, проверку на iCloud Lock и продаются с гарантией и документами.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <Link href="/buy" className="inline-flex items-center justify-center rounded-lg bg-white text-primary font-semibold px-6 py-3 hover:bg-white/90 transition">
+                Проверенные MacBook в наличии
+              </Link>
+              <Link href="/sell" className="inline-flex items-center justify-center rounded-lg border border-white text-white font-semibold px-6 py-3 hover:bg-white/10 transition">
+                Сдать старый MacBook по трейд-ин
+              </Link>
+            </div>
           </section>
         </article>
       </main>

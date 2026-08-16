@@ -4,6 +4,7 @@ import path from 'path';
 import { VYKUP_LANDINGS } from '@/data/vykup-landings';
 import { GEO_LANDINGS } from '@/data/geo-landings';
 import { ALL_BUYOUT_MODELS } from '@/lib/model-slugs';
+import { getPriceModelSlugs } from '@/lib/price-pages';
 
 // Дата последней правки статей блога (см. dateModified в Article-схемах)
 const BLOG_LASTMOD = new Date('2026-03-31');
@@ -27,6 +28,7 @@ async function pricesLastmod(): Promise<Date | undefined> {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://bestmac.ru';
   const pricesDate = await pricesLastmod();
+  const priceModelSlugs = await getPriceModelSlugs();
 
   const pages: Array<{
     url: string;
@@ -104,6 +106,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly' as const,
       priority: 0.7,
     })),
+
+    // Программные ценовые страницы (GST-5): индекс цен + страница на модель.
+    // Слоги берутся из реальных данных парсера → sitemap == маршрут == canonical.
+    { url: '/ceny', changeFrequency: 'daily', priority: 0.9 },
+    ...priceModelSlugs.map((slug) => ({
+      url: `/ceny/${slug}`,
+      changeFrequency: 'daily' as const,
+      priority: 0.75,
+    })),
   ];
 
   // Реальный lastmod вместо фиктивного new Date() для всех URL:
@@ -112,7 +123,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   //  - статика — без lastmod (честнее, чем выдуманная дата).
   const lastmodFor = (url: string): Date | undefined => {
     if (url.startsWith('/blog/')) return BLOG_LASTMOD_OVERRIDES[url] || BLOG_LASTMOD;
-    if (url.startsWith('/sell') || url.startsWith('/buy') || url.startsWith('/vykup/')) {
+    if (
+      url.startsWith('/sell') ||
+      url.startsWith('/buy') ||
+      url.startsWith('/vykup/') ||
+      url.startsWith('/ceny')
+    ) {
       return pricesDate;
     }
     return undefined;

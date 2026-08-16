@@ -1,20 +1,10 @@
 "use client";
 
 import Breadcrumbs from "@/components/Breadcrumbs";
-import { generateArticleSchema } from "@/lib/structured-data";
 import { GraduationCap, DollarSign, Zap, Clock } from "lucide-react";
 import Link from "next/link";
 
 const MacbookDliaStudenta = () => {
-  const article = generateArticleSchema({
-    title: "Какой MacBook выбрать студенту: бюджетные варианты",
-    description: "Лучшие модели MacBook для студентов в 2024 году. Сравнение характеристик, цен и рекомендации по выбору недорогого MacBook для учебы.",
-    datePublished: "2024-01-12",
-    dateModified: "2024-01-12",
-    author: "BestMac",
-    url: "/blog/macbook-dlia-studenta",
-  });
-
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <script
@@ -375,6 +365,21 @@ const MacbookDliaStudenta = () => {
               BestMac предлагает проверенные б/у MacBook для студентов с гарантией от 55,000₽. 
               Возможен трейд-in вашего старого устройства. Рассрочка и доставка по Москве.
             </p>
+          </section>
+
+          <section className="mb-8 bg-gradient-primary text-white p-6 rounded-lg">
+            <h2 className="text-2xl font-semibold mb-3">Выбрать MacBook для учёбы</h2>
+            <p className="mb-4 opacity-90">
+              Проверенные MacBook Air для студентов с гарантией от 55 000 ₽. Рассрочка, трейд-ин и доставка по Москве.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <Link href="/buy/macbook-air-m3-students" className="inline-flex items-center justify-center rounded-lg bg-white text-primary font-semibold px-6 py-3 hover:bg-white/90 transition">
+                MacBook Air для студентов
+              </Link>
+              <Link href="/buy" className="inline-flex items-center justify-center rounded-lg border border-white text-white font-semibold px-6 py-3 hover:bg-white/10 transition">
+                Все MacBook в наличии
+              </Link>
+            </div>
           </section>
         </article>
       </main>

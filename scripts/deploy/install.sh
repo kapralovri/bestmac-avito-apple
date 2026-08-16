@@ -175,6 +175,57 @@ Persistent=true
 WantedBy=timers.target
 EOF
 
+# ── Закупочные сигналы «докупать»: дайджест раз в сутки (GST-56/GST-58/GST-60) ──
+# Шлёт топ сигналов в ТОТ ЖЕ бот @bestmac_hunter_bot. Скрипт сам читает .env,
+# токен переиспользуется — новых секретов не нужно.
+#
+# Раннер выбираем по факту наличия на VPS: предпочитаем Node (npm run sourcing:push),
+# но если Node не установлен, а Python есть (на нём уже крутится bot.py), падаем на
+# Python-двойник scripts/sourcing/push_telegram.py — он на голом stdlib, без pip/npm.
+NODE_BIN="$(command -v node || true)"
+NPM_BIN="$(command -v npm || true)"
+SOURCING_EXEC=""
+SOURCING_RUNNER=""
+if [ -n "$NPM_BIN" ]; then
+  SOURCING_EXEC="$NPM_BIN run --silent sourcing:push"
+  SOURCING_RUNNER="node ($NPM_BIN run sourcing:push)"
+elif [ -n "$PYTHON" ]; then
+  SOURCING_EXEC="$PYTHON scripts/sourcing/push_telegram.py"
+  SOURCING_RUNNER="python ($PYTHON scripts/sourcing/push_telegram.py)"
+fi
+
+if [ -n "$SOURCING_EXEC" ]; then
+  echo "📨 Сорсинг-раннер: $SOURCING_RUNNER"
+  write_unit bestmac-sourcing.service <<EOF
+[Unit]
+Description=BestMac sourcing buy-signals digest -> @bestmac_hunter_bot (one run)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=$RUN_USER
+WorkingDirectory=$REPO_DIR
+EnvironmentFile=-$REPO_DIR/.env
+ExecStart=$SOURCING_EXEC
+EOF
+
+  write_unit bestmac-sourcing.timer <<EOF
+[Unit]
+Description=Send BestMac sourcing buy-signals once a day (server time 09:30)
+
+[Timer]
+OnCalendar=*-*-* 09:30:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+else
+  echo "⚠️  ни node/npm, ни python3 не найдены — пропускаю bestmac-sourcing.timer."
+  echo "    Установите Python 3.11+ (или Node 18+) и перезапустите install.sh."
+fi
+
 echo
 echo "🔄 Перезагружаю systemd и включаю сервисы..."
 $SUDO systemctl daemon-reload
@@ -183,6 +234,29 @@ $SUDO systemctl enable --now bestmac-scanner.timer
 $SUDO systemctl enable --now bestmac-digest.timer
 $SUDO systemctl enable --now bestmac-intake.service
 $SUDO systemctl enable --now bestmac-intake-proc.timer
+[ -n "$SOURCING_EXEC" ] && $SUDO systemctl enable --now bestmac-sourcing.timer
+
+# ── GST-60: первый живой сигнал прямо при деплое (не ждать таймера в 09:30) ──
+# Основатель дал добро «выполнить при деплое». Таймер выше пошлёт дайджест лишь
+# завтра в 09:30 — а DoD требует ПЕРВЫЙ сигнал сейчас. Поэтому шлём дайджест
+# 6 горячих сигналов немедленно тем же раннером (node или python), подхватив токены
+# из $REPO_DIR/.env. Если токенов нет — не падаем (set -e обойдён через if), а
+# подсказываем ручной повтор.
+if [ -n "$SOURCING_EXEC" ]; then
+  echo
+  echo "📨 GST-60: отправляю первый живой дайджест в @bestmac_hunter_bot..."
+  set -a
+  # shellcheck disable=SC1091
+  [ -f "$REPO_DIR/.env" ] && . "$REPO_DIR/.env"
+  set +a
+  if (cd "$REPO_DIR" && HOT_ONLY=1 SIGNAL_LIMIT=6 $SOURCING_EXEC); then
+    echo "✅ Первый сигнал доставлен в @bestmac_hunter_bot."
+  else
+    echo "⚠️  Первый дайджест не ушёл — проверьте TELEGRAM_BOT_TOKEN / OWNER_CHAT_ID в $REPO_DIR/.env"
+    echo "    Ручной повтор (node):   HOT_ONLY=1 SIGNAL_LIMIT=6 npm run sourcing:push"
+    echo "    Ручной повтор (python): HOT_ONLY=1 SIGNAL_LIMIT=6 python3 scripts/sourcing/push_telegram.py"
+  fi
+fi
 
 echo
 echo "✅ Готово. Состояние:"
