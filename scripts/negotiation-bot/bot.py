@@ -32,6 +32,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))   # scripts/
 
 from common.negotiator import next_move, NegotiationMove
 
+# GST-60: «Найти сделки» прямо из бота. Переиспуем готовый сорсинг-дайджест
+# (тот же, что уходит в рассылке). Импорт защищён — бот поднимается даже без модуля.
+try:
+    from sourcing.push_telegram import fetch_signals, fetch_listings, render_message
+except Exception:  # noqa: BLE001
+    fetch_signals = fetch_listings = render_message = None
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("NegotiationBot")
 
@@ -348,6 +355,22 @@ class NegotiationBot:
             return self._handle_message(update["message"])
         return []
 
+    # ── GST-60: сорсинг-поиск по кнопке/команде прямо из бота ────────────────
+    def _sourcing_digest(self) -> str:
+        """Запускает сорсинг-поиск по запросу владельца и возвращает готовый
+        HTML-дайджест «какие Mac выгодно выкупать» — тот же, что уходит в рассылке.
+        Любой сбой (Supabase недоступен, die() внутри модуля) НЕ роняет бота."""
+        if render_message is None:
+            return "⚠️ Модуль сорсинга недоступен в этой сборке бота."
+        try:
+            signals = fetch_signals(6, True) or []          # топ-6 «горячих»
+            listings = fetch_listings([s.get("model_key") for s in signals])
+            return render_message(signals, listings)
+        except SystemExit as e:            # die() внутри модуля зовёт sys.exit
+            return f"⚠️ Поиск не удался — данные сорсинга недоступны ({e})."
+        except Exception as e:  # noqa: BLE001
+            return f"⚠️ Поиск не удался: {e}"
+
     def _handle_message(self, msg: dict) -> List[dict]:
         chat_id = msg.get("chat", {}).get("id")
         text = (msg.get("text") or "").strip()
@@ -363,8 +386,10 @@ class NegotiationBot:
                      "text": "✅ Бот переговоров подключён. Лоты на торг буду присылать сюда.\n"
                              "Жми «▶️ Веду торг», отправляй продавцу мой текст, "
                              "а его ответы — пересылай мне обычным сообщением.\n\n"
-                             "Команда /status — проверить домашний коллектор Avito.",
-                     "buttons": [[("🩺 Статус коллектора", "status:refresh")]]}]
+                             "🔍 /сделки — показать, какие Mac выгодно выкупать прямо сейчас.\n"
+                             "🩺 /status — проверить домашний коллектор Avito.",
+                     "buttons": [[("🔍 Найти сделки сейчас", "sourcing:now")],
+                                 [("🩺 Статус коллектора", "status:refresh")]]}]
 
         if not self._is_owner(chat_id):
             return []   # игнорируем чужих
@@ -374,11 +399,17 @@ class NegotiationBot:
                      "text": collector_status_text(),
                      "buttons": [[("🔄 Обновить", "status:refresh")]]}]
 
+        if text.startswith("/сделки") or text.startswith("/deals") or text.startswith("/поиск"):
+            return [{"type": "send", "chat_id": chat_id,
+                     "text": self._sourcing_digest(),
+                     "buttons": [[("🔄 Обновить поиск", "sourcing:now")]]}]
+
         if text.startswith("/help"):
             return [{"type": "send", "chat_id": chat_id,
                      "text": "Петля: ▶️ Веду торг → отправляешь мой текст продавцу → "
                              "«✅ Отправил» → пересылаешь мне ответ продавца → я даю следующий ход.\n"
-                             "/status — статус домашнего коллектора Avito."}]
+                             "🔍 /сделки — какие Mac выгодно выкупать прямо сейчас.\n"
+                             "🩺 /status — статус домашнего коллектора Avito."}]
 
         # Обычный текст = ответ продавца для активного диалога
         active = self.state.get("active_lead")
@@ -400,6 +431,12 @@ class NegotiationBot:
             actions.append({"type": "send", "chat_id": chat_id,
                             "text": collector_status_text(),
                             "buttons": [[("🔄 Обновить", "status:refresh")]]})
+            return actions
+
+        if data == "sourcing:now":            # GST-60: кнопка «Найти сделки»
+            actions.append({"type": "send", "chat_id": chat_id,
+                            "text": self._sourcing_digest(),
+                            "buttons": [[("🔄 Обновить поиск", "sourcing:now")]]})
             return actions
 
         parts = data.split(":")
