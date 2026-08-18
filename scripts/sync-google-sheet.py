@@ -24,6 +24,7 @@
 import json
 import csv
 import io
+import time
 from datetime import datetime
 from pathlib import Path
 from urllib.request import urlopen
@@ -42,10 +43,27 @@ SCRIPT_DIR  = Path(__file__).parent
 OUTPUT_FILE = SCRIPT_DIR / "../public/data/parser-config.json"
 
 
+SHEETS_FETCH_RETRIES = 4
+SHEETS_FETCH_TIMEOUT = 30
+
+
 def fetch_tab(gid: int) -> str:
     url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={gid}"
-    with urlopen(url, timeout=30) as resp:
-        return resp.read().decode("utf-8")
+    last_err: Exception | None = None
+    for attempt in range(1, SHEETS_FETCH_RETRIES + 1):
+        try:
+            with urlopen(url, timeout=SHEETS_FETCH_TIMEOUT) as resp:
+                return resp.read().decode("utf-8")
+        except (URLError, OSError) as e:
+            # read-timeout при resp.read() и зависший 302 от Google прилетают как
+            # socket.timeout / TimeoutError — это подкласс OSError, а НЕ URLError.
+            # Раньше он пролетал мимо except в load_tab и ронял весь job.
+            last_err = e
+            if attempt < SHEETS_FETCH_RETRIES:
+                delay = min(2 ** attempt, 20)
+                print(f"   ⚠️ сеть (попытка {attempt}/{SHEETS_FETCH_RETRIES}): {e} → retry через {delay}s")
+                time.sleep(delay)
+    raise last_err  # type: ignore[misc]
 
 
 def parse_int(value: str) -> int:
@@ -62,8 +80,9 @@ def load_tab(name: str, meta: dict) -> dict:
     print(f"\n📥 Вкладка '{name}' (gid={meta['gid']}, mode={meta['mode']})")
     try:
         content = fetch_tab(meta["gid"])
-    except URLError as e:
-        print(f"   ❌ {e}")
+    except (URLError, OSError) as e:
+        # транзиентный сбой одной вкладки не должен ронять весь sync-шаг
+        print(f"   ❌ {e} (все {SHEETS_FETCH_RETRIES} попытки исчерпаны) — вкладка пропущена")
         return {**meta, "entries": []}
 
     reader = csv.DictReader(io.StringIO(content))
