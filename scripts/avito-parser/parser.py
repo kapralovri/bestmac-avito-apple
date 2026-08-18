@@ -83,7 +83,9 @@ RUCAPTCHA_API_KEY = os.environ.get("RUCAPTCHA_API_KEY", "")
 AVITO_CAPTCHA_ID  = "2d9c743cf7d63dbc9db578a608196bcd"
 AVITO_VERIFY_URL  = "https://www.avito.ru/web/1/firewallCaptcha/verify"
 USER_AGENT        = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
+                     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
+
+CAPTCHA_SOLVE_RETRIES = 3   # каждая попытка — СВЕЖИЙ challenge (токен GeeTest привязан ко времени/сессии)
 
 MAX_PAGES_DEFAULT   = 5     # для discovery — больше выборка; для direct хватает 3
 MIN_SAMPLES_DEFAULT = 3
@@ -106,47 +108,62 @@ def solve_captcha(page, target_url: str = None) -> bool:
         from twocaptcha import TwoCaptcha
         solver = TwoCaptcha(RUCAPTCHA_API_KEY, server='rucaptcha.com', defaultTimeout=120)
 
-        logger.info(f"[ШАГ 1] 🧩 GeeTest v4 | captcha_id: {AVITO_CAPTCHA_ID}")
-        result = solver.geetest_v4(captcha_id=AVITO_CAPTCHA_ID, url=page.url)
-        logger.info(f"[ШАГ 1] ✅ RuCaptcha ответила")
+        for attempt in range(1, CAPTCHA_SOLVE_RETRIES + 1):
+            logger.info(f"[ШАГ 1] 🧩 GeeTest v4 (попытка {attempt}/{CAPTCHA_SOLVE_RETRIES}) | captcha_id: {AVITO_CAPTCHA_ID}")
+            # СВЕЖИЙ challenge на каждой итерации — старый токен Avito штампует verified=False
+            result = solver.geetest_v4(captcha_id=AVITO_CAPTCHA_ID, url=page.url)
+            logger.info(f"[ШАГ 1] ✅ RuCaptcha ответила")
 
-        code = result['code']
-        code_data = json.loads(code) if isinstance(code, str) else code
+            code = result['code']
+            code_data = json.loads(code) if isinstance(code, str) else code
 
-        js_payload = json.dumps({
-            'captcha': '',
-            'hCaptchaResponse': '',
-            'captcha_id': AVITO_CAPTCHA_ID,
-            'lot_number': code_data['lot_number'],
-            'pass_token': code_data['pass_token'],
-            'gen_time': code_data['gen_time'],
-            'captcha_output': code_data['captcha_output'],
-        })
-        resp_data = page.evaluate(f"""async () => {{
-            const resp = await fetch('{AVITO_VERIFY_URL}', {{
-                method: 'POST',
-                headers: {{
-                    'accept': '*/*',
-                    'content-type': 'application/json',
-                    'origin': 'https://www.avito.ru',
-                    'referer': window.location.href,
-                }},
-                credentials: 'include',
-                body: JSON.stringify({js_payload}),
-            }});
-            return await resp.json();
-        }}""")
+            js_payload = json.dumps({
+                'captcha': '',
+                'hCaptchaResponse': '',
+                'captcha_id': AVITO_CAPTCHA_ID,
+                'lot_number': code_data['lot_number'],
+                'pass_token': code_data['pass_token'],
+                'gen_time': code_data['gen_time'],
+                'captcha_output': code_data['captcha_output'],
+            })
+            # Предъявляем токен сразу (свежесть) и ЧИТАЕМ тело ответа целиком —
+            # по нему видно IP-бан (датацентр Actions) vs. невалидный токен.
+            resp_data = page.evaluate(f"""async () => {{
+                const resp = await fetch('{AVITO_VERIFY_URL}', {{
+                    method: 'POST',
+                    headers: {{
+                        'accept': '*/*',
+                        'content-type': 'application/json',
+                        'origin': 'https://www.avito.ru',
+                        'referer': window.location.href,
+                    }},
+                    credentials: 'include',
+                    body: JSON.stringify({js_payload}),
+                }});
+                const raw = await resp.text();
+                let parsed = null;
+                try {{ parsed = JSON.parse(raw); }} catch (e) {{}}
+                return {{ status: resp.status, json: parsed, raw: raw.slice(0, 800) }};
+            }}""")
 
-        if not resp_data.get('result', {}).get('verified', False):
-            logger.error("❌ verified=False")
-            return False
-        logger.info("✅ Капча пройдена!")
+            resp_data = resp_data or {}
+            parsed = resp_data.get('json') or {}
+            if parsed.get('result', {}).get('verified', False):
+                logger.info("✅ Капча пройдена!")
+                nav_url = target_url or page.url
+                page.wait_for_timeout(1500)
+                page.goto(nav_url, wait_until='domcontentloaded', timeout=25000)
+                page.wait_for_timeout(random.randint(2000, 4000))
+                return not is_captcha_page(page)
 
-        nav_url = target_url or page.url
-        page.wait_for_timeout(1500)
-        page.goto(nav_url, wait_until='domcontentloaded', timeout=25000)
-        page.wait_for_timeout(random.randint(2000, 4000))
-        return not is_captcha_page(page)
+            body_repr = json.dumps(resp_data.get('json') or resp_data.get('raw'), ensure_ascii=False)[:800]
+            logger.error(
+                f"❌ verified=False (попытка {attempt}/{CAPTCHA_SOLVE_RETRIES}) | "
+                f"HTTP {resp_data.get('status')} | ответ Avito: {body_repr}"
+            )
+            page.wait_for_timeout(random.randint(1500, 3000))
+
+        return False
 
     except Exception as e:
         logger.error(f"❌ Ошибка капчи: {e}")
