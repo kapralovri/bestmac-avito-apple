@@ -96,6 +96,15 @@ const BLOG_POSTS = [
         readTime: "5 мин",
         category: "Ремонт",
         slug: "/blog/macbook-apgreid"
+    },
+    {
+        id: "wuxga-vs-full-hd",
+        title: "WUXGA vs Full HD — какой монитор выбрать для работы",
+        description: "Чем разрешение WUXGA 1920×1200 (формат 16:10) отличается от привычного Full HD 1920×1080 и когда эта разница важна для работы.",
+        date: "2026-09-01",
+        readTime: "5 мин",
+        category: "Гайды",
+        slug: "/blog/wuxga-vs-full-hd"
     }
 ];
 

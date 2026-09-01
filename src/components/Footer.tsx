@@ -52,6 +52,7 @@ const Footer = () => {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link href="/buy" className="hover:text-foreground transition-colors">Купить технику</Link></li>
               <li><Link href="/sell" className="hover:text-foreground transition-colors">Продать технику</Link></li>
+              <li><Link href="/monitory" className="hover:text-foreground transition-colors">Б/у мониторы</Link></li>
               <li><Link href="/selection" className="hover:text-foreground transition-colors">Подбор техники</Link></li>
               <li><Link href="/pickup" className="hover:text-foreground transition-colors">Самовывоз</Link></li>
               <li><Link href="/business" className="hover:text-foreground transition-colors">Для бизнеса</Link></li>

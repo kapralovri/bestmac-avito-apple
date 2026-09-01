@@ -7,6 +7,12 @@ interface ProductData {
   image?: string;
   description: string;
   sku?: string;
+  /** Бренд товара. По умолчанию 'Apple' — чтобы не менять поведение существующих страниц. */
+  brand?: string;
+  /** Canonical URL страницы товара. По умолчанию — текущее поведение ('https://bestmac.ru/buy'). */
+  url?: string;
+  /** Дата, до которой действительна цена (YYYY-MM-DD). Необязательно. */
+  priceValidUntil?: string;
 }
 
 interface ReviewData {
@@ -25,11 +31,12 @@ export const generateProductSchema = (product: ProductData) => ({
   "sku": product.sku || product.name.replace(/\s+/g, '-'),
   "offers": {
     "@type": "Offer",
-    "url": "https://bestmac.ru/buy",
+    "url": product.url || "https://bestmac.ru/buy",
     "priceCurrency": "RUB",
     "price": product.price,
     "itemCondition": `https://schema.org/${product.condition === 'новый' ? 'NewCondition' : 'UsedCondition'}`,
     "availability": "https://schema.org/InStock",
+    ...(product.priceValidUntil ? { "priceValidUntil": product.priceValidUntil } : {}),
     "seller": {
       "@type": "Organization",
       "name": "BestMac"
@@ -37,7 +44,7 @@ export const generateProductSchema = (product: ProductData) => ({
   },
   "brand": {
     "@type": "Brand",
-    "name": "Apple"
+    "name": product.brand || "Apple"
   }
 });
 

@@ -49,9 +49,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: '/privacy', changeFrequency: 'yearly', priority: 0.3 },
     { url: '/terms', changeFrequency: 'yearly', priority: 0.3 },
 
+    // Monitors
+    { url: '/monitory', changeFrequency: 'daily', priority: 0.9 },
+    { url: '/monitory/hp-z24i-g2', changeFrequency: 'weekly', priority: 0.9 },
+    { url: '/monitory/lenovo-thinkvision-s24q-10', changeFrequency: 'weekly', priority: 0.8 },
+    { url: '/monitory/lenovo-thinkvision-e24q-20', changeFrequency: 'weekly', priority: 0.8 },
+    { url: '/monitory/hp-z24f-g3', changeFrequency: 'weekly', priority: 0.8 },
+    { url: '/monitory/hp-e23-g4', changeFrequency: 'weekly', priority: 0.8 },
+
     // Blog
     { url: '/blog', changeFrequency: 'weekly', priority: 0.8 },
     { url: '/blog/zapret-importa-noutbukov-2026', changeFrequency: 'monthly', priority: 0.8 },
+    { url: '/blog/wuxga-vs-full-hd', changeFrequency: 'monthly', priority: 0.7 },
     { url: '/blog/kak-vybrat-macbook-2024', changeFrequency: 'monthly', priority: 0.8 },
     { url: '/blog/macbook-air-m2-vs-m3', changeFrequency: 'monthly', priority: 0.8 },
     { url: '/blog/proverka-macbook-pered-pokupkoi', changeFrequency: 'monthly', priority: 0.8 },
