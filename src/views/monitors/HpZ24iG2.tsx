@@ -85,14 +85,14 @@ const HpZ24iG2 = () => {
         </motion.div>
 
         <div className="grid md:grid-cols-2 gap-8 mb-12">
-          <div className="relative w-full h-72 md:h-full min-h-[280px] rounded-2xl overflow-hidden bg-muted">
+          <div className="relative w-full h-72 md:h-full min-h-[280px] rounded-2xl overflow-hidden bg-gradient-to-br from-slate-100 via-slate-200 to-slate-300">
             <Image
               src={monitor.image}
               alt={monitor.imageAlt}
               fill
               priority
               sizes="(max-width: 768px) 100vw, 500px"
-              className="object-cover"
+              className="object-contain p-6"
             />
           </div>
 

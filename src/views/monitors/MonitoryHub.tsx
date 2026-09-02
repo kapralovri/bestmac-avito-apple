@@ -96,13 +96,13 @@ const MonitoryHub = () => {
                   href={`/monitory/${m.slug}`}
                   className="group flex flex-col h-full bg-card border border-border rounded-2xl overflow-hidden hover:shadow-md hover:-translate-y-1 transition-all duration-300"
                 >
-                  <div className="relative w-full h-44 bg-muted">
+                  <div className="relative w-full h-44 bg-gradient-to-br from-slate-100 via-slate-200 to-slate-300">
                     <Image
                       src={m.image}
                       alt={m.imageAlt}
                       fill
                       sizes="(max-width: 768px) 100vw, 400px"
-                      className="object-cover"
+                      className="object-contain p-3"
                     />
                     {m.stock <= 3 && (
                       <span className="absolute top-3 right-3 bg-destructive text-destructive-foreground text-xs font-semibold px-2.5 py-1 rounded-full">
