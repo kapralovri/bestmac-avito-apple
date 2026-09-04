@@ -2,10 +2,14 @@ name: Avito Price Parser v2
 
 on:
   schedule:
-    - cron: '0 1 * * *'   # MacBook
-    - cron: '0 7 * * *'   # iMac
-    - cron: '0 13 * * *'  # Mac mini
-    - cron: '0 19 * * *'  # Mac Studio
+    # GST-72: раз в 3 дня вместо ежедневно — экономит баланс RuCaptcha
+    # (капча решается почти на каждой странице поиска), при этом каждое
+    # семейство обновляется не реже раза в 3 дня. День месяца шагом /3 —
+    # интервалы на стыке месяцев короче 3 дней, никогда не длиннее.
+    - cron: '0 1 */3 * *'   # MacBook
+    - cron: '0 7 */3 * *'   # iMac
+    - cron: '0 13 */3 * *'  # Mac mini
+    - cron: '0 19 */3 * *'  # Mac Studio
   workflow_dispatch:
     inputs:
       tab:
@@ -64,6 +68,12 @@ jobs:
           RUCAPTCHA_API_KEY: ${{ secrets.RUCAPTCHA_API_KEY }}
           # Канарейка (GST-9): алерт в Telegram при 0 листингов / устаревшей базе.
           TELEGRAM_NOTIFY_URL: ${{ secrets.TELEGRAM_NOTIFY_URL }}
+          # GST-72: раз в 3 дня вместо ежедневно → между последним прогоном "активного"
+          # дня (19:00) и первым прогоном следующего цикла (01:00, +3 дня) штатный
+          # разрыв ~54ч. Дефолт канарейки (48ч) на этом расписании ложно алертил бы
+          # каждый цикл — поднимаем порог с запасом (ловит целиком пропущенный цикл,
+          # не штатный простой между прогонами).
+          CANARY_MAX_AGE_HOURS: "96"
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             TAB="${{ github.event.inputs.tab }}"
@@ -74,11 +84,11 @@ jobs:
             fi
           else
             case "${{ github.event.schedule }}" in
-              "0 1 * * *")  TAB="MacBook" ;;
-              "0 7 * * *")  TAB="iMac" ;;
-              "0 13 * * *") TAB="Mac mini" ;;
-              "0 19 * * *") TAB="Mac Studio" ;;
-              *)            TAB="MacBook" ;;
+              "0 1 */3 * *")  TAB="MacBook" ;;
+              "0 7 */3 * *")  TAB="iMac" ;;
+              "0 13 */3 * *") TAB="Mac mini" ;;
+              "0 19 */3 * *") TAB="Mac Studio" ;;
+              *)              TAB="MacBook" ;;
             esac
             MAX_PAGES="5"
             CLEAN_FLAG=""
@@ -98,11 +108,11 @@ jobs:
           git diff --staged --quiet && echo "No changes" && exit 0
 
           case "${{ github.event.schedule }}" in
-            "0 1 * * *")  LABEL=" [MacBook]" ;;
-            "0 7 * * *")  LABEL=" [iMac]" ;;
-            "0 13 * * *") LABEL=" [Mac mini]" ;;
-            "0 19 * * *") LABEL=" [Mac Studio]" ;;
-            *)            LABEL="" ;;
+            "0 1 */3 * *")  LABEL=" [MacBook]" ;;
+            "0 7 */3 * *")  LABEL=" [iMac]" ;;
+            "0 13 */3 * *") LABEL=" [Mac mini]" ;;
+            "0 19 */3 * *") LABEL=" [Mac Studio]" ;;
+            *)              LABEL="" ;;
           esac
 
           git commit -m "chore: update prices${LABEL} [skip ci]"
@@ -118,8 +128,9 @@ jobs:
           # Пересборка Vercel для свежих SSG-цен (GST-5): страницы /ceny/* и /sell/*
           # пекут avito-prices.json в HTML на этапе сборки, а коммит помечен [skip ci],
           # поэтому git-интеграция Vercel сама не пересобирает. Deploy Hook даёт
-          # ежедневно свежий SSG-HTML. Достигается только когда данные реально
-          # изменились (шаг доходит сюда лишь после успешного commit+push).
+          # свежий SSG-HTML при каждом прогоне расписания (GST-72: раз в 3 дня на
+          # семейство). Достигается только когда данные реально изменились (шаг
+          # доходит сюда лишь после успешного commit+push).
           if [ -n "${VERCEL_DEPLOY_HOOK_URL}" ]; then
             echo "Triggering Vercel rebuild for fresh SSG price pages..."
             curl -fsS -X POST "${VERCEL_DEPLOY_HOOK_URL}" > /dev/null \
