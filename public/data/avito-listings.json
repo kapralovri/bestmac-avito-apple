@@ -1,5 +1,506 @@
 {
-  "generated_at": "2026-09-04 05:42",
-  "count": 0,
-  "listings": []
+  "generated_at": "2026-09-04 16:54",
+  "count": 50,
+  "listings": [
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 15000,
+      "url": "https://www.avito.ru/kommunarka/nastolnye_kompyutery/mac_mini_m1_m2_8256_7288581261",
+      "title": "Mac mini m1 m2 8/256 в Коммунарке",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 34999,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/pochti_novyy_mac_mini_m1_2020_8250_na_garantii_3097273373",
+      "title": "Почти новый Mac Mini M1 2020 8/250 на гарантии в Москве",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 35000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_mac_mini_m1_2020_8gb_ram_ssd_256gb_a2348_8353887352",
+      "title": "Apple Mac mini M1 2020, 8GB RAM, SSD 256GB, A2348 в Москве",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 35000,
+      "url": "https://www.avito.ru/monino/nastolnye_kompyutery/mac_mini_m1_8_256_s_dok_stantsiey_4730781979",
+      "title": "Mac Mini m1 8 256 с док станцией в Монино",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 35999,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_mac_mini_2020_m1_8_gb_250_gb_na_garantii_3611359132",
+      "title": "Apple Mac mini 2020 M1 8 Gb 250 Gb на гарантии в Москве",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 37000,
+      "url": "https://www.avito.ru/moskovskaya_oblast_krasnogorsk/nastolnye_kompyutery/apple_mac_mini_m1_a2348_8gb512gb_8278974725",
+      "title": "Apple Mac mini M1 A2348 8gb/512gb в Красногорске",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 38999,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/pochti_novyy_mac_mini_m1_2020_8512_na_garantii_3097664438",
+      "title": "Почти новый Mac Mini M1 2020 8/512 на гарантии в Москве",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 40000,
+      "url": "https://www.avito.ru/himki/nastolnye_kompyutery/mac_mini_2020_m1_8512_8209615659",
+      "title": "Mac mini 2020 M1 8/512 в Химках",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 44990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_mac_mini_m1_512_3590795156",
+      "title": "Apple mac mini m1 512 в Москве",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 44999,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m1_8_ram_512_ssd_garantiya_8090276969",
+      "title": "Mac mini M1 8 RAM 512 SSD гарантия в Москве",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 27000,
+      "url": "https://www.avito.ru/lyubertsy/nastolnye_kompyutery/apple_mac_mini_m2_8_256_7960124451",
+      "title": "Apple mac mini m2 8 256 в Люберцах",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 30000,
+      "url": "https://www.avito.ru/krasnodar/nastolnye_kompyutery/mac_mini_m2_256_gb_8415750586",
+      "title": "Mac mini m2 256 gb в Краснодаре",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 30000,
+      "url": "https://www.avito.ru/magadan/nastolnye_kompyutery/apple_mac_mini_m2_256gb_3867637084",
+      "title": "Apple Mac mini M2 256gb в Магадане",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 30000,
+      "url": "https://www.avito.ru/nizhnyaya_tura/nastolnye_kompyutery/apple_mac_mini_m2_8gb256gb_2023_8298247546",
+      "title": "Apple Mac mini M2, 8GB/256GB, 2023 в Нижней Туре",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 31000,
+      "url": "https://www.avito.ru/kazan/nastolnye_kompyutery/mac_mini_m2_8_256_8205457853",
+      "title": "Mac mini m2 8 256 в Казани",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 32000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m2_2023_8272765315",
+      "title": "Mac mini M2 2023 в Москве",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 33000,
+      "url": "https://www.avito.ru/sankt-peterburg/nastolnye_kompyutery/apple_mac_mini_2023_m2_8256_8230251992",
+      "title": "Apple Mac Mini 2023 M2 / 8/256 в Санкт-Петербурге",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 34500,
+      "url": "https://www.avito.ru/ekaterinburg/nastolnye_kompyutery/apple_mac_mini_m2_8_256_8325781662",
+      "title": "Apple mac mini m2 8 256 в Екатеринбурге",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 35000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m2_8167375730",
+      "title": "Mac mini m2 в Москве",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 35000,
+      "url": "https://www.avito.ru/novorossiysk/nastolnye_kompyutery/mac_mini_m2_8046245862",
+      "title": "Mac Mini M2 в Новороссийске",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 36000,
+      "url": "https://www.avito.ru/ekaterinburg/nastolnye_kompyutery/apple_mac_mini_m2_monitor_klaviatura_7918804452",
+      "title": "Apple Mac Mini M2 + Монитор, клавиатура в Екатеринбурге",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 37050,
+      "url": "https://www.avito.ru/krasnodar/nastolnye_kompyutery/apple_mac_mini_m2_8256_2023_8233941878",
+      "title": "Apple Mac Mini M2 8/256 2023 в Краснодаре",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 37990,
+      "url": "https://www.avito.ru/perm/nastolnye_kompyutery/apple_mac_mini_m2_8256gb_space_gray_8322352166",
+      "title": "Apple Mac Mini M2 8/256GB Space gray в Перми",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 37999,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/pochti_novyy_mac_mini_m2_2023_8256_na_garantii_4025371423",
+      "title": "Почти новый Mac Mini M2 (2023) 8/256 на гарантии в Москве",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 38000,
+      "url": "https://www.avito.ru/olenegorsk/nastolnye_kompyutery/mac_mini_m2_7932229454",
+      "title": "Mac mini m2 в Оленегорске",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 39000,
+      "url": "https://www.avito.ru/vladivostok/nastolnye_kompyutery/apple_mac_mini_m2_3791414055",
+      "title": "Apple Mac mini m2 в Владивостоке",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 39990,
+      "url": "https://www.avito.ru/kirovskaya_oblast_kirov/nastolnye_kompyutery/apple_mac_mini_2023_m2_8gb_256gb_mmfj3_3433925534",
+      "title": "Apple Mac Mini (2023) M2 8GB 256GB mmfj3 в Кирове",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 39990,
+      "url": "https://www.avito.ru/perm/nastolnye_kompyutery/nastolnyy_kompyuter_apple_mac_mini_m28256_7896762185",
+      "title": "Настольный компьютер Apple Mac Mini M2/8/256 в Перми",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 40000,
+      "url": "https://www.avito.ru/elizovo/nastolnye_kompyutery/apple_mac_mini_m2_8_256_8000782548",
+      "title": "Apple mac mini m2 8 256 в Елизово",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 41000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/macmini_m2_8312898463",
+      "title": "Macmini m2 в Москве",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 42000,
+      "url": "https://www.avito.ru/rostov-na-donu/nastolnye_kompyutery/mac_mini_m2_8256gb_silver_8084046827",
+      "title": "Mac mini M2 8/256GB Silver в Ростове-на-Дону",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 48000,
+      "url": "https://www.avito.ru/nevyansk/nastolnye_kompyutery/komplekt_mac_mini_m2_7880364005",
+      "title": "Комплект Mac Mini M2 в Невьянске",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 49000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m2_8256_lg_34_magic_keyboard_8329795881",
+      "title": "Mac mini M2 8/256 + LG 34” + Magic Keyboard в Москве",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 50000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m2_a2686_7983831386",
+      "title": "Mac mini m2 A2686 в Москве",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 50350,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/kompyuter_apple_mac_mini_a2686_m2_810_8256gb_8295445526",
+      "title": "Компьютер Apple Mac mini A2686 M2 8/10, 8/256гб в Москве",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "price": 64990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m2_m4_pro_8260090779",
+      "title": "Mac Mini M2 / M4 Pro в Москве",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 512,
+      "price": 35000,
+      "url": "https://www.avito.ru/ekaterinburg/nastolnye_kompyutery/mac_mini_m2_8_512_8331805482",
+      "title": "Mac mini m2 8 512 в Екатеринбурге",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 512,
+      "price": 37999,
+      "url": "https://www.avito.ru/shahty/nastolnye_kompyutery/mac_mini_m2_512gb_v_ideale_8069068241",
+      "title": "Mac mini m2 512gb в идеале в Шахтах",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 512,
+      "price": 40000,
+      "url": "https://www.avito.ru/gorki-10/nastolnye_kompyutery/apple_mac_mini_a2686_apple_m2_8_core_8gb_512gb_8385106728",
+      "title": "Apple Mac mini A2686 Apple M2 8 core, 8гб, 512гб в Горках-10",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 512,
+      "price": 40000,
+      "url": "https://www.avito.ru/sankt-peterburg/nastolnye_kompyutery/mac_mini_m2_8254206892",
+      "title": "Mac Mini M2 в Санкт-Петербурге",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 512,
+      "price": 40000,
+      "url": "https://www.avito.ru/hanty_mansiyskiy_ao_beloyarskiy/nastolnye_kompyutery/mak_mini_m1_dok_stantsiya_s_ustanovkoy_ssd_m2_8263089719",
+      "title": "Мак мини М1 + док станция с установкой ssd M2 в Белоярском",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 512,
+      "price": 41999,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/novyy_mac_mini_m2_8512_gb_na_garantii_8247929571",
+      "title": "Новый Mac Mini M2 8/512 Гб на гарантии в Москве",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 512,
+      "price": 42999,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_2023_m2_8_gb_512_ssd_garantiya_7866151948",
+      "title": "Mac mini 2023 M2 8 Gb, 512 SSD, гарантия в Москве",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 512,
+      "price": 46990,
+      "url": "https://www.avito.ru/perm/nastolnye_kompyutery/nastolnyy_kompyuter_apple_mac_mini_2023_m2_512gb_7895968372",
+      "title": "Настольный компьютер Apple Mac mini 2023 M2 512Gb в Перми",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 512,
+      "price": 50000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_mac_mini_m2_8gb_512gb_2023g_4480679736",
+      "title": "Apple Mac mini M2 8gb 512gb 2023г в Москве",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 512,
+      "price": 63795,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m2_2023_8512_8363483856",
+      "title": "Mac mini m2 2023 8/512 в Москве",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 512,
+      "price": 63990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_mac_mini_2023_apple_m2_8_ram_512_gb_silver_7541396499",
+      "title": "Apple Mac Mini 2023, Apple M2, 8 RAM 512 гб Silver в Москве",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2 Pro",
+      "ram": 16,
+      "ssd": 512,
+      "price": 59999,
+      "url": "https://www.avito.ru/fryazino/nastolnye_kompyutery/mac_mini_m2_pro_16512_8240070009",
+      "title": "Mac Mini M2 Pro 16/512 в Фрязино",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2 Pro",
+      "ram": 16,
+      "ssd": 512,
+      "price": 76400,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m2_pro_16gb_512gb_mnh73_3156319707",
+      "title": "Mac Mini M2 Pro 16GB 512GB MNH73 в Москве",
+      "seen_at": "2026-09-04 16:54"
+    },
+    {
+      "model_name": "mac mini m2",
+      "processor": "Apple M2 Pro",
+      "ram": 16,
+      "ssd": 512,
+      "price": 79000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_mac_mini_m2_pro_16gb_512gb_mnh73_8226984233",
+      "title": "Apple Mac Mini M2 PRO 16GB / 512Gb MNH73 в Москве",
+      "seen_at": "2026-09-04 16:54"
+    }
+  ]
 }
