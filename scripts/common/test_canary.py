@@ -85,6 +85,21 @@ check("есть заголовок", "Канарейка сбора цен" in b
 check("есть обе причины", "reason A" in body and "reason B" in body)
 check("есть вкладка", "MacBook" in body)
 
+print("[12b] format_alert экранирует HTML-спецсимволы в причинах (regression, GST-72)")
+# Реальный кейс: "прогон собрал 0 листингов (< 1)" ломал Telegram parse_mode=HTML
+# ("can't parse entities: Unsupported start tag"), и алерт вообще не уходил.
+reason = "прогон собрал 0 листингов (< 1) — сменилась вёрстка Avito или протух captcha_id"
+body = canary.format_alert([reason], tab="MacBook & Co")
+check("< экранирован", "(< 1)" not in body and "(&lt; 1)" in body)
+check("& в названии вкладки экранирован", "&amp;" in body)
+check("наши собственные теги остались литералами", "<b>" in body and "<code>" in body)
+
+print("[12c] format_alert прикладывает context_note (GST-72: конкретная причина капчи)")
+body = canary.format_alert(["прогон собрал 0 листингов (< 1)"], tab="MacBook",
+                            context_note="ERROR_ZERO_BALANCE")
+check("причина видна в тексте алерта", "ERROR_ZERO_BALANCE" in body)
+check("без context_note поле не добавляется", "Вероятная причина" not in canary.format_alert(["x"]))
+
 print("[13] Множественные деградации складываются")
 r = canary.evaluate_canary(prices=healthy_prices(generated_at=STALE, total=10),
                            run_listings=0, now=NOW, min_total=500)

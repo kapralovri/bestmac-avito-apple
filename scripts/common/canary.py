@@ -26,6 +26,7 @@
 """
 from __future__ import annotations
 
+import html
 import json
 import os
 from datetime import datetime
@@ -119,15 +120,28 @@ def evaluate_canary(
     return reasons
 
 
-def format_alert(reasons, *, tab=None, source="parser.py"):
-    """Форматирует HTML-тело Telegram-алерта по списку деградаций."""
+def format_alert(reasons, *, tab=None, source="parser.py", context_note=None):
+    """Форматирует HTML-тело Telegram-алерта по списку деградаций.
+
+    Причины деградации — свободный текст (могут содержать "<", "&" и т.п.,
+    например "< 1" при сравнении с порогом). Telegram отправляется с
+    ``parse_mode: HTML`` и отклоняет весь текст ошибкой «can't parse entities»
+    при первом же непарсящемся тэге — экранируем весь динамический контент,
+    оставляя литералами только наши собственные <b>/<code> тэги.
+
+    ``context_note`` — опциональная строка с конкретной технической причиной
+    (например, последняя ошибка RuCaptcha вроде ``ERROR_ZERO_BALANCE``), если
+    вызывающий код её знает. Делает алерт самодостаточным для диагностики —
+    не нужно лезть в логи CI, чтобы понять, что случилось.
+    """
     header = "🚨 <b>Канарейка сбора цен: деградация</b>"
-    ctx = f"Источник: <code>{source}</code>"
+    ctx = f"Источник: <code>{html.escape(source)}</code>"
     if tab:
-        ctx += f" • вкладка: <b>{tab}</b>"
-    lines = "\n".join(f"• {r}" for r in reasons)
+        ctx += f" • вкладка: <b>{html.escape(tab)}</b>"
+    lines = "\n".join(f"• {html.escape(r)}" for r in reasons)
+    note = f"\n\nВероятная причина: <code>{html.escape(context_note)}</code>" if context_note else ""
     return (
-        f"{header}\n{ctx}\n\n{lines}\n\n"
+        f"{header}\n{ctx}\n\n{lines}{note}\n\n"
         "Цены на сайте могли замереть. Проверь селекторы Avito, captcha_id и логи парсера."
     )
 
@@ -178,6 +192,7 @@ def run_canary(
     run_listings=None,
     tab=None,
     source="parser.py",
+    context_note=None,
     now=None,
     logger=None,
     telegram_url=None,
@@ -207,7 +222,7 @@ def run_canary(
             print(msg)
         return reasons
 
-    text = format_alert(reasons, tab=tab, source=source)
+    text = format_alert(reasons, tab=tab, source=source, context_note=context_note)
     if logger is not None:
         logger.error("🚨 Канарейка: деградация\n" + text)
     else:

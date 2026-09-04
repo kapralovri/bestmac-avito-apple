@@ -74,6 +74,14 @@ INTAKE_STATS_FILE = Path(os.environ.get('INTAKE_STATS_PATH', 'public/data/intake
 PROC_STATS_FILE = Path(os.environ.get('INTAKE_PROC_STATS_PATH', 'public/data/intake-proc-stats.json'))
 # Ограничить бота одним владельцем (твоим chat_id). Пусто — учится на первом /start.
 OWNER_CHAT_ID = os.environ.get('OWNER_CHAT_ID', '').strip()
+# GST-72: «/модель» триггерит живой поиск на Avito через workflow_dispatch —
+# бот сам не открывает браузер/не решает капчу, а просит уже проверенный
+# GitHub Actions раннер (тот же, что гоняет ежедневный парсер) прогнать разовый
+# запрос и прислать результат сюда же. Токен — тонкий PAT только с правом
+# "Actions: write" на этот репозиторий, НЕ основной GITHUB_TOKEN экшна.
+GH_DISPATCH_TOKEN = os.environ.get('GH_DISPATCH_TOKEN', '').strip()
+GH_REPO = os.environ.get('GH_REPO', 'kapralovri/bestmac-avito-apple').strip()
+GH_MODEL_SEARCH_WORKFLOW = os.environ.get('GH_MODEL_SEARCH_WORKFLOW', 'avito-model-search.yml').strip()
 
 
 def _fmt(n) -> str:
@@ -371,6 +379,33 @@ class NegotiationBot:
         except Exception as e:  # noqa: BLE001
             return f"⚠️ Поиск не удался: {e}"
 
+    # ── GST-72: «/модель» — живой поиск по конкретной модели прямо сейчас ────
+    def _trigger_model_search(self, query: str, chat_id) -> tuple[bool, str]:
+        """Просит GitHub Actions прогнать разовый поиск на Avito по свободному
+        запросу и прислать результат в этот же чат. Не открывает браузер и не
+        решает капчу здесь — переиспользует уже проверенный раннер и логику
+        parser.py (retry на капче, диагностика), а не дублирует их."""
+        if not GH_DISPATCH_TOKEN:
+            return False, ("⚠️ Не настроен GH_DISPATCH_TOKEN (PAT с правом Actions: write) — "
+                            "живой поиск по модели недоступен.")
+        try:
+            import requests
+            r = requests.post(
+                f"https://api.github.com/repos/{GH_REPO}/actions/workflows/"
+                f"{GH_MODEL_SEARCH_WORKFLOW}/dispatches",
+                headers={
+                    "Authorization": f"Bearer {GH_DISPATCH_TOKEN}",
+                    "Accept": "application/vnd.github+json",
+                },
+                json={"ref": "main", "inputs": {"query": query, "chat_id": str(chat_id)}},
+                timeout=15,
+            )
+            if r.status_code == 204:
+                return True, f"🔍 Ищу «{query}» на Avito — пришлю сюда результат через 1–2 минуты."
+            return False, f"⚠️ GitHub Actions отклонил запуск (HTTP {r.status_code}): {r.text[:200]}"
+        except Exception as e:  # noqa: BLE001 — сеть/таймаут не должны ронять бота
+            return False, f"⚠️ Не удалось запустить поиск: {e}"
+
     def _handle_message(self, msg: dict) -> List[dict]:
         chat_id = msg.get("chat", {}).get("id")
         text = (msg.get("text") or "").strip()
@@ -387,6 +422,7 @@ class NegotiationBot:
                              "Жми «▶️ Веду торг», отправляй продавцу мой текст, "
                              "а его ответы — пересылай мне обычным сообщением.\n\n"
                              "🔍 /сделки — показать, какие Mac выгодно выкупать прямо сейчас.\n"
+                             "🔎 /модель <название> — живой поиск по конкретной модели на Avito.\n"
                              "🩺 /status — проверить домашний коллектор Avito.",
                      "buttons": [[("🔍 Найти сделки сейчас", "sourcing:now")],
                                  [("🩺 Статус коллектора", "status:refresh")]]}]
@@ -404,11 +440,21 @@ class NegotiationBot:
                      "text": self._sourcing_digest(),
                      "buttons": [[("🔄 Обновить поиск", "sourcing:now")]]}]
 
+        if text.startswith("/модель") or text.startswith("/model"):
+            query = text.split(maxsplit=1)[1].strip() if len(text.split(maxsplit=1)) > 1 else ""
+            if not query:
+                return [{"type": "send", "chat_id": chat_id,
+                         "text": "Напиши модель после команды, например:\n"
+                                 "<code>/модель MacBook Pro 14 M3 Pro 18/512</code>"}]
+            ok, reply = self._trigger_model_search(query, chat_id)
+            return [{"type": "send", "chat_id": chat_id, "text": reply}]
+
         if text.startswith("/help"):
             return [{"type": "send", "chat_id": chat_id,
                      "text": "Петля: ▶️ Веду торг → отправляешь мой текст продавцу → "
                              "«✅ Отправил» → пересылаешь мне ответ продавца → я даю следующий ход.\n"
                              "🔍 /сделки — какие Mac выгодно выкупать прямо сейчас.\n"
+                             "🔎 /модель <название> — живой поиск по конкретной модели на Avito.\n"
                              "🩺 /status — статус домашнего коллектора Avito."}]
 
         # Обычный текст = ответ продавца для активного диалога

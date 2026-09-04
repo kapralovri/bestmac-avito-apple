@@ -143,6 +143,20 @@ _st3 = botmod.collector_status_text(now=_now, intake_stats=_rx, proc_stats=_sd /
 check("отправка >1ч назад → 🔴", "🔴" in _st3)
 
 
+print("\n[10] /модель — GST-72 живой поиск по модели")
+bot2 = NegotiationBot(DummyTx(), state_path=tmp / "state2.json", queue_path=tmp / "queue2.json",
+                      owner_chat_id=777, llm_call=fake_llm)
+acts = bot2.handle_update({"update_id": 90, "message": {"chat": {"id": 777}, "text": "/модель"}})
+check("без аргумента — просит название", any("Напиши модель" in a.get("text", "") for a in find_send(acts)))
+
+_prev_token = botmod.GH_DISPATCH_TOKEN
+botmod.GH_DISPATCH_TOKEN = ""
+acts = bot2.handle_update({"update_id": 91, "message": {
+    "chat": {"id": 777}, "text": "/модель MacBook Pro 14 M3 Pro 18/512"}})
+check("без GH_DISPATCH_TOKEN — понятная ошибка, не падает",
+      any("GH_DISPATCH_TOKEN" in a.get("text", "") for a in find_send(acts)))
+botmod.GH_DISPATCH_TOKEN = _prev_token
+
 print()
 if _fails:
     print(f"❌ ПРОВАЛЕНО {len(_fails)}: " + "; ".join(_fails))
