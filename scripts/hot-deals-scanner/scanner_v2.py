@@ -322,7 +322,16 @@ def run_intake(incoming_path, process_fn):
 # ─── Капча (из scanner v1 / parser.py) ───────────────────────────────────────
 
 def is_captcha_page(page) -> bool:
-    return page.query_selector('div.firewall-container') is not None
+    # GST-72: page.query_selector падает с "Execution context was destroyed,
+    # most likely because of a navigation", если проверка попадает в окно между
+    # goto() и стабилизацией DOM (напр. клиентский редирект после файрвола).
+    # Раньше это было необработанным исключением — роняло весь многочасовой
+    # прогон scanner_v2.py целиком. Транзиентная гонка не должна убивать job:
+    # трактуем как "не капча" — вызывающий код и так перепроверяет на след. шаге.
+    try:
+        return page.query_selector('div.firewall-container') is not None
+    except Exception:
+        return False
 
 
 def solve_captcha(page) -> bool:

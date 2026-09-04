@@ -105,7 +105,14 @@ INTEL_PATTERN = re.compile(r"\b(intel|core\s*i[3579]|\bi[3579]\b)", re.I)
 # ─── Капча (скопировано из price-builder v3) ────────────────────────────────
 
 def is_captcha_page(page) -> bool:
-    return page.query_selector('div.firewall-container') is not None
+    # GST-72: та же гонка, что уронила scanner_v2.py — query_selector падает с
+    # "Execution context was destroyed" в окне между goto() и стабилизацией DOM.
+    # Не даём транзиентной ошибке убить весь прогон парсера; вызывающий код
+    # (navigate) и так перепроверяет на следующей попытке.
+    try:
+        return page.query_selector('div.firewall-container') is not None
+    except Exception:
+        return False
 
 
 def solve_captcha(page, target_url: str = None) -> bool:
