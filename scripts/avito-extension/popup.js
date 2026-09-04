@@ -39,14 +39,20 @@ $("open").onclick = () => {
 
 // Тест: шлём одну синтетическую карточку и показываем точный HTTP-ответ.
 // Изолирует токен/сеть/CORS от парсинга страницы.
+//
+// GST-72: токен — в заголовке x-intake-token, НЕ в теле. bestmac.ru/api/intake
+// (P0-3) читает токен только из заголовка; раньше тест слал его в теле и падал
+// с 403 при ЛЮБОМ токене, даже верном — тест лгал, что токен неправильный.
+// Заголовок делает запрос «непростым» → браузер шлёт CORS-preflight (OPTIONS),
+// который и /api/intake, и локальный relay.py уже обслуживают.
 $("test").onclick = () => {
   const endpoint = ($("endpoint").value.trim() || DEFAULT_ENDPOINT);
   const token = $("token").value.trim();
   $("status").innerHTML = "<small>🧪 Отправляю тест…</small>";
   fetch(endpoint, {
     method: "POST",
-    headers: { "content-type": "text/plain;charset=UTF-8" },  // простой запрос → без preflight
-    body: JSON.stringify({ token, cards: [{ url: "https://www.avito.ru/__popuptest__", title: "popup test", price: 1 }] }),
+    headers: { "content-type": "application/json", "x-intake-token": token },
+    body: JSON.stringify({ cards: [{ url: "https://www.avito.ru/__popuptest__", title: "popup test", price: 1 }] }),
   })
     .then((r) => r.text().then((t) => ({ status: r.status, ok: r.ok, body: t })))
     .then((res) => {
