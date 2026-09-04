@@ -1,506 +1,1416 @@
 {
-  "generated_at": "2026-09-04 16:54",
-  "count": 50,
+  "generated_at": "2026-09-04 18:58",
+  "count": 141,
   "listings": [
     {
-      "model_name": "mac mini m1",
+      "model_name": "MacBook Air 13 (2020, M1)",
       "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 256,
-      "price": 15000,
-      "url": "https://www.avito.ru/kommunarka/nastolnye_kompyutery/mac_mini_m1_m2_8256_7288581261",
-      "title": "Mac mini m1 m2 8/256 в Коммунарке",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m1",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 256,
-      "price": 34999,
-      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/pochti_novyy_mac_mini_m1_2020_8250_na_garantii_3097273373",
-      "title": "Почти новый Mac Mini M1 2020 8/250 на гарантии в Москве",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m1",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 256,
-      "price": 35000,
-      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_mac_mini_m1_2020_8gb_ram_ssd_256gb_a2348_8353887352",
-      "title": "Apple Mac mini M1 2020, 8GB RAM, SSD 256GB, A2348 в Москве",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m1",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 256,
-      "price": 35000,
-      "url": "https://www.avito.ru/monino/nastolnye_kompyutery/mac_mini_m1_8_256_s_dok_stantsiey_4730781979",
-      "title": "Mac Mini m1 8 256 с док станцией в Монино",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m1",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 256,
-      "price": 35999,
-      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_mac_mini_2020_m1_8_gb_250_gb_na_garantii_3611359132",
-      "title": "Apple Mac mini 2020 M1 8 Gb 250 Gb на гарантии в Москве",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m1",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 512,
-      "price": 37000,
-      "url": "https://www.avito.ru/moskovskaya_oblast_krasnogorsk/nastolnye_kompyutery/apple_mac_mini_m1_a2348_8gb512gb_8278974725",
-      "title": "Apple Mac mini M1 A2348 8gb/512gb в Красногорске",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m1",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 512,
-      "price": 38999,
-      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/pochti_novyy_mac_mini_m1_2020_8512_na_garantii_3097664438",
-      "title": "Почти новый Mac Mini M1 2020 8/512 на гарантии в Москве",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m1",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 512,
-      "price": 40000,
-      "url": "https://www.avito.ru/himki/nastolnye_kompyutery/mac_mini_2020_m1_8512_8209615659",
-      "title": "Mac mini 2020 M1 8/512 в Химках",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m1",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 512,
-      "price": 44990,
-      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_mac_mini_m1_512_3590795156",
-      "title": "Apple mac mini m1 512 в Москве",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m1",
-      "processor": "Apple M1",
-      "ram": 8,
-      "ssd": 512,
-      "price": 44999,
-      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m1_8_ram_512_ssd_garantiya_8090276969",
-      "title": "Mac mini M1 8 RAM 512 SSD гарантия в Москве",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "price": 27000,
-      "url": "https://www.avito.ru/lyubertsy/nastolnye_kompyutery/apple_mac_mini_m2_8_256_7960124451",
-      "title": "Apple mac mini m2 8 256 в Люберцах",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
       "ram": 8,
       "ssd": 256,
       "price": 30000,
-      "url": "https://www.avito.ru/krasnodar/nastolnye_kompyutery/mac_mini_m2_256_gb_8415750586",
-      "title": "Mac mini m2 256 gb в Краснодаре",
-      "seen_at": "2026-09-04 16:54"
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_m1_2020_8256_gb_7901604591",
+      "title": "Macbook air 13 m1 2020 8/256 гб в Москве",
+      "seen_at": "2026-09-04 18:58"
     },
     {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
-      "price": 30000,
-      "url": "https://www.avito.ru/magadan/nastolnye_kompyutery/apple_mac_mini_m2_256gb_3867637084",
-      "title": "Apple Mac mini M2 256gb в Магадане",
-      "seen_at": "2026-09-04 16:54"
+      "price": 34000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_m1_8gb_256gb_silver_zabronirovan_8362823738",
+      "title": "Macbook Air m1 8gb 256gb (Silver) забронирован в Москве",
+      "seen_at": "2026-09-04 18:58"
     },
     {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "price": 30000,
-      "url": "https://www.avito.ru/nizhnyaya_tura/nastolnye_kompyutery/apple_mac_mini_m2_8gb256gb_2023_8298247546",
-      "title": "Apple Mac mini M2, 8GB/256GB, 2023 в Нижней Туре",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "price": 31000,
-      "url": "https://www.avito.ru/kazan/nastolnye_kompyutery/mac_mini_m2_8_256_8205457853",
-      "title": "Mac mini m2 8 256 в Казани",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "price": 32000,
-      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m2_2023_8272765315",
-      "title": "Mac mini M2 2023 в Москве",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "price": 33000,
-      "url": "https://www.avito.ru/sankt-peterburg/nastolnye_kompyutery/apple_mac_mini_2023_m2_8256_8230251992",
-      "title": "Apple Mac Mini 2023 M2 / 8/256 в Санкт-Петербурге",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
       "price": 34500,
-      "url": "https://www.avito.ru/ekaterinburg/nastolnye_kompyutery/apple_mac_mini_m2_8_256_8325781662",
-      "title": "Apple mac mini m2 8 256 в Екатеринбурге",
-      "seen_at": "2026-09-04 16:54"
+      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_air_m1_8256_silver_98_akb_8333148888",
+      "title": "Apple MacBook Air m1 8/256 Silver 98% АКБ в Москве",
+      "seen_at": "2026-09-04 18:58"
     },
     {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
       "price": 35000,
-      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m2_8167375730",
-      "title": "Mac mini m2 в Москве",
-      "seen_at": "2026-09-04 16:54"
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_m1_2020_8256_qwertz_8294111537",
+      "title": "MacBook Air M1 2020 8/256, qwertz в Москве",
+      "seen_at": "2026-09-04 18:58"
     },
     {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
       "price": 35000,
-      "url": "https://www.avito.ru/novorossiysk/nastolnye_kompyutery/mac_mini_m2_8046245862",
-      "title": "Mac Mini M2 в Новороссийске",
-      "seen_at": "2026-09-04 16:54"
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_m1_8gb_256gb_8285099702",
+      "title": "Macbook Air M1 8gb 256gb в Москве",
+      "seen_at": "2026-09-04 18:58"
     },
     {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 35000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_m1_8gb_256gb_8342520807",
+      "title": "Macbook air m1 8gb 256gb в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
       "price": 36000,
-      "url": "https://www.avito.ru/ekaterinburg/nastolnye_kompyutery/apple_mac_mini_m2_monitor_klaviatura_7918804452",
-      "title": "Apple Mac Mini M2 + Монитор, клавиатура в Екатеринбурге",
-      "seen_at": "2026-09-04 16:54"
+      "url": "https://www.avito.ru/pushkino/noutbuki/macbook_air_m1_2020_8_256_8177404614",
+      "title": "Macbook air m1 2020 8 256 в Пушкино",
+      "seen_at": "2026-09-04 18:58"
     },
     {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
-      "price": 37050,
-      "url": "https://www.avito.ru/krasnodar/nastolnye_kompyutery/apple_mac_mini_m2_8256_2023_8233941878",
-      "title": "Apple Mac Mini M2 8/256 2023 в Краснодаре",
-      "seen_at": "2026-09-04 16:54"
+      "price": 36000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_m1_2020_8gb_256gb_8173388884",
+      "title": "Macbook air m1 2020 8gb 256gb в Москве",
+      "seen_at": "2026-09-04 18:58"
     },
     {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
-      "price": 37990,
-      "url": "https://www.avito.ru/perm/nastolnye_kompyutery/apple_mac_mini_m2_8256gb_space_gray_8322352166",
-      "title": "Apple Mac Mini M2 8/256GB Space gray в Перми",
-      "seen_at": "2026-09-04 16:54"
+      "price": 38990,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_m1_8gb_256gb_8236349564",
+      "title": "MacBook Air 13 m1 8gb 256gb в Москве",
+      "seen_at": "2026-09-04 18:58"
     },
     {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "price": 37999,
-      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/pochti_novyy_mac_mini_m2_2023_8256_na_garantii_4025371423",
-      "title": "Почти новый Mac Mini M2 (2023) 8/256 на гарантии в Москве",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "price": 38000,
-      "url": "https://www.avito.ru/olenegorsk/nastolnye_kompyutery/mac_mini_m2_7932229454",
-      "title": "Mac mini m2 в Оленегорске",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
       "price": 39000,
-      "url": "https://www.avito.ru/vladivostok/nastolnye_kompyutery/apple_mac_mini_m2_3791414055",
-      "title": "Apple Mac mini m2 в Владивостоке",
-      "seen_at": "2026-09-04 16:54"
+      "url": "https://www.avito.ru/kokoshkino/noutbuki/macbook_air_13_m1_8256_silver_8363767753",
+      "title": "Macbook Air 13 M1 8/256 Silver в Кокошкино",
+      "seen_at": "2026-09-04 18:58"
     },
     {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
       "price": 39990,
-      "url": "https://www.avito.ru/kirovskaya_oblast_kirov/nastolnye_kompyutery/apple_mac_mini_2023_m2_8gb_256gb_mmfj3_3433925534",
-      "title": "Apple Mac Mini (2023) M2 8GB 256GB mmfj3 в Кирове",
-      "seen_at": "2026-09-04 16:54"
+      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_air_13_78_tsiklov_m1_8_gb_256_gb_7890048641",
+      "title": "Apple MacBook Air 13 (78 циклов) M1 8 GB 256 GB в Москве",
+      "seen_at": "2026-09-04 18:58"
     },
     {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "price": 39990,
-      "url": "https://www.avito.ru/perm/nastolnye_kompyutery/nastolnyy_kompyuter_apple_mac_mini_m28256_7896762185",
-      "title": "Настольный компьютер Apple Mac Mini M2/8/256 в Перми",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
       "price": 40000,
-      "url": "https://www.avito.ru/elizovo/nastolnye_kompyutery/apple_mac_mini_m2_8_256_8000782548",
-      "title": "Apple mac mini m2 8 256 в Елизово",
-      "seen_at": "2026-09-04 16:54"
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_m1_2568gb_7641307642",
+      "title": "Macbook air M1 256/8GB в Москве",
+      "seen_at": "2026-09-04 18:58"
     },
     {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
-      "price": 41000,
-      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/macmini_m2_8312898463",
-      "title": "Macmini m2 в Москве",
-      "seen_at": "2026-09-04 16:54"
+      "price": 40000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_m18256_grey_7979959478",
+      "title": "MacBook Air 13\" (M1/8/256) Grey в Москве",
+      "seen_at": "2026-09-04 18:58"
     },
     {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "processor": "Apple M1",
       "ram": 8,
+      "ssd": 512,
+      "price": 19900,
+      "url": "https://www.avito.ru/moskovskaya_oblast_troitsk/noutbuki/macbook_air_m1_8gb_512gb_-_headless_8254442540",
+      "title": "Macbook air m1 8gb 512gb - Headless в Троицке",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 24990,
+      "url": "https://www.avito.ru/moskva/noutbuki/plata_macbook_air_13_m1_8512gb_a2337_7459703920",
+      "title": "Плата MacBook Air 13 M1 8/512gb A2337 в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 39990,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_m1_8512gb_8384918207",
+      "title": "MacBook Air 13 M1 8/512gb в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 40000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_m1_2020_8512_gb_8227832771",
+      "title": "Macbook pro m1 2020 8/512 гб в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 40000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_m1_8_512_8168968803",
+      "title": "Macbook air 13 m1 8 512 в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 40000,
+      "url": "https://www.avito.ru/korolev/noutbuki/macbook_air_m1_8gb_512gb_8242364953",
+      "title": "Macbook air m1 8gb 512gb в Королеве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 35000,
+      "url": "https://www.avito.ru/voronezh/noutbuki/macbook_air_13_m3_8_256_8262274594",
+      "title": "Macbook air 13 m3 8 256 в Воронеже",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 46000,
+      "url": "https://www.avito.ru/belgorod/noutbuki/macbook_air_13_m3_8_256._bu_8352514859",
+      "title": "Macbook air 13 m3 8 256. Б/у в Белгороде",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 57000,
+      "url": "https://www.avito.ru/ramenskoe/noutbuki/apple_macbook_air_13_m3_8256gb_8134388343",
+      "title": "Apple MacBook Air 13 m3 8/256Gb в Раменском",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 57000,
+      "url": "https://www.avito.ru/volgograd/noutbuki/macbook_air_m1_8gb_256gb_8330783114",
+      "title": "Macbook air m1 8gb 256gb в Волгограде",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 63000,
+      "url": "https://www.avito.ru/zhigulevsk/noutbuki/macbook_air_m3_13_8256_gb_8251861645",
+      "title": "MacBook Air M3 13 8/256 гб в Жигулевске",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 64800,
+      "url": "https://www.avito.ru/elets/noutbuki/macbook_air_13_m3_8256_8285349071",
+      "title": "Macbook Air 13 M3 8/256 в Ельце",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 65000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_m3_8_256_8260837273",
+      "title": "Macbook air 13 m3 8 256 в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 65000,
+      "url": "https://www.avito.ru/kirovskaya_oblast_kirov/noutbuki/macbook_air_13_m3_8_256_8293880463",
+      "title": "Macbook air 13 m3 8 256 в Кирове",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 65000,
+      "url": "https://www.avito.ru/yuzhno-sahalinsk/noutbuki/macbook_air_13_m3_8_256_8343426940",
+      "title": "Macbook air 13 m3 8 256 в Южно-Сахалинске",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 65900,
+      "url": "https://www.avito.ru/omsk/noutbuki/macbook_air_13_m3_8_256_8312824713",
+      "title": "Macbook air 13 m3 8 256 в Омске",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 66990,
+      "url": "https://www.avito.ru/kostroma/noutbuki/macbook_air_13_m3_8-core_8256gb_8353638343",
+      "title": "MacBook Air 13 M3 (8-core) 8/256гб в Костроме",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 67000,
+      "url": "https://www.avito.ru/sankt-peterburg/noutbuki/macbook_air_m3_8gb_256gb_ssd_13-inch_8247018083",
+      "title": "Macbook air m3 8gb 256gb ssd 13-inch в Санкт-Петербурге",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 68990,
+      "url": "https://www.avito.ru/ekaterinburg/noutbuki/macbook_air_13_m3_8256gb_8361798127",
+      "title": "MacBook Air 13 M3 8/256Gb в Екатеринбурге",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 69000,
+      "url": "https://www.avito.ru/reutov/noutbuki/macbook_air_13_m3_8_256_8276953834",
+      "title": "Macbook air 13 m3 8 256 в Реутове",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 69500,
+      "url": "https://www.avito.ru/kostroma/noutbuki/apple_macbook_air_13_m3_8256gb._midnight_8428918966",
+      "title": "Apple MacBook Air 13 M3 8/256Gb. Midnight в Костроме",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 69900,
+      "url": "https://www.avito.ru/groznyy/noutbuki/macbook_air_13-inch_m3_chip_8256_ssd_bu_8271181088",
+      "title": "Macbook air 13-Inch M3 chip 8/256 SSD B/U в Грозном",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 69990,
+      "url": "https://www.avito.ru/sochi/noutbuki/macbook_air_13_m3_8256_gb_8272062947",
+      "title": "MacBook Air 13 m3 8/256 gb в Сочи",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 69990,
+      "url": "https://www.avito.ru/ekaterinburg/noutbuki/macbook_air_13_m3_8256gb_8330394096",
+      "title": "MacBook Air 13 M3 8/256Gb в Екатеринбурге",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 69990,
+      "url": "https://www.avito.ru/nizhniy_novgorod/noutbuki/macbook_air_13_m3_8256gb_space_gray_3_tsikla_8323582312",
+      "title": "MacBook Air 13 M3 8/256gb Space Gray (3 Цикла) в Нижнем Новгороде",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 69990,
+      "url": "https://www.avito.ru/petrozavodsk/noutbuki/macbook_air_13_m3_8256_8343011597",
+      "title": "MacBook Air 13 m3 8/256 в Петрозаводске",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 69990,
+      "url": "https://www.avito.ru/ryazan/noutbuki/macbook_air_13_m3_8256gb_8280319183",
+      "title": "MacBook Air 13 M3 8/256gb в Рязани",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 70990,
+      "url": "https://www.avito.ru/kaluga/noutbuki/macbook_air_13_m3_8256_midnight_8342923773",
+      "title": "MacBook Air 13 M3 8/256 Midnight в Калуге",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 73000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_m3_8_256_8257736006",
+      "title": "Macbook air 13 m3 8 256 в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 73900,
+      "url": "https://www.avito.ru/ekaterinburg/noutbuki/macbook_air_13_m3_8_256_4687435895",
+      "title": "Macbook air 13 m3 8 256 в Екатеринбурге",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 75000,
+      "url": "https://www.avito.ru/rostov-na-donu/noutbuki/macbook_air_13_m3_8_gb_256_gb_2024_8200701569",
+      "title": "MacBook Air 13 M3 / 8 гб / 256 гб / 2024 в Ростове-на-Дону",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 75000,
+      "url": "https://www.avito.ru/krasnodar/noutbuki/apple_macbook_air_13_m3_8_256_8040371105",
+      "title": "Apple macbook air 13 m3 8 256 в Краснодаре",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 75000,
+      "url": "https://www.avito.ru/novouralsk/noutbuki/macbook_air_13_m3_8_256_8076153403",
+      "title": "Macbook air 13 m3 8 256 в Новоуральске",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 77000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_m3_8_256_8254521375",
+      "title": "Macbook air 13 m3 8 256 в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 80000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_15_m3_8256gb_midnight_8149117317",
+      "title": "MacBook Air 15 M3 8/256Gb Midnight в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 83000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_m3_8_256_8100764584",
+      "title": "Macbook Air 13 m3 8 256 в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 512,
+      "price": 71990,
+      "url": "https://www.avito.ru/saransk/noutbuki/macbook_air_13_m3_8512gb_space_gray_8203812252",
+      "title": "MacBook Air 13 M3 8/512Gb Space Gray в Саранске",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 512,
+      "price": 72000,
+      "url": "https://www.avito.ru/cherepovets/noutbuki/macbook_air_m3_space_gray_512_gb_8_gb_8295565128",
+      "title": "Macbook Air M3 space gray 512 гб / 8 гб в Череповце",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 512,
+      "price": 80000,
+      "url": "https://www.avito.ru/samara/noutbuki/macbook_air_13_m3_8_512_idealnyy_8260127543",
+      "title": "Macbook air 13 m3 8 512 идеальный в Самаре",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 512,
+      "price": 95000,
+      "url": "https://www.avito.ru/naberezhnye_chelny/noutbuki/macbook_air_13_m3_8_512_8414868940",
+      "title": "Macbook air 13 m3 8 512 в Набережных Челнах",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 512,
+      "price": 99980,
+      "url": "https://www.avito.ru/krasnodar/noutbuki/macbook_air_13_m3_8512_silver_air_serebro_8392955399",
+      "title": "Macbook air 13 m3 8/512 Silver Аир серебро в Краснодаре",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 256,
+      "price": 60000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_m3_16gb_256gb_8144741582",
+      "title": "MacBook Air 13' M3 16GB 256GB в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 256,
+      "price": 63000,
+      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_air_m3_2024_16gb_256gb_midnight_8069976404",
+      "title": "Apple MacBook Air M3 2024 16гб 256гб Midnight в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 256,
+      "price": 68900,
+      "url": "https://www.avito.ru/velikiy_novgorod/noutbuki/macbook_air_13_2024_m3_16256_gb_8244090886",
+      "title": "MacBook Air 13 2024 M3 16/256 Gb в Великом Новгороде",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 256,
+      "price": 70000,
+      "url": "https://www.avito.ru/ekaterinburg/noutbuki/macbook_air_m3_16gb_256gb_8088465763",
+      "title": "Macbook air m3 16gb 256gb в Екатеринбурге",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 256,
+      "price": 75000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_m3_16256gb_a3113_8335209734",
+      "title": "MacBook Air 13 m3 16/256gb A3113 в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 256,
+      "price": 77990,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_m3_16256gb_8292252170",
+      "title": "MacBook Air 13 m3 16/256Gb в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 256,
+      "price": 78899,
+      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_air_gold_13_dyuymov_m3_16256_gb_8200315974",
+      "title": "Apple MacBook Air, Gold, 13 дюймов, М3, 16/256 Gb в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 256,
+      "price": 79000,
+      "url": "https://www.avito.ru/sankt-peterburg/noutbuki/macbook_air_13_m3_16_256_8414975475",
+      "title": "Macbook Air 13 m3 16 256 в Санкт-Петербурге",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 256,
+      "price": 80000,
+      "url": "https://www.avito.ru/cherkessk/noutbuki/macbook_air_13_m2_16gb_256gb_8152076698",
+      "title": "Macbook air 13 m2 16gb 256gb в Черкесске",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 256,
+      "price": 90000,
+      "url": "https://www.avito.ru/sankt-peterburg/noutbuki/macbook_air_13_m3_16_256_8323248462",
+      "title": "Macbook air 13 m3 16 256 в Санкт-Петербурге",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 512,
+      "price": 69999,
+      "url": "https://www.avito.ru/amurskaya_oblast_blagoveschensk/noutbuki/macbook_air_13_m3_16512gb_8323367757",
+      "title": "MacBook Air 13 M3 16/512GB в Благовещенске",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 512,
+      "price": 75000,
+      "url": "https://www.avito.ru/izhevsk/noutbuki/macbook_air_13_m3_16_512_8363706835",
+      "title": "Macbook air 13 m3 16 512 в Ижевске",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 512,
+      "price": 78000,
+      "url": "https://www.avito.ru/penza/noutbuki/prodam_macbook_air_13_16512_black_8294945207",
+      "title": "Продам MacBook Air 13 16/512 Black в Пензе",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 512,
+      "price": 79999,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_m3_16_512_gb_8242491008",
+      "title": "Macbook air 13 m3 16 512 gb в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 512,
+      "price": 82000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_m3_16_512_kak_novyy_8220379355",
+      "title": "Macbook Air m3 16 512 как новый в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 512,
+      "price": 89900,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_m3_16_512_kak_novyy_7873542116",
+      "title": "Macbook air 13 m3 16 512 как Новый в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 512,
+      "price": 90000,
+      "url": "https://www.avito.ru/vladivostok/noutbuki/apple_macbook_air_13_2024_m3_16gb_512gb_8028917923",
+      "title": "Apple macbook air 13 2024 m3 16gb 512gb в Владивостоке",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 512,
+      "price": 99000,
+      "url": "https://www.avito.ru/volzhsk/noutbuki/macbook_air_13_m3_16gb_512gb_8206197025",
+      "title": "Macbook air 13 m3 16gb 512gb в Волжске",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Air 13 (2024, M3)",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 512,
+      "price": 110000,
+      "url": "https://www.avito.ru/stavropol/noutbuki/apple_macbook_air_13_m3_16512gb_space_grey_2024_8262943537",
+      "title": "Apple MacBook Air 13 M3 16/512GB Space Grey 2024 в Ставрополе",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 36000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_13_2020_m1_8_gb256_gb_8222233048",
+      "title": "MacBook Pro 13\" 2020, M1, 8 гб/256 гб в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 36500,
+      "url": "https://www.avito.ru/pushkino/noutbuki/macbook_pro_13_m1_8_256_8202363000",
+      "title": "Macbook pro 13 m1 8 256 в Пушкино",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 38900,
+      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_pro_2020_m1_8256_8461264779",
+      "title": "Apple MacBook Pro (2020, M1, 8/256) в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 40000,
+      "url": "https://www.avito.ru/odintsovo/noutbuki/macbook_pro_m1_8256_gb_korobka_cheki_7971024712",
+      "title": "MacBook Pro M1 8/256 гб, коробка, чеки в Одинцово",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 40000,
+      "url": "https://www.avito.ru/scherbinka/noutbuki/macbook_pro_m1_8256_silver_8203411577",
+      "title": "Macbook pro m1 8/256 silver в Щербинке",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 40000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_13_2020_m1_8gb_256gb_8211424526",
+      "title": "Macbook pro 13 2020 m1 8gb 256gb в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 41500,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_13_m1_8256gb_a2338_8335244127",
+      "title": "MacBook Pro 13 m1 8/256gb A2338 в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 43000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_13_m1_8_256_8362671809",
+      "title": "Macbook Pro 13 m1 8 256 в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 45000,
+      "url": "https://www.avito.ru/moskovskaya_oblast_voskresenskoe/noutbuki/macbook_pro_13_2020_m1_256_gb_8gb_7902222275",
+      "title": "Macbook Pro 13 2020 M1 256 GB / 8GB в Воскресенском",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 45000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_13_2020_m1_8gb_256gb_7778694963",
+      "title": "MacBook Pro 13 2020 m1 8gb 256gb в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 45000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_13_m1_8_256_8253315363",
+      "title": "Macbook pro 13 m1 8 256 в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 45000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_13_m1_8_256_8253464759",
+      "title": "Macbook pro 13 m1 8 256 в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 52000,
+      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_pro_13_2020_m1_8gb_256gb_7991320009",
+      "title": "Apple macbook pro 13 2020 m1 8gb 256gb в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 55000,
+      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_pro_13_2020_m1_8gb_256gb_8160358712",
+      "title": "Apple Macbook Pro 13 2020 M1 8Gb 256Gb в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 80000,
+      "url": "https://www.avito.ru/moskva/noutbuki/noutbuk_apple_macbook_pro_13_8256gb_space_grey_8245281338",
+      "title": "Ноутбук apple macbook pro 13” 8/256Gb Space Grey в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 25990,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_a2289_i58512_8281199064",
+      "title": "MacBook PRO A2289 I5/8/512 в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 33000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_13_m1_8512_gb_s_touch_bar_7910226472",
+      "title": "MacBook Pro 13 M1 (8/512 гб) с Touch Bar в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 45000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_m1_8gb_2020_13_512gb_7754251903",
+      "title": "Macbook pro m1 8gb 2020 13 512gb в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 48500,
+      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_pro_m1_8512_8353996279",
+      "title": "Apple MacBook Pro M1 8/512 в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 48990,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_13_m1_8gb_512gb_8461218734",
+      "title": "MacBook Pro 13 m1 8gb 512gb в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 49900,
+      "url": "https://www.avito.ru/moskovskaya_oblast_moskovskiy/noutbuki/macbook_pro_13_m1_8_512_7576820418",
+      "title": "Macbook pro 13 m1 8 512 в Московском",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 49990,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_13_m1_8_512_ideal_31_tsikl_8230650343",
+      "title": "Macbook pro 13 m1 8 512 Идеал (31 цикл) в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 55000,
+      "url": "https://www.avito.ru/schelkovo/noutbuki/macbook_pro_13_m1_8512_8259950773",
+      "title": "Macbook Pro 13 M1 8/512 в Щелково",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 55000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_13_m1_8_512_8225012946",
+      "title": "Macbook pro 13 m1 8 512 в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 55000,
+      "url": "https://www.avito.ru/schelkovo/noutbuki/macbook_pro_13_2020_m1_8gb_512gb_8152182978",
+      "title": "Macbook pro 13 2020 m1 8gb 512gb в Щелково",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 60000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_13_m1_8512_7946222720",
+      "title": "Macbook pro 13 m1 8/512 в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 60000,
+      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_pro_13_m1_8gb512gb_space_gray_7760420890",
+      "title": "Apple macbook pro 13 m1 8gb/512gb space gray в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 60000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_13_m1_8512_7569537436",
+      "title": "MacBook Pro 13 M1 8/512 в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 77990,
+      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_pro_13_2020_m1_8gb_512gb_8176423756",
+      "title": "Apple macbook pro 13 2020 m1 8gb 512gb в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 16,
       "ssd": 256,
       "price": 42000,
-      "url": "https://www.avito.ru/rostov-na-donu/nastolnye_kompyutery/mac_mini_m2_8256gb_silver_8084046827",
-      "title": "Mac mini M2 8/256GB Silver в Ростове-на-Дону",
-      "seen_at": "2026-09-04 16:54"
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_13_m1_16gb_256gb_8174624995",
+      "title": "Macbook pro 13 m1 16gb 256gb в Москве",
+      "seen_at": "2026-09-04 18:58"
     },
     {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 16,
       "ssd": 256,
-      "price": 48000,
-      "url": "https://www.avito.ru/nevyansk/nastolnye_kompyutery/komplekt_mac_mini_m2_7880364005",
-      "title": "Комплект Mac Mini M2 в Невьянске",
-      "seen_at": "2026-09-04 16:54"
+      "price": 45000,
+      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_pro_13_m1_16256_8362199034",
+      "title": "Apple macbook pro 13' M1 16/256 в Москве",
+      "seen_at": "2026-09-04 18:58"
     },
     {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 16,
       "ssd": 256,
-      "price": 49000,
-      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m2_8256_lg_34_magic_keyboard_8329795881",
-      "title": "Mac mini M2 8/256 + LG 34” + Magic Keyboard в Москве",
-      "seen_at": "2026-09-04 16:54"
+      "price": 47000,
+      "url": "https://www.avito.ru/dolgoprudnyy/noutbuki/macbook_pro_13_m116256silver_8322700124",
+      "title": "MacBook Pro 13 (M1/16/256/silver) в Долгопрудном",
+      "seen_at": "2026-09-04 18:58"
     },
     {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 16,
       "ssd": 256,
-      "price": 50000,
-      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m2_a2686_7983831386",
-      "title": "Mac mini m2 A2686 в Москве",
-      "seen_at": "2026-09-04 16:54"
+      "price": 53990,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_13_m1_16gb_256gb_8363321505",
+      "title": "MacBook Pro 13 m1 16gb 256gb в Москве",
+      "seen_at": "2026-09-04 18:58"
     },
     {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 16,
       "ssd": 256,
-      "price": 50350,
-      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/kompyuter_apple_mac_mini_a2686_m2_810_8256gb_8295445526",
-      "title": "Компьютер Apple Mac mini A2686 M2 8/10, 8/256гб в Москве",
-      "seen_at": "2026-09-04 16:54"
+      "price": 55000,
+      "url": "https://www.avito.ru/moskva/noutbuki/mac_book_pro_m1_16256_8220011228",
+      "title": "Mac book Pro m1 16/256 в Москве",
+      "seen_at": "2026-09-04 18:58"
     },
     {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "price": 64990,
-      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m2_m4_pro_8260090779",
-      "title": "Mac Mini M2 / M4 Pro в Москве",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 512,
-      "price": 35000,
-      "url": "https://www.avito.ru/ekaterinburg/nastolnye_kompyutery/mac_mini_m2_8_512_8331805482",
-      "title": "Mac mini m2 8 512 в Екатеринбурге",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 512,
-      "price": 37999,
-      "url": "https://www.avito.ru/shahty/nastolnye_kompyutery/mac_mini_m2_512gb_v_ideale_8069068241",
-      "title": "Mac mini m2 512gb в идеале в Шахтах",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 512,
-      "price": 40000,
-      "url": "https://www.avito.ru/gorki-10/nastolnye_kompyutery/apple_mac_mini_a2686_apple_m2_8_core_8gb_512gb_8385106728",
-      "title": "Apple Mac mini A2686 Apple M2 8 core, 8гб, 512гб в Горках-10",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 512,
-      "price": 40000,
-      "url": "https://www.avito.ru/sankt-peterburg/nastolnye_kompyutery/mac_mini_m2_8254206892",
-      "title": "Mac Mini M2 в Санкт-Петербурге",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 512,
-      "price": 40000,
-      "url": "https://www.avito.ru/hanty_mansiyskiy_ao_beloyarskiy/nastolnye_kompyutery/mak_mini_m1_dok_stantsiya_s_ustanovkoy_ssd_m2_8263089719",
-      "title": "Мак мини М1 + док станция с установкой ssd M2 в Белоярском",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 512,
-      "price": 41999,
-      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/novyy_mac_mini_m2_8512_gb_na_garantii_8247929571",
-      "title": "Новый Mac Mini M2 8/512 Гб на гарантии в Москве",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 512,
-      "price": 42999,
-      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_2023_m2_8_gb_512_ssd_garantiya_7866151948",
-      "title": "Mac mini 2023 M2 8 Gb, 512 SSD, гарантия в Москве",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 512,
-      "price": 46990,
-      "url": "https://www.avito.ru/perm/nastolnye_kompyutery/nastolnyy_kompyuter_apple_mac_mini_2023_m2_512gb_7895968372",
-      "title": "Настольный компьютер Apple Mac mini 2023 M2 512Gb в Перми",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 512,
-      "price": 50000,
-      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_mac_mini_m2_8gb_512gb_2023g_4480679736",
-      "title": "Apple Mac mini M2 8gb 512gb 2023г в Москве",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 512,
-      "price": 63795,
-      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m2_2023_8512_8363483856",
-      "title": "Mac mini m2 2023 8/512 в Москве",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 512,
-      "price": 63990,
-      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_mac_mini_2023_apple_m2_8_ram_512_gb_silver_7541396499",
-      "title": "Apple Mac Mini 2023, Apple M2, 8 RAM 512 гб Silver в Москве",
-      "seen_at": "2026-09-04 16:54"
-    },
-    {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2 Pro",
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
       "ram": 16,
       "ssd": 512,
-      "price": 59999,
-      "url": "https://www.avito.ru/fryazino/nastolnye_kompyutery/mac_mini_m2_pro_16512_8240070009",
-      "title": "Mac Mini M2 Pro 16/512 в Фрязино",
-      "seen_at": "2026-09-04 16:54"
+      "price": 57000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_m1_16gb_512gb_13_7378026230",
+      "title": "MacBook Pro M1 16Gb 512Gb 13 в Москве",
+      "seen_at": "2026-09-04 18:58"
     },
     {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2 Pro",
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
       "ram": 16,
       "ssd": 512,
-      "price": 76400,
-      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m2_pro_16gb_512gb_mnh73_3156319707",
-      "title": "Mac Mini M2 Pro 16GB 512GB MNH73 в Москве",
-      "seen_at": "2026-09-04 16:54"
+      "price": 80000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_13_m1_16gb_512gb_7531663151",
+      "title": "Macbook Pro 13 m1 16gb 512gb в Москве",
+      "seen_at": "2026-09-04 18:58"
     },
     {
-      "model_name": "mac mini m2",
-      "processor": "Apple M2 Pro",
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
       "ram": 16,
       "ssd": 512,
-      "price": 79000,
-      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_mac_mini_m2_pro_16gb_512gb_mnh73_8226984233",
-      "title": "Apple Mac Mini M2 PRO 16GB / 512Gb MNH73 в Москве",
-      "seen_at": "2026-09-04 16:54"
+      "price": 120000,
+      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_pro_13_2020_m1_16gb_512gb_3733323366",
+      "title": "Apple MacBook Pro 13 2020 m1 16gb 512gb в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 1024,
+      "price": 69000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_13_m1_161tb_a2338_otlichn_8335074179",
+      "title": "MacBook Pro 13 m1 16/1tb A2338 отличн в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 1024,
+      "price": 74000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_13_m1_16gb_1tb_8220364254",
+      "title": "Macbook pro 13 m1 16gb 1tb в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 13 (2020, M1)",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 1024,
+      "price": 79900,
+      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_pro_13-inch_m1_2020_16gb1tb_3603847393",
+      "title": "Apple MacBook Pro (13-inch, M1, 2020) 16gb/1tb в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Max",
+      "ram": 128,
+      "ssd": 8192,
+      "price": 500000,
+      "url": "https://www.avito.ru/krasnodar/noutbuki/macbook_pro_14_m4_max_128gb_8tb_bu_ideal_7527470048",
+      "title": "MacBook Pro 14 m4 max 128GB 8TB б/у идеал в Краснодаре",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Max",
+      "ram": 128,
+      "ssd": 8192,
+      "price": 550000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_14_m4_max_128gb_8tb_bu_zaryadka_8007515247",
+      "title": "MacBook 14 m4 max 128GB 8TB б/у зарядка в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Max",
+      "ram": 128,
+      "ssd": 8192,
+      "price": 580000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m4_max_128gb_8tb_bu_8199134350",
+      "title": "MacBook Pro 14 m4 max 128GB 8TB б/у в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 512,
+      "price": 110000,
+      "url": "https://www.avito.ru/hvalynsk/noutbuki/apple_macbook_pro_14_m4_pro_24512gb_2024_8287338321",
+      "title": "Apple MacBook Pro 14 M4 Pro 24/512GB (2024) в Хвалынске",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 512,
+      "price": 120000,
+      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_pro_14_m4_pro_24512_silver_8333213035",
+      "title": "Apple MacBook Pro 14 m4 pro 24/512 Silver в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 512,
+      "price": 130000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_m4_24_512_8321706886",
+      "title": "Macbook pro m4 24 512 в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 512,
+      "price": 140000,
+      "url": "https://www.avito.ru/tobolsk/noutbuki/apple_macbook_pro_14_m4pro_24512_8280050851",
+      "title": "Apple macbook pro 14 m4pro 24/512 в Тобольске",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 512,
+      "price": 145000,
+      "url": "https://www.avito.ru/sankt-peterburg/noutbuki/macbook_pro_14_m4_pro_24512gb_space_black_8312662791",
+      "title": "MacBook Pro 14 M4 Pro 24/512Gb Space Black в Санкт-Петербурге",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 512,
+      "price": 145000,
+      "url": "https://www.avito.ru/kursk/noutbuki/macbook_pro_m4_24_512_8240724540",
+      "title": "Macbook pro m4 24 512 в Курске",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 512,
+      "price": 149990,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m4_pro_24_512_8168720248",
+      "title": "Macbook Pro 14 M4 Pro 24 512 в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 512,
+      "price": 150000,
+      "url": "https://www.avito.ru/cheboksary/noutbuki/macbook_pro_14_m4_pro_24_512_8142579834",
+      "title": "Macbook pro 14 m4 pro 24 512 в Чебоксарах",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 512,
+      "price": 152000,
+      "url": "https://www.avito.ru/simferopol/noutbuki/macbook_14_m4_pro_24_512_8371357847",
+      "title": "Macbook 14 m4 pro 24 512 в Симферополе",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 512,
+      "price": 155000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m4_24_512_gb_2024_8272720760",
+      "title": "Macbook pro 14 m4 24 512 GB 2024 в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 512,
+      "price": 155000,
+      "url": "https://www.avito.ru/trudovoe/noutbuki/macbook_pro_14_m4pro_24_512_8258485474",
+      "title": "Macbook pro 14 m4pro 24 512 в Трудовом",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 512,
+      "price": 159990,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m4_pro_24512gb_8342420332",
+      "title": "MacBook Pro 14 M4 Pro 24/512gb в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 512,
+      "price": 159990,
+      "url": "https://www.avito.ru/saransk/noutbuki/macbook_pro_14_m4_pro_24512gb_silver_8331564753",
+      "title": "MacBook Pro 14 M4 Pro 24/512Gb Silver в Саранске",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 512,
+      "price": 161500,
+      "url": "https://www.avito.ru/leningradskaya_oblast_sosnovyy_bor/noutbuki/macbook_pro_14_m4_24_512_8308991116",
+      "title": "Macbook pro 14 m4 24 512 в Сосновом Бору",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 512,
+      "price": 168500,
+      "url": "https://www.avito.ru/smolensk/noutbuki/macbook_pro_14_m4_pro_24512gb_silver_8095113159",
+      "title": "MacBook Pro 14 M4 Pro 24/512Gb Silver в Смоленске",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 512,
+      "price": 169990,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m4_pro_24512gb_20_tsiklov_8260503583",
+      "title": "MacBook Pro 14 m4 Pro 24/512Gb (20 циклов) в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 512,
+      "price": 170000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m4_pro24gb512gb14cpu_20gpu88_8342825936",
+      "title": "MacBook Pro 14 M4 Pro/24GB/512GB/14CPU 20GPU/88% в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 512,
+      "price": 170000,
+      "url": "https://www.avito.ru/vladivostok/noutbuki/macbook_pro_14_m4_24_512_8282401652",
+      "title": "Macbook Pro 14 m4 24 512 в Владивостоке",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 512,
+      "price": 172990,
+      "url": "https://www.avito.ru/nizhniy_novgorod/noutbuki/macbook_pro_14_m4_pro24512gb_silver_8270047900",
+      "title": "MacBook Pro 14 (M4 Pro/24/512Gb) Silver в Нижнем Новгороде",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 512,
+      "price": 179990,
+      "url": "https://www.avito.ru/saransk/noutbuki/macbook_pro_14_m4_pro_24512gb_space_black_8331378915",
+      "title": "MacBook Pro 14 M4 Pro 24/512Gb Space Black в Саранске",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 512,
+      "price": 180000,
+      "url": "https://www.avito.ru/moskva/noutbuki/makbuk_pro_macbook_pro_m4_pro_14_24gb_512gb_8281963579",
+      "title": "Макбук про MacBook Pro M4 Pro 14 24gb 512GB в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 1024,
+      "price": 150000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_m4_pro_24_1024_8197844818",
+      "title": "MacBook M4 Pro (24 1024) в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 1024,
+      "price": 160000,
+      "url": "https://www.avito.ru/moskva/noutbuki/macbook_m4_pro_14c_cpu_20s_gpu_24gb_1_tb_ssd_8038022659",
+      "title": "Macbook M4 Pro 14c CPU, 20с GPU, 24GB, 1 TB SSD в Москве",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 1024,
+      "price": 170000,
+      "url": "https://www.avito.ru/voronezh/noutbuki/macbook_pro_14_m4_24gb_1tb_7718102268",
+      "title": "Macbook Pro 14 m4 24gb 1tb в Воронеже",
+      "seen_at": "2026-09-04 18:58"
+    },
+    {
+      "model_name": "MacBook Pro 14 (2024)",
+      "processor": "Apple M4 Pro",
+      "ram": 24,
+      "ssd": 1024,
+      "price": 195000,
+      "url": "https://www.avito.ru/moskva/noutbuki/makbuk_pro_macbook_pro_m4_pro_14_24gb_1tb_8273047727",
+      "title": "Макбук про MacBook Pro M4 Pro 14 24gb 1tb в Москве",
+      "seen_at": "2026-09-04 18:58"
     }
   ]
 }
