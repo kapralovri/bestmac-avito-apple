@@ -721,11 +721,29 @@ class AvitoScannerV2:
         self.page.wait_for_timeout(random.randint(2000, 4000))
 
     def _load_page(self, url):
-        """Загружает страницу через Playwright с обходом капчи. Возвращает HTML или None."""
+        """Загружает страницу через Playwright с обходом капчи. Возвращает HTML или None.
+
+        GST-72: page.content() может упасть с "Unable to retrieve content because
+        the page is navigating and changing the content" — та же гонка навигации,
+        что роняла is_captcha_page (клиентский редирект ещё не устаканился сразу
+        после navigate_with_captcha). Раньше это было необработанным исключением
+        и убивало весь многочасовой прогон; один короткий ретрай почти всегда
+        достаточен, иначе — None (вызывающий код уже трактует None как «стр. пустая»
+        и сам решает, ретраить ли через _warmup()).
+        """
         ok = navigate_with_captcha(self.page, url)
         if not ok:
             return None
-        return self.page.content()
+        try:
+            return self.page.content()
+        except Exception as e:
+            logger.warning(f"⚠️ page.content() упал ({e}), жду и пробую ещё раз")
+            self.page.wait_for_timeout(1500)
+            try:
+                return self.page.content()
+            except Exception as e2:
+                logger.warning(f"⚠️ page.content() снова упал: {e2}")
+                return None
 
     def _close(self):
         if self.context:
