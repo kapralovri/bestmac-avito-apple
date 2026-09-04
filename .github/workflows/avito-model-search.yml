@@ -1,0 +1,57 @@
+name: Avito Model Search (on-demand)
+
+# GST-72: разовый живой поиск по конкретной модели, триггерится командой
+# «/модель» из Telegram-бота (scripts/negotiation-bot/bot.py) через
+# workflow_dispatch API. НЕ трогает основную БД цен (avito-prices.json) —
+# только шлёт результат в тот же Telegram-чат. Переиспользует ту же
+# hardened-логику капчи/навигации, что и ежедневный парсер.
+
+on:
+  workflow_dispatch:
+    inputs:
+      query:
+        description: 'Модель / запрос для поиска на Avito'
+        required: true
+        type: string
+      chat_id:
+        description: 'Telegram chat_id для ответа (пусто = OWNER_CHAT_ID)'
+        required: false
+        type: string
+      max_pages:
+        description: 'Кол-во страниц поиска'
+        default: '3'
+        type: string
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: scripts/avito-parser/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          pip install -r scripts/avito-parser/requirements.txt
+          playwright install chromium --with-deps
+
+      - name: Search
+        env:
+          RUCAPTCHA_API_KEY: ${{ secrets.RUCAPTCHA_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          OWNER_CHAT_ID: ${{ secrets.OWNER_CHAT_ID }}
+        run: |
+          python scripts/avito-parser/parser.py \
+            --query "${{ github.event.inputs.query }}" \
+            --max-pages "${{ github.event.inputs.max_pages }}" \
+            --chat-id "${{ github.event.inputs.chat_id }}"

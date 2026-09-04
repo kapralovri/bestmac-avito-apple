@@ -25,6 +25,10 @@ Usage:
   python parser.py --tab "Mac mini"
   python parser.py --tab "Mac Studio"
   python parser.py --tab all
+
+  # GST-72: разовый живой поиск по свободному запросу (не трогает БД,
+  # результат уходит в Telegram) — так триггерится команда /модель бота.
+  python parser.py --query "MacBook Pro 14 M3 Pro 18/512" --chat-id 123456789
 """
 import argparse
 import json
@@ -86,6 +90,10 @@ USER_AGENT        = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                      "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
 
 CAPTCHA_SOLVE_RETRIES = 3   # каждая попытка — СВЕЖИЙ challenge (токен GeeTest привязан ко времени/сессии)
+
+# Последняя ошибка решения капчи за весь прогон (GST-72 доп.: видна в канарейке,
+# не только в логах CI) — напр. "ERROR_ZERO_BALANCE" при исчерпанном балансе RuCaptcha.
+LAST_CAPTCHA_ERROR: str | None = None
 
 MAX_PAGES_DEFAULT   = 5     # для discovery — больше выборка; для direct хватает 3
 MIN_SAMPLES_DEFAULT = 3
@@ -166,6 +174,8 @@ def solve_captcha(page, target_url: str = None) -> bool:
         return False
 
     except Exception as e:
+        global LAST_CAPTCHA_ERROR
+        LAST_CAPTCHA_ERROR = str(e)
         logger.error(f"❌ Ошибка капчи: {e}")
         return False
 
@@ -671,18 +681,99 @@ def build_url_entries(stats: list[dict], tabs_data: dict) -> list[dict]:
     return out
 
 
+# ─── Разовый поиск по свободному запросу (GST-72: /модель из бота) ───────────
+# Не трогает основную БД (avito-prices.json и т.п.) — только шлёт результат в
+# Telegram. Переиспользует warmup/collect_listings/навигацию с ретраем капчи,
+# так что унаследует любые будущие фиксы капчи бесплатно.
+
+def _send_model_search_result(text: str, chat_id: str | None) -> bool:
+    bot_token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+    target_chat = (chat_id or os.environ.get("OWNER_CHAT_ID", "")).strip()
+    if not bot_token or not target_chat:
+        logger.warning("⚠️ TELEGRAM_BOT_TOKEN/chat_id не заданы — результат только в лог:\n" + text)
+        return False
+    try:
+        import requests
+        r = requests.post(
+            f"https://api.telegram.org/bot{bot_token}/sendMessage",
+            json={"chat_id": target_chat, "text": text, "parse_mode": "HTML",
+                  "disable_web_page_preview": False},
+            timeout=15,
+        )
+        ok = r.json().get("ok", False)
+        if not ok:
+            logger.warning(f"⚠️ Telegram отклонил результат: {r.text[:200]}")
+        return ok
+    except Exception as e:  # noqa: BLE001 — сеть/таймаут не должны ронять прогон
+        logger.warning(f"⚠️ Не удалось отправить результат в Telegram: {e}")
+        return False
+
+
+def run_model_query(query: str, max_pages: int, chat_id: str | None):
+    import html as _html
+    import urllib.parse
+
+    url = f"https://www.avito.ru/rossiya?q={urllib.parse.quote(query)}"
+    logger.info(f"🔎 Разовый поиск: «{query}» → {url}")
+
+    with sync_playwright() as pw:
+        ap_obj = AvitoParser(pw)
+        ap_obj.warmup()
+        items = ap_obj.collect_listings(url, max_pages)
+        ap_obj.close()
+
+    q_esc = _html.escape(query)
+    if not items:
+        text = (f"🔎 <b>{q_esc}</b>\nНичего не нашлось (0 объявлений). "
+                f"Возможно, стоит уточнить запрос или проверить captcha_id/логи.")
+    else:
+        items.sort(key=lambda it: it["price"])
+        prices = [it["price"] for it in items]
+        lo, med, hi = min(prices), int(statistics.median(prices)), max(prices)
+        fmt = lambda n: f"{n:,}".replace(",", " ")
+        lines = [
+            f"🔎 <b>{q_esc}</b>",
+            f"Найдено: {len(items)} | цена {fmt(lo)}–{fmt(hi)} ₽ (медиана {fmt(med)} ₽)",
+            "",
+        ]
+        for it in items[:15]:
+            title = _html.escape(it["title"][:80])
+            lines.append(f'• {fmt(it["price"])} ₽ — <a href="{it["url"]}">{title}</a>')
+        if len(items) > 15:
+            lines.append(f"\n… и ещё {len(items) - 15}.")
+        text = "\n".join(lines)
+
+    logger.info(text)
+    _send_model_search_result(text, chat_id)
+
+
 # ─── Main ────────────────────────────────────────────────────────────────────
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--tab", required=True,
-                    help="MacBook | iMac | 'Mac mini' | 'Mac Studio' | all")
+    ap.add_argument("--tab", default=None,
+                    help="MacBook | iMac | 'Mac mini' | 'Mac Studio' | all "
+                         "(не нужен вместе с --query)")
+    ap.add_argument("--query", default=None,
+                    help="Разовый живой поиск по свободному запросу вместо вкладки "
+                         "(GST-72: команда /модель бота). Результат уходит в Telegram, "
+                         "основная БД не трогается.")
+    ap.add_argument("--chat-id", default=None,
+                    help="Telegram chat_id для --query (по умолчанию OWNER_CHAT_ID)")
     ap.add_argument("--max-pages", type=int, default=MAX_PAGES_DEFAULT)
     ap.add_argument("--clean", action="store_true",
                     help="Не мержить с БД, очистить только обработанные семейства")
     ap.add_argument("--time-limit", type=int, default=0,
                     help="Лимит времени в минутах (0 = без лимита)")
     args = ap.parse_args()
+
+    if args.query:
+        run_model_query(args.query, args.max_pages, args.chat_id)
+        return
+
+    if not args.tab:
+        logger.error("❌ Нужен --tab (или --query для разового поиска по модели)")
+        sys.exit(1)
 
     cfg = load_config()
     tabs_cfg = cfg["tabs"]
@@ -875,6 +966,7 @@ def main():
             prices=prices_payload,
             run_listings=run_listings,
             tab=args.tab,
+            context_note=(f"RuCaptcha: {LAST_CAPTCHA_ERROR}" if LAST_CAPTCHA_ERROR else None),
             logger=logger,
         )
     except Exception as e:  # noqa: BLE001
