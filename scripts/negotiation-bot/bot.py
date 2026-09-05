@@ -88,6 +88,13 @@ GH_MODEL_SEARCH_WORKFLOW = os.environ.get('GH_MODEL_SEARCH_WORKFLOW', 'avito-mod
 # (даём прямую ссылку на мониторинг через расширение) от свободного текста
 # (уходит в разовый живой поиск, как раньше).
 MODELS_CONFIG_FILE = Path(os.environ.get('MODELS_CONFIG_PATH', 'public/data/models-config.json'))
+# GST-72: визард «/модель» без аргумента — семья → модель → конфиг кнопками,
+# чтобы не ошибиться в написании. Тот же parser-config.json, что гоняет
+# ежедневный парсер (public/data/parser-config.json, вкладки Google Sheet) —
+# у каждого конфига (RAM/SSD для MacBook, чип для остальных) СВОЙ точно
+# отфильтрованный Avito-URL, точнее общей модельной ссылки из models-config.json.
+PARSER_CONFIG_FILE = Path(os.environ.get('PARSER_CONFIG_PATH', 'public/data/parser-config.json'))
+MODEL_WIZARD_FAMILIES = ["MacBook", "iMac", "Mac mini", "Mac Studio"]
 
 
 def _fmt(n) -> str:
@@ -265,6 +272,47 @@ def find_configured_model(query: str):
     if not exact and len(partial) == 1:
         return partial[0]
     return None  # 0 или неоднозначно — пусть решает свободный поиск
+
+
+def _wizard_family_models(family: str) -> list[str]:
+    """Уникальные имена моделей внутри семьи (вкладки), в порядке появления
+    в parser-config.json — детерминированный порядок для индексов в callback_data."""
+    cfg = _load_json(PARSER_CONFIG_FILE, {})
+    tab = (cfg.get("tabs") or {}).get(family) or {}
+    seen: list[str] = []
+    for e in tab.get("entries", []):
+        name = e.get("model")
+        if name and name not in seen:
+            seen.append(name)
+    return seen
+
+
+def _wizard_model_configs(family: str, model_name: str) -> list[dict]:
+    """Все конфиги конкретной модели (RAM/SSD для MacBook, чип для остальных),
+    каждый — {model, url, processor, ram?, ssd?, buyout_price?}. У КАЖДОГО
+    конфига свой, более точно отфильтрованный Avito-URL, чем общая ссылка
+    на модель из models-config.json."""
+    cfg = _load_json(PARSER_CONFIG_FILE, {})
+    tab = (cfg.get("tabs") or {}).get(family) or {}
+    return [e for e in tab.get("entries", []) if e.get("model") == model_name]
+
+
+def _wizard_config_label(c: dict) -> str:
+    if "ram" in c and "ssd" in c:
+        chip = (c.get("processor") or "").replace("Apple ", "")
+        return f"{chip} {c['ram']}/{c['ssd']} ГБ".strip()
+    return c.get("processor") or "вариант"
+
+
+def _wizard_monitor_text(model_name: str, c: dict) -> str:
+    label = _wizard_config_label(c)
+    buyout = c.get("buyout_price")
+    buyout_line = f"\n💰 Выкуп: ~{_fmt(buyout)} ₽" if buyout else ""
+    return (f"📍 <b>{_esc(model_name)}</b> — {_esc(label)}\n"
+            f'🔗 <a href="{c["url"]}">Открыть на Avito</a>{buyout_line}\n\n'
+            "Откройте эту ссылку в браузере, где стоит расширение BestMac "
+            "Collector — оно начнёт непрерывно мониторить все новые объявления "
+            "по этой конфигурации.")
 
 
 def _watchlist_add(lead):
@@ -471,7 +519,7 @@ class NegotiationBot:
                              "Жми «▶️ Веду торг», отправляй продавцу мой текст, "
                              "а его ответы — пересылай мне обычным сообщением.\n\n"
                              "🔍 /сделки — показать, какие Mac выгодно выкупать прямо сейчас.\n"
-                             "🔎 /модель <название> — живой поиск по конкретной модели на Avito.\n"
+                             "🔎 /модель — выбрать модель кнопками и получить ссылку на мониторинг.\n"
                              "🩺 /status — проверить домашний коллектор Avito.",
                      "buttons": [[("🔍 Найти сделки сейчас", "sourcing:now")],
                                  [("🩺 Статус коллектора", "status:refresh")]]}]
@@ -492,9 +540,14 @@ class NegotiationBot:
         if text.startswith("/модель") or text.startswith("/model"):
             query = text.split(maxsplit=1)[1].strip() if len(text.split(maxsplit=1)) > 1 else ""
             if not query:
+                # GST-72: без аргумента — визард кнопками (семья → модель → конфиг),
+                # чтобы не ошибиться в написании точного названия модели.
+                buttons = [[(fam, f"mw:fam:{i}")] for i, fam in enumerate(MODEL_WIZARD_FAMILIES)]
                 return [{"type": "send", "chat_id": chat_id,
-                         "text": "Напиши модель после команды, например:\n"
-                                 "<code>/модель MacBook Pro 14 M3 Pro 18/512</code>"}]
+                         "text": "Что ищем? Выберите семью, потом модель и конфигурацию:\n\n"
+                                 "Или сразу текстом:\n"
+                                 "<code>/модель MacBook Pro 14 M3 Pro 18/512</code>",
+                         "buttons": buttons}]
             actions: List[dict] = []
             # GST-72: точное совпадение с уже сконфигурированной моделью (та же,
             # что и у ежедневного парсера) — сразу даём прямую ссылку на мониторинг.
@@ -519,7 +572,7 @@ class NegotiationBot:
                      "text": "Петля: ▶️ Веду торг → отправляешь мой текст продавцу → "
                              "«✅ Отправил» → пересылаешь мне ответ продавца → я даю следующий ход.\n"
                              "🔍 /сделки — какие Mac выгодно выкупать прямо сейчас.\n"
-                             "🔎 /модель <название> — живой поиск по конкретной модели на Avito.\n"
+                             "🔎 /модель — выбрать модель кнопками и получить ссылку на мониторинг.\n"
                              "🩺 /status — статус домашнего коллектора Avito."}]
 
         # Обычный текст = ответ продавца для активного диалога
@@ -548,6 +601,55 @@ class NegotiationBot:
             actions.append({"type": "send", "chat_id": chat_id,
                             "text": self._sourcing_digest(),
                             "buttons": [[("🔄 Обновить поиск", "sourcing:now")]]})
+            return actions
+
+        # ── GST-72: визард «/модель» — семья → модель → конфиг кнопками ──────
+        if data.startswith("mw:"):
+            try:
+                parts_mw = data.split(":")
+                if parts_mw[1] == "fam":
+                    family = MODEL_WIZARD_FAMILIES[int(parts_mw[2])]
+                    models = _wizard_family_models(family)
+                    if not models:
+                        actions.append({"type": "send", "chat_id": chat_id,
+                                        "text": f"Нет моделей «{family}» в конфигурации."})
+                        return actions
+                    buttons = [[(name, f"mw:mdl:{parts_mw[2]}:{i}")] for i, name in enumerate(models)]
+                    actions.append({"type": "send", "chat_id": chat_id,
+                                    "text": f"«{family}» — выберите модель:", "buttons": buttons})
+                    return actions
+
+                if parts_mw[1] == "mdl":
+                    family = MODEL_WIZARD_FAMILIES[int(parts_mw[2])]
+                    models = _wizard_family_models(family)
+                    model_name = models[int(parts_mw[3])]
+                    configs = _wizard_model_configs(family, model_name)
+                    if not configs:
+                        actions.append({"type": "send", "chat_id": chat_id,
+                                        "text": f"Нет конфигураций для «{model_name}»."})
+                        return actions
+                    if len(configs) == 1:
+                        actions.append({"type": "send", "chat_id": chat_id,
+                                        "text": _wizard_monitor_text(model_name, configs[0])})
+                        return actions
+                    buttons = [[(_wizard_config_label(c), f"mw:cfg:{parts_mw[2]}:{parts_mw[3]}:{i}")]
+                               for i, c in enumerate(configs)]
+                    actions.append({"type": "send", "chat_id": chat_id,
+                                    "text": f"«{model_name}» — выберите конфигурацию:", "buttons": buttons})
+                    return actions
+
+                if parts_mw[1] == "cfg":
+                    family = MODEL_WIZARD_FAMILIES[int(parts_mw[2])]
+                    models = _wizard_family_models(family)
+                    model_name = models[int(parts_mw[3])]
+                    configs = _wizard_model_configs(family, model_name)
+                    c = configs[int(parts_mw[4])]
+                    actions.append({"type": "send", "chat_id": chat_id,
+                                    "text": _wizard_monitor_text(model_name, c)})
+                    return actions
+            except (IndexError, ValueError):
+                actions.append({"type": "send", "chat_id": chat_id,
+                                "text": "⚠️ Список моделей обновился — начните заново: /модель"})
             return actions
 
         parts = data.split(":")

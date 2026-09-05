@@ -152,7 +152,9 @@ botmod.MODELS_CONFIG_FILE.write_text(_json.dumps({"entries": [
 bot2 = NegotiationBot(DummyTx(), state_path=tmp / "state2.json", queue_path=tmp / "queue2.json",
                       owner_chat_id=777, llm_call=fake_llm)
 acts = bot2.handle_update({"update_id": 90, "message": {"chat": {"id": 777}, "text": "/модель"}})
-check("без аргумента — просит название", any("Напиши модель" in a.get("text", "") for a in find_send(acts)))
+_sent90 = find_send(acts)
+check("без аргумента — визард с кнопками семей",
+      len(_sent90) == 1 and _sent90[0].get("buttons") and len(_sent90[0]["buttons"]) == 4)
 
 _prev_token = botmod.GH_DISPATCH_TOKEN
 botmod.GH_DISPATCH_TOKEN = ""
@@ -171,6 +173,53 @@ check("два сообщения: ссылка на мониторинг + жи�
 check("есть точная ссылка на Avito", any("test-m1" in a.get("text", "") for a in sent))
 check("объяснено про расширение", any("BestMac Collector" in a.get("text", "") for a in sent))
 botmod.GH_DISPATCH_TOKEN = _prev_token
+
+print("\n[10c] /модель — визард кнопками: семья → модель → конфиг (2 конфига)")
+botmod.PARSER_CONFIG_FILE = tmp / "parser-config.json"
+botmod.PARSER_CONFIG_FILE.write_text(_json.dumps({"tabs": {
+    "MacBook": {"mode": "direct", "entries": [
+        {"model": "MacBook Air 13 (2020, M1)", "processor": "Apple M1", "ram": 8, "ssd": 256,
+         "url": "https://www.avito.ru/x/8-256", "buyout_price": 30000},
+        {"model": "MacBook Air 13 (2020, M1)", "processor": "Apple M1", "ram": 16, "ssd": 256,
+         "url": "https://www.avito.ru/x/16-256"},
+    ]},
+    "iMac": {"mode": "discovery", "entries": [
+        {"model": "imac 24", "processor": "m1", "url": "https://www.avito.ru/x/imac-m1"},
+    ]},
+}}), encoding="utf-8")
+
+
+def cb(uid, data):
+    return bot2.handle_update({"update_id": uid, "callback_query": {
+        "id": f"cb{uid}", "data": data, "message": {"chat": {"id": 777}}}})
+
+
+acts = cb(93, "mw:fam:0")  # MacBook
+sent = find_send(acts)
+check("шаг 2: список моделей MacBook", len(sent) == 1 and len(sent[0].get("buttons", [])) == 1)
+check("кнопка модели ведёт на mw:mdl:0:0", sent[0]["buttons"][0][0][1] == "mw:mdl:0:0")
+
+acts = cb(94, "mw:mdl:0:0")  # MacBook Air 13 (2020, M1) — 2 конфига
+sent = find_send(acts)
+check("шаг 3: список конфигов (2 варианта)", len(sent) == 1 and len(sent[0].get("buttons", [])) == 2)
+
+acts = cb(95, "mw:cfg:0:0:0")  # 8/256, с выкупом
+sent = find_send(acts)
+check("финал: ссылка на конкретный конфиг", any("8-256" in a.get("text", "") for a in sent))
+check("выкуп показан", any("Выкуп" in a.get("text", "") for a in sent))
+
+print("[10d] /модель — визард: модель с 1 конфигом сразу даёт ссылку (без лишнего шага)")
+acts = cb(96, "mw:fam:1")  # iMac
+sent = find_send(acts)
+acts = cb(97, "mw:mdl:1:0")  # imac 24 — единственный конфиг
+sent = find_send(acts)
+check("1 конфиг → сразу ссылка, без промежуточной клавиатуры",
+      len(sent) == 1 and not sent[0].get("buttons") and "imac-m1" in sent[0]["text"])
+
+print("[10e] /модель — визард: устаревший callback не роняет бота")
+acts = cb(98, "mw:cfg:9:9:9")
+check("некорректный индекс — вежливая ошибка, не исключение",
+      any("начните заново" in a.get("text", "") for a in find_send(acts)))
 
 print()
 if _fails:
