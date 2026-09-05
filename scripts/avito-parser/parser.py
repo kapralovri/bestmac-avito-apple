@@ -330,6 +330,8 @@ class AvitoParser:
         # GST-61: сырые объявления {model_name, processor, ram, ssd, price, url, title}
         # для каждого распознанного лота — чтобы сигнал стал кликабельным (ссылки на живые лоты).
         self.listings_out: list[dict] = []
+        # GST-72: True, если collect_listings хоть раз успешно загрузила страницу.
+        self.last_navigate_ok = True
 
     def _record_listing(self, model, processor, ram, ssd, it):
         """GST-61: сохраняет одно распознанное объявление с ссылкой для листингового фида."""
@@ -402,7 +404,15 @@ class AvitoParser:
 
     # ── Сбор объявлений со страниц поиска ──
     def collect_listings(self, url: str, max_pages: int) -> list[dict]:
-        """Возвращает список {title, snippet, price, listing_url}."""
+        """Возвращает список {title, snippet, price, listing_url}.
+
+        GST-72: если navigate() ни разу не смог загрузить страницу (капча не
+        решилась / сеть), это выглядит так же, как «страница загрузилась, но
+        объявлений действительно нет» — оба случая возвращают []. Разница
+        важна для run_model_query (человеку нельзя врать "ничего не нашлось",
+        когда на самом деле капча не пустила), поэтому фиксируем в last_navigate_ok.
+        """
+        self.last_navigate_ok = True
         items_all: list[dict] = []
         for page_num in range(1, max_pages + 1):
             page_url = f"{url}&p={page_num}" if "?" in url else f"{url}?p={page_num}"
@@ -411,6 +421,8 @@ class AvitoParser:
             ok = navigate(self.page, page_url)
             if not ok:
                 logger.warning(f"   ⚠️ navigate→False (стр. {page_num}), прерываем")
+                if page_num == 1:
+                    self.last_navigate_ok = False
                 break
             soup = BeautifulSoup(self.page.content(), "lxml")
 
@@ -727,12 +739,19 @@ def run_model_query(query: str, max_pages: int, chat_id: str | None):
         ap_obj = AvitoParser(pw)
         ap_obj.warmup()
         items = ap_obj.collect_listings(url, max_pages)
+        navigate_ok = ap_obj.last_navigate_ok
         ap_obj.close()
 
     q_esc = _html.escape(query)
-    if not items:
+    if not items and not navigate_ok:
+        # GST-72: страница не загрузилась (капча/сеть) — это НЕ "ничего не нашлось",
+        # нельзя вводить человека в заблуждение, что его запрос ничего не дал.
+        text = (f"🔎 <b>{q_esc}</b>\n⚠️ Не удалось открыть Avito (капча не решилась "
+                f"или сетевая ошибка) — поиск не выполнен. Попробуйте ещё раз через "
+                f"пару минут.")
+    elif not items:
         text = (f"🔎 <b>{q_esc}</b>\nНичего не нашлось (0 объявлений). "
-                f"Возможно, стоит уточнить запрос или проверить captcha_id/логи.")
+                f"Возможно, стоит уточнить запрос.")
     else:
         items.sort(key=lambda it: it["price"])
         prices = [it["price"] for it in items]
