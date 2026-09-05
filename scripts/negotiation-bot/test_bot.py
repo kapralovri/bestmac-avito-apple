@@ -144,6 +144,11 @@ check("отправка >1ч назад → 🔴", "🔴" in _st3)
 
 
 print("\n[10] /модель — GST-72 живой поиск по модели")
+botmod.MODELS_CONFIG_FILE = tmp / "models-config.json"  # фикстура, не реальный каталог
+botmod.MODELS_CONFIG_FILE.write_text(_json.dumps({"entries": [
+    {"family": "MacBook", "model_name": "MacBook Air 13 (2020, M1)",
+     "url": "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/test-m1"},
+]}), encoding="utf-8")
 bot2 = NegotiationBot(DummyTx(), state_path=tmp / "state2.json", queue_path=tmp / "queue2.json",
                       owner_chat_id=777, llm_call=fake_llm)
 acts = bot2.handle_update({"update_id": 90, "message": {"chat": {"id": 777}, "text": "/модель"}})
@@ -155,6 +160,16 @@ acts = bot2.handle_update({"update_id": 91, "message": {
     "chat": {"id": 777}, "text": "/модель MacBook Pro 14 M3 Pro 18/512"}})
 check("без GH_DISPATCH_TOKEN — понятная ошибка, не падает",
       any("GH_DISPATCH_TOKEN" in a.get("text", "") for a in find_send(acts)))
+check("свободный текст без точного совпадения — без ссылки на мониторинг",
+      not any("мониторить" in a.get("text", "") for a in find_send(acts)))
+
+print("[10b] /модель — точное совпадение с конфигурацией → ссылка на мониторинг")
+acts = bot2.handle_update({"update_id": 92, "message": {
+    "chat": {"id": 777}, "text": "/модель macbook air 13 2020 m1"}})
+sent = find_send(acts)
+check("два сообщения: ссылка на мониторинг + живой поиск", len(sent) == 2)
+check("есть точная ссылка на Avito", any("test-m1" in a.get("text", "") for a in sent))
+check("объяснено про расширение", any("BestMac Collector" in a.get("text", "") for a in sent))
 botmod.GH_DISPATCH_TOKEN = _prev_token
 
 print()
