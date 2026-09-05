@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import os
+import re
 import sys
 import json
 import time
@@ -82,6 +83,11 @@ OWNER_CHAT_ID = os.environ.get('OWNER_CHAT_ID', '').strip()
 GH_DISPATCH_TOKEN = os.environ.get('GH_DISPATCH_TOKEN', '').strip()
 GH_REPO = os.environ.get('GH_REPO', 'kapralovri/bestmac-avito-apple').strip()
 GH_MODEL_SEARCH_WORKFLOW = os.environ.get('GH_MODEL_SEARCH_WORKFLOW', 'avito-model-search.yml').strip()
+# Каталог точных моделей парсера (те же URL, что и в scripts/avito-parser/parser.py) —
+# позволяет /модель отличить ТОЧНОЕ совпадение с уже сконфигурированной моделью
+# (даём прямую ссылку на мониторинг через расширение) от свободного текста
+# (уходит в разовый живой поиск, как раньше).
+MODELS_CONFIG_FILE = Path(os.environ.get('MODELS_CONFIG_PATH', 'public/data/models-config.json'))
 
 
 def _fmt(n) -> str:
@@ -216,6 +222,49 @@ def _load_json(path: Path, default):
         except Exception:
             pass
     return default
+
+
+def _normalize_model_query(s: str) -> str:
+    """Приводит название модели к сравнимому виду: нижний регистр, без пунктуации,
+    схлопнутые пробелы. "MacBook Air 13 (2020, M1)" и "macbook air 13 2020 m1" —
+    после нормализации совпадают."""
+    s = s.lower()
+    s = re.sub(r"[(),/]", " ", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
+
+
+def find_configured_model(query: str):
+    """GST-72: ищет ТОЧНОЕ совпадение свободного текста с уже сконфигурированной
+    моделью парсера (models-config.json — та же точная модель+URL, что использует
+    scripts/avito-parser/parser.py). Возвращает {family, model_name, url} при
+    однозначном совпадении, иначе None (в т.ч. при неоднозначности — расплывчатый
+    запрос вроде "macbook air" матчит десяток моделей, это не "точное" указание).
+    """
+    cfg = _load_json(MODELS_CONFIG_FILE, {})
+    entries = cfg.get("entries") if isinstance(cfg, dict) else None
+    if not entries:
+        return None
+    nq = _normalize_model_query(query)
+    if not nq:
+        return None
+
+    exact, partial = [], []
+    for e in entries:
+        name = e.get("model_name") or ""
+        nn = _normalize_model_query(name)
+        if not nn:
+            continue
+        if nn == nq:
+            exact.append(e)
+        elif nq in nn or nn in nq:
+            partial.append(e)
+
+    if len(exact) == 1:
+        return exact[0]
+    if not exact and len(partial) == 1:
+        return partial[0]
+    return None  # 0 или неоднозначно — пусть решает свободный поиск
 
 
 def _watchlist_add(lead):
@@ -446,8 +495,24 @@ class NegotiationBot:
                 return [{"type": "send", "chat_id": chat_id,
                          "text": "Напиши модель после команды, например:\n"
                                  "<code>/модель MacBook Pro 14 M3 Pro 18/512</code>"}]
+            actions: List[dict] = []
+            # GST-72: точное совпадение с уже сконфигурированной моделью (та же,
+            # что и у ежедневного парсера) — сразу даём прямую ссылку на мониторинг.
+            # Открытие этой ссылки в браузере с расширением BestMac Collector
+            # включает непрерывный сбор новых объявлений (content.js уже matches
+            # именно эти категории Avito — новый код в расширении не нужен).
+            configured = find_configured_model(query)
+            if configured:
+                actions.append({"type": "send", "chat_id": chat_id,
+                                 "text": (f"📍 <b>{_esc(configured['model_name'])}</b> — точная модель "
+                                          "из конфигурации.\n"
+                                          f'🔗 <a href="{configured["url"]}">Открыть на Avito</a>\n\n'
+                                          "Откройте эту ссылку в браузере, где стоит расширение "
+                                          "BestMac Collector — оно начнёт непрерывно мониторить все "
+                                          "новые объявления по этой модели.")})
             ok, reply = self._trigger_model_search(query, chat_id)
-            return [{"type": "send", "chat_id": chat_id, "text": reply}]
+            actions.append({"type": "send", "chat_id": chat_id, "text": reply})
+            return actions
 
         if text.startswith("/help"):
             return [{"type": "send", "chat_id": chat_id,
