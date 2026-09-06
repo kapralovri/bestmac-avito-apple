@@ -115,6 +115,13 @@ def sync_stats(stats, raw_store, now=None,
                 if old and abs(modal - old) / old > max_dev:
                     changes.append(f"  ! {key}: {old}→{modal} ({src}) — отклонение >{int(max_dev*100)}%, пропуск")
                     continue
+                # GST-72: min/max тоже пересчитываем из ТЕХ ЖЕ prices, что и modal —
+                # иначе median_price обновляется, а min/max остаются от старой (стale)
+                # выборки парсера, и медиана может оказаться выше старого max_price
+                # (структурно невозможно для настоящей медианы, но именно так и
+                # получалось: imac 24 M4 16/256 — min=144000 max=158490 median=187390).
+                s['min_price'] = int(min(prices))
+                s['max_price'] = int(max(prices))
                 s['median_price'] = int(modal)
                 s['buyout_price'] = buyout
                 s['updated_at'] = stamp
