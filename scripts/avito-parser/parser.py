@@ -30,6 +30,8 @@ Usage:
   # результат уходит в Telegram) — так триггерится команда /модель бота.
   python parser.py --query "MacBook Pro 14 M3 Pro 18/512" --chat-id 123456789
 """
+from __future__ import annotations
+
 import argparse
 import json
 import logging
@@ -52,7 +54,7 @@ except ImportError:
     print("pip install playwright beautifulsoup4 lxml 2captcha-python && playwright install chromium")
     sys.exit(1)
 
-from common.config import VALID_RAM, VALID_SSD, MIN_PRICE, MAX_PRICE, JUNK_KEYWORDS
+from common.config import VALID_RAM, VALID_SSD, MIN_PRICE, MAX_PRICE, JUNK_KEYWORDS, NEW_SEALED_KEYWORDS
 from common.classifier import classify
 from common.canary import run_canary
 
@@ -498,6 +500,7 @@ class AvitoParser:
 
         groups: dict[tuple, list[int]] = {}
         skipped_junk = 0
+        skipped_new = 0
         unmatched = 0
 
         for it in listings:
@@ -506,6 +509,11 @@ class AvitoParser:
 
             if any(w in lower for w in JUNK_KEYWORDS):
                 skipped_junk += 1
+                continue
+            # GST-72: новые/запечатанные из магазинов искажают медиану б/у-рынка
+            # вверх (уже фильтровалось в scanner_v2.py, но не в основном парсере).
+            if any(w in lower for w in NEW_SEALED_KEYWORDS):
+                skipped_new += 1
                 continue
 
             cfg = classify(text)
@@ -520,7 +528,7 @@ class AvitoParser:
             groups.setdefault(full_key, []).append(it["price"])
             self._record_listing(entry["model"], proc, cfg.ram, cfg.ssd, it)  # GST-61
 
-        logger.info(f"  мусор={skipped_junk} не_в_таблице={unmatched}")
+        logger.info(f"  мусор={skipped_junk} новое/запечатанное={skipped_new} не_в_таблице={unmatched}")
         for (m, p, r, s), prices in groups.items():
             logger.info(f"  ✅ {r}/{s}: {len(prices)} цен")
         if not groups:
@@ -544,6 +552,7 @@ class AvitoParser:
         deep_count   = 0
         skipped_intel = 0
         skipped_junk = 0
+        skipped_new = 0
         skipped_nospec = 0
 
         for it in listings:
@@ -552,6 +561,11 @@ class AvitoParser:
 
             if any(w in lower for w in JUNK_KEYWORDS):
                 skipped_junk += 1
+                continue
+            # GST-72: новые/запечатанные из магазинов искажают медиану б/у-рынка
+            # вверх (уже фильтровалось в scanner_v2.py, но не в основном парсере).
+            if any(w in lower for w in NEW_SEALED_KEYWORDS):
+                skipped_new += 1
                 continue
 
             # Mac mini: только M-серия
@@ -595,7 +609,7 @@ class AvitoParser:
         logger.info(
             f"   📊 {len(listings)} объявл. | "
             f"deep={deep_count} | intel={skipped_intel} | junk={skipped_junk} | "
-            f"no-specs={skipped_nospec} | конфигов={len(groups)}"
+            f"новое={skipped_new} | no-specs={skipped_nospec} | конфигов={len(groups)}"
         )
         return groups
 

@@ -61,6 +61,18 @@ stats = [row(50000, updated="2026-01-01 10:00", override=True)]
 u, i, _ = sync_stats(stats, {K_AIR: msk8}, now=NOW)
 check("оверрайд не тронут", u == 0 and stats[0]["median_price"] == 50000)
 
+print("[1b] GST-72: min/max пересчитываются вместе с медианой (regression)")
+# Реальный прод-баг: старая строка min=144000 max=158490, свежая коллекторная
+# выборка модальная сильно выше старого max → median_price оказывался БОЛЬШЕ
+# max_price (структурно невозможно для настоящей медианы).
+stats = [row(150000, updated="2026-06-01 10:00")]  # старые min=140000 max=160000
+high_prices = entries([180000, 182000, 185000, 187000, 188000, 190000, 191000, 192000], msk=1)
+u, i, ch = sync_stats(stats, {K_AIR: high_prices}, now=NOW)
+check("обновилось (в пределах предохранителя)", u == 1)
+check("min_price <= median_price <= max_price после синка",
+      stats[0]["min_price"] <= stats[0]["median_price"] <= stats[0]["max_price"])
+check("max_price реально пересчитан из новой выборки", stats[0]["max_price"] >= 190000)
+
 print("\n[2] Выборки и пороги")
 # мало Москвы, мало России → пропуск
 stats = [row(100000, updated="2026-06-01 10:00")]
