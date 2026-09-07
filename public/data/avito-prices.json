@@ -1585,12 +1585,12 @@
       "processor": "Apple M2",
       "ram": 16,
       "ssd": 256,
-      "min_price": 54000,
-      "max_price": 60500,
-      "median_price": 55000,
-      "buyout_price": 44000,
+      "min_price": 53500,
+      "max_price": 79900,
+      "median_price": 56999,
+      "buyout_price": 45000,
       "samples_count": 12,
-      "updated_at": "2026-08-01 05:10",
+      "updated_at": "2026-09-07 05:10",
       "collector_synced": true
     },
     {
@@ -2978,6 +2978,20 @@
       "buyout_price": 177000,
       "samples_count": 6,
       "updated_at": "2026-09-04 18:44",
+      "collector_synced": true
+    },
+    {
+      "model_name": "MacBook Pro 16 M5 Max",
+      "family": "MacBook Pro",
+      "processor": "Apple M5",
+      "ram": 36,
+      "ssd": 2048,
+      "min_price": 280000,
+      "max_price": 363890,
+      "median_price": 326800,
+      "buyout_price": 261000,
+      "samples_count": 15,
+      "updated_at": "2026-09-07 05:10",
       "collector_synced": true
     }
   ]
