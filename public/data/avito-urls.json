@@ -1,6 +1,6 @@
 {
   "description": "Опции дропдаунов фронта. Автогенерируется парсером.",
-  "updated_at": "2026-09-04",
+  "updated_at": "2026-09-07",
   "entries": [
     {
       "family": "",
@@ -1640,6 +1640,14 @@
       "processor": "Apple M5",
       "ram": 32,
       "ssd": 1024,
+      "url": ""
+    },
+    {
+      "family": "MacBook Pro",
+      "model_name": "MacBook Pro 16 M5 Max",
+      "processor": "Apple M5",
+      "ram": 36,
+      "ssd": 2048,
       "url": ""
     },
     {
