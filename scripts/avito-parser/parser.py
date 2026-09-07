@@ -93,6 +93,16 @@ USER_AGENT        = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
 
 CAPTCHA_SOLVE_RETRIES = 3   # каждая попытка — СВЕЖИЙ challenge (токен GeeTest привязан ко времени/сессии)
 
+# GST-72: сколько НЕЗАВИСИМЫХ заходов (свежий браузер+прогрев, каждый со своими
+# CAPTCHA_SOLVE_RETRIES подпопытками) даём разовому /модель-запросу. Основной
+# парсер за один прогон делает navigate() десятки раз и почти всегда успевает
+# пройти капчу хоть раз; /модель — только один заход, а GeeTest не проходит
+# примерно в половине попыток даже на живом IP (не блок, а обычная статистика
+# антибота). Стоимость лишнего RuCaptcha-решения платится ТОЛЬКО при неудаче
+# первого захода — цена разумная за то, чтобы не отвечать человеку "не смог"
+# из-за одной неудачной серии подряд.
+MODEL_QUERY_RETRIES = 2
+
 # Последняя ошибка решения капчи за весь прогон (GST-72 доп.: видна в канарейке,
 # не только в логах CI) — напр. "ERROR_ZERO_BALANCE" при исчерпанном балансе RuCaptcha.
 LAST_CAPTCHA_ERROR: str | None = None
@@ -749,12 +759,19 @@ def run_model_query(query: str, max_pages: int, chat_id: str | None):
     url = f"https://www.avito.ru/rossiya?q={urllib.parse.quote(query)}"
     logger.info(f"🔎 Разовый поиск: «{query}» → {url}")
 
+    items: list[dict] = []
+    navigate_ok = True
     with sync_playwright() as pw:
-        ap_obj = AvitoParser(pw)
-        ap_obj.warmup()
-        items = ap_obj.collect_listings(url, max_pages)
-        navigate_ok = ap_obj.last_navigate_ok
-        ap_obj.close()
+        for attempt in range(1, MODEL_QUERY_RETRIES + 1):
+            ap_obj = AvitoParser(pw)
+            ap_obj.warmup()
+            items = ap_obj.collect_listings(url, max_pages)
+            navigate_ok = ap_obj.last_navigate_ok
+            ap_obj.close()
+            if items or navigate_ok:
+                break
+            logger.warning(f"🔁 Капча не пустила (заход {attempt}/{MODEL_QUERY_RETRIES}) — "
+                            f"свежий браузер, пробую ещё раз")
 
     q_esc = _html.escape(query)
     if not items and not navigate_ok:

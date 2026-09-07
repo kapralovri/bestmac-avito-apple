@@ -498,7 +498,7 @@ class NegotiationBot:
                 timeout=15,
             )
             if r.status_code == 204:
-                return True, f"🔍 Ищу «{query}» на Avito — пришлю сюда результат через 1–2 минуты."
+                return True, f"🔍 Ищу «{query}» на Avito — пришлю сюда результат через 1–3 минуты."
             return False, f"⚠️ GitHub Actions отклонил запуск (HTTP {r.status_code}): {r.text[:200]}"
         except Exception as e:  # noqa: BLE001 — сеть/таймаут не должны ронять бота
             return False, f"⚠️ Не удалось запустить поиск: {e}"
