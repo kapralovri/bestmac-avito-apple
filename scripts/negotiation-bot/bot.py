@@ -400,29 +400,15 @@ class NegotiationBot:
             llm_call=self.llm_call,
         )
 
-    def _lead_card(self, lead) -> str:
-        mot = lead.get("motivation_label", "")
-        sig = lead.get("motivation_signals", [])
-        sig_line = ("\n🧭 " + "; ".join(sig[:4])) if sig else ""
-        src = lead.get("source")
-        link_label = "Открыть в Telegram" if src == "tg" else "Открыть на Avito"
-        header = {
-            "stale": "🕰 <b>ЗАЛЕЖАВШИЙСЯ ПРОДАВЕЦ</b> (мотивирован на торг)",
-            "tg": "📲 <b>ЛИД ИЗ TELEGRAM-ЧАТА</b>",
-            "watch": "🔔 <b>ОТСЛЕЖИВАЕМЫЙ ЛОТ ВЕРНУЛСЯ</b>",
-        }.get(src, "🧲 <b>Лид на торг</b>")
-        return (
-            f"{header} {mot}\n"
-            f"💻 {lead['title']}\n"
-            f"💰 Цена продавца: {_fmt(lead['asking'])} ₽\n"
-            f"🎯 Твоя цель: {_fmt(lead['target'])} ₽ • 🧱 потолок: {_fmt(lead['walk_away'])} ₽"
-            f"{sig_line}\n"
-            f"🔗 <a href=\"{lead.get('url','')}\">{link_label}</a>"
-        )
-
     # ── приём новых лидов из очереди ─────────────────────────────────────────
     def pull_new_leads(self) -> List[dict]:
-        """Читает очередь, постит лиды, которых ещё не показывали. Возвращает действия."""
+        """Читает очередь, помечает лиды показанными. Возвращает действия.
+
+        GST-72: карточка «Лид на торг» (+ кнопки Веду торг/Слежу/Не интересно)
+        отключена по запросу — не приносила пользы. Очередь по-прежнему
+        читается и трекается (conversations/posted_leads), чтобы не потерять
+        данные и не сломать остальной негоциатор-флоу, если понадобится
+        вернуть карточку позже — просто не шлём её в Telegram."""
         actions = []
         owner = self.state.get("owner_chat_id")
         if not owner:
@@ -434,11 +420,6 @@ class NegotiationBot:
             lid = lead.get("id")
             if not lid or lid in posted:
                 continue
-            actions.append({"type": "send", "chat_id": owner,
-                            "text": self._lead_card(lead),
-                            "buttons": [[("▶️ Веду торг", f"lead:{lid}:start")],
-                                        [("⭐ Слежу", f"lead:{lid}:watch"),
-                                         ("👎 Не интересно", f"lead:{lid}:skip")]]})
             # сохраняем лот в conversations, чтобы потом достать по id
             self.state["conversations"][lid] = {
                 "lead": lead, "history": [], "stage": "queued",
