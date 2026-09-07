@@ -1,1256 +1,256 @@
 {
-  "generated_at": "2026-09-07 05:55",
-  "count": 125,
+  "generated_at": "2026-09-07 13:46",
+  "count": 25,
   "listings": [
     {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M2 Pro",
-      "ram": 32,
-      "ssd": 1024,
-      "price": 145000,
-      "url": "https://www.avito.ru/sergiev_posad/noutbuki/macbook_pro_14_m2_max_32gb_1tb_8402847193",
-      "title": "Macbook pro 14 m2 max 32gb 1tb в Сергиевом Посаде",
-      "seen_at": "2026-09-07 05:55"
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 58000,
+      "url": "https://www.avito.ru/kommunarka/nastolnye_kompyutery/imac_24_m1_8gb_256gb_8-core_gpu_siniy_8353021816",
+      "title": "iMac 24 m1 8gb / 256gb 8-core GPU, синий в Коммунарке",
+      "seen_at": "2026-09-07 13:46"
     },
     {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M2 Pro",
-      "ram": 32,
-      "ssd": 1024,
-      "price": 145000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m2_max_32gb_1tb_8335567863",
-      "title": "Macbook pro 14 m2 max 32gb 1tb в Москве",
-      "seen_at": "2026-09-07 05:55"
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 65000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24-inch_m1_2021_8256_goluboy_4672165137",
+      "title": "iMac 24-inch, M1, 2021, 8/256 (голубой) в Москве",
+      "seen_at": "2026-09-07 13:46"
     },
     {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M2 Pro",
-      "ram": 32,
-      "ssd": 1024,
-      "price": 160000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m2_max_32_gb_1_tb_space_gray_8277560769",
-      "title": "MacBook Pro 14\" M2 Max / 32 гб / 1 тб / Space Gray в Москве",
-      "seen_at": "2026-09-07 05:55"
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 68999,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_m1_2021_gold_8256_8273039778",
+      "title": "iMac 24\" m1 2021 gold 8/256 в Москве",
+      "seen_at": "2026-09-07 13:46"
     },
     {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 69999,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m1_8gb_256_ssd_mgpk3_8219938806",
+      "title": "Apple iMac 24 m1 8gb 256 ssd mgpk3 в Москве",
+      "seen_at": "2026-09-07 13:46"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 72000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m1_2021_8gb_256gb_8355720763",
+      "title": "Apple iMac 24 m1 2021 8gb 256gb в Москве",
+      "seen_at": "2026-09-07 13:46"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 78000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m1_a2439_8261549414",
+      "title": "Apple iMac 24 m1 a2439 в Москве",
+      "seen_at": "2026-09-07 13:46"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 80750,
+      "url": "https://www.avito.ru/korolev/nastolnye_kompyutery/monoblok_apple_24_2021_7425361205",
+      "title": "Моноблок Apple 24 (2021) в Королеве",
+      "seen_at": "2026-09-07 13:46"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 85000,
+      "url": "https://www.avito.ru/lyubertsy/nastolnye_kompyutery/apple_imac_24_m1_kuplen_v_2025_8066026815",
+      "title": "Apple iMac 24 m1 (куплен в 2025) в Люберцах",
+      "seen_at": "2026-09-07 13:46"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 85500,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_m1_8256gb_touch_id_4_porta_8171461245",
+      "title": "iMac 24 M1, 8/256gb (touch id, 4 порта) в Москве",
+      "seen_at": "2026-09-07 13:46"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 85500,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/monoblok_apple_imac_24_purple_m1_8gb_ram_256gb_ssd_8024236758",
+      "title": "Моноблок Apple iMac 24 Purple m1 8GB Ram 256GB SSD в Москве",
+      "seen_at": "2026-09-07 13:46"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 90000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_m1_displey_retina_45_k_256gb_2687227090",
+      "title": "iMac 24 m1 дисплей Retina 4,5 K 256gb в Москве",
+      "seen_at": "2026-09-07 13:46"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 100000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_45k_retina_2021_m1_256_gb_ssd_green_7667560775",
+      "title": "iMac 24 4,5K Retina 2021 M1 256 Gb SSD, Green в Москве",
+      "seen_at": "2026-09-07 13:46"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 100000,
+      "url": "https://www.avito.ru/moskovskaya_oblast_krasnoznamensk/nastolnye_kompyutery/apple_imac_24_m1_8gb_256gb_2023_7835299529",
+      "title": "Apple iMac 24 m1 8gb 256gb (2023) в Краснознаменске",
+      "seen_at": "2026-09-07 13:46"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 512,
-      "price": 47000,
-      "url": "https://www.avito.ru/rostov-na-donu/noutbuki/macbook_pro_14_m3_8_512_8220312783",
-      "title": "Macbook pro 14 m3 8 512 в Ростове-на-Дону",
-      "seen_at": "2026-09-07 05:55"
+      "price": 75000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_m1_8512_rostest_kak_novyy_8244971850",
+      "title": "iMac 24 M1 8/512 Ростест (как новый) в Москве",
+      "seen_at": "2026-09-07 13:46"
     },
     {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 512,
-      "price": 60000,
-      "url": "https://www.avito.ru/stavropol/noutbuki/macbook_pro_14_m3_8_512_8240017127",
-      "title": "Macbook pro 14 m3 8 512 в Ставрополе",
-      "seen_at": "2026-09-07 05:55"
+      "price": 75000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_m1_8512gb_7806376181",
+      "title": "Apple iMac M1 8/512gb в Москве",
+      "seen_at": "2026-09-07 13:46"
     },
     {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 512,
-      "price": 61000,
-      "url": "https://www.avito.ru/sankt-peterburg/noutbuki/macbook_pro_14_m3_8_512_8176565988",
-      "title": "Macbook pro 14 m3 8 512 в Санкт-Петербурге",
-      "seen_at": "2026-09-07 05:55"
+      "price": 76500,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m1_2021_8512_gb_siniy_8352734486",
+      "title": "Apple iMac 24 M1 2021, 8/512 гб, синий в Москве",
+      "seen_at": "2026-09-07 13:46"
     },
     {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 512,
-      "price": 70990,
-      "url": "https://www.avito.ru/sankt-peterburg/noutbuki/macbook_pro_14_2023_m3_8512gb_silver_8046605227",
-      "title": "MacBook Pro 14 2023, M3, 8/512GB, Silver в Санкт-Петербурге",
-      "seen_at": "2026-09-07 05:55"
+      "price": 80000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m1_8gb512gb_8008733217",
+      "title": "Apple iMac 24 m1 8gb/512gb в Москве",
+      "seen_at": "2026-09-07 13:46"
     },
     {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 512,
-      "price": 73150,
-      "url": "https://www.avito.ru/sankt-peterburg/noutbuki/macbook_pro_14_m3_8512_88_8241103350",
-      "title": "Macbook Pro 14\" M3 8/512 88% в Санкт-Петербурге",
-      "seen_at": "2026-09-07 05:55"
+      "price": 84630,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m1_8gb_512gb_8329712521",
+      "title": "Apple iMac 24 m1 8gb 512gb в Москве",
+      "seen_at": "2026-09-07 13:46"
     },
     {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 512,
-      "price": 77990,
-      "url": "https://www.avito.ru/anapa/noutbuki/macbook_pro_14_m3_8512gb_8244842009",
-      "title": "Macbook Pro 14 M3 8/512gb в Анапе",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 512,
-      "price": 79999,
-      "url": "https://www.avito.ru/groznyy/noutbuki/macbook_pro_14_m3_8_512_8331392388",
-      "title": "Macbook pro 14 m3 8 512 в Грозном",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 512,
-      "price": 83800,
-      "url": "https://www.avito.ru/sevastopol/noutbuki/macbook_pro_14_2024_m3_8gb_512gb_idealnoe_bu_8382993012",
-      "title": "MacBook Pro 14\" 2024 M3 8Gb 512GB Идеальное бу в Севастополе",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 512,
-      "price": 83999,
-      "url": "https://www.avito.ru/kirovskaya_oblast_kirov/noutbuki/macbook_pro_14_m38512gb_97akb_8294517055",
-      "title": "MacBook Pro 14 M3/8/512Gb 97акб в Кирове",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 512,
-      "price": 84400,
-      "url": "https://www.avito.ru/vladivostok/noutbuki/macbook_pro_14_m3_8512_8320935963",
-      "title": "Macbook Pro 14 M3 8/512 в Владивостоке",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 512,
       "price": 85000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m3_8_512_8272995654",
-      "title": "Macbook Pro 14 M3 8 512 в Москве",
-      "seen_at": "2026-09-07 05:55"
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_m1_8gb_512gb_8293881722",
+      "title": "iMac 24 M1 8Gb 512Gb в Москве",
+      "seen_at": "2026-09-07 13:46"
     },
     {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 512,
-      "price": 85500,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m3_8_512_15_tsiklov_zaryada_8188653498",
-      "title": "Macbook pro 14 M3 8 512 15 циклов заряда в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 512,
       "price": 87000,
-      "url": "https://www.avito.ru/nizhniy_tagil/noutbuki/apple_macbook_pro_14.2_m3_8512_7363214182",
-      "title": "Apple macbook pro 14.2 m3 8/512 в Нижнем Тагиле",
-      "seen_at": "2026-09-07 05:55"
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/kompyuter_apple_imac_24_2021_4939674763",
+      "title": "Компьютер Apple iMac 24 (2021) в Москве",
+      "seen_at": "2026-09-07 13:46"
     },
     {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 512,
-      "price": 87990,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m3_8512_silver_8247947698",
-      "title": "MacBook Pro 14 M3 8/512 Silver в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 512,
-      "price": 89990,
-      "url": "https://www.avito.ru/sankt-peterburg/noutbuki/macbook_pro_14_m3_8512gb_ideal_8294538650",
-      "title": "Macbook Pro 14 M3 8/512Gb Идеал в Санкт-Петербурге",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 512,
-      "price": 90000,
-      "url": "https://www.avito.ru/belgorod/noutbuki/macbook_pro_14_m3_8_512_7928057083",
-      "title": "Macbook pro 14 m3 8 512 в Белгороде",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 512,
-      "price": 90000,
-      "url": "https://www.avito.ru/vologda/noutbuki/macbook_pro_14_2023_mtl73_m3_8gb512gb_gray_8006090067",
-      "title": "MacBook Pro 14 2023 (MTL73, M3, 8GB/512GB) Gray в Вологде",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 512,
-      "price": 94990,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_20238_512_gb_m3_4582728129",
-      "title": "MacBook Pro 14 (2023),8/ 512 гб, М3 в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 512,
-      "price": 98999,
-      "url": "https://www.avito.ru/krasnodar/noutbuki/macbook_pro_14_m3_8512gb_2_tsikla_zaryada_8363208214",
-      "title": "MacBook Pro 14 M3 8/512gb 2 цикла заряда в Краснодаре",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 512,
-      "price": 99000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m3_8_512_7988145888",
-      "title": "Macbook pro 14 m3 8 512 в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 512,
-      "price": 100000,
-      "url": "https://www.avito.ru/irkutskaya_oblast_homutovo/noutbuki/prodam_apple_macbook_pro_14_m38512gb_8261594870",
-      "title": "Продам Apple MacBook Pro 14 M3/8/512Gb в Хомутово",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 512,
-      "price": 109990,
-      "url": "https://www.avito.ru/ryazan/noutbuki/macbook_pro_14_m3_8512gb_7320398655",
-      "title": "MacBook Pro 14' M3 8/512GB в Рязани",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 1024,
-      "price": 90990,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m3_8gb1tb_8417105322",
-      "title": "MacBook Pro 14 M3 8gb/1tb в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 16,
-      "ssd": 512,
-      "price": 40000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m2_16_512_8215233757",
-      "title": "Macbook pro 14 m2 16 512 в Москве",
-      "seen_at": "2026-09-07 05:55"
+      "ssd": 256,
+      "price": 73000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m116256_8385625772",
+      "title": "Apple iMac 24 (m1/16/256) в Москве",
+      "seen_at": "2026-09-07 13:46"
     },
     {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 16,
-      "ssd": 512,
-      "price": 75000,
-      "url": "https://www.avito.ru/voronezh/noutbuki/macbook_pro_14_m2_16_512_8121939498",
-      "title": "Macbook pro 14 m2 16 512 в Воронеже",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 512,
-      "price": 82000,
-      "url": "https://www.avito.ru/kostroma/noutbuki/apple_macbook_pro_14_m2_pro_16_512_8109881815",
-      "title": "Apple MacBook Pro 14 / M2 Pro / 16 / 512 в Костроме",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 512,
-      "price": 85000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m2_16_512_8383168943",
-      "title": "Macbook pro 14 m2 16 512 в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 512,
-      "price": 92900,
-      "url": "https://www.avito.ru/orenburg/noutbuki/macbook_pro_14_m2_16512gb_8277718099",
-      "title": "MacBook Pro 14 м2 16/512Гб в Оренбурге",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 512,
-      "price": 99999,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m2pro_16512_v_korobke_garantiya_8417740847",
-      "title": "MacBook Pro 14 M2Pro 16/512 в коробке, гарантия в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 512,
-      "price": 100000,
-      "url": "https://www.avito.ru/kirovskaya_oblast_kirov/noutbuki/macbook_pro_14_m2_16_512_8183007136",
-      "title": "Macbook pro 14 m2 16 512 в Кирове",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 512,
-      "price": 102000,
-      "url": "https://www.avito.ru/krasnodar/noutbuki/macbook_pro_14_m2_16_512_8417209784",
-      "title": "Macbook pro 14 m2 16 512 в Краснодаре",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 512,
-      "price": 105425,
-      "url": "https://www.avito.ru/sankt-peterburg/noutbuki/macbook_pro_14_m2_pro_16512_gb_2023_8385773049",
-      "title": "MacBook Pro 14 M2 Pro 16/512 гб 2023 в Санкт-Петербурге",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 512,
-      "price": 109999,
-      "url": "https://www.avito.ru/moskva/noutbuki/kak_novyy_macbook_pro_14_2023_m3_16512_garantiya_8272875679",
-      "title": "Как новый MacBook Pro 14 2023 M3 16/512, гарантия в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 512,
-      "price": 110000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m2_pro_16512_8269319570",
-      "title": "Macbook Pro 14 M2 pro 16/512 в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 512,
-      "price": 110000,
-      "url": "https://www.avito.ru/levashi/noutbuki/macbook_pro_14_2023_16_512_gb_m2_pro_7752818056",
-      "title": "MacBook Pro 14 (2023), 16 512 гб, M2 Pro в Левашах",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 512,
-      "price": 120000,
-      "url": "https://www.avito.ru/moskovskaya_oblast_krasnogorsk/noutbuki/macbook_pro_14_m2_pro_16_512_a2779_8355809937",
-      "title": "MacBook Pro 14 M2 Pro 16 512 A2779 в Красногорске",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 512,
-      "price": 130000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m3_16_512_8272598912",
-      "title": "Macbook pro 14 m3 16 512 в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 1024,
-      "price": 99900,
-      "url": "https://www.avito.ru/velikiy_novgorod/noutbuki/moschnyy_macbook_pro_14_m2_pro_16_1_tb_8184324258",
-      "title": "Мощный MacBook Pro 14 M2 Pro / 16 / 1 tb в Великом Новгороде",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 1024,
-      "price": 129990,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_14_pro_m2_pro_16gb_1tb_7890571009",
-      "title": "MacBook 14 pro M2 pro 16gb 1tb в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 1024,
-      "price": 144990,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m2_pro_2023_161tb_7946364674",
-      "title": "MacBook Pro 14 M2 Pro (2023) 16/1TB в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 16,
-      "ssd": 1024,
-      "price": 220000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m2_pro_16_gb_1_tb_seryy_kosmos_8334920638",
-      "title": "Macbook Pro 14 (M2 Pro 16 гб, 1 тб), серый космос в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Max",
-      "ram": 36,
-      "ssd": 1024,
-      "price": 180000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_2023_m3_max_36gb1tb_space_black_8260762866",
-      "title": "MacBook Pro 14 2023 M3 Max 36Gb/1Tb Space Black в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Max",
-      "ram": 36,
-      "ssd": 1024,
-      "price": 190000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m3_max_361tb_99_ideal_8357581246",
-      "title": "MacBook Pro 14 M3 Max 36/1TB 99% идеал в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Max",
-      "ram": 36,
-      "ssd": 1024,
-      "price": 190000,
-      "url": "https://www.avito.ru/moskva/noutbuki/makbuk_pro_macbook_pro_14_m3_max_36gb_1tb_chernyy_8375581450",
-      "title": "Макбук про MacBook Pro 14 M3 Max 36gb 1TB черный в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Max",
-      "ram": 36,
-      "ssd": 1024,
-      "price": 195000,
-      "url": "https://www.avito.ru/zarechye/noutbuki/macbook_pro_14_m3_max_36gb_1tb_space_black_8385663607",
-      "title": "MacBook Pro 14, M3 Max, 36Gb, 1Tb Space black в Заречье",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Max",
-      "ram": 36,
-      "ssd": 1024,
-      "price": 197000,
-      "url": "https://www.avito.ru/moskva/noutbuki/makbuk_pro_macbook_pro_14_m3_max_36gb_1tb_chernyy_8200496913",
-      "title": "Макбук про MacBook Pro 14 M3 Max 36gb 1TB черный в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Max",
-      "ram": 36,
-      "ssd": 1024,
-      "price": 199000,
-      "url": "https://www.avito.ru/moskva/noutbuki/makbuk_pro_macbook_pro_14_m3_max_36gb_1tb_chernyy_8384736948",
-      "title": "Макбук про MacBook Pro 14 M3 Max 36gb 1TB черный в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Pro",
-      "ram": 18,
-      "ssd": 512,
-      "price": 110000,
-      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_pro_14_m3_pro_18512_obmen_8150858075",
-      "title": "Apple macbook pro 14 m3 pro 18/512 обмен в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Pro",
-      "ram": 18,
-      "ssd": 512,
-      "price": 120000,
-      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_pro_14_m3_pro_18512gb_space_gray_8415252627",
-      "title": "Apple MacBook Pro 14\" M3 Pro 18/512Gb Space Gray в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Pro",
-      "ram": 18,
-      "ssd": 512,
-      "price": 124000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_m3_pro_18512_33_tsikla100_8362498205",
-      "title": "MacBook Pro m3 pro 18/512 (33 цикла,100%) в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Pro",
-      "ram": 18,
-      "ssd": 512,
-      "price": 125000,
-      "url": "https://www.avito.ru/balashiha/noutbuki/macbook_pro_m3pro_14_18512_8110119200",
-      "title": "Macbook pro m3pro 14 18/512 в Балашихе",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Pro",
-      "ram": 18,
-      "ssd": 512,
-      "price": 125000,
-      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_pro_14_mrx63_m3_pro_18512gb_silver_8223100260",
-      "title": "Apple Macbook Pro 14 MRX63 M3 Pro 18/512Gb Silver в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Pro",
-      "ram": 18,
-      "ssd": 512,
-      "price": 129000,
-      "url": "https://www.avito.ru/moskva/noutbuki/makbuk_pro_macbook_pro_14_m3_pro_18_512_chernyy_8342768719",
-      "title": "Макбук про Macbook pro 14 M3 PRO 18 512 черный в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Pro",
-      "ram": 18,
-      "ssd": 512,
-      "price": 130000,
-      "url": "https://www.avito.ru/moskva/noutbuki/noutbuk_apple_macbook_pro_14_m3_18gb_512gb_8331370969",
-      "title": "Ноутбук Apple MacBook Pro 14\" M3 18GB, 512GB в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Pro",
-      "ram": 18,
-      "ssd": 512,
-      "price": 135000,
-      "url": "https://www.avito.ru/himki/noutbuki/macbook_pro_14_m3_pro_18512_8384231516",
-      "title": "Macbook Pro 14 M3 Pro 18/512 в Химках",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Pro",
-      "ram": 18,
-      "ssd": 512,
-      "price": 139990,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m3_pro_18512gb_60_tsiklov_8260221026",
-      "title": "MacBook Pro 14 m3 Pro 18/512Gb (60 циклов) в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Pro",
-      "ram": 18,
-      "ssd": 512,
-      "price": 140000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m3_pro18_gb512_gb_space_black_8099284073",
-      "title": "MacBook Pro 14 M3 Pro,18 гб,512 гб, Space Black в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Pro",
-      "ram": 18,
-      "ssd": 1024,
-      "price": 110000,
-      "url": "https://www.avito.ru/pskov/noutbuki/macbook_pro_14_m3_18gb_1tb_12cpu_18gpu_8309110305",
-      "title": "Macbook Pro 14 M3 18GB 1TB 12CPU 18GPU в Пскове",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Pro",
-      "ram": 18,
-      "ssd": 1024,
-      "price": 130000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m3pro_18gb_1tb_12-_cpu_18-gpu_7827400797",
-      "title": "Macbook pro 14 m3pro 18gb, 1tb, 12- CPU, 18-GPU в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Pro",
-      "ram": 18,
-      "ssd": 1024,
-      "price": 135000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m3_pro_181tb_18c_gpu_silver_8220261754",
-      "title": "MacBook Pro 14 M3 Pro 18/1TB 18c GPU Silver в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Pro",
-      "ram": 18,
-      "ssd": 1024,
-      "price": 140000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m3_pro_1tb_ssd_18gb_polnyy_komplekt_8355780310",
-      "title": "MacBook Pro 14 m3 pro 1Tb SSD 18Gb полный комплект в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2026)",
-      "processor": "Apple M5 Pro",
-      "ram": 24,
-      "ssd": 1024,
-      "price": 169990,
-      "url": "https://www.avito.ru/penza/noutbuki/macbook_pro_14_m5_24gb1tb_8415520563",
-      "title": "Macbook pro 14 m5 24Gb/1Tb в Пензе",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2026)",
-      "processor": "Apple M5 Pro",
-      "ram": 24,
-      "ssd": 1024,
-      "price": 175000,
-      "url": "https://www.avito.ru/ufa/noutbuki/macbook_pro_14_m5_pro_24gb1tb_silver_8298880358",
-      "title": "MacBook Pro 14, M5 Pro, 24GB/1TB, Silver в Уфе",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2026)",
-      "processor": "Apple M5 Pro",
-      "ram": 24,
-      "ssd": 1024,
-      "price": 191990,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m5_pro_24gb_1tb_8417192124",
-      "title": "MacBook Pro 14 M5 Pro 24gb 1tb в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2026)",
-      "processor": "Apple M5 Pro",
-      "ram": 24,
-      "ssd": 1024,
-      "price": 198000,
-      "url": "https://www.avito.ru/kazan/noutbuki/apple_macbook_14_m5_pro_15c16g_24gb_1tb_8236245981",
-      "title": "Apple MacBook 14 M5 pro 15c/16g 24gb 1tb в Казани",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2026)",
-      "processor": "Apple M5 Pro",
-      "ram": 24,
-      "ssd": 1024,
-      "price": 199900,
-      "url": "https://www.avito.ru/mahachkala/noutbuki/macbook_pro_14_m5pro_24gb_1tb_silver_8352004548",
-      "title": "Macbook pro 14 m5pro 24gb 1tb silver в Махачкале",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 512,
-      "price": 84000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_pro_32gb_512gb_2021_8317668616",
-      "title": "MacBook Pro 16 M1 Pro 32GB / 512GB, 2021 в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 512,
-      "price": 95400,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_pro_32512gb_8289120419",
-      "title": "MacBook Pro 16 M1 Pro 32/512GB в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 512,
-      "price": 95900,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_32_512_moschnyy_8257771052",
-      "title": "Macbook Pro 16 M1 32 512 Мощный в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 512,
-      "price": 95900,
-      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_pro_16_m1_pro_32512gb_8289597108",
-      "title": "Apple MacBook Pro 16 M1 Pro 32/512gb в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 512,
-      "price": 96900,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_pro_32gb512gb_2021_8289103268",
-      "title": "MacBook Pro 16 M1 Pro 32гб/512гб 2021 в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 512,
-      "price": 97500,
-      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_pro_16_m1_pro_32_512_8259035824",
-      "title": "Apple MacBook Pro 16 M1 Pro 32 512 в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 512,
-      "price": 97900,
-      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_pro_16_m1_pro_32512gb_8289835483",
-      "title": "Apple MacBook Pro 16 M1 Pro 32/512gb в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 512,
-      "price": 117900,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_max_32gb_512gb_7329557719",
-      "title": "Macbook Pro 16 m1 max 32gb 512gb в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 512,
-      "price": 140000,
-      "url": "https://www.avito.ru/mosrentgen/noutbuki/macbook_pro_16_m1_max_32gb_ram_512gb_ssd_8254690643",
-      "title": "Macbook pro 16 m1 max 32gb ram 512gb ssd в Мосрентген",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 1024,
-      "price": 103000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_32gb_1tb_442ts_8384411196",
-      "title": "MacBook Pro 16 m1 32gb 1tb 442ц в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 1024,
-      "price": 105000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_pro_32gb_1tb_224ts_8384639259",
-      "title": "Macbook Pro 16 m1 pro 32gb 1tb 224ц в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 1024,
-      "price": 109000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_2021_m1_max_32gb1tb_8072286357",
-      "title": "Macbook pro 16 2021 m1 max 32gb/1tb в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 1024,
-      "price": 113000,
-      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_pro_16_m1_max_321tb_32c_8323210787",
-      "title": "Apple macbook pro 16 M1 Max 32/1Tb 32C в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 1024,
-      "price": 114000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_max_32_gb_1_tb_8273908714",
-      "title": "MacBook Pro 16” M1 Max / 32 гб / 1 тб в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 1024,
-      "price": 114999,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_max_32_gb_1_tb_ssd_8253728236",
-      "title": "MacBook Pro 16 M1 Max / 32 GB / 1 TB SSD в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 1024,
-      "price": 115000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_max_32gb_1tb_8173158529",
-      "title": "Macbook Pro 16 M1 Max 32gb 1tb в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 1024,
-      "price": 120000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_32gb_1tb_8317746774",
-      "title": "Macbook pro 16 m1 32gb 1tb в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 1024,
-      "price": 120000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_2021_m1_max_32gb_1tb_32c_8263567528",
-      "title": "MacBook Pro 16 2021 M1 Max 32Gb 1Tb 32C в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 1024,
-      "price": 130000,
-      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_pro_16_m1_32gb_1tb_8273148587",
-      "title": "Apple macbook pro 16 M1 32gb 1tb в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 1024,
-      "price": 130000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_2021_m1_max_32gb1tb_225_tsiklov_8342766781",
-      "title": "MacBook Pro 16 2021 M1 Max 32Gb/1Tb (225 циклов) в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 32,
-      "ssd": 1024,
-      "price": 130000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_max_32gb_1tb_8339631194",
-      "title": "MacBook Pro 16 M1 Max 32Gb 1Tb в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 64,
-      "ssd": 1024,
-      "price": 142000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_2021_m1_max_641_tb_8277564340",
-      "title": "MacBook Pro 16 2021 M1 Max 64/1 Tb в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 64,
-      "ssd": 1024,
-      "price": 144000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_2021_m1_max_64gb_1tb_8295845018",
-      "title": "MacBook Pro 16 2021 M1 Max 64Gb 1Tb в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 64,
-      "ssd": 1024,
-      "price": 150000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_2021_m1_max_64gb_1tb_88_akb_8295608925",
-      "title": "Macbook Pro 16 2021 M1 Max 64Gb 1Tb 88% акб в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 64,
-      "ssd": 1024,
-      "price": 155000,
-      "url": "https://www.avito.ru/kotelniki/noutbuki/macbook_pro_16_m1_max_64_gb_1_tb_seryy_8001970024",
-      "title": "Macbook pro 16 M1 Max / 64 гб / 1 тб серый в Котельниках",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 64,
-      "ssd": 1024,
-      "price": 160000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_max_64gb_1tb_8227724893",
-      "title": "Macbook Pro 16 M1 Max 64GB 1TB в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Max",
-      "ram": 64,
-      "ssd": 1024,
-      "price": 160000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_2021_m1_max_64gb_1tb_94_akb_8295318135",
-      "title": "MacBook Pro 16 2021 M1 Max 64Gb 1Tb 94% акб в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 512,
-      "price": 65000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_16_512_7967971206",
-      "title": "Macbook pro 16 m1 16 512 в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 512,
-      "price": 75000,
-      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_pro_16_m1_16gb_512gb_8199608548",
-      "title": "Apple macbook pro 16 m1 16gb 512gb в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 512,
-      "price": 76022,
-      "url": "https://www.avito.ru/istra/noutbuki/apple_macbook_pro_16_m1_16_gb_space_gray_512gb_8163808187",
-      "title": "Apple macbook Pro 16 M1 16 gb space Gray 512gb в Истре",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 512,
+      "ssd": 256,
       "price": 80000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_pro_16512_8277721996",
-      "title": "Macbook pro 16 m1 pro 16/512 в Москве",
-      "seen_at": "2026-09-07 05:55"
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/monobloki_imac_24_m1_2021_7864523801",
+      "title": "Моноблоки iMac 24 M1 2021 в Москве",
+      "seen_at": "2026-09-07 13:46"
     },
     {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 16,
-      "ssd": 512,
+      "ssd": 256,
+      "price": 83000,
+      "url": "https://www.avito.ru/sergiev_posad/nastolnye_kompyutery/apple_imac_24_m1_16256_gb_8285378943",
+      "title": "Apple iMac 24 M1 16/256 Гб в Сергиевом Посаде",
+      "seen_at": "2026-09-07 13:46"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
       "price": 85000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_pro_16_512_7976393989",
-      "title": "Macbook pro 16 m1 pro 16 512 в Москве",
-      "seen_at": "2026-09-07 05:55"
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/monoblok_apple_imac_24_m116256_8103642841",
+      "title": "Моноблок apple iMac 24 m1/16/256 в Москве",
+      "seen_at": "2026-09-07 13:46"
     },
     {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 16,
-      "ssd": 512,
-      "price": 87900,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_16512_2021goda_8354245653",
-      "title": "Macbook pro 16 m1 16/512 2021года в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 512,
-      "price": 89990,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1pro_16_512_8200809409",
-      "title": "Macbook Pro 16 M1Pro 16 512 в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 512,
-      "price": 89990,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_16_512_8006508384",
-      "title": "Macbook pro 16 M1 16 512 в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 512,
-      "price": 89999,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_2021_m1_pro_16512_ssd_na_garantii_8375521112",
-      "title": "Macbook Pro 16 2021 M1 Pro 16/512 SSD, на гарантии в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 512,
-      "price": 90000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_pro_16512_space_gray_rst_8384333303",
-      "title": "MacBook Pro 16 M1 Pro 16/512 Space Gray рст в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 512,
-      "price": 90000,
-      "url": "https://www.avito.ru/moskovskaya_oblast_krasnogorsk/noutbuki/macbook_pro_m1_16_512_7725217364",
-      "title": "Macbook pro m1 16 512 в Красногорске",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 512,
-      "price": 94990,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_16512gb_novyy_8375693822",
-      "title": "Macbook Pro 16 m1 16/512gb новый в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 512,
-      "price": 95000,
-      "url": "https://www.avito.ru/moskovskaya_oblast_krasnogorsk/noutbuki/apple_macbook_pro_16_2021_m1_pro_79_tsiklov_16512_8375834789",
-      "title": "Apple macbook pro 16 2021 m1 pro 79 циклов 16/512 в Красногорске",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 512,
-      "price": 95000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_pro_16_512_8072668165",
-      "title": "Macbook pro 16 m1 pro 16 /512 в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 512,
+      "ssd": 256,
       "price": 100000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_pro_16_512_7640749560",
-      "title": "Macbook pro 16 m1 pro 16 512 в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 512,
-      "price": 119900,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_15_m4_16gb_512gb_kak_novyy_8385475235",
-      "title": "MacBook Air 15 M4 16gb 512gb как Новый в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 1024,
-      "price": 40000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_16gb_1tb_7201223807",
-      "title": "Macbook pro 16 m1 16gb 1tb в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 1024,
-      "price": 79000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_16gb_1tb_8353670868",
-      "title": "Macbook Pro 16 M1 16Gb 1Tb в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 1024,
-      "price": 79990,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_pro_161tb_8292345531",
-      "title": "MacBook Pro 16 M1 Pro 16/1tb в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 1024,
-      "price": 80000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_pro_16gb_1tb_2021_8288923256",
-      "title": "Macbook pro 16 m1 pro 16gb 1tb 2021 в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 1024,
-      "price": 85000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_m1_2021_16gb_1tb_rus_8208323930",
-      "title": "MacBook Pro m1 2021 16GB 1TB RUS в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 1024,
-      "price": 89000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_m1_pro_16_16gb_1tb_space_gray_8414837958",
-      "title": "MacBook Pro m1 pro 16\" 16gb 1TB space gray в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 1024,
-      "price": 90000,
-      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_pro_16_2021_m1_16gb_1tb_8241110993",
-      "title": "Apple macbook pro 16 2021 m1 16gb 1tb в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 1024,
-      "price": 90000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_pro_161tb_8259873248",
-      "title": "MacBook Pro 16 M1 Pro 16/1TB в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 1024,
-      "price": 90990,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_pro_16gb_1tb_8417463149",
-      "title": "MacBook Pro 16 M1 Pro 16gb 1tb в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 1024,
-      "price": 95000,
-      "url": "https://www.avito.ru/balashiha/noutbuki/macbook_pro_16_m1_16gb_1tb_8415087712",
-      "title": "Macbook pro 16 m1 16gb 1tb в Балашихе",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 1024,
-      "price": 99990,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_pro_161tb_30_tsiklov_8260518053",
-      "title": "MacBook Pro 16 M1 Pro 16/1tb (30 циклов) в Москве",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 1024,
-      "price": 110000,
-      "url": "https://www.avito.ru/reutov/noutbuki/apple_macbook_pro_16_m1pro_16gb_1tb_7921273204",
-      "title": "Apple macbook pro 16 m1pro 16gb 1tb в Реутове",
-      "seen_at": "2026-09-07 05:55"
-    },
-    {
-      "model_name": "MacBook Pro 16 (2021)",
-      "processor": "Apple M1 Pro",
-      "ram": 16,
-      "ssd": 1024,
-      "price": 130000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_16_m1_16gb_1tb_3629605242",
-      "title": "Macbook pro 16 m1 16gb 1tb в Москве",
-      "seen_at": "2026-09-07 05:55"
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m1_16gb_256gb_4579442279",
+      "title": "Apple iMac 24 m1 16gb 256gb в Москве",
+      "seen_at": "2026-09-07 13:46"
     }
   ]
 }
