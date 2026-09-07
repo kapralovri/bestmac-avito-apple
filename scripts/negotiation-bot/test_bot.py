@@ -57,7 +57,7 @@ acts = bot.handle_update({"update_id": 1, "message": {"chat": {"id": 555}, "text
 check("на /start есть приветствие", any("подключён" in a.get("text", "") for a in find_send(acts)))
 check("owner_chat_id сохранён", str(bot.state["owner_chat_id"]) == "555")
 
-print("\n[2] Новый лид из очереди постится с кнопкой")
+print("\n[2] Новый лид из очереди — карточка «Лид на торг» отключена (GST-72)")
 queue_path.write_text(json.dumps([{
     "id": "testlead1", "title": "MacBook Air M2 8/256", "asking": 70000,
     "target": 58000, "walk_away": 62000, "location": "Москва",
@@ -65,10 +65,9 @@ queue_path.write_text(json.dumps([{
     "motivation_signals": ["висит 20 дн"], "history": [],
 }], ensure_ascii=False), encoding="utf-8")
 acts = bot.pull_new_leads()
-sends = find_send(acts)
-check("лид запостен", len(sends) == 1 and "Лид на торг" in sends[0]["text"])
-check("есть кнопка «Веду торг»", any("lead:testlead1:start" in d for row in sends[0]["buttons"] for (_, d) in row))
-check("conversation создан", "testlead1" in bot.state["conversations"])
+check("карточка НЕ отправляется (не приносила пользы — отключена)", find_send(acts) == [])
+check("conversation всё же создан (чтобы /веду-торг флоу не сломался, если вернём)",
+      "testlead1" in bot.state["conversations"])
 
 print("\n[3] «Веду торг» → открывающее сообщение")
 acts = bot.handle_update({"update_id": 2, "callback_query": {
