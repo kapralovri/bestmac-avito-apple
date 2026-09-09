@@ -2541,12 +2541,12 @@
       "processor": "Apple M5",
       "ram": 32,
       "ssd": 1024,
-      "min_price": 149990,
-      "max_price": 200400,
-      "median_price": 160500,
-      "buyout_price": 128000,
+      "min_price": 167021,
+      "max_price": 234990,
+      "median_price": 217800,
+      "buyout_price": 174000,
       "samples_count": 27,
-      "updated_at": "2026-08-02 05:10",
+      "updated_at": "2026-09-09 05:10",
       "collector_synced": true
     },
     {
