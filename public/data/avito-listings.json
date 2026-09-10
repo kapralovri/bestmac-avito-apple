@@ -1,456 +1,1666 @@
 {
-  "generated_at": "2026-09-10 05:38",
-  "count": 45,
+  "generated_at": "2026-09-10 12:18",
+  "count": 166,
   "listings": [
     {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "price": 15105,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_m2_8256gb_midnight_8230213576",
-      "title": "MacBook Air 13 m2 8/256gb midnight в Москве",
-      "seen_at": "2026-09-10 05:38"
-    },
-    {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "price": 40000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_m2_8_256_8238987705",
-      "title": "Macbook air 13 m2 8 256 в Москве",
-      "seen_at": "2026-09-10 05:38"
-    },
-    {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "price": 56000,
-      "url": "https://www.avito.ru/kommunarka/noutbuki/macbook_air_13_m2_8_256_midnight_8022927657",
-      "title": "Macbook air 13 m2 8 256 midnight в Коммунарке",
-      "seen_at": "2026-09-10 05:38"
-    },
-    {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "price": 56999,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_m2_8_256_8335789631",
-      "title": "Macbook air m2 8 256 в Москве",
-      "seen_at": "2026-09-10 05:38"
-    },
-    {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "price": 56999,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_m2_8256_gb_8313934692",
-      "title": "MacBook Air M2 8/256 гб в Москве",
-      "seen_at": "2026-09-10 05:38"
-    },
-    {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "price": 57990,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_m2_2022_8gb_256gb_8449469253",
-      "title": "Macbook Air 13, M2, 2022, 8gb 256gb в Москве",
-      "seen_at": "2026-09-10 05:38"
-    },
-    {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "price": 59500,
-      "url": "https://www.avito.ru/kommunarka/noutbuki/macbook_air_13_m2_8_256_8362028689",
-      "title": "Macbook air 13 m2 8 256 в Коммунарке",
-      "seen_at": "2026-09-10 05:38"
-    },
-    {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "price": 60000,
-      "url": "https://www.avito.ru/kievskiy/noutbuki/macbook_air_13_m2_8_256_8005762098",
-      "title": "Macbook air 13 m2 8 256 в Киевском",
-      "seen_at": "2026-09-10 05:38"
-    },
-    {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 256,
-      "price": 63000,
-      "url": "https://www.avito.ru/kommunarka/noutbuki/macbook_air_m2_8_256_8271893985",
-      "title": "Macbook air m2 8 256 в Коммунарке",
-      "seen_at": "2026-09-10 05:38"
-    },
-    {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
       "price": 65000,
-      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_air_m2_256gb_8gb_ideal_8384432536",
-      "title": "Apple Macbook AIR M2 256gb 8gb идеал в Москве",
-      "seen_at": "2026-09-10 05:38"
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24-inch_m1_2021_8256_goluboy_4672165137",
+      "title": "iMac 24-inch, M1, 2021, 8/256 (голубой) в Москве",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
-      "price": 65000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_m2_2022_13_8256gb_8414865906",
-      "title": "MacBook Air M2 2022, 13'', 8/256GB в Москве",
-      "seen_at": "2026-09-10 05:38"
+      "price": 68999,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_m1_2021_gold_8256_8273039778",
+      "title": "iMac 24\" m1 2021 gold 8/256 в Москве",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
       "price": 69900,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_15_m2_8_256_shikarnyy_8129766771",
-      "title": "Macbook Air 15 M2 8 256 шикарный в Москве",
-      "seen_at": "2026-09-10 05:38"
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m1_otlichnoe_sostoyanie_8240824174",
+      "title": "Apple iMac 24 M1 Отличное состояние в Москве",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
       "price": 69990,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_2022_m2_8_256_4583078935",
-      "title": "MacBook Air 13 (2022, M2) 8 256 в Москве",
-      "seen_at": "2026-09-10 05:38"
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m1_blue_8317631417",
+      "title": "Apple iMac 24 m1 Blue в Москве",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
-      "price": 70000,
-      "url": "https://www.avito.ru/sergiev_posad/noutbuki/macbook_air_m2_8256_8361300024",
-      "title": "Macbook air m2 8/256 в Сергиевом Посаде",
-      "seen_at": "2026-09-10 05:38"
+      "price": 72000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m1_2021_8gb_256gb_8355720763",
+      "title": "Apple iMac 24 m1 2021 8gb 256gb в Москве",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
-      "price": 70000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_2022_m2_256_gb_ram_8_gb_gpu_7794757702",
-      "title": "MacBook Air 13 (2022, M2), 256 гб, RAM 8 гб, GPU в Москве",
-      "seen_at": "2026-09-10 05:38"
+      "price": 79000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/monoblok_apple_imac_24_m1_yellow_8256_2021_8344970784",
+      "title": "Моноблок apple iMac 24 m1 Yellow, 8/256, (2021) в Москве",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
-      "price": 74468,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_m2_8_256_8073062440",
-      "title": "Macbook air 13 m2 8 256 в Москве",
-      "seen_at": "2026-09-10 05:38"
+      "price": 80750,
+      "url": "https://www.avito.ru/korolev/nastolnye_kompyutery/monoblok_apple_24_2021_7425361205",
+      "title": "Моноблок Apple 24 (2021) в Королеве",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
-      "price": 75000,
-      "url": "https://www.avito.ru/moskva/noutbuki/noutbuk_apple_macbook_air_13_m28256gb_8096299659",
-      "title": "Ноутбук Apple MacBook Air 13 M2/8/256GB в Москве",
-      "seen_at": "2026-09-10 05:38"
+      "price": 83700,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_m1_8256gb_touch_id_4_porta_8171461245",
+      "title": "iMac 24 M1, 8/256gb (touch id, 4 порта) в Москве",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 8,
-      "ssd": 512,
-      "price": 37000,
-      "url": "https://www.avito.ru/ramenskoe/noutbuki/macbook_air_13_m2_8_512_7884398747",
-      "title": "Macbook air 13 m2 8 512 в Раменском",
-      "seen_at": "2026-09-10 05:38"
-    },
-    {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 512,
-      "price": 55000,
-      "url": "https://www.avito.ru/moskva/noutbuki/mac_book_air_m2_8512_b13.6-inch_8343607356",
-      "title": "Mac book air m2 8/512 B13.6-inch в Москве",
-      "seen_at": "2026-09-10 05:38"
-    },
-    {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 512,
-      "price": 65000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_m2_8_512_midnight_8277174032",
-      "title": "Macbook air 13 m2 8 512 midnight в Москве",
-      "seen_at": "2026-09-10 05:38"
-    },
-    {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 512,
-      "price": 74000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_-m2-_8512_-_1_den_b.u._-_v_ideale_8294731445",
-      "title": "Macbook Air 13 -M2- 8/512 - 1 день б.у. - в идеале в Москве",
-      "seen_at": "2026-09-10 05:38"
-    },
-    {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 8,
-      "ssd": 512,
-      "price": 75000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_136_m2_8512gb_silver_8415552602",
-      "title": "MacBook Air 13,6 M2 8/512GB Silver в Москве",
-      "seen_at": "2026-09-10 05:38"
-    },
-    {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 16,
       "ssd": 256,
-      "price": 55000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_m2_16256_13_8117834003",
-      "title": "Macbook air m2 16/256 (13') в Москве",
-      "seen_at": "2026-09-10 05:38"
+      "price": 85000,
+      "url": "https://www.avito.ru/lyubertsy/nastolnye_kompyutery/apple_imac_24_m1_kuplen_v_2025_8066026815",
+      "title": "Apple iMac 24 m1 (куплен в 2025) в Люберцах",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 16,
-      "ssd": 256,
-      "price": 70000,
-      "url": "https://www.avito.ru/moskva/noutbuki/noutbuk_apple_macbook_air_13_m2_16256_8289968939",
-      "title": "Ноутбук Apple MacBook Air 13' M2 16/256 в Москве",
-      "seen_at": "2026-09-10 05:38"
-    },
-    {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 16,
-      "ssd": 256,
-      "price": 74900,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_m2_16gb_256gb_8252803358",
-      "title": "Macbook air 13 m2 16gb 256gb в Москве",
-      "seen_at": "2026-09-10 05:38"
-    },
-    {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 16,
-      "ssd": 256,
-      "price": 75000,
-      "url": "https://www.avito.ru/odintsovo/noutbuki/macbook_air_13_2022_m2_16256gb_8312438523",
-      "title": "Macbook air 13 2022 m2 16/256Gb в Одинцово",
-      "seen_at": "2026-09-10 05:38"
-    },
-    {
-      "model_name": "MacBook Air 13 (2022, M2)",
-      "processor": "Apple M2",
-      "ram": 16,
-      "ssd": 256,
-      "price": 75000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_air_13_m2_16gb_256gb_8254111052",
-      "title": "Macbook air 13 m2 16gb 256gb в Москве",
-      "seen_at": "2026-09-10 05:38"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 8,
-      "ssd": 512,
+      "ssd": 256,
       "price": 85500,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m3_8_512_15_tsiklov_zaryada_8188653498",
-      "title": "Macbook pro 14 M3 8 512 15 циклов заряда в Москве",
-      "seen_at": "2026-09-10 05:38"
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/monoblok_apple_imac_24_purple_m1_8gb_ram_256gb_ssd_8024236758",
+      "title": "Моноблок Apple iMac 24 Purple m1 8GB Ram 256GB SSD в Москве",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 8,
-      "ssd": 512,
-      "price": 89990,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m3_8512_silver_8247947698",
-      "title": "MacBook Pro 14 M3 8/512 Silver в Москве",
-      "seen_at": "2026-09-10 05:38"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
-      "ram": 8,
-      "ssd": 512,
+      "ssd": 256,
       "price": 90000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m3_8512_gb_8286150338",
-      "title": "MacBook Pro 14 M3 8/512 GB в Москве",
-      "seen_at": "2026-09-10 05:38"
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_m1_displey_retina_45_k_256gb_2687227090",
+      "title": "iMac 24 m1 дисплей Retina 4,5 K 256gb в Москве",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 100000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_45k_retina_2021_m1_256_gb_ssd_green_7667560775",
+      "title": "iMac 24 4,5K Retina 2021 M1 256 Gb SSD, Green в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 100000,
+      "url": "https://www.avito.ru/moskovskaya_oblast_krasnoznamensk/nastolnye_kompyutery/apple_imac_24_m1_8gb_256gb_2023_7835299529",
+      "title": "Apple iMac 24 m1 8gb 256gb (2023) в Краснознаменске",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 105000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_m1_8gb_256gb_7390202251",
+      "title": "iMac 24 m1 8gb 256gb в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 115000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/novyy_monoblok_apple_imac_24_m1_7988139068",
+      "title": "Новый моноблок Apple iMac 24 m1 в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 118000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m1_8gb_256_ssd_8155509276",
+      "title": "Apple iMac 24 M1 8gb 256 ssd в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 154690,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/monoblok_apple_imac_mgpk3rua_24_m1_8gb_256gb_ssd_apple_macos_siniy_7803373826",
+      "title": "Моноблок apple iMac mgpk3RU/A 24\", M1, 8гб, 256гб SSD, Apple, macOS, синий в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 157000,
+      "url": "https://www.avito.ru/klin/nastolnye_kompyutery/imac_24_retina_45k_m18256_gb_ssdmjva3lla_3401056223",
+      "title": "iMac 24\" Retina 4,5K, M1,8/256 гб SSD,mjva3LL/A в Клину",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 159000,
+      "url": "https://www.avito.ru/klin/nastolnye_kompyutery/imac_24_retina_45k_m1_8256_gb_ssdmjv93xa_3401120310",
+      "title": "iMac 24\" Retina 4,5K, M1 8/256 гб SSD,MJV93X/A в Клину",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 162000,
+      "url": "https://www.avito.ru/klin/nastolnye_kompyutery/imac_24_retina_45k_m1_8gb_256_gb_3400799068",
+      "title": "iMac 24\" Retina 4,5K, M1 8гб, 256 гб в Клину",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 163700,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/monoblok_apple_imac_mgpk3rua_24_m1_8gb_256gb_ssd_apple_macos_siniy_2764698979",
+      "title": "Моноблок apple iMac mgpk3RU/A 24\", M1, 8гб, 256гб SSD, Apple, macOS, синий в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 165000,
+      "url": "https://www.avito.ru/klin/nastolnye_kompyutery/imac_24_retina_45k_m1_8256_gb_mgpr3lla_3401599776",
+      "title": "iMac 24\" Retina 4,5K, M1, 8/256 гб mgpr3LL/A в Клину",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 175990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_87_8gb256gb_pink_novyyorig_3125078433",
+      "title": "Apple iMac 24 2021 8:7 8Gb/256Gb Pink (новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 175990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_87_8gb256gb_orangnovyyorig_3125150039",
+      "title": "Apple iMac 24 2021 8:7 8Gb/256Gb Orang(новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 175990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_87_8gb256gb_purplnovyyorig_3125300099",
+      "title": "Apple iMac 24 2021 8:7 8Gb/256Gb Purpl(новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 175990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_87_8gb256gb_yellow_orig_3124773166",
+      "title": "Apple iMac 24 2021 8:7 8Gb/256Gb Yellow (ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 175990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_87_8gb256gb_blue_novyyorig_3125115228",
+      "title": "Apple iMac 24 2021 8:7 8Gb/256Gb Blue (новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 175990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_8gb256gb_pink_novyyorig_3157466726",
+      "title": "Apple iMac 24 2021 8:8 8Gb/256Gb Pink (новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 175990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_8gb256gb_bluenovyyorig_3157025078",
+      "title": "Apple iMac 24 2021 8:8 8Gb/256Gb Blue(новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 175990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_87_8gb256gb_greennovyyorig_3125690542",
+      "title": "Apple iMac 24 2021 8:7 8Gb/256Gb Green(новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 175990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_8gb256gb_purplenovyyorig_3157021235",
+      "title": "Apple iMac 24 2021 8:8 8Gb/256Gb Purple(новый,ориг в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 175990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_8gb256gb_yellownovyyorig_3157132387",
+      "title": "Apple iMac 24 2021 8:8 8Gb/256Gb Yellow(новый,ориг в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 175990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_8gb256gb_grey_novyyorig_3157576943",
+      "title": "Apple iMac 24 2021 8:8 8Gb/256Gb Grey (новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 175990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_87_8gb256gb_grey_novyyorig_3125108955",
+      "title": "Apple iMac 24 2021 8:7 8Gb/256Gb Grey (новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 175990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_8gb256gb_greennovyyorig_3156750683",
+      "title": "Apple iMac 24 2021 8:8 8Gb/256Gb Green(новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 199000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_m1_8gb_256gb_touch_id_7643979851",
+      "title": "iMac 24 m1 8gb 256gb Touch ID в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
       "ram": 8,
       "ssd": 512,
-      "price": 94990,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_20238_512_gb_m3_4582728129",
-      "title": "MacBook Pro 14 (2023),8/ 512 гб, М3 в Москве",
-      "seen_at": "2026-09-10 05:38"
+      "price": 72675,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m1_2021_8512_gb_siniy_8352734486",
+      "title": "Apple iMac 24 M1 2021, 8/512 гб, синий в Москве",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Pro 14 (2023)",
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 75000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_m1_8512_rostest_kak_novyy_8244971850",
+      "title": "iMac 24 M1 8/512 Ростест (как новый) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 75000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_m1_8512gb_7806376181",
+      "title": "Apple iMac M1 8/512gb в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 79000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/monoblok_imac_24_apple_m1_2021_8_gb_ssd_7973462694",
+      "title": "Моноблок iMac 24\" Apple M1 (2021) 8 гб / SSD в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 80000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_m1_8gb_512gb_8293881722",
+      "title": "iMac 24 M1 8Gb 512Gb в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 80000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m1_8gb512gb_8008733217",
+      "title": "Apple iMac 24 m1 8gb/512gb в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 80630,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m1_8gb_512gb_8329712521",
+      "title": "Apple iMac 24 m1 8gb 512gb в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 85000,
+      "url": "https://www.avito.ru/balashiha/nastolnye_kompyutery/imac_24_m1_8gb_512gb_ssd_8291973368",
+      "title": "iMac 24” M1 / 8GB / 512GB SSD в Балашихе",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 85000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/kompyuter_apple_imac_24_2021_4939674763",
+      "title": "Компьютер Apple iMac 24 (2021) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 104990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_m1-m4_vse_modeli_8238666919",
+      "title": "iMac 24 M1-M4 Все Модели в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 120000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m1_8512_4754626007",
+      "title": "Apple iMac 24 m1 8/512 в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 130000,
+      "url": "https://www.avito.ru/domodedovo/nastolnye_kompyutery/imac_24_512_m1_a2438_8314283131",
+      "title": "iMac 24 512 м1 а2438 в Домодедово",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 130000,
+      "url": "https://www.avito.ru/himki/nastolnye_kompyutery/kak_novyy_imac_2021_m1_8gbssd_512gb_4449085546",
+      "title": "Как новый iMac 2021 M1 /8GB/SSD 512GB в Химках",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 135000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/monoblok_apple_imac_24_2021_retina_fioletovyy_7997679974",
+      "title": "Моноблок Apple iMac 24\" (2021) Retina фиолетовый в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 149950,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24-inch_4.5k_816_m1_512gb_2021_8265092071",
+      "title": "iMac 24-inch 4.5K 8/16 M1 512Гб 2021 в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 181000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_8gb512gb_purplenovyyorig_3157101468",
+      "title": "Apple iMac 24 2021 8:8 8Gb/512Gb Purple(новый,ориг в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 181000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_8gb512gb_bluenovyyorig_3157303871",
+      "title": "Apple iMac 24 2021 8:8 8Gb/512Gb Blue(новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 181000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_8gb512gb_orangnovyyorig_3157186110",
+      "title": "Apple iMac 24 2021 8:8 8Gb/512Gb Orang(новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 181000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_8gb512gb_pink_novyyorig_3156794013",
+      "title": "Apple iMac 24 2021 8:8 8Gb/512Gb Pink (новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 181000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_8gb512gb_grey_novyyorig_3156902108",
+      "title": "Apple iMac 24 2021 8:8 8Gb/512Gb Grey (новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 181000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_8gb512gb_yellownovyyorig_3157138817",
+      "title": "Apple iMac 24 2021 8:8 8Gb/512Gb Yellow(новый,ориг в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 181000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_8gb512gb_greennovyyorig_3157525708",
+      "title": "Apple iMac 24 2021 8:8 8Gb/512Gb Green(новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 189000,
+      "url": "https://www.avito.ru/klin/nastolnye_kompyutery/imac_24_retina_45k_m1_8512gb_mgpd3xa_3401127128",
+      "title": "iMac 24 Retina 4,5K, M1, 8/512GB mgpd3X/A в Клину",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 196990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_87_8gb512gb_greennovyyorig_3125520708",
+      "title": "Apple iMac 24 2021 8:7 8Gb/512Gb Green(новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 196990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_87_8gb512gb_orangnovyyorig_3124892628",
+      "title": "Apple iMac 24 2021 8:7 8Gb/512Gb Orang(новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 196990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_87_8gb512gb_greynovyyorig_3125414993",
+      "title": "Apple iMac 24 2021 8:7 8Gb/512Gb Grey(новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 196990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_87_8gb512gb_purplnovyyorig_3124761151",
+      "title": "Apple iMac 24 2021 8:7 8Gb/512Gb Purpl(новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 196990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_87_8gb512gb_yellow_original_3125305374",
+      "title": "Apple iMac 24 2021 8:7 8Gb/512Gb Yellow (оригинал) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 196990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_87_8gb512gb_blue_novyyorig_3125301811",
+      "title": "Apple iMac 24 2021 8:7 8Gb/512Gb Blue (новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 196990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_87_8gb512gb_pink_novyyorig_3125200460",
+      "title": "Apple iMac 24 2021 8:7 8Gb/512Gb Pink (новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "price": 80000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m116256_8385625772",
+      "title": "Apple iMac 24 (m1/16/256) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "price": 82000,
+      "url": "https://www.avito.ru/sergiev_posad/nastolnye_kompyutery/apple_imac_24_m1_16256_gb_8285378943",
+      "title": "Apple iMac 24 M1 16/256 Гб в Сергиевом Посаде",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "price": 85000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/monoblok_apple_imac_24_m116256_8103642841",
+      "title": "Моноблок apple iMac 24 m1/16/256 в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "price": 100000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m1_16gb_256gb_4579442279",
+      "title": "Apple iMac 24 m1 16gb 256gb в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "price": 174000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_16gb256gb_orangnovyy_3157525127",
+      "title": "Apple iMac 24 2021 8:8 16Gb/256Gb Orang(новый) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "price": 174000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_16gb256gb_pink_novyy_3157605006",
+      "title": "Apple iMac 24 2021 8:8 16Gb/256Gb Pink (новый) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "price": 174000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_16gb256gb_bluenovyyorig_3157371686",
+      "title": "Apple iMac 24 2021 8:8 16Gb/256Gb Blue(новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "price": 174000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_16gb256gb_greennovyyorig_3157137660",
+      "title": "Apple iMac 24 2021 8:8 16Gb/256Gb Green(новый,ориг в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "price": 174000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_16gb256gb_purplenovyyori_3157660367",
+      "title": "Apple iMac 24 2021 8:8 16Gb/256Gb Purple(новый,ори в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "price": 174000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_16gb256gb_yellownovyy_3157238295",
+      "title": "Apple iMac 24 2021 8:8 16Gb/256Gb Yellow(новый) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "price": 174000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_16gb256gb_whitenovyyorig_3156919597",
+      "title": "Apple iMac 24 2021 8:8 16Gb/256Gb White(новый,ориг в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 512,
+      "price": 56000,
+      "url": "https://www.avito.ru/lyubertsy/nastolnye_kompyutery/imac_24_m1_16gb_512gb_8321908199",
+      "title": "iMac 24 m1 16gb 512gb в Люберцах",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 512,
+      "price": 99990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_m1_16gb_512gb_silver_novyy_4thunderbolt_8416098388",
+      "title": "iMac 24 M1 16gb 512gb Silver Новый 4ThunderBolt в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 512,
+      "price": 176000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_16gb512gb_orangnovyy_3156923652",
+      "title": "Apple iMac 24 2021 8:8 16Gb/512Gb Orang(новый) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 512,
+      "price": 176000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_16gb512gb_bluenovyyorig_3157413910",
+      "title": "Apple iMac 24 2021 8:8 16Gb/512Gb Blue(новый,ориг) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 512,
+      "price": 176000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_16gb512gb_yellownovyyori_3157547365",
+      "title": "Apple iMac 24 2021 8:8 16Gb/512Gb Yellow(новый,ори в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 512,
+      "price": 176000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_16gb512gb_purplenovyy_3157137766",
+      "title": "Apple iMac 24 2021 8:8 16Gb/512Gb Purple(новый) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 512,
+      "price": 176000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_16gb512gb_greennovyyorig_3157565887",
+      "title": "Apple iMac 24 2021 8:8 16Gb/512Gb Green(новый,ориг в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 512,
+      "price": 176000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_16gb512gb_whitenovyy_3157712536",
+      "title": "Apple iMac 24 2021 8:8 16Gb/512Gb White(новый) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 512,
+      "price": 176000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2021_88_16gb512gb_pink_novyy_3157341525",
+      "title": "Apple iMac 24 2021 8:8 16Gb/512Gb Pink (новый) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 1024,
+      "price": 91000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/topovyy_imac_m1_24_blue_16gb1tb_na_kronshteyn_8320529492",
+      "title": "Топовый iMac M1 24 Blue 16Gb/1Tb на кронштейн в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 1024,
+      "price": 100000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m1_16gb_1tb_8417471661",
+      "title": "Apple iMac 24 m1 16gb 1tb в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 1024,
+      "price": 115000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_m1_16gb_1000gb_silver_4thunderbolt_novyy_8252190873",
+      "title": "iMac 24 M1 16gb 1000gb Silver 4ThunderBolt Новый в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 1024,
+      "price": 130000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_m1_16_gb_1_tb_ssd_silver_8085228847",
+      "title": "iMac 24\" M1 / 16 GB / 1 TB SSD (Silver) в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 2048,
+      "price": 107990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_m1_162_tb_8089928526",
+      "title": "iMac m1 16/2 tb в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 2048,
+      "price": 120000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/monoblok_apple_imac_24_m1162tb_vlyublyaemsya_srazu_8044180700",
+      "title": "Моноблок apple iMac 24 M1/16/2Tb, влюбляемся сразу в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 2048,
+      "price": 149000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/monoblok_imac_24_m1_162tb_8069240113",
+      "title": "Моноблок iMac 24 M1 16/2TB в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 40000,
+      "url": "https://www.avito.ru/kirovskaya_oblast_kirov/nastolnye_kompyutery/imac_23_m3_8_256_8280291895",
+      "title": "iMac 23 m3 8 256 в Кирове",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 79990,
+      "url": "https://www.avito.ru/sochi/nastolnye_kompyutery/imac_24_m3_8256gb_white_8237195230",
+      "title": "iMac 24 M3 8/256GB White в Сочи",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 79990,
+      "url": "https://www.avito.ru/tyumen/nastolnye_kompyutery/apple_imac_24_2023_8289975072",
+      "title": "Apple iMac 24 2023 в Тюмени",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 84900,
+      "url": "https://www.avito.ru/velikiy_novgorod/nastolnye_kompyutery/imac_24_2023_m3_8_gb_256_gb_green_8280746427",
+      "title": "iMac 24 2023 M3 8 Gb / 256 Gb Green в Великом Новгороде",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 84990,
+      "url": "https://www.avito.ru/sochi/nastolnye_kompyutery/imac_24_m3_8256gb_white_8081679292",
+      "title": "iMac 24 M3 8/256GB White в Сочи",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 85000,
+      "url": "https://www.avito.ru/kaliningrad/nastolnye_kompyutery/apple_imac_24_m3_8gb_256gb_blue_2023_idealnyy_8136421290",
+      "title": "Apple iMac 24 M3 8GB 256GB Blue 2023 Идеальный в Калининграде",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 89100,
+      "url": "https://www.avito.ru/sevastopol/nastolnye_kompyutery/prodam_apple_imac_24_siniyprakticheski_novyy_8155519007",
+      "title": "Продам Apple iMac 24\" синий(практически новый) в Севастополе",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 89990,
+      "url": "https://www.avito.ru/sochi/nastolnye_kompyutery/imac_24_2024_blue_m3_8256_8190656207",
+      "title": "iMac 24 2024 Blue M3 8/256 в Сочи",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 90000,
+      "url": "https://www.avito.ru/vilyuchinsk/nastolnye_kompyutery/monoblok_apple_imac_24_m3_8256gb_8233668591",
+      "title": "Моноблок Apple iMac 24 m3 8/256GB в Вилючинске",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 94500,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/monoblok_apple_imac_24_m3_8322964402",
+      "title": "Моноблок apple iMac 24 m3 в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 94900,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_2023_m3_256gb_ssd_siniy_mqrc3_3965015585",
+      "title": "Apple iMac 24\" 2023 (M3, 256Gb SSD) Синий mqrc3 в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 95000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/monoblok_apple_imac_24_retina_4.5k_8397446220",
+      "title": "Моноблок Apple iMac 24\" Retina 4.5K в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 99000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_m3_8256_8260518654",
+      "title": "iMac 24 m3 8/256 в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 99500,
+      "url": "https://www.avito.ru/novosibirsk/nastolnye_kompyutery/imac_24_m3_8gpu_7433825337",
+      "title": "iMac 24 M3 8GPU в Новосибирске",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 99900,
+      "url": "https://www.avito.ru/barnaul/nastolnye_kompyutery/imac_24_m3_blue_7785016169",
+      "title": "iMac 24 m3 Blue в Барнауле",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 99999,
+      "url": "https://www.avito.ru/izhevsk/nastolnye_kompyutery/apple_imac_novyy_m3_8_gb_ram_256_gb_ssd_7973593707",
+      "title": "Apple iMac новый М3 8 Gb RAM/ 256 Gb SSD в Ижевске",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 100000,
+      "url": "https://www.avito.ru/odintsovo/nastolnye_kompyutery/apple_imac_24_m3_8256_8040713344",
+      "title": "Apple iMac 24 m3 8/256 в Одинцово",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 103999,
+      "url": "https://www.avito.ru/kazan/nastolnye_kompyutery/imac_m3_8256_blue_new_7887328297",
+      "title": "iMac m3 8/256 blue New в Казани",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 107000,
+      "url": "https://www.avito.ru/tyumen/nastolnye_kompyutery/imac_24_m3_8_256_2024_8125246283",
+      "title": "iMac 24 m3 8 256 / 2024 в Тюмени",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 109990,
+      "url": "https://www.avito.ru/sankt-peterburg/nastolnye_kompyutery/novyy_apple_imac_m3_810_256gb_touch_id_vse_tsveta_8133254152",
+      "title": "Новый Apple iMac m3 8/10 256gb Touch ID все цвета в Санкт-Петербурге",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 113490,
+      "url": "https://www.avito.ru/perm/nastolnye_kompyutery/imac_24_m3_8-core_8256gb_pink_7265885031",
+      "title": "iMac 24\" M3 8-Core 8/256GB Pink в Перми",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 113490,
+      "url": "https://www.avito.ru/izhevsk/nastolnye_kompyutery/imac_24_m3_8-core_8256gb_pink_7265845090",
+      "title": "iMac 24\" M3 8-Core 8/256GB Pink в Ижевске",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 115990,
+      "url": "https://www.avito.ru/ekaterinburg/nastolnye_kompyutery/imac_24_m3_2023_8256_silver_8057939294",
+      "title": "iMac 24\" (M3, 2023) 8/256 Silver в Екатеринбурге",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 115990,
+      "url": "https://www.avito.ru/ekaterinburg/nastolnye_kompyutery/imac_24_m3_2023_8256_blue_8058585920",
+      "title": "iMac 24\" (M3, 2023) 8/256 Blue в Екатеринбурге",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 115990,
+      "url": "https://www.avito.ru/ekaterinburg/nastolnye_kompyutery/imac_24_m3_2023_8256_orange_8058496007",
+      "title": "iMac 24\" (M3, 2023) 8/256 Orange в Екатеринбурге",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 115990,
+      "url": "https://www.avito.ru/ekaterinburg/nastolnye_kompyutery/imac_24_m3_2023_8256_green_8058216136",
+      "title": "iMac 24\" (M3, 2023) 8/256 Green в Екатеринбурге",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 115990,
+      "url": "https://www.avito.ru/ekaterinburg/nastolnye_kompyutery/imac_24_m3_2023_8256_pink_8058585146",
+      "title": "iMac 24\" (M3, 2023) 8/256 Pink в Екатеринбурге",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 115990,
+      "url": "https://www.avito.ru/ekaterinburg/nastolnye_kompyutery/imac_24_m3_2023_8256_yellow_8057971107",
+      "title": "iMac 24\" (M3, 2023) 8/256 Yellow в Екатеринбурге",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 115990,
+      "url": "https://www.avito.ru/ekaterinburg/nastolnye_kompyutery/imac_24_m3_2023_8256_purple_8058768381",
+      "title": "iMac 24\" (M3, 2023) 8/256 Purple в Екатеринбурге",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 115990,
+      "url": "https://www.avito.ru/perm/nastolnye_kompyutery/imac_24_m3_2023_8256_blue_8361678928",
+      "title": "iMac 24\" (M3, 2023) 8/256 Blue в Перми",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 115990,
+      "url": "https://www.avito.ru/perm/nastolnye_kompyutery/imac_24_m3_2023_8256_orange_8361265381",
+      "title": "iMac 24\" (M3, 2023) 8/256 Orange в Перми",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 115990,
+      "url": "https://www.avito.ru/chelyabinsk/nastolnye_kompyutery/imac_24_m3_2023_8256_orange_8357400472",
+      "title": "iMac 24\" (M3, 2023) 8/256 Orange в Челябинске",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 115990,
+      "url": "https://www.avito.ru/chelyabinsk/nastolnye_kompyutery/imac_24_m3_2023_8256_silver_8357416991",
+      "title": "iMac 24\" (M3, 2023) 8/256 Silver в Челябинске",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 115990,
+      "url": "https://www.avito.ru/perm/nastolnye_kompyutery/imac_24_m3_2023_8256_purple_8360876384",
+      "title": "iMac 24\" (M3, 2023) 8/256 Purple в Перми",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 115990,
+      "url": "https://www.avito.ru/perm/nastolnye_kompyutery/imac_24_m3_2023_8256_green_8360978216",
+      "title": "iMac 24\" (M3, 2023) 8/256 Green в Перми",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 115990,
+      "url": "https://www.avito.ru/perm/nastolnye_kompyutery/imac_24_m3_2023_8256_silver_8360913368",
+      "title": "iMac 24\" (M3, 2023) 8/256 Silver в Перми",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 125000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m3_2024_256gb_blue_8221986167",
+      "title": "Apple iMac 24 M3 2024 256Gb Blue в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 125000,
+      "url": "https://www.avito.ru/moskva_zelenograd/nastolnye_kompyutery/imac_24_apple_m3_8256_novyy_ne_cpo_5089640205",
+      "title": "iMac 24 apple m3 8/256 Новый не CPO в Зеленограде",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 129990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imacmini._magazin_garantiya_-_1_god_7326994701",
+      "title": "Apple iMac/Mini. Магазин, Гарантия - 1 год в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 139000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_retina_45k_m3_810_8_gb_256_7479268001",
+      "title": "Apple iMac 24\" Retina 4,5K, M3 8/10, 8 гб, 256 в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 142403,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mqrn3hna_monoblok_apple_imac_a2873_24_monoblock_8145519765",
+      "title": "Mqrn3HN/A, Моноблок Apple iMac A2873 24\" Monoblock в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 145000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/monoblok_apple_imac_24_m3_2023_810_24256_8152009478",
+      "title": "Моноблок Apple iMac 24'' М3 (2023) 8/10, 24/256 в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 148500,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/monoblok_apple_imac_24_m3_8-core_gpu_8-core_8gb_256gb_pink_4535354490",
+      "title": "Моноблок Apple iMac 24 M3 8-Core, GPU 8-Core, 8GB, 256GB Pink в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 158500,
+      "url": "https://www.avito.ru/klin/nastolnye_kompyutery/imac_24_m3_8gb_256_gb_ssd_mqra3xa_green_3625254052",
+      "title": "iMac 24 M3 8гб, 256 гб SSD, mqra3X/A green в Клину",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 256,
+      "price": 159500,
+      "url": "https://www.avito.ru/klin/nastolnye_kompyutery/imac_24_m3_8256gb_mqr93zpa_silver_3625521963",
+      "title": "iMac 24 M3 8/256Gb MQR93ZP/A silver в Клину",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
       "processor": "Apple M3",
       "ram": 8,
       "ssd": 512,
       "price": 99000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m3_8_512_7988145888",
-      "title": "Macbook pro 14 m3 8 512 в Москве",
-      "seen_at": "2026-09-10 05:38"
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m3_8gb_512gb_8-core_cpu10-core_gpu_8244604652",
+      "title": "Apple iMac 24 m3 8gb 512gb 8-core CPU/10-core GPU в Москве",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Pro 14 (2023)",
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 512,
+      "price": 100433,
+      "url": "https://www.avito.ru/sankt-peterburg/nastolnye_kompyutery/imac_24_m3_silver_10_yader_8gb_512gb_8285732885",
+      "title": "iMac 24 m3 silver 10 ядер / 8GB / 512GB в Санкт-Петербурге",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 512,
+      "price": 112000,
+      "url": "https://www.avito.ru/kemerovo/nastolnye_kompyutery/monoblok_apple_imac_24_m3_8192284247",
+      "title": "Моноблок apple iMac 24 m3 в Кемерово",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 512,
+      "price": 130900,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m3_mqrk3_810_8512_gb_white_3573521543",
+      "title": "Apple iMac 24 M3 mqrk3 8/10 8/512 GB White в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 512,
+      "price": 150900,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m3_mqrr3_810_8512_gb_blue_3572777066",
+      "title": "Apple iMac 24 M3 mqrr3 8/10 8/512 GB Blue в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 8192,
+      "price": 84990,
+      "url": "https://www.avito.ru/perm/nastolnye_kompyutery/apple_imac_24_m3_20248gb256gb_blue_bu_bez_foto_8392929068",
+      "title": "Apple iMac 24'' M3 2024/8GB/256GB Blue бу (без фото) в Перми",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 8,
+      "ssd": 8192,
+      "price": 100000,
+      "url": "https://www.avito.ru/tyumen/nastolnye_kompyutery/imac_24-inch_m3_888256_pink_mqrd3_3829575682",
+      "title": "iMac 24-inch M3 8/8/8/256 Pink mqrd3 в Тюмени",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
       "processor": "Apple M3",
       "ram": 16,
       "ssd": 512,
-      "price": 40000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m2_16_512_8215233757",
-      "title": "Macbook pro 14 m2 16 512 в Москве",
-      "seen_at": "2026-09-10 05:38"
+      "price": 104990,
+      "url": "https://www.avito.ru/sankt-peterburg/nastolnye_kompyutery/novyy_imac_24_blue_16512gb_four_port_blue_8206399231",
+      "title": "Новый iMac 24 Blue 16/512GB Four Port, Blue в Санкт-Петербурге",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Pro 14 (2023)",
+      "model_name": "imac 24",
       "processor": "Apple M3",
       "ram": 16,
       "ssd": 512,
-      "price": 85000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m2_16_512_8383168943",
-      "title": "Macbook pro 14 m2 16 512 в Москве",
-      "seen_at": "2026-09-10 05:38"
+      "price": 104990,
+      "url": "https://www.avito.ru/sankt-peterburg/nastolnye_kompyutery/novyy_apple_imac_24_retina_16512gb_silver_8205921382",
+      "title": "Новый Apple iMac 24 Retina 16/512GB Silver в Санкт-Петербурге",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Pro 14 (2023)",
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 16,
+      "ssd": 512,
+      "price": 104990,
+      "url": "https://www.avito.ru/sankt-peterburg/nastolnye_kompyutery/novyy_zapak_imac_24_16512_4_porta_touch_id_8289196140",
+      "title": "Новый запак iMac 24 16/512 (4 порта + Touch ID) в Санкт-Петербурге",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
       "processor": "Apple M3",
       "ram": 16,
       "ssd": 512,
       "price": 104999,
-      "url": "https://www.avito.ru/moskva/noutbuki/kak_novyy_macbook_pro_14_2023_m3_16512_garantiya_8272875679",
-      "title": "Как новый MacBook Pro 14 2023 M3 16/512, гарантия в Москве",
-      "seen_at": "2026-09-10 05:38"
+      "url": "https://www.avito.ru/sankt-peterburg/nastolnye_kompyutery/topovyy_novyy_imac_24_16512_with_touch_id_7662736053",
+      "title": "Топовый новый iMac 24 16/512 with Touch ID в Санкт-Петербурге",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Pro 14 (2023)",
+      "model_name": "imac 24",
       "processor": "Apple M3",
       "ram": 16,
       "ssd": 512,
-      "price": 120000,
-      "url": "https://www.avito.ru/moskovskaya_oblast_krasnogorsk/noutbuki/macbook_pro_14_m2_pro_16_512_a2779_8355809937",
-      "title": "MacBook Pro 14 M2 Pro 16 512 A2779 в Красногорске",
-      "seen_at": "2026-09-10 05:38"
+      "price": 150690,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/monoblok_apple_imac_24_2023_m3_8-core_4.5k_4480x252016gb512gb_ssdseryy_z19500023_4031625053",
+      "title": "Моноблок Apple iMac 24 2023 M3 8-core 4.5K 4480x2520/16Gb/512Gb SSD/Серый Z19500023 в Москве",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Pro",
-      "ram": 18,
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 16,
       "ssd": 512,
-      "price": 110000,
-      "url": "https://www.avito.ru/moskva/noutbuki/apple_macbook_pro_14_m3_pro_18512_obmen_8150858075",
-      "title": "Apple macbook pro 14 m3 pro 18/512 обмен в Москве",
-      "seen_at": "2026-09-10 05:38"
+      "price": 154990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_apple_m3_16512_gb_ssd_blue_3958808254",
+      "title": "iMac 24\" Apple M3 16/512 Gb SSD Blue в Москве",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Pro",
-      "ram": 18,
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 16,
       "ssd": 512,
-      "price": 124000,
-      "url": "https://www.avito.ru/moskva/noutbuki/makbuk_pro_macbook_pro_14_m3_pro_18_512_chernyy_8342768719",
-      "title": "Макбук про Macbook pro 14 M3 PRO 18 512 черный в Москве",
-      "seen_at": "2026-09-10 05:38"
+      "price": 199000,
+      "url": "https://www.avito.ru/klin/nastolnye_kompyutery/imac_24_retina_45k_m3_16gb_512gb_blue_4520959658",
+      "title": "iMac 24\" Retina 4,5K, M3, 16гб, 512гб Blue в Клину",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Pro",
-      "ram": 18,
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 16,
       "ssd": 512,
-      "price": 125000,
-      "url": "https://www.avito.ru/balashiha/noutbuki/macbook_pro_m3pro_14_18512_8110119200",
-      "title": "Macbook pro m3pro 14 18/512 в Балашихе",
-      "seen_at": "2026-09-10 05:38"
+      "price": 220000,
+      "url": "https://www.avito.ru/klin/nastolnye_kompyutery/imac_24_m3_8c_cpu_10c_gpu_16512_gb_4585330355",
+      "title": "iMac 24\" M3 (8C CPU, 10C GPU), 16/512 гб в Клину",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Pro 14 (2023)",
-      "processor": "Apple M3 Pro",
-      "ram": 18,
-      "ssd": 512,
-      "price": 128000,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_2023_m3_pro_18gb_512gb_space_black_8374985123",
-      "title": "MacBook Pro 14 2023 M3 Pro 18Gb 512Gb Space Black в Москве",
-      "seen_at": "2026-09-10 05:38"
-    },
-    {
-      "model_name": "MacBook Pro 14 (2026)",
-      "processor": "Apple M5 Pro",
-      "ram": 24,
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 16,
       "ssd": 1024,
-      "price": 169990,
-      "url": "https://www.avito.ru/penza/noutbuki/macbook_pro_14_m5_24gb1tb_8415520563",
-      "title": "Macbook pro 14 m5 24Gb/1Tb в Пензе",
-      "seen_at": "2026-09-10 05:38"
+      "price": 114990,
+      "url": "https://www.avito.ru/sankt-peterburg/nastolnye_kompyutery/novyy_imac_24_retina_161tb_four_port_8417362770",
+      "title": "Новый iMac 24 Retina 16/1TB Four Port в Санкт-Петербурге",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Pro 14 (2026)",
-      "processor": "Apple M5 Pro",
-      "ram": 24,
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 16,
       "ssd": 1024,
-      "price": 175000,
-      "url": "https://www.avito.ru/ufa/noutbuki/macbook_pro_14_m5_pro_24gb1tb_silver_8298880358",
-      "title": "MacBook Pro 14, M5 Pro, 24GB/1TB, Silver в Уфе",
-      "seen_at": "2026-09-10 05:38"
+      "price": 127000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_4.5k_retina_apple_m3_16gb1tb_ssd_8251372410",
+      "title": "iMac 24” 4.5K Retina, Apple M3 16GB/1TB SSD в Москве",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Pro 14 (2026)",
-      "processor": "Apple M5 Pro",
-      "ram": 24,
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 16,
       "ssd": 1024,
-      "price": 191990,
-      "url": "https://www.avito.ru/moskva/noutbuki/macbook_pro_14_m5_pro_24gb_1tb_8417192124",
-      "title": "MacBook Pro 14 M5 Pro 24gb 1tb в Москве",
-      "seen_at": "2026-09-10 05:38"
+      "price": 145000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_24_m3_16gb1tb_fioletovyy_vesa_8115380159",
+      "title": "Apple iMac 24 M3 (16Gb/1Tb) Фиолетовый vesa в Москве",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Pro 14 (2026)",
-      "processor": "Apple M5 Pro",
-      "ram": 24,
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 16,
       "ssd": 1024,
-      "price": 196000,
-      "url": "https://www.avito.ru/kazan/noutbuki/apple_macbook_14_m5_pro_15c16g_24gb_1tb_8236245981",
-      "title": "Apple MacBook 14 M5 pro 15c/16g 24gb 1tb в Казани",
-      "seen_at": "2026-09-10 05:38"
+      "price": 189990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_apple_m3_161tb_ssd_silver_3959568967",
+      "title": "iMac 24\" Apple M3 16/1Tb SSD Silver в Москве",
+      "seen_at": "2026-09-10 12:18"
     },
     {
-      "model_name": "MacBook Pro 14 (2026)",
-      "processor": "Apple M5 Pro",
-      "ram": 24,
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 16,
       "ssd": 1024,
-      "price": 199900,
-      "url": "https://www.avito.ru/mahachkala/noutbuki/macbook_pro_14_m5pro_24gb_1tb_silver_8352004548",
-      "title": "Macbook pro 14 m5pro 24gb 1tb silver в Махачкале",
-      "seen_at": "2026-09-10 05:38"
+      "price": 205000,
+      "url": "https://www.avito.ru/klin/nastolnye_kompyutery/imac_24_retina_45k_m3_16gb_1tb_green_4521058562",
+      "title": "iMac 24\" Retina 4,5K, M3, 16гб, 1тб Green в Клину",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 24,
+      "ssd": 2048,
+      "price": 165000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_m3_2tb_24gb_8245974301",
+      "title": "iMac 24 m3 2tb, 24gb в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 24,
+      "ssd": 2048,
+      "price": 211900,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_m3_10c_24gb_2tb_3827774603",
+      "title": "iMac 24 M3 (10c) 24GB 2TB в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M3",
+      "ram": 24,
+      "ssd": 2048,
+      "price": 211900,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/imac_24_m3_10c_24gb_2tb_4787617706",
+      "title": "iMac 24 M3 (10c) 24GB 2TB в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M4",
+      "ram": 8,
+      "ssd": 8192,
+      "price": 175600,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_m4_8816512_pink_z1e6000fv_8200521629",
+      "title": "Apple iMac M4 (8/8/16/512) Pink Z1E6000FV в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M4",
+      "ram": 8,
+      "ssd": 8192,
+      "price": 178700,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_m4_8816512_purple_z1e7000eq_8200864012",
+      "title": "Apple iMac M4 (8/8/16/512) Purple Z1E7000EQ в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M4",
+      "ram": 8,
+      "ssd": 8192,
+      "price": 178700,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_m4_8816512_green_z1e4000gs_8200800532",
+      "title": "Apple iMac M4 (8/8/16/512) Green Z1E4000GS в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M4",
+      "ram": 8,
+      "ssd": 8192,
+      "price": 178700,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_m4_8816512_silver_z1e2000kj_8200265271",
+      "title": "Apple iMac M4 (8/8/16/512) Silver Z1E2000KJ в Москве",
+      "seen_at": "2026-09-10 12:18"
+    },
+    {
+      "model_name": "imac 24",
+      "processor": "Apple M4",
+      "ram": 8,
+      "ssd": 8192,
+      "price": 178700,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_imac_m4_8816512_silver_hk_z1e200002_8200730823",
+      "title": "Apple iMac M4 (8/8/16/512) Silver (HK) Z1E200002 в Москве",
+      "seen_at": "2026-09-10 12:18"
     }
   ]
 }
