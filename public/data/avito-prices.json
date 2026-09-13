@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-10 21:24",
-  "total_listings": 3466,
+  "generated_at": "2026-09-13 05:40",
+  "total_listings": 3491,
   "stats": [
     {
       "model_name": "MacBook Pro 13 (2020, M1)",
@@ -2743,6 +2743,20 @@
       "collector_synced": true
     },
     {
+      "model_name": "MacBook Pro 16 M5 Max",
+      "family": "MacBook Pro",
+      "processor": "Apple M5",
+      "ram": 48,
+      "ssd": 2048,
+      "min_price": 329000,
+      "max_price": 462890,
+      "median_price": 440890,
+      "buyout_price": 352000,
+      "samples_count": 13,
+      "updated_at": "2026-09-12 05:10",
+      "collector_synced": true
+    },
+    {
       "model_name": "MacBook Pro 16 M5 Pro",
       "family": "MacBook Pro",
       "processor": "Apple M5",
@@ -2767,6 +2781,20 @@
       "median_price": 250390,
       "buyout_price": 200000,
       "samples_count": 16,
+      "updated_at": "2026-09-12 05:10",
+      "collector_synced": true
+    },
+    {
+      "model_name": "iMac 24 M4",
+      "family": "iMac",
+      "processor": "Apple M4",
+      "ram": 32,
+      "ssd": 1024,
+      "min_price": 302890,
+      "max_price": 303890,
+      "median_price": 302890,
+      "buyout_price": 242000,
+      "samples_count": 12,
       "updated_at": "2026-09-12 05:10",
       "collector_synced": true
     },
@@ -3030,34 +3058,6 @@
       "median_price": 235390,
       "buyout_price": 188000,
       "samples_count": 6,
-      "updated_at": "2026-09-12 05:10",
-      "collector_synced": true
-    },
-    {
-      "model_name": "MacBook Pro 16 M5 Max",
-      "family": "MacBook Pro",
-      "processor": "Apple M5",
-      "ram": 48,
-      "ssd": 2048,
-      "min_price": 329000,
-      "max_price": 462890,
-      "median_price": 440890,
-      "buyout_price": 352000,
-      "samples_count": 13,
-      "updated_at": "2026-09-12 05:10",
-      "collector_synced": true
-    },
-    {
-      "model_name": "iMac 24 M4",
-      "family": "iMac",
-      "processor": "Apple M4",
-      "ram": 32,
-      "ssd": 1024,
-      "min_price": 302890,
-      "max_price": 303890,
-      "median_price": 302890,
-      "buyout_price": 242000,
-      "samples_count": 12,
       "updated_at": "2026-09-12 05:10",
       "collector_synced": true
     }
