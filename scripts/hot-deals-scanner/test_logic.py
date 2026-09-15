@@ -81,6 +81,54 @@ check("«на восстановление» → reject", r.verdict == "reject")
 r = analyze_condition("MacBook Air 13 M3 16/256, отличное состояние")
 check("обычный чистый лот без слов-маркеров → ok", r.verdict == "ok")
 
+# ── Ложные срабатывания подстрок (GST-73) ───────────────────────────────────
+# Стоп-слова искались голым `in`, без границы слова: «скол» находился внутри
+# «сколько», «копия » — внутри «копия чека». Хорошие лоты молча топились.
+r = analyze_condition("MacBook Air M2, сколько циклов не знаю, есть коробка")
+check("«сколько» НЕ считается сколом", "сколы" not in r.soft)
+check("«сколько» → ok (не suspect)", r.verdict == "ok")
+
+r = analyze_condition("MacBook Pro 14 M3, полный комплект, есть копия чека")
+check("«копия чека» НЕ считается подделкой", r.verdict != "reject")
+check("«копия чека» → чек засчитан как позитив", "есть чек" in r.positives)
+
+r = analyze_condition("MacBook Air M2, реальные сколы на крышке")
+check("настоящий скол всё ещё ловится", "сколы" in r.soft)
+r = analyze_condition("MacBook Pro 16, это копия оригинала")
+check("настоящая копия всё ещё ловится", r.verdict == "reject")
+
+# ── Дополненные стоп-слова (GST-73) ─────────────────────────────────────────
+for _txt, _why in [
+    ("MacBook Air M2, не держит заряд", "не держит заряд"),
+    ("MacBook Pro 14, нет подсветки клавиатуры", "нет подсветки"),
+    ("MacBook Pro 16, артефакты на экране", "артефакты"),
+    ("MacBook Air 13, экран под замену", "экран под замену"),
+    ("iMac 24, матрица под замену", "матрица под замену"),
+    ("MacBook Pro, самопроизвольно выключается", "самопроизвольно выключается"),
+    ("Mac mini M2, не видит диск", "не видит диск"),
+    ("MacBook Air M1, ремонтировал сам", "ремонтировал"),
+    ("MacBook Pro 13, восстановленный аппарат", "восстановленный"),
+]:
+    check(f"«{_why}» → reject", analyze_condition(_txt).verdict == "reject")
+
+# ── Непрочитанное описание ≠ «проблем нет» (GST-73) ─────────────────────────
+# Корень бага: deep_analyze при капче/редиректе возвращал пустое описание,
+# и пустота была неотличима от чистого лота — карточка врала «✅ проблем нет».
+r = analyze_condition("Macbook air 15 m2 8 256 в Москве", desc_available=False)
+check("описание не прочитано → флаг desc_missing", r.desc_missing is True)
+check("описание не прочитано → НЕ обещаем «проблем нет»",
+      "явных проблем нет" not in r.summary())
+check("описание не прочитано → предупреждение в сводке", "не прочитано" in r.summary())
+check("описание не прочитано → нет бонуса к скорингу", r.score_delta == 0)
+
+r = analyze_condition("Macbook air 15 m2, не включается", desc_available=False)
+check("дефект в заголовке ловится и без описания", r.verdict == "reject")
+
+r = analyze_condition("Macbook air 15 m2 8 256 в Москве", desc_available=True)
+check("описание прочитано и чисто → обычный ok", r.verdict == "ok" and not r.desc_missing)
+check("описание прочитано и чисто → бонус к скорингу", r.score_delta > 0)
+check("описание прочитано и чисто → «проблем нет»", "явных проблем нет" in r.summary())
+
 
 # ─── 2. Робастная статистика живого рынка ────────────────────────────────────
 print("\n[2] Живой рынок (robust_stats / assess_deal)")
@@ -384,6 +432,49 @@ check("обработанные (кроме nobase) помечены seen",
       all(clean_url(c['url']) in s.seen for c in cards if 'nobase' not in c['url']))
 
 
+# ─── 12b. GST-73: подписка «моя цена» обходит рыночный гейт ──────────────────
+# fair_1 стоит 96 000 при медиане 100 000 — всего −4%, рыночный гейт его
+# отбрасывает (проверено выше). Но если владелец сам сказал «беру такую
+# конфигурацию до 96 000» — лот обязан прийти.
+print("\n[12b] Intake: подписка владельца")
+from common.subscriptions import make_subscription, match_from_config
+
+_cfg_fair = classify('MacBook Air 13 M2 16/256', None)
+_sub_fair = make_subscription(chat_id=1, model='MacBook Air 13 (2022, M2)',
+                              label='M2 16/256 ГБ', match=match_from_config(_cfg_fair),
+                              max_price=96000, url='u')
+_subs_store = {_sub_fair['id']: _sub_fair}
+_sv.load_subscriptions = lambda *a, **k: _subs_store
+_recorded = []
+_sv.record_hits = lambda ids, *a, **k: _recorded.append(list(ids))
+
+s3 = AvitoScannerV2(None)
+s3.__dict__.update({k: v for k, v in s.__dict__.items() if k != 'seen'})
+s3.seen = set()
+s3._raw_comps = lambda cfg: []
+_tg = []
+s3._send_telegram = lambda text, log: (_tg.append(text), True)[1]
+_notif3 = []
+s3.notify = lambda c: _notif3.append(c['url'])
+
+s3.process_cards([
+    {'url': 'https://www.avito.ru/fair_1',   'title': 'MacBook Air 13 M2 16/256', 'price': 96000},
+    {'url': 'https://www.avito.ru/broken_1', 'title': 'MacBook Air 13 M2 16/256', 'price': 70000},
+])
+
+check("подписка сработала, хотя маржа мала", any("ПО ПОДПИСКЕ" in t for t in _tg))
+check("в карточке названа подписка", any("M2 16/256" in t for t in _tg))
+check("в карточке есть запас до потолка", any("ниже твоего потолка" in t for t in _tg)
+      or all("96 000" in t for t in _tg if "ПО ПОДПИСКЕ" in t))
+check("лот по подписке не идёт вторым сообщением как сделка",
+      'https://www.avito.ru/fair_1' not in _notif3)
+check("срабатывание записано", _recorded and _sub_fair['id'] in _recorded[0])
+check("лот по подписке помечен seen", clean_url('https://www.avito.ru/fair_1') in s3.seen)
+# Гейт состояния остаётся: подписка — не повод покупать сломанное.
+check("брак по подписке не присылаем",
+      not any("broken_1" in t for t in _tg))
+
+
 # ─── 13. Слияние вотчлиста при гонке с ботом ─────────────────────────────────
 print("\n[13] merge_watchlist (бот добавил/удалил за прогон --watch)")
 from scanner_v2 import merge_watchlist
@@ -489,6 +580,27 @@ check("ветка живых компов сработала", 70000 in _recv.ge
 check("свою цену из компов исключили", 75000 not in _recv.get('comps', []))
 check("исходный bucket НЕ мутирован (копия)", 75000 in _buckets15[live_key(_cfg15)])
 check("seen помечен до сети", 'https://www.avito.ru/run_1' in s2.seen)
+
+# ── GST-73: непрочитанное описание доезжает до карточки честной пометкой ─────
+# Сценарий с реального алерта: Avito отдал капчу, описание не прочиталось, и
+# карточка сообщила «✅ явных проблем нет» по аппарату с заменой экрана.
+s2b = _sv.AvitoScannerV2.__new__(_sv.AvitoScannerV2)
+s2b.__dict__.update(s2.__dict__)
+s2b.seen = set()
+s2b.deep_analyze = lambda url: {
+    'cycles': None, 'is_urgent': False, 'price_reduced': False,
+    'specs': {'ram': 16, 'ssd': 512, 'diagonal': 13},
+    'is_private': True, 'seller_type': 'Частное лицо', 'seller_reviews': 2,
+    'location': 'Москва', 'desc_text': '', 'desc_ok': False}   # ← капча
+_L15b = {**_L15, 'url': 'https://www.avito.ru/run_blind',
+         'raw_url': 'https://www.avito.ru/run_blind'}
+_cand15b = s2b._build_candidate(_L15b, _cfg15, _stats2, 'live', _assess15,
+                                comps_for=lambda c: list(_buckets15.get(live_key(c), [])))
+check("лот без описания всё же оценивается", _cand15b is not None)
+_sum15b = _cand15b['condition'].summary()
+check("карточка НЕ обещает «явных проблем нет»", "явных проблем нет" not in _sum15b)
+check("карточка предупреждает о непрочитанном описании", "не прочитано" in _sum15b)
+check("бонус за чистоту не начислен", _cand15b['condition'].score_delta == 0)
 
 
 # ─── 16. run_intake: proc удаляется только при успехе ────────────────────────

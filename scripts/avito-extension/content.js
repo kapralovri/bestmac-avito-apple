@@ -2,6 +2,11 @@
 // Каждые ~75с: читает карточки из DOM страницы поиска Avito, дедупит (localStorage),
 // шлёт НОВЫЕ на bestmac.ru/api/intake и обновляет страницу.
 // Совместимо со старым Chrome (callback-форма chrome.storage, без await-promise API).
+//
+// GST-73: страница по-прежнему сама задаёт такт (быстрый путь), но теперь после
+// каждого прохода отправляет пульс в service worker. Если пульс пропал — сторож
+// в background.js вернёт вкладку к жизни. Молчаливая смерть вкладки была главной
+// причиной того, что сбор «работал час, а потом ничего».
 
 const DEFAULT_ENDPOINT = "https://bestmac.ru/api/intake";
 const REFRESH_MS = 75000;
@@ -18,6 +23,31 @@ function storageGet(keys) {
 }
 function storageSet(obj) {
   try { chrome.storage.local.set(obj); } catch (e) {}
+}
+
+// Пульс сторожу: «вкладка жива, прошла круг, вот что видела».
+// Ошибку глотаем — если SW спит или расширение перезагружают, это не повод
+// ронять сбор: sendMessage без слушателя бросает runtime.lastError.
+function beat(count, captcha) {
+  try {
+    chrome.runtime.sendMessage({ type: "beat", count: count, captcha: captcha }, () => {
+      void chrome.runtime.lastError;
+    });
+  } catch (e) {}
+}
+
+// Антибот Avito. div.firewall-container — тот же маркер, по которому капчу
+// детектит серверный сканер (scanner_v2.is_captcha_page), плюс текстовые
+// формулировки файрвола на случай смены вёрстки.
+function isCaptchaPage() {
+  try {
+    if (document.querySelector("div.firewall-container")) return true;
+    if (document.querySelector('[data-marker="captcha"]')) return true;
+    const t = (document.body && document.body.innerText || "").toLowerCase();
+    return t.includes("подтвердите, что вы не робот") ||
+           t.includes("доступ ограничен") ||
+           t.includes("похожи на автоматические");
+  } catch (e) { return false; }
 }
 
 function scrapeCards() {
@@ -47,13 +77,26 @@ function scheduleReload() {
 }
 
 async function tick() {
+  let scraped = [];
+  let captcha = false;
   try {
     const cfg = await storageGet(["endpoint", "token", "sent"]);
-    const scraped = scrapeCards();
+    captcha = isCaptchaPage();
+    scraped = captcha ? [] : scrapeCards();
     storageSet({ lastScraped: scraped.length, lastScrapeAt: Date.now() });
-    log("найдено карточек:", scraped.length, "| токен задан:", !!cfg.token);
+    log("найдено карточек:", scraped.length, "| капча:", captcha, "| токен задан:", !!cfg.token);
 
-    if (!cfg.token) { storageSet({ lastError: "нет токена (сохрани в попапе)" }); scheduleReload(); return; }
+    // Раньше капча выглядела как «просто 0 карточек»: вкладка молча крутила
+    // файрвол, а попап не показывал ни одной ошибки.
+    if (captcha) {
+      storageSet({ lastError: "капча Avito — откройте вкладку и пройдите проверку",
+                   lastAt: Date.now() });
+      beat(0, true);
+      scheduleReload();
+      return;
+    }
+
+    if (!cfg.token) { storageSet({ lastError: "нет токена (сохрани в попапе)" }); beat(0, false); scheduleReload(); return; }
     const endpoint = cfg.endpoint || DEFAULT_ENDPOINT;
 
     let seen;
@@ -61,7 +104,7 @@ async function tick() {
     catch (e) { seen = new Set(); }
     const fresh = scraped.filter((c) => !seen.has(c.url));
 
-    if (!fresh.length) { scheduleReload(); return; }
+    if (!fresh.length) { beat(scraped.length, false); scheduleReload(); return; }
 
     try {
       // Токен — в заголовке поверх HTTPS (не в теле). Кастомный заголовок делает
@@ -87,6 +130,7 @@ async function tick() {
   } catch (e) {
     log("tick упал:", e && e.message);
   }
+  beat(scraped.length, captcha);
   scheduleReload();
 }
 

@@ -37,6 +37,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from common.classifier import classify, config_to_db_key, processor_label
 from common.condition import analyze_condition
+from common.subscriptions import load_subscriptions, find_matches, record_hits
 from common.market import robust_stats, assess_deal, MarketStats
 from common.negotiator import motivation_score, MotivationReport
 from common.config import (
@@ -688,6 +689,8 @@ class AvitoScannerV2:
 
         # Кэш накопителя цен коллектора (живые компы для intake); грузится лениво
         self._raw_prices_cache = None
+        # Подписки владельца (GST-73); заполняются в начале прогона run_intake
+        self.subscriptions = {}
 
     def _start_browser(self):
         """Запускает Playwright-браузер."""
@@ -751,6 +754,28 @@ class AvitoScannerV2:
         if self.browser:
             self.browser.close()
 
+    def _fetch_item_soup(self, url):
+        """Грузит карточку лота → (soup | None, удалось_ли_прочитать_описание).
+
+        GST-73: одна повторная попытка, если страница не пришла или в ней нет
+        блока описания (капча, недогруз, смена вёрстки Avito). Раньше такой
+        промах молча превращался в «дефектов не найдено»; теперь мы пробуем
+        ещё раз, а факт неудачи уезжает наверх отдельным флагом, а не пустой
+        строкой, неотличимой от чистого описания.
+        """
+        soup = None
+        for attempt in (1, 2):
+            html = self._load_page(url)
+            if html:
+                soup = BeautifulSoup(html, 'lxml')
+                if soup.find('div', attrs={'data-marker': 'item-description'}):
+                    return soup, True
+            if attempt == 1:
+                logger.info(f"   ↻ описание не прочиталось — вторая попытка: {url[:60]}")
+                time.sleep(random.uniform(2, 4))
+        logger.warning(f"   ⚠️ описание так и не прочитано: {url[:60]}")
+        return soup, False
+
     def deep_analyze(self, url):
         """Заходит в объявление, собирает детали (включая полное описание для анализа состояния)."""
         result = {
@@ -763,14 +788,14 @@ class AvitoScannerV2:
             "seller_type": "?",
             "location": "",
             "desc_text": "",   # полный текст описания продавца (для анализа состояния)
+            "desc_ok": False,  # описание реально прочитано (а не «пусто из-за капчи»)
         }
-        html_content = self._load_page(url)
-        if not html_content:
+        soup, desc_ok = self._fetch_item_soup(url)
+        if soup is None:
             return result
+        result["desc_ok"] = desc_ok
 
         try:
-            soup = BeautifulSoup(html_content, 'lxml')
-
             # Описание
             desc_tag = soup.find('div', attrs={'data-marker': 'item-description'})
             desc_text = desc_tag.get_text(' ').lower() if desc_tag else ""
@@ -1173,6 +1198,8 @@ class AvitoScannerV2:
             if cfg.year and cfg.year < min_year:
                 continue
             cond = analyze_condition(' '.join([title, analysis.get('desc_text', '')]),
+                                     desc_available=bool(analysis.get('desc_ok')
+                                                         or analysis.get('desc_text')),
                                      battery_hard=BATTERY_HARD, battery_soft=BATTERY_SOFT,
                                      cycles_hard=CYCLES_HARD, cycles_soft=CYCLES_SOFT)
             if cond.is_reject:
@@ -1653,6 +1680,7 @@ class AvitoScannerV2:
         cond_text = ' '.join([L['title'], L['snippet'], analysis.get('desc_text', '')])
         condition = analyze_condition(
             cond_text,
+            desc_available=bool(analysis.get('desc_ok') or analysis.get('desc_text')),
             battery_hard=BATTERY_HARD, battery_soft=BATTERY_SOFT,
             cycles_hard=CYCLES_HARD, cycles_soft=CYCLES_SOFT,
         )
@@ -1713,6 +1741,65 @@ class AvitoScannerV2:
             'suspicious': assess.is_suspicious,
         }
 
+    def _notify_subscription(self, L, cfg, hits):
+        """GST-73: алерт по подписке «эта конфигурация дешевле моей цены».
+
+        Отдельное сообщение, а не карточка сделки: вопрос здесь другой. Сделка
+        отвечает «рынок ошибся», подписка — «появилось то, что я просил». Поэтому
+        ни маржа, ни MIN_NOTIFY_SCORE тут не спрашиваются: критерий задал человек.
+        Гейт состояния остаётся — аппарат с заменой экрана не нужен и за полцены.
+
+        Возвращает True, если сообщение ушло (тогда обычный путь пропускаем).
+        """
+        analysis = self.deep_analyze(L['raw_url'])
+        cond = analyze_condition(
+            ' '.join([L['title'], analysis.get('desc_text', '')]),
+            desc_available=bool(analysis.get('desc_ok') or analysis.get('desc_text')),
+            battery_hard=BATTERY_HARD, battery_soft=BATTERY_SOFT,
+            cycles_hard=CYCLES_HARD, cycles_soft=CYCLES_SOFT,
+        )
+        if cond.is_reject:
+            logger.info(f"   🔔⛔ по подписке, но брак: {L['title'][:40]} | {cond.summary()}")
+            return True   # лот разобран и отброшен — обычному пути делать нечего
+
+        price = L['price']
+        best = min(hits, key=lambda s: int(s.get('max_price') or 0))
+        margin_txt = ""
+        gap = int(best.get('max_price') or 0) - price
+        if gap > 0:
+            margin_txt = f" (на {gap:,} ₽ ниже твоего потолка)".replace(',', ' ')
+
+        # Рыночный контекст — справочно, если он вообще известен: подписка от
+        # него не зависит, но цифра помогает решить, торговаться ли.
+        market, _src = self._market_for(cfg, self._raw_comps(cfg))
+        market_line = ""
+        if market:
+            market_line = (f"📊 Рынок: медиана {market.median:,} ₽ "
+                           f"(по {market.n} лотам)\n").replace(',', ' ')
+
+        diag = f" {cfg.screen}\"" if cfg.screen else ""
+        loc = analysis.get('location') or ''
+        sub_model = html.escape(best.get('model') or '')
+        sub_label = html.escape(best.get('label') or '')
+        title = html.escape(L['title'])
+        text = (
+            "🔔 <b>ПО ПОДПИСКЕ</b>\n"
+            f"🎯 {sub_model} — {sub_label} "
+            f"• до {int(best.get('max_price') or 0):,} ₽\n\n".replace(',', ' ') +
+            f"💻 {title}\n"
+            f"⚙️ <b>{cfg.ram}GB / {cfg.ssd}GB{diag}</b>\n"
+            f"💰 Цена: <b>{price:,} ₽</b>{margin_txt}\n".replace(',', ' ') +
+            market_line +
+            f"🩺 Состояние: {cond.summary()}\n"
+            + (f"📍 {html.escape(loc)}\n" if loc else "")
+            + f"⏱ {L['age_str']}\n"
+            f"🔗 <a href='{L['url']}'>Открыть на Avito</a>"
+        )
+        if self._send_telegram(text, f"[подписка] {L['title'][:40]}"):
+            record_hits([s.get('id') for s in hits])
+            return True
+        return False
+
     def _dispatch_candidates(self, candidates):
         """Сортировка + рассылка кандидатов (общая для сканера и intake). Возвращает кол-во алертов."""
         candidates.sort(key=lambda x: x['score'], reverse=True)
@@ -1740,6 +1827,11 @@ class AvitoScannerV2:
         self._warmup()
         candidates = []
         raw_batch = {}   # live_key -> [цены] для накопителя (--modal-report)
+        # Подписки читаем один раз на прогон: бот мог их поменять с прошлого раза.
+        self.subscriptions = load_subscriptions()
+        sub_hits = 0
+        if self.subscriptions:
+            logger.info(f"🔔 Подписок активно: {len(self.subscriptions)}")
         for card in cards:
             try:
                 raw_url = card.get('url') or ''
@@ -1759,6 +1851,16 @@ class AvitoScannerV2:
                 msk = 1 if (loc and is_moscow(loc)) else (0 if loc else None)
                 raw_batch.setdefault(str(live_key(cfg)), []).append(
                     [L['price'], int(time.time()), msk])
+                # GST-73: подписка владельца проверяется ДО рыночных гейтов.
+                # «Нужная модель по моей цене» — его собственный критерий, и он
+                # не обязан совпадать с выгодой относительно медианы; лот может
+                # и вовсе не иметь рынка (база пуста, компов мало), но владельца
+                # он всё равно интересует. Гейт состояния при этом остаётся.
+                hits = find_matches(self.subscriptions, cfg, L['price'])
+                if hits and self._notify_subscription(L, cfg, hits):
+                    self.seen.add(url)
+                    sub_hits += 1
+                    continue   # один лот — одно сообщение, обычный путь пропускаем
                 # Рынок: база (Москва) → при её отсутствии/протухании — накопитель
                 # коллектора (живые всероссийские цены). Если рынка нет совсем —
                 # НЕ помечаем seen: резервный VPS-сканер построит живой рынок из
@@ -1788,7 +1890,9 @@ class AvitoScannerV2:
         self._close()
         self._write_proc_stats(len(cards), len(candidates), sent)
         self._accumulate_raw(raw_batch)
-        logger.info(f"🏁 Intake: карточек {len(cards)}, кандидатов {len(candidates)}, алертов {sent}")
+        sub_tail = f", по подписке {sub_hits}" if sub_hits else ""
+        logger.info(f"🏁 Intake: карточек {len(cards)}, кандидатов {len(candidates)}, "
+                    f"алертов {sent}{sub_tail}")
 
     def _accumulate_raw(self, raw_batch):
         """Дописывает цены партии в intake-raw-prices.json (скользящее окно RAW_CAP на конфиг)."""
