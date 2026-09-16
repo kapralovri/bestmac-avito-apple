@@ -1,5 +1,446 @@
 {
-  "generated_at": "2026-09-16 12:33",
-  "count": 0,
-  "listings": []
+  "generated_at": "2026-09-16 17:38",
+  "count": 44,
+  "listings": [
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 15000,
+      "url": "https://www.avito.ru/kommunarka/nastolnye_kompyutery/mac_mini_m1_m2_8256_7288581261",
+      "title": "Mac mini m1 m2 8/256 в Коммунарке",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 31990,
+      "url": "https://www.avito.ru/sankt-peterburg/nastolnye_kompyutery/mac_mini_m1_8gb256gb_obmentrade-in_8180394871",
+      "title": "Mac mini m1 8gb/256gb Обмен/Trade-in в Санкт-Петербурге",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 32170,
+      "url": "https://www.avito.ru/magnitogorsk/nastolnye_kompyutery/apple_mac_mini_m1_8_cpu_8gb_256gb_7366289110",
+      "title": "Apple mac Mini M1 8 CPU / 8GB / 256GB в Магнитогорске",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 33990,
+      "url": "https://www.avito.ru/perm/nastolnye_kompyutery/apple_mac_mini_m1_8256gb_space_gray_8322185238",
+      "title": "Apple Mac Mini M1 8/256GB Space Gray в Перми",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 34000,
+      "url": "https://www.avito.ru/penza/nastolnye_kompyutery/apple_mac_mini_2020_m1_8gb256gb_3699873142",
+      "title": "Apple Mac mini 2020 M1 8gb/256gb в Пензе",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 35000,
+      "url": "https://www.avito.ru/taganrog/nastolnye_kompyutery/apple_mac_mini_m1_8gb_256gb_8177714068",
+      "title": "Apple Mac Mini m1 8Gb / 256Gb в Таганроге",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 36000,
+      "url": "https://www.avito.ru/ekaterinburg/nastolnye_kompyutery/mac_mini_m1_8_256_8361536012",
+      "title": "Mac mini m1 8 256 в Екатеринбурге",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 37000,
+      "url": "https://www.avito.ru/norilsk/nastolnye_kompyutery/novyy_mac_mini_m18256_3497421769",
+      "title": "Новый Mac mini m1/8/256 в Норильске",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 44800,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_mac_mini_m1_8gb_ssd_256gb_silver_mgnr3rua_2243711111",
+      "title": "Apple Mac mini M1, 8Gb, SSD 256Gb Silver mgnr3RU/A в Москве",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 44999,
+      "url": "https://www.avito.ru/naberezhnye_chelny/nastolnye_kompyutery/apple_mac_mini_m1_novye_8198172618",
+      "title": "Apple mac mini m1 новые в Набережных Челнах",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 49955,
+      "url": "https://www.avito.ru/sankt-peterburg/nastolnye_kompyutery/mac_mini_m1_8256_novyy_ofits_2070993866",
+      "title": "Mac mini M1 8/256 новый офиц в Санкт-Петербурге",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 49999,
+      "url": "https://www.avito.ru/sankt-peterburg/nastolnye_kompyutery/m1_mac_mini_8256_novyy_ru_2547285923",
+      "title": "M1 Mac mini 8/256 новый RU в Санкт-Петербурге",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 256,
+      "price": 59375,
+      "url": "https://www.avito.ru/agalatovo/nastolnye_kompyutery/kompyuter_mac_mini_m1_monitor_27_240_gts_8292036511",
+      "title": "Компьютер: Mac mini m1 + монитор 27\" 240 Гц в Агалатово",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 38000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m1_8gb512gb_a2348_mgnt3rua_8403504452",
+      "title": "Mac Mini M1 8gb/512gb A2348 mgnt3RU/A в Москве",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 39990,
+      "url": "https://www.avito.ru/krasnodar/nastolnye_kompyutery/mac_mini_m1_2020_8512gb_8113188690",
+      "title": "Mac Mini (M1, 2020) 8/512GB в Краснодаре",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 40000,
+      "url": "https://www.avito.ru/himki/nastolnye_kompyutery/mac_mini_2020_m1_8512_8209615659",
+      "title": "Mac mini 2020 M1 8/512 в Химках",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 44990,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_mac_mini_m1_512_3590795156",
+      "title": "Apple mac mini m1 512 в Москве",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 44999,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/pochti_novyy_mac_mini_m1_2020_8512_na_garantii_3097664438",
+      "title": "Почти новый Mac Mini M1 2020 8/512 на гарантии в Москве",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 44999,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m1_8_ram_512_ssd_garantiya_8090276969",
+      "title": "Mac mini M1 8 RAM 512 SSD гарантия в Москве",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "price": 54500,
+      "url": "https://www.avito.ru/vladimir/nastolnye_kompyutery/apple_mac_mini_m1_8512gb_3656999509",
+      "title": "Apple mac mini m1 8/512gb в Владимире",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "price": 35000,
+      "url": "https://www.avito.ru/chelyabinsk/nastolnye_kompyutery/mac_mini_m1_16gb_256gb_8449235995",
+      "title": "Mac mini m1 16gb 256gb в Челябинске",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "price": 39000,
+      "url": "https://www.avito.ru/arhangelskaya_oblast_mirnyy/nastolnye_kompyutery/mac_mini_m1_16gb_3716132033",
+      "title": "Mac mini m1 16Gb в Мирном",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "price": 40000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_mac_mini_m1_16gb_256gb_8309294236",
+      "title": "Apple Mac mini m1 16gb 256gb в Москве",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "price": 42222,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m1_16gb_8395764126",
+      "title": "Mac Mini M1 16GB в Москве",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "price": 42990,
+      "url": "https://www.avito.ru/novosibirsk/nastolnye_kompyutery/mac_mini_2021_m1_16_gb_512_ssd_otlichnyy_8387632902",
+      "title": "Mac mini 2021 M1 16 GB / 512 SSD Отличный в Новосибирске",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "price": 42999,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m1_2020_16256_na_garantii_2521132908",
+      "title": "Mac Mini M1 2020 16/256 на гарантии в Москве",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "price": 44000,
+      "url": "https://www.avito.ru/nizhniy_novgorod/nastolnye_kompyutery/apple_mac_mini_m1_4204245769",
+      "title": "Apple Mac Mini m1 в Нижнем Новгороде",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "price": 44990,
+      "url": "https://www.avito.ru/novosibirsk/nastolnye_kompyutery/mac_mini_2021_m1_16_gb_512_ssd_8232823243",
+      "title": "Mac mini 2021 M1 / 16 GB / 512 SSD в Новосибирске",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "price": 44999,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m1_16_gb_ram_250_gb_ssd_na_garantii_3611109032",
+      "title": "Mac mini M1 16 GB RAM 250 GB SSD на гарантии в Москве",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 256,
+      "price": 70000,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/kompyuter_mac_mini_m1_16256_monitor_led_27_8351952393",
+      "title": "Компьютер Mac mini M1 16/256 + Монитор LED 27 в Москве",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 512,
+      "price": 45000,
+      "url": "https://www.avito.ru/moskovskaya_oblast_krasnogorsk/nastolnye_kompyutery/mac_mini_m1_2020_8222795234",
+      "title": "Mac mini m1 2020 в Красногорске",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 512,
+      "price": 45000,
+      "url": "https://www.avito.ru/voronezh/nastolnye_kompyutery/apple_mac_mini_m1_16_gb_512_gb_ssd_8227422754",
+      "title": "Apple Mac Mini M1 16 Gb 512 Gb SSD в Воронеже",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 512,
+      "price": 46000,
+      "url": "https://www.avito.ru/kazan/nastolnye_kompyutery/mac_mini_m1_16512_gb_horoshee_sostoyanie_8232104865",
+      "title": "Mac mini M1 16/512 гб — хорошее состояние в Казани",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 512,
+      "price": 46500,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m1_16gb_512_gb_8352142313",
+      "title": "Mac mini m1 16gb 512 gb в Москве",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 512,
+      "price": 48999,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/mac_mini_m1_16512_ssd_na_garantii_2265479491",
+      "title": "Mac Mini M1 16/512 SSD на гарантии в Москве",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 512,
+      "price": 50000,
+      "url": "https://www.avito.ru/vladivostok/nastolnye_kompyutery/mac_mini_m1_16512_satechi_dock_station_2535602565",
+      "title": "Mac mini M1 16/512 + Satechi Dock Station в Владивостоке",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 512,
+      "price": 54376,
+      "url": "https://www.avito.ru/bryansk/nastolnye_kompyutery/mac_mini_m1_16gb_512gb_8204318139",
+      "title": "Mac mini m1 16gb 512gb в Брянске",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 512,
+      "price": 70000,
+      "url": "https://www.avito.ru/amurskaya_oblast_blagoveschensk/nastolnye_kompyutery/apple_mac_mini_m1_2509896187",
+      "title": "Apple Mac Mini m1 в Благовещенске",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 1024,
+      "price": 56700,
+      "url": "https://www.avito.ru/moskva/nastolnye_kompyutery/apple_mac_mini_m1_16gb_1tb_8234882388",
+      "title": "Apple mac mini m1 16gb 1tb в Москве",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 1024,
+      "price": 82500,
+      "url": "https://www.avito.ru/novosibirsk/nastolnye_kompyutery/imac_24_2021_m1_16_gb_256_ssd_8375405809",
+      "title": "iMac 24 2021 M1 16 GB / 256 SSD в Новосибирске",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 2048,
+      "price": 80000,
+      "url": "https://www.avito.ru/sankt-peterburg/nastolnye_kompyutery/mac_mini_m1_16gb_2tb_aksessuary_8253836372",
+      "title": "Mac mini m1 16gb 2tb + аксессуары в Санкт-Петербурге",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M1",
+      "ram": 16,
+      "ssd": 2048,
+      "price": 85000,
+      "url": "https://www.avito.ru/sankt-peterburg/nastolnye_kompyutery/mac_mini_m1_8c_gpu_16gb_2tb_ssd_3150437401",
+      "title": "Mac mini M1, 8c GPU/ 16gb/ 2TB SSD в Санкт-Петербурге",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M4",
+      "ram": 16,
+      "ssd": 512,
+      "price": 62500,
+      "url": "https://www.avito.ru/novosibirsk/nastolnye_kompyutery/mac_mini_2024_m4_16_gb_256_ssd_8387401899",
+      "title": "Mac mini 2024 M4 16 GB / 256 SSD в Новосибирске",
+      "seen_at": "2026-09-16 17:38"
+    },
+    {
+      "model_name": "mac mini m1",
+      "processor": "Apple M4",
+      "ram": 16,
+      "ssd": 512,
+      "price": 64500,
+      "url": "https://www.avito.ru/novosibirsk/nastolnye_kompyutery/mac_mini_2024_m4_16_gb_256_ssd_8292260298",
+      "title": "Mac mini 2024 M4 / 16 GB / 256 SSD в Новосибирске",
+      "seen_at": "2026-09-16 17:38"
+    }
+  ]
 }
