@@ -1969,12 +1969,12 @@
       "processor": "Apple M1",
       "ram": 8,
       "ssd": 256,
-      "min_price": 20000,
-      "max_price": 54000,
-      "median_price": 40000,
-      "buyout_price": 32000,
+      "min_price": 30000,
+      "max_price": 59999,
+      "median_price": 44990,
+      "buyout_price": 35000,
       "samples_count": 15,
-      "updated_at": "2026-09-12 05:10",
+      "updated_at": "2026-09-20 05:10",
       "collector_synced": true
     },
     {
