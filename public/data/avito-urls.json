@@ -1,6 +1,6 @@
 {
   "description": "Опции дропдаунов фронта. Автогенерируется парсером.",
-  "updated_at": "2026-09-19",
+  "updated_at": "2026-09-22",
   "entries": [
     {
       "family": "",
@@ -160,6 +160,14 @@
       "processor": "Apple M3",
       "ram": 96,
       "ssd": 1024,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
+    },
+    {
+      "family": "Mac Studio",
+      "model_name": "Mac Studio M4 Max",
+      "processor": "Apple M4",
+      "ram": 36,
+      "ssd": 512,
       "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?cd=1&f=ASgBAgICAUSwsxT~oY8D&q=mac+studio+m1"
     },
     {
@@ -1584,6 +1592,14 @@
       "processor": "Apple M5",
       "ram": 16,
       "ssd": 1024,
+      "url": ""
+    },
+    {
+      "family": "MacBook Air",
+      "model_name": "MacBook Air 13 M5",
+      "processor": "Apple M5",
+      "ram": 24,
+      "ssd": 512,
       "url": ""
     },
     {
