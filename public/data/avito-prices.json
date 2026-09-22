@@ -1941,12 +1941,12 @@
       "processor": "Apple M4",
       "ram": 16,
       "ssd": 512,
-      "min_price": 82000,
-      "max_price": 156310,
-      "median_price": 124990,
-      "buyout_price": 99000,
+      "min_price": 105990,
+      "max_price": 159490,
+      "median_price": 125000,
+      "buyout_price": 100000,
       "samples_count": 8,
-      "updated_at": "2026-09-15 05:10",
+      "updated_at": "2026-09-22 05:10",
       "collector_synced": true
     },
     {
@@ -1955,12 +1955,12 @@
       "processor": "Apple M4",
       "ram": 24,
       "ssd": 512,
-      "min_price": 95000,
+      "min_price": 110000,
       "max_price": 345480,
       "median_price": 139990,
       "buyout_price": 111000,
       "samples_count": 8,
-      "updated_at": "2026-09-15 05:10",
+      "updated_at": "2026-09-22 05:10",
       "collector_synced": true
     },
     {
@@ -2521,11 +2521,11 @@
       "ram": 24,
       "ssd": 512,
       "min_price": 160000,
-      "max_price": 244990,
-      "median_price": 180495,
-      "buyout_price": 144000,
+      "max_price": 252500,
+      "median_price": 189990,
+      "buyout_price": 151000,
       "samples_count": 13,
-      "updated_at": "2026-09-15 05:10",
+      "updated_at": "2026-09-22 05:10",
       "collector_synced": true
     },
     {
@@ -2883,12 +2883,12 @@
       "processor": "Apple M5",
       "ram": 24,
       "ssd": 1024,
-      "min_price": 207000,
-      "max_price": 292990,
-      "median_price": 257400,
-      "buyout_price": 205000,
+      "min_price": 218390,
+      "max_price": 286990,
+      "median_price": 253745,
+      "buyout_price": 202000,
       "samples_count": 17,
-      "updated_at": "2026-09-15 05:10",
+      "updated_at": "2026-09-22 05:10",
       "collector_synced": true
     },
     {
@@ -3208,6 +3208,20 @@
       "buyout_price": 163000,
       "samples_count": 13,
       "updated_at": "2026-09-21 05:10",
+      "collector_synced": true
+    },
+    {
+      "model_name": "MacBook Air 13 M5",
+      "family": "MacBook Air",
+      "processor": "Apple M5",
+      "ram": 24,
+      "ssd": 512,
+      "min_price": 123990,
+      "max_price": 167990,
+      "median_price": 123990,
+      "buyout_price": 99000,
+      "samples_count": 13,
+      "updated_at": "2026-09-22 05:10",
       "collector_synced": true
     }
   ]
