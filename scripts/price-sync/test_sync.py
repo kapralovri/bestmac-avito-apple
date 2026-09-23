@@ -154,6 +154,22 @@ stats = [row(50000, updated="2026-07-01 10:00", override=True)]
 u, i, _ = sync_stats(stats, {K_AIR: msk20}, now=NOW)
 check("оверрайд сильной выборкой не перебить", u == 0 and stats[0]["median_price"] == 50000)
 
+# ─── GST-77: идентичность строк ──────────────────────────────────────────────
+print("\n[6] GST-77: синк по идентичности строки")
+sk = _key_to_row_skeleton("('Mac mini', 'M4', 'Pro', None, 24, 512)")
+check("новая строка: процессор с уровнем чипа", bool(sk) and sk["processor"] == "Apple M4 Pro")
+
+# Строка парсера под подписью вкладки: «Mac Studio m1» при процессоре M4 Max.
+K_STUDIO = "('Mac Studio', 'M4', 'Max', None, 64, 1024)"
+studio = {"model_name": "Mac Studio m1", "family": "Mac Studio", "processor": "Apple M4 Max",
+          "ram": 64, "ssd": 1024, "min_price": 380000, "max_price": 420000,
+          "median_price": 400000, "buyout_price": 320000, "samples_count": 7,
+          "updated_at": "2026-05-01 10:00"}   # старше 30 дней — синк её обновит
+stats = [dict(studio)]
+u, i, _ = sync_stats(stats, {K_STUDIO: entries([390000 + k * 1000 for k in range(8)], msk=1)}, now=NOW)
+check("строку под подписью вкладки синк находит по идентичности", u == 1 and i == 0)
+check("и не плодит дубль", len(stats) == 1)
+
 print()
 if _fails:
     print(f"❌ ПРОВАЛЕНО {len(_fails)}: " + "; ".join(_fails))

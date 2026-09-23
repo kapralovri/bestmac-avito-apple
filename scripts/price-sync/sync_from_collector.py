@@ -31,6 +31,7 @@ sys.path.insert(0, str(SD.parent / "hot-deals-scanner"))  # scanner_v2
 
 from scanner_v2 import modal_center, live_key, db_entry_is_stale, _norm_raw_entry  # noqa: E402
 from common.classifier import classify  # noqa: E402
+from common.price_identity import row_identity, canonical_processor  # noqa: E402
 
 PRICES_FILE = Path(os.environ.get('PRICES_FILE_PATH', SD / "../../public/data/avito-prices.json"))
 RAW_FILE = Path(os.environ.get('INTAKE_RAW_PRICES_PATH', SD / "../../public/data/intake-raw-prices.json"))
@@ -64,7 +65,10 @@ def _key_to_row_skeleton(key_str):
     if not c.is_valid or str(live_key(c)) != key_str:
         return None   # синтез имени не сошёлся с классификатором — не рискуем
     return {
-        "model_name": model_name, "family": family, "processor": f"Apple {chip}",
+        # GST-77: процессор с уровнем чипа. Раньше писался f"Apple {chip}" — Pro/Max/Ultra
+        # терялся, и строка «Mac mini M4 Pro» получала процессор «Apple M4».
+        "model_name": model_name, "family": family,
+        "processor": canonical_processor((family, chip, tier, screen, int(ram), int(ssd))),
         "ram": int(ram), "ssd": int(ssd),
     }
 
@@ -79,16 +83,18 @@ def sync_stats(stats, raw_store, now=None,
     cutoff = now_ts - max_age_days * 86400
     stamp = now.strftime("%Y-%m-%d %H:%M")
 
-    # индекс строк базы по live_key (дубликаты конфига — все в список)
+    # индекс строк базы по идентичности (дубликаты конфига — все в список).
+    # GST-77: правило price_identity, а не classify(имя + процессор): иначе строки
+    # парсера под подписью вкладки («Mac Studio m1» при M4 Max) не находятся, и синк
+    # вставляет рядом дубль.
     idx = {}
     for s in stats:
         try:
-            c = classify(f"{s['model_name']} {s.get('processor', '')}",
-                         {'ram': int(s.get('ram', 0)), 'ssd': int(s.get('ssd', 0))})
-            if c.is_valid:
-                idx.setdefault(str(live_key(c)), []).append(s)
+            key = row_identity(s)
         except Exception:
             continue
+        if key is not None:
+            idx.setdefault(str(key), []).append(s)
 
     updated, inserted, changes = 0, 0, []
     for key, entries in sorted(raw_store.items()):
