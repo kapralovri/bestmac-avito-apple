@@ -6,11 +6,17 @@ import {
   slugToModelName,
   modelShortName,
   modelNameFromSlug,
+  modelMatchFromSlug,
+  modelToSlug,
   ALL_BUYOUT_MODELS,
 } from '@/lib/model-slugs';
-import { faqData } from '@/lib/schema';
 import { generateBreadcrumbSchema } from '@/lib/structured-data';
+import { loadAvitoPricesServer } from '@/lib/server-prices';
+import { getPriceModelSlugs } from '@/lib/price-pages';
+import { buildSellModelPrices, buildModelFaq, ageDays } from '@/lib/sell-prices';
+import { FAMILY_FAQ } from '@/data/family-faq';
 import SellModel from '@/views/SellModel';
+import SellPriceBlock from '@/components/sell/SellPriceBlock';
 
 interface AvitoUrlsData {
   entries: Array<{ model_name: string }>;
@@ -75,10 +81,24 @@ export default async function SellModelPage({
   if (!modelName) notFound();
 
   const shortName = modelShortName(modelName);
-  const faqs = faqData.sell;
 
-  // Серверная разметка: хлебные крошки + FAQ. Рендерится в HTML, в отличие от
-  // клиентского калькулятора ниже.
+  // GST-78: цены модели по семейству, диагонали и чипу (не по названию).
+  const match = modelMatchFromSlug(model_slug);
+  const data = await loadAvitoPricesServer();
+  const now = new Date();
+  const prices = buildSellModelPrices(data?.stats, match, now);
+  const updatedLabel = prices.latestUpdate && ageDays(prices.latestUpdate, now) !== null
+    ? formatUpdated(prices.latestUpdate)
+    : '';
+
+  // Рыночные цены: страница /ceny той же модели, если строки лежат под одним
+  // названием и такая страница есть; иначе общий индекс.
+  const cenySlugs = await getPriceModelSlugs();
+  const onlyName = prices.sourceModelNames.length === 1 ? modelToSlug(prices.sourceModelNames[0]) : '';
+  const cenyHref = onlyName && cenySlugs.includes(onlyName) ? `/ceny/${onlyName}` : '/ceny';
+
+  const faqs = [...buildModelFaq(shortName, prices), ...(match ? FAMILY_FAQ[match.family] ?? [] : [])];
+
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Главная', url: '/' },
     { name: 'Выкуп', url: '/sell' },
@@ -103,10 +123,18 @@ export default async function SellModelPage({
         }}
       />
 
-      {/* Интерактивный калькулятор — клиентский островок. H1/интро резолвятся на сервере через props. */}
-      <SellModel modelName={modelName} slug={model_slug} />
+      {/* Интерактивный калькулятор — клиентский островок; конфигурации приходят с сервера. */}
+      <SellModel
+        modelName={modelName}
+        slug={model_slug}
+        configs={prices.configs}
+        totalListings={data?.total_listings ?? 0}
+        updatedLabel={updatedLabel}
+      />
 
-      {/* Серверный FAQ-блок: реальный, извлекаемый текст в HTML (для Яндекса и AI-поиска). */}
+      <SellPriceBlock shortName={shortName} prices={prices} updatedLabel={updatedLabel} cenyHref={cenyHref} />
+
+      {/* Серверный FAQ: вопросы модели из данных + блок семейства (GST-78). */}
       <section className="container mx-auto px-4 pb-16">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">
@@ -124,4 +152,11 @@ export default async function SellModelPage({
       </section>
     </>
   );
+}
+
+/** «2026-09-21 09:00» → «21 сентября 2026». Старый формат парсера — через Date. */
+function formatUpdated(updatedAt: string): string {
+  const iso = /^(\d{4}-\d{2}-\d{2})/.exec(updatedAt);
+  const d = new Date(iso ? `${iso[1]}T12:00:00` : updatedAt);
+  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
 }

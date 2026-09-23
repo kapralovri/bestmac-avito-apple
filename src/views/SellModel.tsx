@@ -1,226 +1,88 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
-import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation";
 import { motion } from 'framer-motion';
-import {
-  loadAvitoPrices,
-  loadAvitoUrls,
-  getModelsFromConfig,
-  getProcessorsFromConfig,
-  getRamFromConfig,
-  getSsdFromConfig,
-  findPriceStat,
-  calculateBuyoutPrice,
-  formatSsd,
-  formatPrice,
-  filterModels
-} from '@/lib/avito-prices';
-import type { ConditionValue, AvitoPricesData } from '@/types/avito-prices';
+import { calculateBuyoutPrice, formatSsd, formatPrice } from '@/lib/avito-prices';
+import type { AvitoPriceStat, ConditionValue } from '@/types/avito-prices';
 import { CONDITIONS } from '@/types/avito-prices';
+import { ramOptions, ssdOptions, findConfig, type SellConfig } from '@/lib/sell-prices';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import Breadcrumbs from '@/components/Breadcrumbs';
-import { Clock, Wallet, TrendingUp, Shield, BarChart3, Cpu, HardDrive, MemoryStick, Sparkles, Search, X, Check } from 'lucide-react';
-import { slugToModelName, modelShortName, modelToSlug, POPULAR_MODELS } from '@/lib/model-slugs';
-import { generateBreadcrumbSchema } from '@/lib/structured-data';
+import LeadForm from '@/components/LeadForm';
+import { Clock, Wallet, TrendingUp, Shield, BarChart3, Cpu, HardDrive, MemoryStick, Sparkles, Check, Camera } from 'lucide-react';
+import { modelShortName, POPULAR_MODELS } from '@/lib/model-slugs';
 import Link from "next/link";
 
-interface AvitoUrlsData {
-  description: string;
-  updated_at: string;
-  entries: Array<{
-    model_name: string;
-    processor: string;
-    ram: number;
-    ssd: number;
-    url: string;
-  }>;
-}
+const TELEGRAM_URL = 'https://t.me/romanmanro';
 
 interface SellModelProps {
-  /** Название модели, отрезолвленное на сервере по slug (для серверного H1/интро). */
-  modelName?: string;
-  /** slug из серверного маршрута (приоритетнее useParams при SSR). */
-  slug?: string;
+  /** Название модели из каталога, отрезолвленное на сервере по slug. */
+  modelName: string;
+  slug: string;
+  /**
+   * GST-78: конфигурации модели с сервера (src/lib/sell-prices.ts). Раньше
+   * калькулятор искал модель в avito-urls.json по точному названию и на 22
+   * страницах из 31 не находил ничего.
+   */
+  configs: SellConfig[];
+  totalListings: number;
+  updatedLabel: string;
 }
 
-const SellModel = ({ modelName: initialModelName = '', slug = '' }: SellModelProps) => {
-  const params = useParams<{ model_slug: string }>();
-  const model_slug = slug || params?.model_slug || '';
-  const router = useRouter();
+type Result =
+  | { kind: 'price'; marketMin: number; marketMax: number; marketMedian: number; buyoutPrice: number; samplesCount: number; manual: boolean }
+  | { kind: 'photo' };
 
-  const [data, setData] = useState<AvitoPricesData | null>(null);
-  const [urlsData, setUrlsData] = useState<AvitoUrlsData | null>(null);
-  const [totalListings, setTotalListings] = useState(0);
-  const [lastUpdate, setLastUpdate] = useState<string>('');
-  // Сеем из серверного props, чтобы H1/интро были в HTML уже при SSR.
-  const [resolvedModel, setResolvedModel] = useState<string>(initialModelName);
+/** calculateBuyoutPrice работает со строкой базы — собираем её из конфигурации. */
+function toStat(c: SellConfig): AvitoPriceStat {
+  return {
+    model_name: '', processor: c.processor, ram: c.ram, ssd: c.ssd,
+    median_price: c.medianPrice, min_price: c.minPrice, max_price: c.maxPrice,
+    buyout_price: c.buyoutPrice, samples_count: c.samplesCount, updated_at: c.updatedAt,
+  };
+}
 
-  // Стараемся резолвить модель синхронно (важно для SEO/валидаторов),
-  // чтобы мета-теги не были "пустыми" до загрузки JSON.
-  const popularModelName = useMemo(() => {
-    if (initialModelName) return initialModelName;
-    if (!model_slug) return '';
-    return POPULAR_MODELS.find((m) => m.slug === model_slug)?.name ?? '';
-  }, [model_slug, initialModelName]);
-
-  // Форма
-  const [modelName, setModelName] = useState(initialModelName);
-  const [modelSearch, setModelSearch] = useState('');
-  const [isModelOpen, setIsModelOpen] = useState(false);
-  const [processor, setProcessor] = useState('');
+const SellModel = ({ modelName, slug, configs, totalListings, updatedLabel }: SellModelProps) => {
   const [ram, setRam] = useState<number | ''>('');
   const [ssd, setSsd] = useState<number | ''>('');
   const [condition, setCondition] = useState<ConditionValue>('excellent');
+  const [result, setResult] = useState<Result | null>(null);
 
-  // Результат
-  const [result, setResult] = useState<{
-    marketMin: number;
-    marketMax: number;
-    marketMedian: number;
-    buyoutPrice: number;
-    samplesCount: number;
-    isRareModel?: boolean;
-  } | null>(null);
+  const shortName = modelShortName(modelName);
+  const processor = configs[0]?.processor ?? '';
+  const noData = configs.length === 0;
+  const ramList = useMemo(() => ramOptions(configs), [configs]);
+  const ssdList = useMemo(() => (ram ? ssdOptions(configs, Number(ram)) : []), [configs, ram]);
 
-  // Загрузка данных
-  useEffect(() => {
-    loadAvitoUrls().then(setUrlsData);
-    loadAvitoPrices().then((loadedData) => {
-      setData(loadedData);
-      setTotalListings(loadedData.total_listings);
-      if (loadedData.generated_at) {
-        const date = new Date(loadedData.generated_at);
-        setLastUpdate(date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }));
-      }
-    });
-  }, []);
-
-  // Автовыбор модели по slug
-  useEffect(() => {
-    if (!urlsData || !model_slug) return;
-    const allModels = getModelsFromConfig(urlsData);
-    const matched = slugToModelName(model_slug, allModels);
-    if (matched) {
-      setModelName(matched);
-      setResolvedModel(matched);
-    } else if (initialModelName) {
-      // Модель валидна (отрезолвлена на сервере из каталога), но её нет в данных
-      // Avito — сохраняем серверное название, без редиректа на /sell.
-      setModelName(initialModelName);
-      setResolvedModel(initialModelName);
-    } else {
-      router.replace('/sell');
-    }
-  }, [urlsData, model_slug, router, initialModelName]);
-
-  // Автовыбор процессора если один
-  useEffect(() => {
-    if (!urlsData || !modelName) return;
-    const procs = getProcessorsFromConfig(urlsData, modelName);
-    if (procs.length === 1) setProcessor(procs[0]);
-  }, [urlsData, modelName]);
-
-  const models = useMemo(() => {
-    if (!urlsData) return [];
-    return filterModels(getModelsFromConfig(urlsData), modelSearch);
-  }, [urlsData, modelSearch]);
-
-  const processorOptions = useMemo(() => {
-    if (!urlsData || !modelName) return [];
-    return getProcessorsFromConfig(urlsData, modelName);
-  }, [urlsData, modelName]);
-
-  const ramOptions = useMemo(() => {
-    if (!urlsData || !modelName || !processor) return [];
-    return getRamFromConfig(urlsData, modelName, processor);
-  }, [urlsData, modelName, processor]);
-
-  const ssdOptions = useMemo(() => {
-    if (!urlsData || !modelName || !processor || !ram) return [];
-    return getSsdFromConfig(urlsData, modelName, processor, Number(ram));
-  }, [urlsData, modelName, processor, ram]);
-
-  useEffect(() => {
-    if (resolvedModel && modelName !== resolvedModel) {
-      // User changed model — redirect to generic sell or new slug
-      const newSlug = modelToSlug(modelName);
-      router.replace(`/sell/${newSlug}`);
-    }
-  }, [modelName]);
-
-  useEffect(() => { setProcessor(''); setRam(''); setSsd(''); setResult(null); }, [modelName]);
-  useEffect(() => { setRam(''); setSsd(''); setResult(null); }, [processor]);
   useEffect(() => { setSsd(''); setResult(null); }, [ram]);
+  useEffect(() => { setResult(null); }, [ssd, condition]);
 
   const handleCalculate = () => {
-    if (!data || !modelName || !processor || !ram || !ssd) return;
-    const stat = findPriceStat(data.stats, modelName, Number(ram), Number(ssd), processor);
-    if (!stat || stat.samples_count < 2) {
-      setResult({ marketMin: 0, marketMax: 0, marketMedian: 0, buyoutPrice: 0, samplesCount: stat?.samples_count ?? 0, isRareModel: true });
+    if (!ram || !ssd) return;
+    const cfg = findConfig(configs, Number(ram), Number(ssd));
+    // GST-78: сумму показываем только по надёжной конфигурации — иначе оценка по фото.
+    if (!cfg || !cfg.reliable) {
+      setResult({ kind: 'photo' });
       return;
     }
-    const priceResult = calculateBuyoutPrice(stat, condition);
-    setResult({ marketMin: priceResult.marketMin, marketMax: priceResult.marketMax, marketMedian: priceResult.marketMedian, buyoutPrice: priceResult.buyoutPrice, samplesCount: priceResult.samplesCount, isRareModel: false });
+    const r = calculateBuyoutPrice(toStat(cfg), condition);
+    setResult({
+      kind: 'price', marketMin: r.marketMin, marketMax: r.marketMax, marketMedian: r.marketMedian,
+      buyoutPrice: r.buyoutPrice, samplesCount: r.samplesCount, manual: cfg.manual,
+    });
   };
 
-  const isFormComplete = modelName && processor && ram && ssd;
-  const shortName = (resolvedModel || initialModelName)
-    ? modelShortName(resolvedModel || initialModelName)
-    : '';
-  const seoModelName = popularModelName || resolvedModel || initialModelName || '';
-
-  const seoTitle = useMemo(() => {
-    if (model_slug === 'macbook-air-13-2020-m1') {
-      return 'Выкуп MacBook Air 13 (2020, M1) в Москве дорого — BestMac';
-    }
-    if (seoModelName) return `Выкуп ${seoModelName} в Москве дорого — BestMac`;
-    return 'Выкуп MacBook конкретной модели в Москве — BestMac';
-  }, [model_slug, seoModelName]);
-
-  const seoDescription = useMemo(() => {
-    if (model_slug === 'macbook-air-13-2020-m1') {
-      return 'Узнайте реальную стоимость выкупа вашего MacBook Air 13 (2020, M1). Прозрачная оценка, выплата до 80% от рынка, деньги сразу.';
-    }
-    if (seoModelName) {
-      return `Узнайте реальную стоимость выкупа вашего ${seoModelName}. Прозрачная оценка, выплата до 80% от рынка, деньги сразу.`;
-    }
-    return 'Онлайн-оценка стоимости выкупа вашей модели MacBook. Узнайте рыночную цену за 10 секунд и продайте выгодно в BestMac.';
-  }, [model_slug, seoModelName]);
-
-  // SEO schemas
-  const breadcrumbSchema = generateBreadcrumbSchema([
-    { name: 'Главная', url: '/' },
-    { name: 'Выкуп', url: '/sell' },
-    { name: shortName || 'Модель', url: `/sell/${model_slug}` },
-  ]);
-
-  // Organization schema is already in layout.tsx globally
-
-  const combinedSchema = [breadcrumbSchema];
-
-  const handleModelSelect = (model: string) => {
-    setModelName(model);
-    setModelSearch('');
-    setIsModelOpen(false);
-  };
-
-  const clearModel = () => {
-    setModelName('');
-    setModelSearch('');
-  };
+  const showPhoto = noData || result?.kind === 'photo';
 
   return (
     <div className="min-h-screen bg-background">
-<div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8">
         <Breadcrumbs items={[
           { name: 'Главная', url: '/' },
           { name: 'Выкуп', url: '/sell' },
-          { name: shortName || 'Модель', url: `/sell/${model_slug}` },
+          { name: shortName, url: `/sell/${slug}` },
         ]} />
 
         <div className="max-w-5xl mx-auto">
@@ -257,7 +119,6 @@ const SellModel = ({ modelName: initialModelName = '', slug = '' }: SellModelPro
 
           {/* Калькулятор */}
           <div className="grid lg:grid-cols-2 gap-8 mb-16">
-            {/* Форма */}
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
               <Card className="h-full">
                 <CardHeader>
@@ -268,57 +129,52 @@ const SellModel = ({ modelName: initialModelName = '', slug = '' }: SellModelPro
                   <CardDescription>Выберите конфигурацию вашего устройства</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
-                  {/* Модель */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">1</span>
-                        Модель
-                      </label>
-                    </div>
-                    <div className="flex items-center gap-2 p-2 bg-primary/5 rounded-md border border-primary/20">
-                      <Check className="w-4 h-4 text-primary" />
-                      <span className="text-sm font-medium">{modelName || 'Загрузка...'}</span>
-                    </div>
-                  </div>
-
-                  {/* Процессор */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">2</span>
-                      <Cpu className="w-4 h-4" /> Процессор
+                      <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">1</span>
+                      Модель
                     </label>
-                    <Select value={processor} onValueChange={setProcessor} disabled={!modelName || processorOptions.length === 0}>
-                      <SelectTrigger><SelectValue placeholder={processorOptions.length === 0 && modelName ? "Нет данных" : "Выберите процессор"} /></SelectTrigger>
-                      <SelectContent>{processorOptions.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
-                    </Select>
+                    <div className="flex items-center gap-2 p-2 bg-primary/5 rounded-md border border-primary/20">
+                      <Check className="w-4 h-4 text-primary" />
+                      <span className="text-sm font-medium">{modelName}</span>
+                    </div>
                   </div>
 
-                  {/* RAM */}
+                  {processor && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">2</span>
+                        <Cpu className="w-4 h-4" /> Процессор
+                      </label>
+                      <div className="flex items-center gap-2 p-2 bg-primary/5 rounded-md border border-primary/20">
+                        <Check className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium">{processor}</span>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="space-y-2">
                     <label className="text-sm font-medium flex items-center gap-2">
                       <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">3</span>
                       <MemoryStick className="w-4 h-4" /> Оперативная память
                     </label>
-                    <Select value={ram ? String(ram) : ''} onValueChange={(v) => setRam(Number(v))} disabled={!processor || ramOptions.length === 0}>
-                      <SelectTrigger><SelectValue placeholder={ramOptions.length === 0 && processor ? "Нет данных" : "Выберите RAM"} /></SelectTrigger>
-                      <SelectContent>{ramOptions.map((r) => <SelectItem key={r} value={String(r)}>{r} GB</SelectItem>)}</SelectContent>
+                    <Select value={ram ? String(ram) : ''} onValueChange={(v) => setRam(Number(v))} disabled={noData}>
+                      <SelectTrigger><SelectValue placeholder={noData ? 'Оценим по фото' : 'Выберите RAM'} /></SelectTrigger>
+                      <SelectContent>{ramList.map((r) => <SelectItem key={r} value={String(r)}>{r} GB</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
 
-                  {/* SSD */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium flex items-center gap-2">
                       <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">4</span>
                       <HardDrive className="w-4 h-4" /> Накопитель SSD
                     </label>
-                    <Select value={ssd ? String(ssd) : ''} onValueChange={(v) => setSsd(Number(v))} disabled={!ram || ssdOptions.length === 0}>
-                      <SelectTrigger><SelectValue placeholder={ssdOptions.length === 0 && ram ? "Нет данных" : "Выберите SSD"} /></SelectTrigger>
-                      <SelectContent>{ssdOptions.map((s) => <SelectItem key={s} value={String(s)}>{formatSsd(s)}</SelectItem>)}</SelectContent>
+                    <Select value={ssd ? String(ssd) : ''} onValueChange={(v) => setSsd(Number(v))} disabled={!ram || ssdList.length === 0}>
+                      <SelectTrigger><SelectValue placeholder="Выберите SSD" /></SelectTrigger>
+                      <SelectContent>{ssdList.map((s) => <SelectItem key={s} value={String(s)}>{formatSsd(s)}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
 
-                  {/* Состояние */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium flex items-center gap-2">
                       <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">5</span>
@@ -339,53 +195,50 @@ const SellModel = ({ modelName: initialModelName = '', slug = '' }: SellModelPro
                     </Select>
                   </div>
 
-                  <Button onClick={handleCalculate} className="w-full" size="lg" disabled={!isFormComplete}>
+                  <Button onClick={handleCalculate} className="w-full" size="lg" disabled={!ram || !ssd}>
                     <TrendingUp className="w-4 h-4 mr-2" /> Узнать стоимость
                   </Button>
                 </CardContent>
               </Card>
             </motion.div>
 
-            {/* Результат */}
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
               <Card className="h-full">
                 <CardHeader>
                   <CardTitle>Рыночная стоимость</CardTitle>
-                  <CardDescription>{lastUpdate && `Данные обновлены: ${lastUpdate}`}</CardDescription>
+                  <CardDescription>{updatedLabel && `Данные обновлены: ${updatedLabel}`}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {!result ? (
+                  {showPhoto ? (
+                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
+                      <div className="text-center p-6 bg-primary/5 rounded-xl border-2 border-primary/20">
+                        <Camera className="w-10 h-10 mx-auto mb-3 text-primary" />
+                        <p className="text-2xl font-bold mb-2">Точную цену назовём по фото за 15 минут</p>
+                        <p className="text-muted-foreground">
+                          По этой конфигурации мало свежих объявлений — не будем гадать с суммой.
+                        </p>
+                      </div>
+                      <Button variant="default" size="lg" className="w-full" asChild>
+                        <a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer">
+                          <Wallet className="w-4 h-4 mr-2" /> Отправить фото в Telegram
+                        </a>
+                      </Button>
+                      <Button variant="outline" size="lg" className="w-full" asChild>
+                        <a href="#zayavka">Оставить заявку</a>
+                      </Button>
+                    </motion.div>
+                  ) : !result ? (
                     <div className="flex flex-col items-center justify-center h-64 text-center text-muted-foreground">
                       <BarChart3 className="w-12 h-12 mb-4 opacity-30" />
                       <p>Заполните параметры устройства</p>
                       <p className="text-sm">и нажмите «Узнать стоимость»</p>
                     </div>
-                  ) : result.isRareModel ? (
+                  ) : result.kind === 'price' ? (
                     <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
-                      {modelName && (
-                        <div className="text-center p-3 bg-muted/50 rounded-lg">
-                          <p className="font-medium">{modelName}</p>
-                          <p className="text-sm text-muted-foreground">{processor} / {ram} GB RAM / {formatSsd(Number(ssd))}</p>
-                        </div>
-                      )}
-                      <div className="text-center p-6 bg-amber-500/10 rounded-xl border-2 border-amber-500/30">
-                        <p className="text-2xl md:text-3xl font-bold text-amber-600 mb-3">🔮 У вас редкая модель!</p>
-                        <p className="text-muted-foreground">Свяжитесь со мной и предложите вашу цену</p>
+                      <div className="text-center p-3 bg-muted/50 rounded-lg">
+                        <p className="font-medium">{modelName}</p>
+                        <p className="text-sm text-muted-foreground">{processor} / {ram} GB RAM / {formatSsd(Number(ssd))}</p>
                       </div>
-                      <Button variant="default" size="lg" className="w-full" asChild>
-                        <a href="https://t.me/romanmanro" target="_blank" rel="noopener noreferrer">
-                          <Wallet className="w-4 h-4 mr-2" /> Написать в Telegram
-                        </a>
-                      </Button>
-                    </motion.div>
-                  ) : (
-                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
-                      {modelName && (
-                        <div className="text-center p-3 bg-muted/50 rounded-lg">
-                          <p className="font-medium">{modelName}</p>
-                          <p className="text-sm text-muted-foreground">{processor} / {ram} GB RAM / {formatSsd(Number(ssd))}</p>
-                        </div>
-                      )}
                       <div className="text-center p-6 bg-muted/30 rounded-xl border">
                         <p className="text-sm text-muted-foreground mb-2">Рыночная цена сейчас</p>
                         <p className="text-3xl md:text-4xl font-bold">{formatPrice(result.marketMin)} – {formatPrice(result.marketMax)}</p>
@@ -395,30 +248,44 @@ const SellModel = ({ modelName: initialModelName = '', slug = '' }: SellModelPro
                         <p className="text-sm font-medium text-primary mb-2">💰 Рекомендуемая цена выкупа</p>
                         <p className="text-4xl md:text-5xl font-bold text-primary">≈ {formatPrice(result.buyoutPrice)}</p>
                       </div>
-                      <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                        <BarChart3 className="w-4 h-4" />
-                        <span>На основе {result.samplesCount} объявлений за последние 30 дней</span>
-                      </div>
+                      {/* Ручная цена владельца — не выборка объявлений (GST-78) */}
+                      {!result.manual && (
+                        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                          <BarChart3 className="w-4 h-4" />
+                          <span>На основе {result.samplesCount} объявлений за последние 30 дней</span>
+                        </div>
+                      )}
                       <div className="bg-muted/50 p-4 rounded-lg text-xs text-muted-foreground">
                         <p>⚠️ Оценка на основе анализа открытого рынка. Итоговая цена может отличаться в зависимости от комплектации, циклов батареи и состояния устройства.</p>
                       </div>
                       <Button variant="default" size="lg" className="w-full" asChild>
-                        <a href="https://t.me/romanmanro" target="_blank" rel="noopener noreferrer">
+                        <a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer">
                           <Wallet className="w-4 h-4 mr-2" /> Продать сейчас
                         </a>
                       </Button>
                     </motion.div>
-                  )}
+                  ) : null}
                 </CardContent>
               </Card>
             </motion.div>
           </div>
 
+          {/* Форма заявки — для оценки по фото, когда суммы нет (GST-78) */}
+          {showPhoto && (
+            <div id="zayavka" className="mb-16">
+              <LeadForm
+                formType="sell"
+                title={`Оценка ${shortName} по фото`}
+                subtitle="Пришлите фото и конфигурацию — назовём цену за 15 минут"
+              />
+            </div>
+          )}
+
           {/* Другие модели */}
           <motion.section className="mb-16" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}>
             <h2 className="text-2xl font-bold text-center mb-8">Выкуп других моделей MacBook</h2>
             <div className="flex flex-wrap justify-center gap-3">
-              {POPULAR_MODELS.filter(m => m.slug !== model_slug).map(m => (
+              {POPULAR_MODELS.filter(m => m.slug !== slug).map(m => (
                 <Link key={m.slug} href={`/sell/${m.slug}`} className="px-4 py-2 bg-muted hover:bg-muted/80 rounded-full text-sm transition-colors">
                   {modelShortName(m.name)}
                 </Link>
@@ -455,7 +322,7 @@ const SellModel = ({ modelName: initialModelName = '', slug = '' }: SellModelPro
           </motion.section>
         </div>
       </div>
-</div>
+    </div>
   );
 };
 
