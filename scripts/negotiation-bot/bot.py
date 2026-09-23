@@ -32,6 +32,10 @@ from typing import Optional, Callable, List
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))   # scripts/
 
 from common.negotiator import next_move, NegotiationMove
+from common.classifier import classify
+from common.subscriptions import (
+    load_subscriptions, save_subscriptions, make_subscription, match_from_config,
+)
 
 # GST-60: «Найти сделки» прямо из бота. Переиспуем готовый сорсинг-дайджест
 # (тот же, что уходит в рассылке). Импорт защищён — бот поднимается даже без модуля.
@@ -114,6 +118,69 @@ def _ago(seconds) -> str:
     if s < 86400:
         return f"{s // 3600} ч назад"
     return f"{s // 86400} дн назад"
+
+
+# ─── GST-73: выключатель мертвеца для домашнего коллектора ───────────────────
+# Сбор вставал на несколько часов, и узнать об этом можно было только вручную
+# открыв /status. Сторож внутри расширения тут не помощник: он умирает вместе
+# с Chrome — уснул Mac, закрылся браузер, отвалился Wi-Fi, и сторожить уже
+# некому. Достоверно заметить тишину может только сервер, который ждёт карточки.
+COLLECTOR_SILENT_MIN = int(os.environ.get('COLLECTOR_SILENT_MIN', '25'))
+COLLECTOR_COOLDOWN_MIN = int(os.environ.get('COLLECTOR_COOLDOWN_MIN', '180'))
+COLLECTOR_QUIET_FROM = int(os.environ.get('COLLECTOR_QUIET_FROM', '23'))
+COLLECTOR_QUIET_TO = int(os.environ.get('COLLECTOR_QUIET_TO', '9'))
+
+
+def in_quiet_hours(hour, start=COLLECTOR_QUIET_FROM, end=COLLECTOR_QUIET_TO) -> bool:
+    """Ночное окно, когда домашний Mac штатно спит и тишина — не авария.
+    Окно перешагивает полночь (23→9). Равные границы выключают тихие часы."""
+    if start == end:
+        return False
+    if start < end:
+        return start <= hour < end
+    return hour >= start or hour < end
+
+
+def collector_deadman(now, last_at, state, *, silent_min=None, cooldown_min=None,
+                      hour=None) -> tuple[Optional[str], dict]:
+    """Чистая функция: что сказать владельцу про молчащий коллектор.
+
+    Возвращает (текст | None, патч состояния). Тишина дольше silent_min минут —
+    алерт; повтор не чаще cooldown_min; возвращение к жизни подтверждаем, иначе
+    непонятно, починилось ли. Ночью не будим, а лот, который придёт в это время,
+    всё равно долетит обычным алертом.
+    """
+    silent_min = COLLECTOR_SILENT_MIN if silent_min is None else silent_min
+    cooldown_min = COLLECTOR_COOLDOWN_MIN if cooldown_min is None else cooldown_min
+    hour = time.localtime(now).tm_hour if hour is None else hour
+
+    was_down = bool(state.get("collector_down"))
+
+    # Коллектор ни разу не присылал карточек — нечего и хоронить: скорее всего
+    # расширение просто ещё не настроили.
+    if not last_at:
+        return None, {}
+
+    silent_for = now - last_at
+    if silent_for <= silent_min * 60:
+        if was_down:
+            return (f"🟢 <b>Коллектор снова на связи</b> — карточки пошли "
+                    f"({_ago(silent_for)} последняя).",
+                    {"collector_down": False, "collector_alert_at": now})
+        return None, {}
+
+    if in_quiet_hours(hour):
+        return None, {}
+
+    last_alert = state.get("collector_alert_at") or 0
+    if was_down and now - last_alert < cooldown_min * 60:
+        return None, {}
+
+    return (f"🔴 <b>Коллектор молчит {_ago(silent_for)}</b>\n\n"
+            "Расширение не присылает карточки — сбор стоит, новые лоты проходят мимо.\n"
+            "Проверь: открыт ли Chrome, не уснул ли Mac, не просит ли Avito капчу "
+            "(в попапе расширения видно пульс каждой вкладки).",
+            {"collector_down": True, "collector_alert_at": now})
 
 
 def collector_status_text(now=None, intake_stats=None, proc_stats=None) -> str:
@@ -315,6 +382,106 @@ def _wizard_monitor_text(model_name: str, c: dict) -> str:
             "по этой конфигурации.")
 
 
+# ─── GST-73: подписки «эта конфигурация — до такой-то цены» ──────────────────
+SUBSCRIPTIONS_FILE = Path(
+    os.environ.get('SUBSCRIPTIONS_PATH', 'public/data/subscriptions.json'))
+
+_PRICE_RE = re.compile(r'\d[\d\s  .,]*')
+# Ниже этой суммы Mac не стоит: такое число почти наверняка приехало из фразы
+# («MacBook Air 13»), а не является бюджетом. Лучше переспросить, чем завести
+# подписку «до 13 ₽», которая молча не сработает никогда.
+MIN_SUB_PRICE = 1000
+
+
+def parse_price(text: str) -> Optional[int]:
+    """«45 000», «45000₽», «45.000», «45к» → 45000. Мусор и слишком мелкое → None.
+
+    Пробелы и точки в роли разделителя тысяч режем; «к»/«k» после числа —
+    привычное сокращение, писать четыре нуля руками никто не хочет."""
+    t = (text or "").strip().lower().replace(' ', ' ').replace(' ', ' ')
+    m = _PRICE_RE.search(t)
+    if not m:
+        return None
+    digits = re.sub(r'\D', '', m.group(0))
+    if not digits:
+        return None
+    value = int(digits)
+    tail = t[m.end():m.end() + 1]
+    if tail in ('к', 'k'):
+        value *= 1000
+    return value if MIN_SUB_PRICE <= value < 100_000_000 else None
+
+
+def monitor_url(base_url: str, max_price: Optional[int]) -> str:
+    """URL выдачи Avito для вкладки мониторинга: потолок цены + новые сверху.
+
+    GST-74: поиск делает домашний браузер с жилым IP, а не VPS — это нулевой
+    расход капчи, в отличие от серверного скана. Бот только готовит ссылку.
+
+    `pmax` сужает саму выдачу, чтобы расширение не гоняло на сервер заведомо
+    дорогие лоты. `s=104` ставит новые первыми — расширение читает только
+    первую страницу, и без этой сортировки свежие объявления до него не
+    доедут. Если Avito когда-нибудь перестанет понимать pmax, ничего не
+    сломается: серверная подписка всё равно перепроверяет цену перед отправкой.
+    """
+    if not base_url:
+        return ""
+    from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
+    parts = urlsplit(base_url)
+    q = [(k, v) for k, v in parse_qsl(parts.query, keep_blank_values=True)
+         if k not in ("s", "pmax")]
+    if max_price:
+        q.append(("pmax", str(int(max_price))))
+    q.append(("s", "104"))
+    return urlunsplit((parts.scheme, parts.netloc, parts.path,
+                       urlencode(q), parts.fragment))
+
+
+def _wizard_pick(fam_i: int, mdl_i: int, cfg_i: int):
+    """Индексы из callback_data → (семья, имя модели, конфигурация).
+    Бросает IndexError/ValueError, если каталог успел измениться — вызывающий
+    код уже умеет отвечать на это «начните заново»."""
+    family = MODEL_WIZARD_FAMILIES[int(fam_i)]
+    model_name = _wizard_family_models(family)[int(mdl_i)]
+    config = _wizard_model_configs(family, model_name)[int(cfg_i)]
+    return family, model_name, config
+
+
+def _subscription_from_config(chat_id, model_name: str, config: dict, max_price: int) -> dict:
+    """Конфигурация каталога + цена владельца → запись подписки.
+
+    Критерии берём через classify: это тот же разбор, которым сканер оценивает
+    живые объявления, поэтому подписка и лот заведомо мыслят одинаково.
+    """
+    specs = {}
+    if config.get('ram'):
+        specs['ram'] = config['ram']
+    if config.get('ssd'):
+        specs['ssd'] = config['ssd']
+    title = model_name
+    chip = (config.get('processor') or '').strip()
+    if chip and chip.lower() not in model_name.lower():
+        title = f"{model_name} {chip}"
+    cfg = classify(title, specs or None)
+    return make_subscription(
+        chat_id=chat_id, model=model_name, label=_wizard_config_label(config),
+        match=match_from_config(cfg), max_price=max_price, url=config.get('url', ''))
+
+
+def _wizard_monitor_action(chat_id, model_name: str, config: dict,
+                           fam_i, mdl_i, cfg_i) -> dict:
+    """Экран выбранной конфигурации: ссылка на мониторинг + кнопка подписки.
+
+    Ссылка отвечает «где смотреть глазами», подписка — «позови меня сам, когда
+    появится дешевле моей цены». Индексы каталога едут в callback_data, чтобы не
+    хранить промежуточный выбор в состоянии бота.
+    """
+    return {"type": "send", "chat_id": chat_id,
+            "text": _wizard_monitor_text(model_name, config),
+            "buttons": [[("🔔 Следить за этой конфигурацией",
+                          f"sub:new:{fam_i}:{mdl_i}:{cfg_i}")]]}
+
+
 def _watchlist_add(lead):
     """Добавляет лот в вотчлист (бот пишет, scanner --watch читает). False, если уже есть."""
     from datetime import datetime
@@ -501,6 +668,7 @@ class NegotiationBot:
                              "а его ответы — пересылай мне обычным сообщением.\n\n"
                              "🔍 /сделки — показать, какие Mac выгодно выкупать прямо сейчас.\n"
                              "🔎 /модель — выбрать модель кнопками и получить ссылку на мониторинг.\n"
+                             "🔔 /подписки — следить за конфигурацией по вашей цене.\n"
                              "🩺 /status — проверить домашний коллектор Avito.",
                      "buttons": [[("🔍 Найти сделки сейчас", "sourcing:now")],
                                  [("🩺 Статус коллектора", "status:refresh")]]}]
@@ -508,10 +676,69 @@ class NegotiationBot:
         if not self._is_owner(chat_id):
             return []   # игнорируем чужих
 
+        # GST-73: любая команда важнее незавершённого ввода цены подписки —
+        # иначе «/модель» уходил бы в разбор цены и выйти из режима было бы
+        # нечем. «/отмена» разбирается со своим состоянием сама, ниже.
+        if (text.startswith("/") and not text.startswith("/отмена")
+                and self.state.get("pending_sub")):
+            self.state.pop("pending_sub", None)
+            self._save()
+
         if text.startswith("/status"):
             return [{"type": "send", "chat_id": chat_id,
                      "text": collector_status_text(),
                      "buttons": [[("🔄 Обновить", "status:refresh")]]}]
+
+        # ── GST-73: подписки ─────────────────────────────────────────────────
+        if text.startswith("/отмена"):
+            had = self.state.pop("pending_sub", None)
+            self._save()
+            return [{"type": "send", "chat_id": chat_id,
+                     "text": "Отменил." if had else "Нечего отменять."}]
+
+        if text.startswith("/подписки") or text.startswith("/subs"):
+            return [{"type": "send", "chat_id": chat_id, **self._subscriptions_view()}]
+
+        # Ждём цену для подписки — этот режим должен перехватывать текст РАНЬШЕ
+        # ветки «ответ продавца», иначе число уедет в переговоры.
+        pending = self.state.get("pending_sub")
+        if pending:
+            price = parse_price(text)
+            if price is None:
+                return [{"type": "send", "chat_id": chat_id,
+                         "text": "Нужна цена числом — например <code>45000</code> или "
+                                 "<code>45к</code>. Передумали — /отмена."}]
+            try:
+                _fam, model_name, config = _wizard_pick(pending["fam"], pending["mdl"],
+                                                        pending["cfg"])
+            except (IndexError, ValueError, KeyError):
+                self.state.pop("pending_sub", None)
+                self._save()
+                return [{"type": "send", "chat_id": chat_id,
+                         "text": "⚠️ Каталог обновился — начните заново: /модель"}]
+            sub = _subscription_from_config(chat_id, model_name, config, price)
+            subs = load_subscriptions(SUBSCRIPTIONS_FILE)
+            subs[sub["id"]] = sub
+            save_subscriptions(subs, SUBSCRIPTIONS_FILE)
+            self.state.pop("pending_sub", None)
+            self._save()
+            link = monitor_url(config.get("url", ""), price)
+            link_block = ""
+            if link:
+                link_block = (f'\n🔗 <a href="{link}">Открыть вкладку мониторинга</a>\n'
+                              "Откройте её в браузере с расширением BestMac Collector "
+                              "и оставьте висеть: выдача уже отфильтрована по вашей цене "
+                              "и отсортирована по новизне, расширение подхватит каждое "
+                              "новое объявление и пришлёт подходящие сюда.\n")
+            return [{"type": "send", "chat_id": chat_id,
+                     "text": (f"🔔 <b>Слежу за</b> {_esc(model_name)} — "
+                              f"{_esc(sub['label'])}\n"
+                              f"Предел: <b>{_fmt(price)} ₽</b>\n"
+                              f"{link_block}\n"
+                              "Пришлю сразу, как появится дешевле. Состояние проверю — "
+                              "лоты с дефектами в описании не побеспокоят.\n"
+                              "Все подписки: /подписки"),
+                     "buttons": [[("🗑 Снять эту подписку", f"sub:del:{sub['id']}")]]}]
 
         if text.startswith("/сделки") or text.startswith("/deals") or text.startswith("/поиск"):
             return [{"type": "send", "chat_id": chat_id,
@@ -554,6 +781,7 @@ class NegotiationBot:
                              "«✅ Отправил» → пересылаешь мне ответ продавца → я даю следующий ход.\n"
                              "🔍 /сделки — какие Mac выгодно выкупать прямо сейчас.\n"
                              "🔎 /модель — выбрать модель кнопками и получить ссылку на мониторинг.\n"
+                             "🔔 /подписки — следить за конфигурацией по вашей цене.\n"
                              "🩺 /status — статус домашнего коллектора Avito."}]
 
         # Обычный текст = ответ продавца для активного диалога
@@ -584,6 +812,43 @@ class NegotiationBot:
                             "buttons": [[("🔄 Обновить поиск", "sourcing:now")]]})
             return actions
 
+        # ── GST-73: подписки «эта конфигурация — до такой-то цены» ───────────
+        if data.startswith("sub:"):
+            parts_sub = data.split(":")
+            if parts_sub[1] == "new" and len(parts_sub) == 5:
+                try:
+                    _fam, model_name, config = _wizard_pick(*parts_sub[2:5])
+                except (IndexError, ValueError):
+                    actions.append({"type": "send", "chat_id": chat_id,
+                                    "text": "⚠️ Каталог обновился — начните заново: /модель"})
+                    return actions
+                self.state["pending_sub"] = {"fam": parts_sub[2], "mdl": parts_sub[3],
+                                             "cfg": parts_sub[4]}
+                self._save()
+                label = _wizard_config_label(config)
+                actions.append({"type": "send", "chat_id": chat_id,
+                                "text": (f"🔔 <b>{_esc(model_name)}</b> — {_esc(label)}\n\n"
+                                         "Назовите вашу предельную цену — пришлю такой лот сразу, "
+                                         "как появится дешевле.\n"
+                                         "Ответьте числом: <code>45000</code> или <code>45к</code>.\n\n"
+                                         "Передумали — /отмена.")})
+                return actions
+
+            if parts_sub[1] == "del" and len(parts_sub) == 3:
+                subs = load_subscriptions(SUBSCRIPTIONS_FILE)
+                victim = next((k for k, v in subs.items() if v.get("id") == parts_sub[2]), None)
+                if victim is None:
+                    actions.append({"type": "send", "chat_id": chat_id,
+                                    "text": "Подписка уже снята."})
+                    return actions
+                gone = subs.pop(victim)
+                save_subscriptions(subs, SUBSCRIPTIONS_FILE)
+                actions.append({"type": "send", "chat_id": chat_id,
+                                "text": f"🗑 Подписка снята: {_esc(gone.get('model') or '')} "
+                                        f"— {_esc(gone.get('label') or '')}"})
+                return actions
+            return actions
+
         # ── GST-72: визард «/модель» — семья → модель → конфиг кнопками ──────
         if data.startswith("mw:"):
             try:
@@ -610,8 +875,8 @@ class NegotiationBot:
                                         "text": f"Нет конфигураций для «{model_name}»."})
                         return actions
                     if len(configs) == 1:
-                        actions.append({"type": "send", "chat_id": chat_id,
-                                        "text": _wizard_monitor_text(model_name, configs[0])})
+                        actions.append(_wizard_monitor_action(
+                            chat_id, model_name, configs[0], parts_mw[2], parts_mw[3], 0))
                         return actions
                     buttons = [[(_wizard_config_label(c), f"mw:cfg:{parts_mw[2]}:{parts_mw[3]}:{i}")]
                                for i, c in enumerate(configs)]
@@ -625,8 +890,8 @@ class NegotiationBot:
                     model_name = models[int(parts_mw[3])]
                     configs = _wizard_model_configs(family, model_name)
                     c = configs[int(parts_mw[4])]
-                    actions.append({"type": "send", "chat_id": chat_id,
-                                    "text": _wizard_monitor_text(model_name, c)})
+                    actions.append(_wizard_monitor_action(
+                        chat_id, model_name, c, parts_mw[2], parts_mw[3], parts_mw[4]))
                     return actions
             except (IndexError, ValueError):
                 actions.append({"type": "send", "chat_id": chat_id,
@@ -742,10 +1007,45 @@ class NegotiationBot:
             elif a["type"] == "answer_callback":
                 self.tx.answer_callback(a["id"], a.get("text"))
 
+    def _subscriptions_view(self) -> dict:
+        """Список активных подписок с кнопками снятия (тело действия «send»)."""
+        subs = load_subscriptions(SUBSCRIPTIONS_FILE)
+        if not subs:
+            return {"text": ("Активных подписок нет.\n\n"
+                             "Чтобы завести: /модель → выберите конфигурацию → "
+                             "«🔔 Следить за этой конфигурацией» → назовите свою цену.")}
+        lines, buttons = ["🔔 <b>Ваши подписки</b>", ""], []
+        for s in subs.values():
+            hits = int(s.get("hits") or 0)
+            tail = f" • сработала {hits} раз" if hits else ""
+            lines.append(f"• <b>{_esc(s.get('model') or '')}</b> — {_esc(s.get('label') or '')}"
+                         f" до {_fmt(s.get('max_price') or 0)} ₽{tail}")
+            buttons.append([(f"🗑 {s.get('label') or s.get('model') or 'снять'}",
+                             f"sub:del:{s.get('id')}")])
+        return {"text": "\n".join(lines), "buttons": buttons}
+
+    def check_collector(self, now=None) -> List[dict]:
+        """GST-73: молчит ли домашний коллектор. Зовётся каждый оборот петли —
+        сама проверка дешёвая (чтение файла-пульса), а частота алертов
+        ограничена кулдауном внутри collector_deadman."""
+        now = now or time.time()
+        chat_id = self.state.get("owner_chat_id")
+        if not chat_id:
+            return []
+        rx = _load_json(INTAKE_STATS_FILE, {}) or {}
+        text, patch = collector_deadman(now, rx.get("last_at"), self.state)
+        if patch:
+            self.state.update(patch)
+        if not text:
+            return []
+        return [{"type": "send", "chat_id": chat_id, "text": text,
+                 "buttons": [[("🩺 Статус коллектора", "status:refresh")]]}]
+
     def run_forever(self, poll_timeout=25):
         logger.info("🤖 Бот переговоров запущен (long-polling)")
         while True:
             self._exec(self.pull_new_leads())
+            self._exec(self.check_collector())
             updates = self.tx.get_updates(self.state.get("offset", 0), timeout=poll_timeout)
             for upd in updates:
                 try:

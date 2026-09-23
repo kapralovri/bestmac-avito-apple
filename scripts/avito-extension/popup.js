@@ -1,12 +1,24 @@
-// 4 вкладки поиска (вся Россия, новые сверху). MacBook Air+Pro — одной вкладкой.
-const FAMILIES = [
-  "https://www.avito.ru/all/noutbuki?q=macbook&s=104",
-  "https://www.avito.ru/all/nastolnye_kompyutery?q=imac&s=104",
-  "https://www.avito.ru/all/nastolnye_kompyutery?q=mac+mini&s=104",
-  "https://www.avito.ru/all/nastolnye_kompyutery?q=mac+studio&s=104",
-];
+// Интерфейс коллектора. Вкладками мониторинга владеет service worker
+// (background.js): он их открывает, сторожит и воскрешает. Попап только
+// отдаёт команды и показывает состояние — иначе после закрытия попапа
+// за вкладками было бы некому следить.
 const DEFAULT_ENDPOINT = "https://bestmac.ru/api/intake";
 const $ = (id) => document.getElementById(id);
+
+function send(msg) {
+  return new Promise((resolve) => {
+    try {
+      chrome.runtime.sendMessage(msg, (r) => { void chrome.runtime.lastError; resolve(r || {}); });
+    } catch (e) { resolve({}); }
+  });
+}
+
+const ago = (ts) => {
+  if (!ts) return "молчит";
+  const s = Math.round((Date.now() - ts) / 1000);
+  if (s < 90) return s + " с назад";
+  return Math.round(s / 60) + " мин назад";
+};
 
 function render() {
   chrome.storage.local.get(
@@ -22,8 +34,37 @@ function render() {
       $("diag").innerHTML = `<small>На странице найдено карточек: <b>${sc}</b> (${scWhen})</small>`;
     }
   );
+  renderTabs();
 }
+
+// Возраст пульса по каждой вкладке. Раньше «сбор встал» выглядел ровно так же,
+// как «сбор идёт»: попап показывал только последнюю удачную отправку, и
+// умершая несколько часов назад вкладка ничем себя не выдавала.
+async function renderTabs() {
+  const st = await send({ type: "state" });
+  if (!st || !st.tabs || !st.tabs.length) {
+    $("tabs").innerHTML = "<small>Мониторинг не запущен</small>";
+    return;
+  }
+  const rows = st.tabs.map((t) => {
+    let name = decodeURIComponent((t.url.match(/q=([^&]+)/) || [, "?"])[1]).replace(/\+/g, " ");
+    // Вкладка из бота — это «модель до N ₽»; показываем потолок, иначе все
+    // строки выглядят одинаково и непонятно, какая подписка жива.
+    const pmax = (t.url.match(/pmax=(\d+)/) || [])[1];
+    if (t.fromBot) name = `🔔 ${name}${pmax ? ` до ${Number(pmax).toLocaleString("ru")} ₽` : ""}`;
+    let mark = "✅";
+    if (!t.alive) mark = "❌";
+    else if (t.captcha) mark = "🤖";
+    else if (t.discarded) mark = "💤";
+    else if (!t.lastBeatAt || Date.now() - t.lastBeatAt > 4 * 60 * 1000) mark = "⚠️";
+    const cnt = t.count === null ? "—" : t.count;
+    return `${mark} <b>${name}</b> — карточек ${cnt}, пульс ${ago(t.lastBeatAt)}`;
+  });
+  $("tabs").innerHTML = "<small>" + rows.join("<br>") + "</small>";
+}
+
 render();
+setInterval(renderTabs, 5000);
 
 $("save").onclick = () => {
   chrome.storage.local.set(
@@ -32,9 +73,16 @@ $("save").onclick = () => {
   );
 };
 
-$("open").onclick = () => {
-  FAMILIES.forEach((u) => chrome.tabs.create({ url: u, active: false }));
-  $("status").innerHTML = "<small>▶️ Открыто 4 вкладки — мониторинг пошёл</small>";
+$("open").onclick = async () => {
+  await send({ type: "start" });
+  $("status").innerHTML = "<small>▶️ Открыто 4 вкладки — мониторинг пошёл, сторож следит</small>";
+  renderTabs();
+};
+
+$("stop").onclick = async () => {
+  await send({ type: "stop" });
+  $("status").innerHTML = "<small>⏹ Мониторинг остановлен, вкладки закрыты</small>";
+  renderTabs();
 };
 
 // Тест: шлём одну синтетическую карточку и показываем точный HTTP-ответ.

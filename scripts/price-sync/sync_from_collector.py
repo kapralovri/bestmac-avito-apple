@@ -38,6 +38,14 @@ RAW_FILE = Path(os.environ.get('INTAKE_RAW_PRICES_PATH', SD / "../../public/data
 MAX_AGE_DAYS = 30      # цены коллектора старше — не учитываем
 MSK_MIN = 6            # минимум московских цен для московской модальной
 ALL_MIN = 10           # иначе — минимум всероссийских
+# GST-74: сколько московских цен делают выборку коллектора достаточно сильной,
+# чтобы перебить даже СВЕЖУЮ запись парсера. Домашний коллектор (Mac mini с
+# расширением) собирает поток круглосуточно: при такой выборке его цифры
+# сегодняшние, а записи парсера может быть трое суток — на движущемся рынке
+# живые данные честнее. Планка высокая и только для МОСКОВСКОЙ подвыборки:
+# всероссийские цены систематически ниже московских, и пустить их поверх
+# свежего эталона значило бы занизить медиану и наплодить ложных «сделок».
+STRONG_MSK_MIN = 15
 NEW_MSK_MIN = 8        # пороги для ВСТАВКИ нового конфига (строже)
 NEW_ALL_MIN = 12
 MAX_DEV = 0.40         # защитный предохранитель: не менять медиану более чем на ±40%
@@ -63,7 +71,8 @@ def _key_to_row_skeleton(key_str):
 
 def sync_stats(stats, raw_store, now=None,
                max_age_days=MAX_AGE_DAYS, msk_min=MSK_MIN, all_min=ALL_MIN,
-               new_msk_min=NEW_MSK_MIN, new_all_min=NEW_ALL_MIN, max_dev=MAX_DEV):
+               new_msk_min=NEW_MSK_MIN, new_all_min=NEW_ALL_MIN, max_dev=MAX_DEV,
+               strong_msk_min=STRONG_MSK_MIN):
     """Мутирует stats на месте. Возвращает (updated, inserted, changes: list[str])."""
     now = now or datetime.now()
     now_ts = int(now.timestamp())
@@ -94,11 +103,13 @@ def sync_stats(stats, raw_store, now=None,
         # выбор выборки: Москва приоритетнее (эталон перепродажи)
         need_msk, need_all = (msk_min, all_min) if rows else (new_msk_min, new_all_min)
         if len(msk) >= need_msk:
-            prices, src = msk, f"мск n={len(msk)}"
+            prices, src, is_msk = msk, f"мск n={len(msk)}", True
         elif len(allp) >= need_all:
-            prices, src = allp, f"рф n={len(allp)}"
+            prices, src, is_msk = allp, f"рф n={len(allp)}", False
         else:
             continue
+        # Право перебить свежую запись парсера даёт только большая МОСКОВСКАЯ выборка.
+        strong = is_msk and len(msk) >= strong_msk_min
         modal = modal_center(prices)
         if modal <= 0:
             continue
@@ -109,7 +120,8 @@ def sync_stats(stats, raw_store, now=None,
                 if s.get('manual_override'):
                     changes.append(f"  = {key}: оверрайд — не трогаем")
                     continue
-                if not db_entry_is_stale(s.get('updated_at'), now=now):
+                entry_fresh = not db_entry_is_stale(s.get('updated_at'), now=now)
+                if entry_fresh and not strong:
                     continue   # свежая запись парсера (Москва) главнее
                 old = int(s.get('median_price') or 0)
                 if old and abs(modal - old) / old > max_dev:
@@ -127,7 +139,8 @@ def sync_stats(stats, raw_store, now=None,
                 s['updated_at'] = stamp
                 s['collector_synced'] = True
                 updated += 1
-                changes.append(f"  ✓ {key}: {old}→{modal} ({src}), выкуп {buyout}")
+                tail = " — перебили СВЕЖУЮ запись парсера" if entry_fresh else ""
+                changes.append(f"  ✓ {key}: {old}→{modal} ({src}), выкуп {buyout}{tail}")
         else:
             skel = _key_to_row_skeleton(key)
             if not skel:

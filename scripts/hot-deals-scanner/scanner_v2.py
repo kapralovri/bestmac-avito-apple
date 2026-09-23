@@ -37,6 +37,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from common.classifier import classify, config_to_db_key, processor_label
 from common.condition import analyze_condition
+from common.subscriptions import load_subscriptions, find_matches, record_hits
 from common.market import robust_stats, assess_deal, MarketStats
 from common.negotiator import motivation_score, MotivationReport
 from common.config import (
@@ -150,17 +151,106 @@ DIGEST_MIN_SCORE = int(os.environ.get('DIGEST_MIN_SCORE', '40'))
 TELEGRAM_URL  = os.environ.get('TELEGRAM_NOTIFY_URL')
 RUCAPTCHA_API_KEY = os.environ.get('RUCAPTCHA_API_KEY', '')
 
-# DeepSeek — для co-pilot (готовое сообщение продавцу). Тот же ключ, что у бэкенда.
-DEEPSEEK_API_KEY  = os.environ.get('DEEPSEEK_API_KEY', '')
-DEEPSEEK_BASE_URL = os.environ.get('DEEPSEEK_BASE_URL', 'https://api.deepseek.com').rstrip('/')
-DEEPSEEK_MODEL    = os.environ.get('DEEPSEEK_MODEL', 'deepseek-v4-pro')
-
 # Env-переменные для scan URL (опционально — если не заданы, берутся из config.py)
 SCAN_URL = os.environ.get('SCAN_URL')  # legacy: одиночный URL
 
 # Прокси
 PROXY_URL     = os.environ.get('PROXY_URL', '').strip().strip('"').strip("'")
 CHANGE_IP_URL = os.environ.get('CHANGE_IP_URL', '').strip().strip('"').strip("'")
+
+# ─── GST-74: расход капчи ────────────────────────────────────────────────────
+# Разбор сентябрьского перерасхода: капча решалась практически на КАЖДОЙ
+# загрузке страницы (1536 загрузок в сутки ≈ 1536 решений), баланс ушёл
+# в минус и сканер молча встал на двое суток. Три предохранителя:
+#   1) потолок решений на прогон — от разгона, когда Avito злой;
+#   2) меньше попыток на страницу — третья почти никогда не спасала;
+#   3) сигнал о балансе ДО прогона, а не только в суточной сводке.
+CAPTCHA_MAX_PER_RUN = int(os.environ.get('CAPTCHA_MAX_PER_RUN', '40'))
+CAPTCHA_ATTEMPTS_PER_PAGE = int(os.environ.get('CAPTCHA_ATTEMPTS_PER_PAGE', '2'))
+CAPTCHA_LOW_BALANCE = float(os.environ.get('CAPTCHA_LOW_BALANCE', '50'))
+CAPTCHA_STATE_FILE = Path(os.environ.get('CAPTCHA_STATE_PATH',
+                                         'public/data/captcha-state.json'))
+# Сессия Avito между прогонами: куки после решённой капчи переживают процесс,
+# иначе каждый из прогонов в сутки начинает с нуля и платит за прогрев заново.
+SESSION_FILE = Path(os.environ.get('AVITO_SESSION_PATH',
+                                   'public/data/avito-session.json'))
+
+
+# GST-74: сканер как резерв. Домашний коллектор (Mac mini + расширение) ищет
+# с жилого IP и без капчи, поэтому пока он жив, серверный скан — чистый расход:
+# он повторяет ту же работу за деньги. Просыпаемся только на тревогу.
+SCANNER_STANDBY = os.environ.get('SCANNER_STANDBY', '1').lower() not in ('0', 'false', 'no', '')
+COLLECTOR_ALIVE_MIN = int(os.environ.get('COLLECTOR_ALIVE_MIN', '20'))
+INTAKE_STATS_FILE = Path(os.environ.get('INTAKE_STATS_PATH', 'public/data/intake-stats.json'))
+
+
+def should_run_scan(collector_last_at, now, *, standby=None, alive_min=None):
+    """Нужен ли серверный скан. → (bool, причина). Чистая функция.
+
+    «Жив» считается по последнему POST от расширения. Расширение шлёт пульс
+    даже когда новых лотов нет, поэтому тишина здесь означает реальную поломку,
+    а не просто спокойный час на Avito.
+    """
+    standby = SCANNER_STANDBY if standby is None else standby
+    alive_min = COLLECTOR_ALIVE_MIN if alive_min is None else alive_min
+    if not standby:
+        return True, "режим ожидания выключен"
+    if not collector_last_at:
+        return True, "коллектор ещё ни разу не присылал карточки"
+    silent = now - collector_last_at
+    if silent <= alive_min * 60:
+        mins = max(0, int(silent // 60))
+        return False, f"коллектор жив (последние карточки {mins} мин назад) — скан не нужен"
+    return True, f"коллектор молчит {int(silent // 60)} мин — подстраховываем сканом"
+
+
+class CaptchaBudget:
+    """Потолок платных решений на один прогон. limit=0 — без потолка."""
+
+    def __init__(self, limit: int):
+        self.limit = int(limit or 0)
+        self.spent = 0
+
+    def allow(self) -> bool:
+        return self.limit <= 0 or self.spent < self.limit
+
+    def charge(self) -> None:
+        self.spent += 1
+
+    @property
+    def left(self) -> int:
+        return 0 if self.limit <= 0 else max(0, self.limit - self.spent)
+
+
+CAPTCHA_BUDGET = CaptchaBudget(CAPTCHA_MAX_PER_RUN)
+
+
+def low_balance_alert(balance, state, now, *, threshold=None, cooldown_h=12):
+    """Чистая функция: что сказать про баланс капчи. → (текст | None, патч состояния).
+
+    Предупреждаем, но НЕ останавливаем прогон — решение владельца: пусть лучше
+    сканер работает, пока может. Повтор не чаще cooldown_h; пополнение
+    подтверждаем, иначе непонятно, дошли деньги или нет.
+    """
+    threshold = CAPTCHA_LOW_BALANCE if threshold is None else threshold
+    if balance is None:
+        return None, {}
+    was_low = bool(state.get("low"))
+
+    if balance > threshold:
+        if was_low:
+            return (f"🟢 <b>Баланс капчи пополнен</b> — {balance:.2f} ₽, сканер в норме.",
+                    {"low": False, "alert_at": now})
+        return None, {}
+
+    if was_low and now - (state.get("alert_at") or 0) < cooldown_h * 3600:
+        return None, {}
+    return (f"🔴 <b>Баланс капчи на исходе: {balance:.2f} ₽</b>\n\n"
+            "Когда он уйдёт в ноль, Avito перестанет пускать сканер и новые лоты "
+            "будут проходить мимо — молча. Пополните rucaptcha.\n"
+            "Расширение в браузере от этого не зависит и продолжит собирать.",
+            {"low": True, "alert_at": now})
+
 
 AVITO_CAPTCHA_ID = '2d9c743cf7d63dbc9db578a608196bcd'
 AVITO_VERIFY_URL = 'https://www.avito.ru/web/1/firewallCaptcha/verify'
@@ -338,6 +428,13 @@ def solve_captcha(page) -> bool:
     if not RUCAPTCHA_API_KEY:
         logger.warning("⚠️ RUCAPTCHA_API_KEY не задан")
         return False
+    # GST-74: потолок на прогон. Без него «злой» день на Avito вычерпывал
+    # баланс за один заход — каждая попытка тут стоит живых денег.
+    if not CAPTCHA_BUDGET.allow():
+        logger.error(f"🛑 Бюджет капчи на прогон исчерпан "
+                     f"({CAPTCHA_BUDGET.spent}/{CAPTCHA_BUDGET.limit}) — дальше не платим")
+        return False
+    CAPTCHA_BUDGET.charge()
     try:
         from twocaptcha import TwoCaptcha
         solver = TwoCaptcha(RUCAPTCHA_API_KEY, server='rucaptcha.com', defaultTimeout=120)
@@ -401,10 +498,14 @@ def navigate_with_captcha(page, url: str) -> bool:
         logger.warning(f"⚠️ Ошибка goto: {e}")
         return False
 
-    for attempt in range(1, 4):
+    # GST-74: было 3 попытки на страницу. Третья почти никогда не спасала —
+    # если два верных токена подряд не пустили, Avito держит нас за бота и
+    # платить дальше бессмысленно. Число вынесено в env на случай, если
+    # поведение файрвола изменится.
+    for attempt in range(1, CAPTCHA_ATTEMPTS_PER_PAGE + 1):
         if not is_captcha_page(page):
             return True
-        logger.warning(f"🛡 Капча (попытка {attempt}/3)")
+        logger.warning(f"🛡 Капча (попытка {attempt}/{CAPTCHA_ATTEMPTS_PER_PAGE})")
         if not solve_captcha(page):
             return False
         page.wait_for_timeout(3000)
@@ -536,50 +637,6 @@ def score_deal(price, stats, buyout, condition, is_private, is_moscow,
 
 
 # ─── Co-pilot: готовое первое сообщение продавцу ─────────────────────────────
-def _fmt_rub(n):
-    return f"{int(n):,}".replace(",", " ")
-
-
-def template_seller_message(title, target):
-    """Детерминированный фолбэк, если DeepSeek недоступен."""
-    short = (title or "устройство")[:60]
-    return (
-        f"Здравствуйте! Интересует ваш «{short}». "
-        f"Готов купить за {_fmt_rub(target)} ₽, могу подъехать сегодня, оплата сразу наличными. "
-        f"Ещё актуально?"
-    )
-
-
-def ai_seller_message(title, asking, target, location):
-    """Просит DeepSeek написать короткое первое сообщение продавцу. None, если нет ключа/ошибка."""
-    if not DEEPSEEK_API_KEY:
-        return None
-    prompt = (
-        "Ты — вежливый частный покупатель техники Apple в Москве. Напиши КОРОТКОЕ (2-3 предложения) "
-        "первое сообщение продавцу на Авито, чтобы начать диалог и быстро договориться о покупке.\n"
-        f"Товар: {title}\n"
-        f"Цена продавца: {asking} ₽\n"
-        f"Моя целевая цена: {target} ₽\n"
-        f"Локация: {location or 'Москва'}\n\n"
-        "Требования: поздоровайся, прояви интерес к КОНКРЕТНОМУ товару, аккуратно предложи цену "
-        f"{target} ₽ (если она ниже цены продавца — мягко, без давления и без слова «скидка»), "
-        "подчеркни готовность купить сегодня и оплату сразу/наличными, предложи встречу или спроси "
-        "актуальность. Только текст сообщения, без markdown, без подписи. По-русски, на «вы»."
-    )
-    try:
-        r = std_requests.post(
-            f"{DEEPSEEK_BASE_URL}/chat/completions",
-            headers={"Authorization": f"Bearer {DEEPSEEK_API_KEY}", "content-type": "application/json"},
-            json={"model": DEEPSEEK_MODEL, "max_tokens": 300,
-                  "messages": [{"role": "user", "content": prompt}]},
-            timeout=30,
-        )
-        return r.json()["choices"][0]["message"]["content"].strip()
-    except Exception as e:
-        logger.error(f"DeepSeek co-pilot fail: {e}")
-        return None
-
-
 # ─── Определение локации ─────────────────────────────────────────────────────
 def is_moscow(location):
     loc = location.lower()
@@ -688,6 +745,8 @@ class AvitoScannerV2:
 
         # Кэш накопителя цен коллектора (живые компы для intake); грузится лениво
         self._raw_prices_cache = None
+        # Подписки владельца (GST-73); заполняются в начале прогона run_intake
+        self.subscriptions = {}
 
     def _start_browser(self):
         """Запускает Playwright-браузер."""
@@ -696,7 +755,20 @@ class AvitoScannerV2:
             args=['--no-sandbox', '--disable-setuid-sandbox',
                   '--disable-blink-features=AutomationControlled'],
         )
+        # GST-74: переиспользуем куки прошлого прогона. Раньше контекст был
+        # девственно чистым каждый раз, поэтому каждый прогон в сутки заново
+        # платил за прогрев, даже если предыдущий закончился 30 минут назад.
+        # Битый файл сессии не должен ронять прогон — просто стартуем чистыми.
+        state = None
+        if SESSION_FILE.exists():
+            try:
+                json.loads(SESSION_FILE.read_text(encoding='utf-8'))
+                state = str(SESSION_FILE)
+                logger.info("🍪 Сессия прошлого прогона найдена — пробуем без прогрева")
+            except (OSError, ValueError):
+                logger.warning("⚠️ Файл сессии битый — стартуем с чистого листа")
         self.context = self.browser.new_context(
+            storage_state=state,
             viewport={'width': 1440, 'height': 900},
             user_agent=USER_AGENT,
             locale='ru-RU',
@@ -716,9 +788,27 @@ class AvitoScannerV2:
         ok = navigate_with_captcha(self.page, "https://www.avito.ru")
         if ok:
             logger.info("✅ Прогрев пройден")
+            self._save_session()
         else:
             logger.warning("⚠️ Прогрев не удался, продолжаем...")
+            # Протухшая сессия хуже отсутствия: с ней следующий прогон снова
+            # упрётся в ту же стену. Выбрасываем, чтобы стартовать начисто.
+            self._drop_session()
         self.page.wait_for_timeout(random.randint(2000, 4000))
+
+    def _save_session(self):
+        """Складывает куки после успешно пройденной капчи для следующего прогона."""
+        try:
+            SESSION_FILE.parent.mkdir(parents=True, exist_ok=True)
+            self.context.storage_state(path=str(SESSION_FILE))
+        except Exception as e:   # noqa: BLE001 — сессия это оптимизация, не цель
+            logger.warning(f"сессия не сохранилась: {e}")
+
+    def _drop_session(self):
+        try:
+            SESSION_FILE.unlink(missing_ok=True)
+        except OSError:
+            pass
 
     def _load_page(self, url):
         """Загружает страницу через Playwright с обходом капчи. Возвращает HTML или None.
@@ -751,6 +841,37 @@ class AvitoScannerV2:
         if self.browser:
             self.browser.close()
 
+    def _fetch_item_soup(self, url):
+        """Грузит карточку лота → (soup | None, удалось_ли_прочитать_описание).
+
+        GST-73: одна повторная попытка, если страница не пришла или в ней нет
+        блока описания (капча, недогруз, смена вёрстки Avito). Раньше такой
+        промах молча превращался в «дефектов не найдено»; теперь мы пробуем
+        ещё раз, а факт неудачи уезжает наверх отдельным флагом, а не пустой
+        строкой, неотличимой от чистого описания.
+
+        GST-74: повтор стал УСЛОВНЫМ. Загрузка страницы на Avito почти всегда
+        означает платную капчу, поэтому безусловный второй заход удваивал
+        расход на каждом разбираемом лоте. Повторяем, только если есть запас
+        бюджета — иначе честно возвращаем «не прочитано»: карточка и так
+        скажет об этом вслух, а деньги дороже одного описания.
+        """
+        soup = None
+        for attempt in (1, 2):
+            html = self._load_page(url)
+            if html:
+                soup = BeautifulSoup(html, 'lxml')
+                if soup.find('div', attrs={'data-marker': 'item-description'}):
+                    return soup, True
+            if attempt == 1:
+                if not CAPTCHA_BUDGET.allow():
+                    logger.info("   ↻ повтор пропущен — бюджет капчи на исходе")
+                    break
+                logger.info(f"   ↻ описание не прочиталось — вторая попытка: {url[:60]}")
+                time.sleep(random.uniform(2, 4))
+        logger.warning(f"   ⚠️ описание так и не прочитано: {url[:60]}")
+        return soup, False
+
     def deep_analyze(self, url):
         """Заходит в объявление, собирает детали (включая полное описание для анализа состояния)."""
         result = {
@@ -763,14 +884,14 @@ class AvitoScannerV2:
             "seller_type": "?",
             "location": "",
             "desc_text": "",   # полный текст описания продавца (для анализа состояния)
+            "desc_ok": False,  # описание реально прочитано (а не «пусто из-за капчи»)
         }
-        html_content = self._load_page(url)
-        if not html_content:
+        soup, desc_ok = self._fetch_item_soup(url)
+        if soup is None:
             return result
+        result["desc_ok"] = desc_ok
 
         try:
-            soup = BeautifulSoup(html_content, 'lxml')
-
             # Описание
             desc_tag = soup.find('div', attrs={'data-marker': 'item-description'})
             desc_text = desc_tag.get_text(' ').lower() if desc_tag else ""
@@ -978,28 +1099,6 @@ class AvitoScannerV2:
         except Exception as e:
             logger.error(f"❌ Не удалось сохранить дайджест: {e}")
 
-    def _send_copilot(self, c):
-        """Co-pilot: готовое первое сообщение продавцу для горячего лота."""
-        asking = int(c.get('price') or 0)
-        buyout = int(c.get('buyout') or 0)
-        # Целевая цена: если продавец просит дороже выкупной — целимся в выкупную,
-        # иначе берём по цене продавца (лот уже выгодный).
-        target = buyout if (buyout and asking > buyout) else (asking if asking > 0 else buyout)
-        if target <= 0:
-            return
-
-        draft = ai_seller_message(c['title'], asking, target, c.get('location', '')) \
-            or template_seller_message(c['title'], target)
-        safe = html.escape(draft)
-
-        text = (
-            "✍️ <b>Сообщение продавцу</b> (нажми на текст, чтобы скопировать):\n"
-            f"<pre>{safe}</pre>\n"
-            f"💰 Твоя цель: <b>{_fmt_rub(target)} ₽</b> • у продавца: {_fmt_rub(asking)} ₽\n"
-            f"🔗 <a href=\"{c['url']}\">Открыть объявление → «Написать»</a>"
-        )
-        self._send_telegram(text, f"✍️ Co-pilot: {c['title'][:40]}")
-
     def _enqueue_lead(self, c, motivation=None, lead_id=None, label=None):
         """Кладёт лот в очередь бота переговоров с оценкой мотивации продавца.
         target — стартовый якорь, walk_away — потолок (выкуп-цель).
@@ -1173,6 +1272,8 @@ class AvitoScannerV2:
             if cfg.year and cfg.year < min_year:
                 continue
             cond = analyze_condition(' '.join([title, analysis.get('desc_text', '')]),
+                                     desc_available=bool(analysis.get('desc_ok')
+                                                         or analysis.get('desc_text')),
                                      battery_hard=BATTERY_HARD, battery_soft=BATTERY_SOFT,
                                      cycles_hard=CYCLES_HARD, cycles_soft=CYCLES_SOFT)
             if cond.is_reject:
@@ -1506,11 +1607,56 @@ class AvitoScannerV2:
             return live, 'live-thin'
         return None, None
 
+    def _check_captcha_balance(self):
+        """GST-74: предупреждаем о кончающемся балансе ДО скана.
+
+        Раньше баланс попадал только в суточную сводку здоровья — счёт ушёл
+        в минус, сканер перестал проходить капчу и двое суток молчал, а узнать
+        об этом можно было только заглянув в статистику руками. Прогон НЕ
+        останавливаем: пусть работает, пока Avito пускает.
+        """
+        bal = _rucaptcha_balance()
+        if bal is None:
+            return
+        try:
+            state = json.loads(CAPTCHA_STATE_FILE.read_text(encoding='utf-8'))
+            if not isinstance(state, dict):
+                state = {}
+        except (OSError, ValueError):
+            state = {}
+        text, patch = low_balance_alert(bal, state, time.time())
+        logger.info(f"💳 Баланс капчи: {bal:.2f} ₽")
+        if text:
+            self._send_telegram(text, f"баланс капчи {bal:.2f}")
+        if patch:
+            state.update(patch)
+            try:
+                CAPTCHA_STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+                CAPTCHA_STATE_FILE.write_text(json.dumps(state, ensure_ascii=False),
+                                              encoding='utf-8')
+            except OSError:
+                pass
+
     def run(self):
         # Дохлый-выключатель: проверяем свежесть базы цен ДО скана
         # (не требует браузера; алерт уйдёт, даже если потом скан упадёт)
         self._check_prices_freshness()
 
+        # Резерв: пока домашний коллектор жив, серверный скан не запускаем —
+        # он бы платил капчей за ту же работу. Проверка идёт ДО браузера и
+        # до обращения к rucaptcha, чтобы холостой прогон не стоил ничего.
+        try:
+            rx = json.loads(INTAKE_STATS_FILE.read_text(encoding='utf-8'))
+            last_at = rx.get('last_at') if isinstance(rx, dict) else None
+        except (OSError, ValueError):
+            last_at = None
+        need_scan, why = should_run_scan(last_at, time.time())
+        if not need_scan:
+            logger.info(f"😴 {why}")
+            return
+        logger.info(f"🚨 {why}")
+
+        self._check_captcha_balance()
         self._start_browser()
         self._warmup()
 
@@ -1653,6 +1799,7 @@ class AvitoScannerV2:
         cond_text = ' '.join([L['title'], L['snippet'], analysis.get('desc_text', '')])
         condition = analyze_condition(
             cond_text,
+            desc_available=bool(analysis.get('desc_ok') or analysis.get('desc_text')),
             battery_hard=BATTERY_HARD, battery_soft=BATTERY_SOFT,
             cycles_hard=CYCLES_HARD, cycles_soft=CYCLES_SOFT,
         )
@@ -1713,6 +1860,65 @@ class AvitoScannerV2:
             'suspicious': assess.is_suspicious,
         }
 
+    def _notify_subscription(self, L, cfg, hits):
+        """GST-73: алерт по подписке «эта конфигурация дешевле моей цены».
+
+        Отдельное сообщение, а не карточка сделки: вопрос здесь другой. Сделка
+        отвечает «рынок ошибся», подписка — «появилось то, что я просил». Поэтому
+        ни маржа, ни MIN_NOTIFY_SCORE тут не спрашиваются: критерий задал человек.
+        Гейт состояния остаётся — аппарат с заменой экрана не нужен и за полцены.
+
+        Возвращает True, если сообщение ушло (тогда обычный путь пропускаем).
+        """
+        analysis = self.deep_analyze(L['raw_url'])
+        cond = analyze_condition(
+            ' '.join([L['title'], analysis.get('desc_text', '')]),
+            desc_available=bool(analysis.get('desc_ok') or analysis.get('desc_text')),
+            battery_hard=BATTERY_HARD, battery_soft=BATTERY_SOFT,
+            cycles_hard=CYCLES_HARD, cycles_soft=CYCLES_SOFT,
+        )
+        if cond.is_reject:
+            logger.info(f"   🔔⛔ по подписке, но брак: {L['title'][:40]} | {cond.summary()}")
+            return True   # лот разобран и отброшен — обычному пути делать нечего
+
+        price = L['price']
+        best = min(hits, key=lambda s: int(s.get('max_price') or 0))
+        margin_txt = ""
+        gap = int(best.get('max_price') or 0) - price
+        if gap > 0:
+            margin_txt = f" (на {gap:,} ₽ ниже твоего потолка)".replace(',', ' ')
+
+        # Рыночный контекст — справочно, если он вообще известен: подписка от
+        # него не зависит, но цифра помогает решить, торговаться ли.
+        market, _src = self._market_for(cfg, self._raw_comps(cfg))
+        market_line = ""
+        if market:
+            market_line = (f"📊 Рынок: медиана {market.median:,} ₽ "
+                           f"(по {market.n} лотам)\n").replace(',', ' ')
+
+        diag = f" {cfg.screen}\"" if cfg.screen else ""
+        loc = analysis.get('location') or ''
+        sub_model = html.escape(best.get('model') or '')
+        sub_label = html.escape(best.get('label') or '')
+        title = html.escape(L['title'])
+        text = (
+            "🔔 <b>ПО ПОДПИСКЕ</b>\n"
+            f"🎯 {sub_model} — {sub_label} "
+            f"• до {int(best.get('max_price') or 0):,} ₽\n\n".replace(',', ' ') +
+            f"💻 {title}\n"
+            f"⚙️ <b>{cfg.ram}GB / {cfg.ssd}GB{diag}</b>\n"
+            f"💰 Цена: <b>{price:,} ₽</b>{margin_txt}\n".replace(',', ' ') +
+            market_line +
+            f"🩺 Состояние: {cond.summary()}\n"
+            + (f"📍 {html.escape(loc)}\n" if loc else "")
+            + f"⏱ {L['age_str']}\n"
+            f"🔗 <a href='{L['url']}'>Открыть на Avito</a>"
+        )
+        if self._send_telegram(text, f"[подписка] {L['title'][:40]}"):
+            record_hits([s.get('id') for s in hits])
+            return True
+        return False
+
     def _dispatch_candidates(self, candidates):
         """Сортировка + рассылка кандидатов (общая для сканера и intake). Возвращает кол-во алертов."""
         candidates.sort(key=lambda x: x['score'], reverse=True)
@@ -1721,7 +1927,6 @@ class AvitoScannerV2:
             block_realtime = (c['suspicious'] and not c['condition'].positives) or c.get('low_conf')
             if c['score'] >= MIN_NOTIFY_SCORE and not block_realtime:
                 self.notify(c)
-                self._send_copilot(c)
                 if not c.get('reseller'):
                     self._enqueue_lead(c)
                 sent += 1
@@ -1740,6 +1945,11 @@ class AvitoScannerV2:
         self._warmup()
         candidates = []
         raw_batch = {}   # live_key -> [цены] для накопителя (--modal-report)
+        # Подписки читаем один раз на прогон: бот мог их поменять с прошлого раза.
+        self.subscriptions = load_subscriptions()
+        sub_hits = 0
+        if self.subscriptions:
+            logger.info(f"🔔 Подписок активно: {len(self.subscriptions)}")
         for card in cards:
             try:
                 raw_url = card.get('url') or ''
@@ -1759,6 +1969,16 @@ class AvitoScannerV2:
                 msk = 1 if (loc and is_moscow(loc)) else (0 if loc else None)
                 raw_batch.setdefault(str(live_key(cfg)), []).append(
                     [L['price'], int(time.time()), msk])
+                # GST-73: подписка владельца проверяется ДО рыночных гейтов.
+                # «Нужная модель по моей цене» — его собственный критерий, и он
+                # не обязан совпадать с выгодой относительно медианы; лот может
+                # и вовсе не иметь рынка (база пуста, компов мало), но владельца
+                # он всё равно интересует. Гейт состояния при этом остаётся.
+                hits = find_matches(self.subscriptions, cfg, L['price'])
+                if hits and self._notify_subscription(L, cfg, hits):
+                    self.seen.add(url)
+                    sub_hits += 1
+                    continue   # один лот — одно сообщение, обычный путь пропускаем
                 # Рынок: база (Москва) → при её отсутствии/протухании — накопитель
                 # коллектора (живые всероссийские цены). Если рынка нет совсем —
                 # НЕ помечаем seen: резервный VPS-сканер построит живой рынок из
@@ -1788,7 +2008,9 @@ class AvitoScannerV2:
         self._close()
         self._write_proc_stats(len(cards), len(candidates), sent)
         self._accumulate_raw(raw_batch)
-        logger.info(f"🏁 Intake: карточек {len(cards)}, кандидатов {len(candidates)}, алертов {sent}")
+        sub_tail = f", по подписке {sub_hits}" if sub_hits else ""
+        logger.info(f"🏁 Intake: карточек {len(cards)}, кандидатов {len(candidates)}, "
+                    f"алертов {sent}{sub_tail}")
 
     def _accumulate_raw(self, raw_batch):
         """Дописывает цены партии в intake-raw-prices.json (скользящее окно RAW_CAP на конфиг)."""

@@ -212,13 +212,177 @@ acts = cb(96, "mw:fam:1")  # iMac
 sent = find_send(acts)
 acts = cb(97, "mw:mdl:1:0")  # imac 24 — единственный конфиг
 sent = find_send(acts)
-check("1 конфиг → сразу ссылка, без промежуточной клавиатуры",
-      len(sent) == 1 and not sent[0].get("buttons") and "imac-m1" in sent[0]["text"])
+_btns10d = [cbd for row in (sent[0].get("buttons") or []) for _, cbd in row]
+check("1 конфиг → сразу ссылка, без промежуточного выбора конфигурации",
+      len(sent) == 1 and "imac-m1" in sent[0]["text"]
+      and not any(cbd.startswith("mw:cfg:") for cbd in _btns10d))
+check("и на этом экране тоже можно подписаться",
+      any(cbd.startswith("sub:new:") for cbd in _btns10d))
 
 print("[10e] /модель — визард: устаревший callback не роняет бота")
 acts = cb(98, "mw:cfg:9:9:9")
 check("некорректный индекс — вежливая ошибка, не исключение",
       any("начните заново" in a.get("text", "") for a in find_send(acts)))
+
+# ─── 11. GST-73: выключатель мертвеца для домашнего коллектора ──────────────
+# Браузерный сторож умирает вместе с Chrome; о том, что коллектор замолчал,
+# достоверно может сообщить только сервер.
+print("\n[11] Коллектор молчит — серверный алерт")
+from bot import collector_deadman, in_quiet_hours
+
+MIN = 60
+_DAY = 14   # рабочий час, не тихие часы
+
+check("тихие часы: 23:00 внутри окна 23→9", in_quiet_hours(23, 23, 9))
+check("тихие часы: 03:00 внутри окна 23→9", in_quiet_hours(3, 23, 9))
+check("тихие часы: 14:00 снаружи окна 23→9", not in_quiet_hours(14, 23, 9))
+check("тихие часы отключаются равными границами", not in_quiet_hours(5, 0, 0))
+
+_st = {}
+_txt, _patch = collector_deadman(now=1000 * MIN, last_at=999 * MIN, state=_st, hour=_DAY)
+check("свежая отправка → молчим", _txt is None)
+
+_txt, _patch = collector_deadman(now=1000 * MIN, last_at=900 * MIN, state=_st, hour=_DAY)
+check("молчит 100 мин → алерт", _txt is not None and "молчит" in _txt)
+check("алерт помечает состояние «лежит»", _patch.get("collector_down") is True)
+_st.update(_patch)
+
+_txt, _patch = collector_deadman(now=1001 * MIN, last_at=900 * MIN, state=_st, hour=_DAY)
+check("повтор в кулдаун не шлётся", _txt is None)
+
+_txt, _patch = collector_deadman(now=1200 * MIN, last_at=900 * MIN, state=_st, hour=_DAY)
+check("после кулдауна напоминает", _txt is not None)
+_st.update(_patch)
+
+_txt, _patch = collector_deadman(now=1300 * MIN, last_at=1299 * MIN, state=_st, hour=_DAY)
+check("коллектор ожил → сообщение о восстановлении", _txt is not None and "снова" in _txt)
+check("состояние «лежит» снято", _patch.get("collector_down") is False)
+_st.update(_patch)
+
+_txt, _patch = collector_deadman(now=1301 * MIN, last_at=1299 * MIN, state=_st, hour=_DAY)
+check("после восстановления не спамит", _txt is None)
+
+_txt, _patch = collector_deadman(now=1000 * MIN, last_at=900 * MIN, state={}, hour=2)
+check("ночью молчание — норма, не будим", _txt is None)
+
+_txt, _patch = collector_deadman(now=1000 * MIN, last_at=None, state={}, hour=_DAY)
+check("коллектор ни разу не запускался → не будим", _txt is None)
+
+# ─── 12. GST-73: подписки «модель + моя цена» ────────────────────────────────
+print("\n[12] Подписки: визард → цена → список → удаление")
+from common.subscriptions import load_subscriptions
+
+_subs_path = tmp / "subscriptions.json"
+botmod.SUBSCRIPTIONS_FILE = _subs_path
+_uid = [900]
+
+
+def msg(chat, text):
+    _uid[0] += 1
+    return bot2.handle_update({"update_id": _uid[0],
+                               "message": {"chat": {"id": chat}, "text": text}})
+
+acts = msg(777, "/подписки")
+check("пустой список — понятное сообщение",
+      any("подписок" in a.get("text", "").lower() for a in find_send(acts)))
+
+# Кнопка «🔔 Следить» живёт на экране выбранной конфигурации визарда /модель.
+acts = cb(777, "mw:fam:0")
+acts = cb(777, "mw:mdl:0:0")
+_cfg_screen = cb(777, "mw:cfg:0:0:0")
+_btns = [b for a in find_send(_cfg_screen) for row in (a.get("buttons") or []) for b in row]
+check("на экране конфигурации есть кнопка подписки",
+      any(cbd.startswith("sub:new:") for _, cbd in _btns))
+
+acts = cb(777, "sub:new:0:0:0")
+check("бот спрашивает цену", any("цену" in a.get("text", "").lower() for a in find_send(acts)))
+
+acts = msg(777, "не число")
+check("мусорный ввод — вежливая просьба, не создание подписки",
+      any("цен" in a.get("text", "").lower() for a in find_send(acts)))
+check("подписка пока не создана", load_subscriptions(_subs_path) == {})
+
+acts = msg(777, "45 000")
+_saved = load_subscriptions(_subs_path)
+check("подписка создана", len(_saved) == 1)
+_sub = list(_saved.values())[0]
+check("цена разобрана с пробелами", _sub["max_price"] == 45000)
+check("критерии заполнены из каталога", bool(_sub["match"].get("family")))
+check("подтверждение отправлено",
+      any("45 000" in a.get("text", "").replace(" ", " ") for a in find_send(acts)))
+
+acts = msg(777, "обычный текст")
+check("режим ожидания цены снят", not any("цену" in a.get("text", "").lower()
+                                          for a in find_send(acts)))
+
+acts = msg(777, "/подписки")
+_sends = find_send(acts)
+check("подписка видна в списке", any(_sub["model"] in a.get("text", "") for a in _sends))
+_del = [cbd for a in _sends for row in (a.get("buttons") or []) for _, cbd in row
+        if cbd.startswith("sub:del:")]
+check("у подписки есть кнопка удаления", bool(_del))
+
+acts = cb(777, _del[0])
+check("подписка удалена", load_subscriptions(_subs_path) == {})
+
+# Отмена ввода цены не должна оставлять бота в залипшем режиме.
+cb(777, "sub:new:0:0:0")
+acts = msg(777, "/отмена")
+check("ввод цены отменяется", any("отмен" in a.get("text", "").lower() for a in find_send(acts)))
+acts = msg(777, "77000")
+check("после отмены число не создаёт подписку", load_subscriptions(_subs_path) == {})
+
+# Разбор цены: число из фразы — не бюджет на Mac.
+from bot import parse_price
+check("«45 000» → 45000", parse_price("45 000") == 45000)
+check("«45к» → 45000", parse_price("45к") == 45000)
+check("«45000₽» → 45000", parse_price("45000₽") == 45000)
+check("«MacBook Air 13» не цена", parse_price("MacBook Air 13") is None)
+check("грош не цена", parse_price("50") is None)
+check("пустой ввод не цена", parse_price("") is None)
+
+# Команда во время ожидания цены не должна залипать в этом режиме.
+cb(777, "sub:new:0:0:0")
+acts = msg(777, "/подписки")
+check("команда вырывает из режима ввода цены",
+      any("Активных подписок нет" in a.get("text", "") for a in find_send(acts)))
+acts = msg(777, "50000")
+check("после команды число уже не создаёт подписку", load_subscriptions(_subs_path) == {})
+
+# ─── 13. GST-74: ссылка мониторинга с потолком цены ─────────────────────────
+# Поиск делает домашний браузер с жилым IP, а не VPS — это нулевой расход
+# капчи. Бот лишь готовит правильный URL, расширение мониторит вкладку.
+print("\n[13] Ссылка мониторинга: цена + сортировка по новизне")
+from bot import monitor_url
+from urllib.parse import urlsplit, parse_qs
+
+_base = "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/apple-ASgB?cd=1&f=ASgBxyz&q=macbook"
+_u = monitor_url(_base, 45000)
+_q = parse_qs(urlsplit(_u).query)
+check("потолок цены проставлен", _q.get("pmax") == ["45000"])
+check("сортировка по новизне проставлена", _q.get("s") == ["104"])
+check("исходный фильтр не потерян", _q.get("f") == ["ASgBxyz"])
+check("поисковый запрос не потерян", _q.get("q") == ["macbook"])
+check("путь не изменился", urlsplit(_u).path == urlsplit(_base).path)
+
+_u2 = monitor_url(_base + "&s=1", 30000)
+check("чужая сортировка перебивается на «новые»", parse_qs(urlsplit(_u2).query)["s"] == ["104"])
+
+_u3 = monitor_url("https://www.avito.ru/all/noutbuki", None)
+_q3 = parse_qs(urlsplit(_u3).query)
+check("без цены потолок не ставим", "pmax" not in _q3)
+check("сортировка ставится даже без цены", _q3.get("s") == ["104"])
+check("URL без параметров не ломается", _u3.startswith("https://www.avito.ru/all/noutbuki?"))
+check("пустой URL → пустая строка", monitor_url("", 1000) == "")
+
+# Подписка должна отдавать готовую ссылку — иначе её нужно собирать руками.
+botmod.SUBSCRIPTIONS_FILE = tmp / "subs13.json"
+cb(777, "sub:new:0:0:0")
+acts = msg(777, "45000")
+_txt = " ".join(a.get("text", "") for a in find_send(acts))
+check("в подтверждении подписки есть ссылка на мониторинг", "pmax=45000" in _txt)
+check("ссылка подана как действие, а не справка", "http" in _txt)
+
 
 print()
 if _fails:

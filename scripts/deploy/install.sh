@@ -2,7 +2,7 @@
 #
 # Установщик сервисов BestMac на VPS (systemd).
 # Поднимает 3 автоматических процесса:
-#   1) bestmac-scanner.timer  — сканер ниже-рынка каждые 15 мин
+#   1) bestmac-scanner.timer  — сканер ниже-рынка каждые 30 мин
 #   2) bestmac-digest.timer   — вечерний дайджест раз в сутки (20:00)
 #   3) bestmac-bot.service    — двусторонний бот переговоров (всегда онлайн)
 #
@@ -88,11 +88,11 @@ EOF
 
 write_unit bestmac-scanner.timer <<EOF
 [Unit]
-Description=Run BestMac scanner every 15 minutes
+Description=Run BestMac scanner every 30 minutes
 
 [Timer]
 OnBootSec=2min
-OnUnitActiveSec=15min
+OnUnitActiveSec=30min
 Persistent=true
 
 [Install]
