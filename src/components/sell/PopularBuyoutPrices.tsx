@@ -17,8 +17,8 @@ export default async function PopularBuyoutPrices() {
     <section className="mb-12" id="skolko-platim">
       <h2 className="text-2xl md:text-3xl font-bold mb-2">Сколько мы платим сейчас</h2>
       <p className="text-muted-foreground mb-6">
-        Цена выкупа за лучшую конфигурацию модели — по свежим объявлениям Авито за последние 30 дней.
-        Точную сумму за ваш Mac назовём по фото за 15 минут.
+        Цена выкупа за самую дорогую конфигурацию модели, по которой у нас надёжные данные: свежие
+        объявления Авито или наши сделки. Точную сумму за ваш Mac назовём по фото за 15 минут.
       </p>
       <div className="grid sm:grid-cols-2 gap-x-8">
         {rows.map((r) => (
