@@ -112,10 +112,21 @@ BOT_COMMANDS: list[tuple[str, str]] = [
     ("model",  "🔎 Выбрать модель → ссылка на мониторинг"),
     ("subs",   "🔔 Мои подписки «модель + моя цена»"),
     ("status", "🩺 Жив ли домашний коллектор Avito"),
+    ("review", "⭐ Сообщение клиенту с просьбой об отзыве"),
     ("cancel", "✖️ Отменить текущий ввод"),
     ("help",   "❓ Как всё это работает"),
     ("start",  "▶️ Запуск и подключение чата"),
 ]
+
+
+# Отзывы на Яндекс Картах — главный разрыв с конкурентами по выкупу (у лидеров
+# ниши их тысячи). После сделки владелец берёт готовый текст и пересылает клиенту.
+REVIEW_URL = "https://yandex.ru/maps/org/215912324656/reviews/?add-review=true"
+REVIEW_MESSAGE = (
+    "Спасибо, что выбрали BestMac! Если всё прошло хорошо, оставьте, пожалуйста, "
+    "короткий отзыв на Яндекс Картах — это займёт минуту и очень нам поможет:\n"
+    f"{REVIEW_URL}"
+)
 
 
 def _is_cancel(text: str) -> bool:
@@ -724,6 +735,13 @@ class NegotiationBot:
             self.state.pop("pending_sub", None)
             self._save()
 
+        if text.startswith("/review") or text.startswith("/otzyv") or text.startswith("/отзыв"):
+            return [
+                {"type": "send", "chat_id": chat_id,
+                 "text": "Перешли клиенту сообщение ниже 👇"},
+                {"type": "send", "chat_id": chat_id, "text": REVIEW_MESSAGE},
+            ]
+
         if text.startswith("/status"):
             return [{"type": "send", "chat_id": chat_id,
                      "text": collector_status_text(),
@@ -822,7 +840,8 @@ class NegotiationBot:
                              "🔍 /сделки — какие Mac выгодно выкупать прямо сейчас.\n"
                              "🔎 /модель — выбрать модель кнопками и получить ссылку на мониторинг.\n"
                              "🔔 /подписки — следить за конфигурацией по вашей цене.\n"
-                             "🩺 /status — статус домашнего коллектора Avito."}]
+                             "🩺 /status — статус домашнего коллектора Avito.\n"
+                             "⭐ /отзыв — сообщение клиенту с просьбой об отзыве на Картах."}]
 
         # Обычный текст = ответ продавца для активного диалога
         active = self.state.get("active_lead")
