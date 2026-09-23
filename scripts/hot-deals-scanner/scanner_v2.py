@@ -163,6 +163,72 @@ SCAN_URL = os.environ.get('SCAN_URL')  # legacy: одиночный URL
 PROXY_URL     = os.environ.get('PROXY_URL', '').strip().strip('"').strip("'")
 CHANGE_IP_URL = os.environ.get('CHANGE_IP_URL', '').strip().strip('"').strip("'")
 
+# ─── GST-74: расход капчи ────────────────────────────────────────────────────
+# Разбор сентябрьского перерасхода: капча решалась практически на КАЖДОЙ
+# загрузке страницы (1536 загрузок в сутки ≈ 1536 решений), баланс ушёл
+# в минус и сканер молча встал на двое суток. Три предохранителя:
+#   1) потолок решений на прогон — от разгона, когда Avito злой;
+#   2) меньше попыток на страницу — третья почти никогда не спасала;
+#   3) сигнал о балансе ДО прогона, а не только в суточной сводке.
+CAPTCHA_MAX_PER_RUN = int(os.environ.get('CAPTCHA_MAX_PER_RUN', '40'))
+CAPTCHA_ATTEMPTS_PER_PAGE = int(os.environ.get('CAPTCHA_ATTEMPTS_PER_PAGE', '2'))
+CAPTCHA_LOW_BALANCE = float(os.environ.get('CAPTCHA_LOW_BALANCE', '50'))
+CAPTCHA_STATE_FILE = Path(os.environ.get('CAPTCHA_STATE_PATH',
+                                         'public/data/captcha-state.json'))
+# Сессия Avito между прогонами: куки после решённой капчи переживают процесс,
+# иначе каждый из прогонов в сутки начинает с нуля и платит за прогрев заново.
+SESSION_FILE = Path(os.environ.get('AVITO_SESSION_PATH',
+                                   'public/data/avito-session.json'))
+
+
+class CaptchaBudget:
+    """Потолок платных решений на один прогон. limit=0 — без потолка."""
+
+    def __init__(self, limit: int):
+        self.limit = int(limit or 0)
+        self.spent = 0
+
+    def allow(self) -> bool:
+        return self.limit <= 0 or self.spent < self.limit
+
+    def charge(self) -> None:
+        self.spent += 1
+
+    @property
+    def left(self) -> int:
+        return 0 if self.limit <= 0 else max(0, self.limit - self.spent)
+
+
+CAPTCHA_BUDGET = CaptchaBudget(CAPTCHA_MAX_PER_RUN)
+
+
+def low_balance_alert(balance, state, now, *, threshold=None, cooldown_h=12):
+    """Чистая функция: что сказать про баланс капчи. → (текст | None, патч состояния).
+
+    Предупреждаем, но НЕ останавливаем прогон — решение владельца: пусть лучше
+    сканер работает, пока может. Повтор не чаще cooldown_h; пополнение
+    подтверждаем, иначе непонятно, дошли деньги или нет.
+    """
+    threshold = CAPTCHA_LOW_BALANCE if threshold is None else threshold
+    if balance is None:
+        return None, {}
+    was_low = bool(state.get("low"))
+
+    if balance > threshold:
+        if was_low:
+            return (f"🟢 <b>Баланс капчи пополнен</b> — {balance:.2f} ₽, сканер в норме.",
+                    {"low": False, "alert_at": now})
+        return None, {}
+
+    if was_low and now - (state.get("alert_at") or 0) < cooldown_h * 3600:
+        return None, {}
+    return (f"🔴 <b>Баланс капчи на исходе: {balance:.2f} ₽</b>\n\n"
+            "Когда он уйдёт в ноль, Avito перестанет пускать сканер и новые лоты "
+            "будут проходить мимо — молча. Пополните rucaptcha.\n"
+            "Расширение в браузере от этого не зависит и продолжит собирать.",
+            {"low": True, "alert_at": now})
+
+
 AVITO_CAPTCHA_ID = '2d9c743cf7d63dbc9db578a608196bcd'
 AVITO_VERIFY_URL = 'https://www.avito.ru/web/1/firewallCaptcha/verify'
 USER_AGENT = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
@@ -339,6 +405,13 @@ def solve_captcha(page) -> bool:
     if not RUCAPTCHA_API_KEY:
         logger.warning("⚠️ RUCAPTCHA_API_KEY не задан")
         return False
+    # GST-74: потолок на прогон. Без него «злой» день на Avito вычерпывал
+    # баланс за один заход — каждая попытка тут стоит живых денег.
+    if not CAPTCHA_BUDGET.allow():
+        logger.error(f"🛑 Бюджет капчи на прогон исчерпан "
+                     f"({CAPTCHA_BUDGET.spent}/{CAPTCHA_BUDGET.limit}) — дальше не платим")
+        return False
+    CAPTCHA_BUDGET.charge()
     try:
         from twocaptcha import TwoCaptcha
         solver = TwoCaptcha(RUCAPTCHA_API_KEY, server='rucaptcha.com', defaultTimeout=120)
@@ -402,10 +475,14 @@ def navigate_with_captcha(page, url: str) -> bool:
         logger.warning(f"⚠️ Ошибка goto: {e}")
         return False
 
-    for attempt in range(1, 4):
+    # GST-74: было 3 попытки на страницу. Третья почти никогда не спасала —
+    # если два верных токена подряд не пустили, Avito держит нас за бота и
+    # платить дальше бессмысленно. Число вынесено в env на случай, если
+    # поведение файрвола изменится.
+    for attempt in range(1, CAPTCHA_ATTEMPTS_PER_PAGE + 1):
         if not is_captcha_page(page):
             return True
-        logger.warning(f"🛡 Капча (попытка {attempt}/3)")
+        logger.warning(f"🛡 Капча (попытка {attempt}/{CAPTCHA_ATTEMPTS_PER_PAGE})")
         if not solve_captcha(page):
             return False
         page.wait_for_timeout(3000)
@@ -699,7 +776,20 @@ class AvitoScannerV2:
             args=['--no-sandbox', '--disable-setuid-sandbox',
                   '--disable-blink-features=AutomationControlled'],
         )
+        # GST-74: переиспользуем куки прошлого прогона. Раньше контекст был
+        # девственно чистым каждый раз, поэтому каждый прогон в сутки заново
+        # платил за прогрев, даже если предыдущий закончился 30 минут назад.
+        # Битый файл сессии не должен ронять прогон — просто стартуем чистыми.
+        state = None
+        if SESSION_FILE.exists():
+            try:
+                json.loads(SESSION_FILE.read_text(encoding='utf-8'))
+                state = str(SESSION_FILE)
+                logger.info("🍪 Сессия прошлого прогона найдена — пробуем без прогрева")
+            except (OSError, ValueError):
+                logger.warning("⚠️ Файл сессии битый — стартуем с чистого листа")
         self.context = self.browser.new_context(
+            storage_state=state,
             viewport={'width': 1440, 'height': 900},
             user_agent=USER_AGENT,
             locale='ru-RU',
@@ -719,9 +809,27 @@ class AvitoScannerV2:
         ok = navigate_with_captcha(self.page, "https://www.avito.ru")
         if ok:
             logger.info("✅ Прогрев пройден")
+            self._save_session()
         else:
             logger.warning("⚠️ Прогрев не удался, продолжаем...")
+            # Протухшая сессия хуже отсутствия: с ней следующий прогон снова
+            # упрётся в ту же стену. Выбрасываем, чтобы стартовать начисто.
+            self._drop_session()
         self.page.wait_for_timeout(random.randint(2000, 4000))
+
+    def _save_session(self):
+        """Складывает куки после успешно пройденной капчи для следующего прогона."""
+        try:
+            SESSION_FILE.parent.mkdir(parents=True, exist_ok=True)
+            self.context.storage_state(path=str(SESSION_FILE))
+        except Exception as e:   # noqa: BLE001 — сессия это оптимизация, не цель
+            logger.warning(f"сессия не сохранилась: {e}")
+
+    def _drop_session(self):
+        try:
+            SESSION_FILE.unlink(missing_ok=True)
+        except OSError:
+            pass
 
     def _load_page(self, url):
         """Загружает страницу через Playwright с обходом капчи. Возвращает HTML или None.
@@ -762,6 +870,12 @@ class AvitoScannerV2:
         промах молча превращался в «дефектов не найдено»; теперь мы пробуем
         ещё раз, а факт неудачи уезжает наверх отдельным флагом, а не пустой
         строкой, неотличимой от чистого описания.
+
+        GST-74: повтор стал УСЛОВНЫМ. Загрузка страницы на Avito почти всегда
+        означает платную капчу, поэтому безусловный второй заход удваивал
+        расход на каждом разбираемом лоте. Повторяем, только если есть запас
+        бюджета — иначе честно возвращаем «не прочитано»: карточка и так
+        скажет об этом вслух, а деньги дороже одного описания.
         """
         soup = None
         for attempt in (1, 2):
@@ -771,6 +885,9 @@ class AvitoScannerV2:
                 if soup.find('div', attrs={'data-marker': 'item-description'}):
                     return soup, True
             if attempt == 1:
+                if not CAPTCHA_BUDGET.allow():
+                    logger.info("   ↻ повтор пропущен — бюджет капчи на исходе")
+                    break
                 logger.info(f"   ↻ описание не прочиталось — вторая попытка: {url[:60]}")
                 time.sleep(random.uniform(2, 4))
         logger.warning(f"   ⚠️ описание так и не прочитано: {url[:60]}")
@@ -1533,10 +1650,41 @@ class AvitoScannerV2:
             return live, 'live-thin'
         return None, None
 
+    def _check_captcha_balance(self):
+        """GST-74: предупреждаем о кончающемся балансе ДО скана.
+
+        Раньше баланс попадал только в суточную сводку здоровья — счёт ушёл
+        в минус, сканер перестал проходить капчу и двое суток молчал, а узнать
+        об этом можно было только заглянув в статистику руками. Прогон НЕ
+        останавливаем: пусть работает, пока Avito пускает.
+        """
+        bal = _rucaptcha_balance()
+        if bal is None:
+            return
+        try:
+            state = json.loads(CAPTCHA_STATE_FILE.read_text(encoding='utf-8'))
+            if not isinstance(state, dict):
+                state = {}
+        except (OSError, ValueError):
+            state = {}
+        text, patch = low_balance_alert(bal, state, time.time())
+        logger.info(f"💳 Баланс капчи: {bal:.2f} ₽")
+        if text:
+            self._send_telegram(text, f"баланс капчи {bal:.2f}")
+        if patch:
+            state.update(patch)
+            try:
+                CAPTCHA_STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+                CAPTCHA_STATE_FILE.write_text(json.dumps(state, ensure_ascii=False),
+                                              encoding='utf-8')
+            except OSError:
+                pass
+
     def run(self):
         # Дохлый-выключатель: проверяем свежесть базы цен ДО скана
         # (не требует браузера; алерт уйдёт, даже если потом скан упадёт)
         self._check_prices_freshness()
+        self._check_captcha_balance()
 
         self._start_browser()
         self._warmup()

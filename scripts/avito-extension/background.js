@@ -87,10 +87,18 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.type === "beat") {
       const tabId = sender.tab && sender.tab.id;
       if (!tabId) return sendResponse({ ok: false });
-      const { beats = {} } = await get(["beats"]);
-      beats[tabId] = { at: now(), count: msg.count | 0, captcha: !!msg.captcha,
-                       url: (sender.tab && sender.tab.url) || "" };
-      await set({ beats });
+      const url = (sender.tab && sender.tab.url) || "";
+      const { beats = {}, monitors = {}, adopted = {} } = await get(
+        ["beats", "monitors", "adopted"]);
+      beats[tabId] = { at: now(), count: msg.count | 0, captcha: !!msg.captcha, url };
+      // GST-74: вкладку могли открыть по ссылке из бота («следить за этой
+      // конфигурацией до N ₽»), а не кнопкой «Запустить мониторинг». Такая
+      // вкладка собирает исправно, но раньше выпадала из-под сторожа и через
+      // пару часов тихо умирала — ровно та болезнь, от которой сторож и заводили.
+      // Считаем своей любую вкладку Avito, которая подаёт пульс.
+      const managed = Object.values(monitors).indexOf(tabId) !== -1;
+      if (!managed && /:\/\/www\.avito\.ru\//.test(url)) adopted[tabId] = url;
+      await set({ beats, adopted });
       if (msg.captcha) await notifyCaptcha();
       return sendResponse({ ok: true });
     }
@@ -136,29 +144,34 @@ async function start() {
 async function stop() {
   const { monitors = {} } = await get(["monitors"]);
   await set({ monitors: {}, beats: {}, monitoring: false });
-  chrome.alarms.clear(ALARM);
   for (const id of Object.values(monitors)) {
     try { await chrome.tabs.remove(id); } catch (e) { /* уже закрыта */ }
   }
-  log("мониторинг остановлен");
+  // Будильник НЕ гасим: вкладки, открытые по ссылке из бота, живут отдельно
+  // от четырёх основных, и сторож им нужен даже после остановки мониторинга.
+  ensureAlarm();
+  log("мониторинг остановлен (вкладки из бота продолжают сторожиться)");
 }
 
 async function state() {
-  const { monitors = {}, beats = {}, monitoring = false } = await get(
-    ["monitors", "beats", "monitoring"]);
+  const { monitors = {}, beats = {}, monitoring = false, adopted = {} } = await get(
+    ["monitors", "beats", "monitoring", "adopted"]);
   const tabs = [];
-  for (const [url, tabId] of Object.entries(monitors)) {
+  const describe = async (url, tabId, fromBot) => {
     const b = beats[tabId] || null;
     const tab = await getTab(tabId);
     tabs.push({
       url,
+      fromBot,
       alive: !!tab,
       discarded: !!(tab && tab.discarded),
       lastBeatAt: b ? b.at : null,
       count: b ? b.count : null,
       captcha: !!(b && b.captcha),
     });
-  }
+  };
+  for (const [url, tabId] of Object.entries(monitors)) await describe(url, tabId, false);
+  for (const [tabId, url] of Object.entries(adopted)) await describe(url, Number(tabId), true);
   return { monitoring, tabs };
 }
 
@@ -168,7 +181,14 @@ chrome.alarms.onAlarm.addListener((a) => { if (a.name === ALARM) watchdog(); });
 async function watchdog() {
   const { monitoring = false, monitors = {}, beats = {} } = await get(
     ["monitoring", "monitors", "beats"]);
-  if (!monitoring) return;   // мониторинг не запускали или остановили
+
+  // Вкладки из бота сторожим всегда: их могли открыть, ни разу не нажав
+  // «Запустить мониторинг», и тогда ранний выход оставил бы их без присмотра.
+  if (!monitoring) {
+    const healedAdopted = await watchAdopted(beats);
+    await set({ lastWatchdogAt: now(), lastHealed: healedAdopted });
+    return;
+  }
 
   let healed = 0;
   for (const url of MONITOR_URLS) {
@@ -206,5 +226,34 @@ async function watchdog() {
     }
   }
 
+  healed += await watchAdopted(beats);
   await set({ monitors, lastWatchdogAt: now(), lastHealed: healed });
+}
+
+// Вкладки, открытые вручную по ссылке из бота. Отличие от основных: закрытую
+// НЕ воскрешаем — её закрыл человек, и это его решение. Лечим только то, что
+// сломалось само: выгрузку из памяти и молчание.
+async function watchAdopted(beats) {
+  const { adopted = {} } = await get(["adopted"]);
+  let healed = 0;
+  let dirty = false;
+  for (const [id, url] of Object.entries(adopted)) {
+    const tabId = Number(id);
+    const tab = await getTab(tabId);
+    if (!tab) { delete adopted[id]; dirty = true; continue; }
+
+    if (tab.discarded) {
+      try { await chrome.tabs.reload(tabId); healed++; log("подхваченная вкладка разбужена:", url); }
+      catch (e) { log("reload fail", e && e.message); }
+      continue;
+    }
+    const b = beats[tabId];
+    const silentFor = b ? now() - b.at : Infinity;
+    if (silentFor > STUCK_MS) {
+      try { await chrome.tabs.update(tabId, { url }); healed++; log("подхваченная вкладка возвращена:", url); }
+      catch (e) { log("update fail", e && e.message); }
+    }
+  }
+  if (dirty) await set({ adopted });
+  return healed;
 }

@@ -47,7 +47,11 @@ async function renderTabs() {
     return;
   }
   const rows = st.tabs.map((t) => {
-    const name = decodeURIComponent((t.url.match(/q=([^&]+)/) || [, "?"])[1]).replace(/\+/g, " ");
+    let name = decodeURIComponent((t.url.match(/q=([^&]+)/) || [, "?"])[1]).replace(/\+/g, " ");
+    // Вкладка из бота — это «модель до N ₽»; показываем потолок, иначе все
+    // строки выглядят одинаково и непонятно, какая подписка жива.
+    const pmax = (t.url.match(/pmax=(\d+)/) || [])[1];
+    if (t.fromBot) name = `🔔 ${name}${pmax ? ` до ${Number(pmax).toLocaleString("ru")} ₽` : ""}`;
     let mark = "✅";
     if (!t.alive) mark = "❌";
     else if (t.captcha) mark = "🤖";

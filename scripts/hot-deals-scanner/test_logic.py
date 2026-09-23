@@ -475,6 +475,43 @@ check("брак по подписке не присылаем",
       not any("broken_1" in t for t in _tg))
 
 
+# ─── 12c. GST-74: предохранитель расхода капчи ───────────────────────────────
+# Капча решается почти на каждой загрузке страницы, поэтому разгон сканера
+# сразу превращается в деньги. Нужен потолок на прогон и внятный сигнал,
+# когда баланс кончается (в сентябре он ушёл в минус, и всё молча встало).
+print("\n[12c] Бюджет капчи и сигнал о балансе")
+from scanner_v2 import CaptchaBudget, low_balance_alert
+
+_b = CaptchaBudget(3)
+check("бюджет разрешает трату, пока есть лимит", _b.allow())
+for _ in range(3):
+    _b.charge()
+check("исчерпанный бюджет запрещает трату", not _b.allow())
+check("остаток не уходит в минус", _b.left == 0)
+check("нулевой лимит = выключено (без потолка)", CaptchaBudget(0).allow())
+
+HOUR = 3600
+_st = {}
+check("баланс в порядке → молчим", low_balance_alert(200.0, _st, 0, threshold=50)[0] is None)
+check("баланс неизвестен → молчим", low_balance_alert(None, _st, 0, threshold=50)[0] is None)
+
+_txt, _patch = low_balance_alert(12.0, _st, 0, threshold=50)
+check("баланс ниже порога → предупреждение", _txt is not None and "баланс" in _txt.lower())
+check("предупреждение помечает состояние", _patch.get("low") is True)
+_st.update(_patch)
+check("в кулдаун не повторяем", low_balance_alert(12.0, _st, HOUR, threshold=50)[0] is None)
+_txt, _patch = low_balance_alert(12.0, _st, 13 * HOUR, threshold=50)
+check("после кулдауна напоминаем", _txt is not None)
+_st.update(_patch)
+_txt, _patch = low_balance_alert(500.0, _st, 14 * HOUR, threshold=50)
+check("баланс пополнили → сообщаем", _txt is not None and "пополн" in _txt.lower())
+check("флаг снят", _patch.get("low") is False)
+_st.update(_patch)
+check("после пополнения не спамим", low_balance_alert(500.0, _st, 15 * HOUR, threshold=50)[0] is None)
+check("минусовой баланс → предупреждение",
+      low_balance_alert(-0.03, {}, 0, threshold=50)[0] is not None)
+
+
 # ─── 13. Слияние вотчлиста при гонке с ботом ─────────────────────────────────
 print("\n[13] merge_watchlist (бот добавил/удалил за прогон --watch)")
 from scanner_v2 import merge_watchlist

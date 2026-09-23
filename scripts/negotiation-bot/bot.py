@@ -412,6 +412,31 @@ def parse_price(text: str) -> Optional[int]:
     return value if MIN_SUB_PRICE <= value < 100_000_000 else None
 
 
+def monitor_url(base_url: str, max_price: Optional[int]) -> str:
+    """URL выдачи Avito для вкладки мониторинга: потолок цены + новые сверху.
+
+    GST-74: поиск делает домашний браузер с жилым IP, а не VPS — это нулевой
+    расход капчи, в отличие от серверного скана. Бот только готовит ссылку.
+
+    `pmax` сужает саму выдачу, чтобы расширение не гоняло на сервер заведомо
+    дорогие лоты. `s=104` ставит новые первыми — расширение читает только
+    первую страницу, и без этой сортировки свежие объявления до него не
+    доедут. Если Avito когда-нибудь перестанет понимать pmax, ничего не
+    сломается: серверная подписка всё равно перепроверяет цену перед отправкой.
+    """
+    if not base_url:
+        return ""
+    from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
+    parts = urlsplit(base_url)
+    q = [(k, v) for k, v in parse_qsl(parts.query, keep_blank_values=True)
+         if k not in ("s", "pmax")]
+    if max_price:
+        q.append(("pmax", str(int(max_price))))
+    q.append(("s", "104"))
+    return urlunsplit((parts.scheme, parts.netloc, parts.path,
+                       urlencode(q), parts.fragment))
+
+
 def _wizard_pick(fam_i: int, mdl_i: int, cfg_i: int):
     """Индексы из callback_data → (семья, имя модели, конфигурация).
     Бросает IndexError/ValueError, если каталог успел измениться — вызывающий
@@ -697,10 +722,19 @@ class NegotiationBot:
             save_subscriptions(subs, SUBSCRIPTIONS_FILE)
             self.state.pop("pending_sub", None)
             self._save()
+            link = monitor_url(config.get("url", ""), price)
+            link_block = ""
+            if link:
+                link_block = (f'\n🔗 <a href="{link}">Открыть вкладку мониторинга</a>\n'
+                              "Откройте её в браузере с расширением BestMac Collector "
+                              "и оставьте висеть: выдача уже отфильтрована по вашей цене "
+                              "и отсортирована по новизне, расширение подхватит каждое "
+                              "новое объявление и пришлёт подходящие сюда.\n")
             return [{"type": "send", "chat_id": chat_id,
                      "text": (f"🔔 <b>Слежу за</b> {_esc(model_name)} — "
                               f"{_esc(sub['label'])}\n"
-                              f"Предел: <b>{_fmt(price)} ₽</b>\n\n"
+                              f"Предел: <b>{_fmt(price)} ₽</b>\n"
+                              f"{link_block}\n"
                               "Пришлю сразу, как появится дешевле. Состояние проверю — "
                               "лоты с дефектами в описании не побеспокоят.\n"
                               "Все подписки: /подписки"),

@@ -349,6 +349,41 @@ check("команда вырывает из режима ввода цены",
 acts = msg(777, "50000")
 check("после команды число уже не создаёт подписку", load_subscriptions(_subs_path) == {})
 
+# ─── 13. GST-74: ссылка мониторинга с потолком цены ─────────────────────────
+# Поиск делает домашний браузер с жилым IP, а не VPS — это нулевой расход
+# капчи. Бот лишь готовит правильный URL, расширение мониторит вкладку.
+print("\n[13] Ссылка мониторинга: цена + сортировка по новизне")
+from bot import monitor_url
+from urllib.parse import urlsplit, parse_qs
+
+_base = "https://www.avito.ru/moskva_i_mo/noutbuki/noutbuki/apple-ASgB?cd=1&f=ASgBxyz&q=macbook"
+_u = monitor_url(_base, 45000)
+_q = parse_qs(urlsplit(_u).query)
+check("потолок цены проставлен", _q.get("pmax") == ["45000"])
+check("сортировка по новизне проставлена", _q.get("s") == ["104"])
+check("исходный фильтр не потерян", _q.get("f") == ["ASgBxyz"])
+check("поисковый запрос не потерян", _q.get("q") == ["macbook"])
+check("путь не изменился", urlsplit(_u).path == urlsplit(_base).path)
+
+_u2 = monitor_url(_base + "&s=1", 30000)
+check("чужая сортировка перебивается на «новые»", parse_qs(urlsplit(_u2).query)["s"] == ["104"])
+
+_u3 = monitor_url("https://www.avito.ru/all/noutbuki", None)
+_q3 = parse_qs(urlsplit(_u3).query)
+check("без цены потолок не ставим", "pmax" not in _q3)
+check("сортировка ставится даже без цены", _q3.get("s") == ["104"])
+check("URL без параметров не ломается", _u3.startswith("https://www.avito.ru/all/noutbuki?"))
+check("пустой URL → пустая строка", monitor_url("", 1000) == "")
+
+# Подписка должна отдавать готовую ссылку — иначе её нужно собирать руками.
+botmod.SUBSCRIPTIONS_FILE = tmp / "subs13.json"
+cb(777, "sub:new:0:0:0")
+acts = msg(777, "45000")
+_txt = " ".join(a.get("text", "") for a in find_send(acts))
+check("в подтверждении подписки есть ссылка на мониторинг", "pmax=45000" in _txt)
+check("ссылка подана как действие, а не справка", "http" in _txt)
+
+
 print()
 if _fails:
     print(f"❌ ПРОВАЛЕНО {len(_fails)}: " + "; ".join(_fails))

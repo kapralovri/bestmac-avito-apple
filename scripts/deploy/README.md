@@ -5,7 +5,7 @@
 | Процесс | Что делает | Как запускается |
 |---|---|---|
 | `bestmac-bot.service` | двусторонний бот переговоров | всегда онлайн, авто-перезапуск |
-| `bestmac-scanner.timer` | сканер «ниже рынка» | каждые 15 минут |
+| `bestmac-scanner.timer` | сканер «ниже рынка» | каждые 30 минут |
 | `bestmac-digest.timer` | вечерний дайджест | раз в сутки (20:00 по времени сервера) |
 | `bestmac-sourcing.timer` | сигналы «докупать» → `@bestmac_hunter_bot` | раз в сутки (09:30 по времени сервера) |
 
@@ -93,8 +93,8 @@ cd /путь/до/bestmac-avito-apple
 # Бот (всегда онлайн):
 nohup python3 scripts/negotiation-bot/bot.py >> bot.log 2>&1 &
 
-# Сканер каждые 15 мин и дайджест в 20:00 — добавь в crontab -e:
-*/15 * * * * cd /путь/до/bestmac-avito-apple && python3 scripts/hot-deals-scanner/scanner_v2.py >> scan.log 2>&1
+# Сканер каждые 30 мин и дайджест в 20:00 — добавь в crontab -e:
+*/30 * * * * cd /путь/до/bestmac-avito-apple && python3 scripts/hot-deals-scanner/scanner_v2.py >> scan.log 2>&1
 0 20 * * *  cd /путь/до/bestmac-avito-apple && python3 scripts/hot-deals-scanner/scanner_v2.py --digest >> scan.log 2>&1
 ```
 Минус: `nohup`-процесс не переживёт ребут сервера — после перезагрузки запусти бота снова.
