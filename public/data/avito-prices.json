@@ -93,10 +93,10 @@
       "ssd": 512,
       "min_price": 97718,
       "max_price": 171480,
-      "median_price": 125000,
-      "buyout_price": 100000,
+      "median_price": 135000,
+      "buyout_price": 108000,
       "samples_count": 51,
-      "updated_at": "2026-09-16 05:10",
+      "updated_at": "2026-09-23 05:10",
       "collector_synced": true
     },
     {
@@ -2776,7 +2776,7 @@
       "median_price": 172490,
       "buyout_price": 137000,
       "samples_count": 18,
-      "updated_at": "2026-09-16 05:10",
+      "updated_at": "2026-09-23 05:10",
       "collector_synced": true
     },
     {
@@ -2787,10 +2787,10 @@
       "ssd": 1024,
       "min_price": 152790,
       "max_price": 208480,
-      "median_price": 172990,
-      "buyout_price": 138000,
+      "median_price": 160490,
+      "buyout_price": 128000,
       "samples_count": 18,
-      "updated_at": "2026-09-16 05:10",
+      "updated_at": "2026-09-23 05:10",
       "collector_synced": true
     },
     {
@@ -3222,6 +3222,20 @@
       "buyout_price": 188000,
       "samples_count": 6,
       "updated_at": "2026-09-19 05:10",
+      "collector_synced": true
+    },
+    {
+      "model_name": "MacBook Pro 14 M2 Pro",
+      "family": "MacBook Pro",
+      "processor": "Apple M2",
+      "ram": 16,
+      "ssd": 512,
+      "min_price": 70000,
+      "max_price": 155999,
+      "median_price": 105425,
+      "buyout_price": 84000,
+      "samples_count": 15,
+      "updated_at": "2026-09-23 05:10",
       "collector_synced": true
     }
   ]
