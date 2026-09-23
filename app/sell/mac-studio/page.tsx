@@ -4,7 +4,7 @@ import SellMacStudioSeo from '@/components/seo/SellMacStudioSeo';
 import { loadAvitoPricesServer } from '@/lib/server-prices';
 
 export const metadata: Metadata = {
-  title: 'Выкуп Mac Studio в Москве дорого — M1/M2/M4 Max и Ultra | BestMac',
+  title: 'Выкуп Mac Studio в Москве дорого — M1/M2/M4 Max и Ultra',
   description: 'Выкуп Mac Studio (Max, Ultra) в Москве: безопасная сделка в офисе, проверка при вас, деньги сразу. Цены обновляются ежедневно по объявлениям Авито.',
   alternates: { canonical: '/sell/mac-studio' },
 };
