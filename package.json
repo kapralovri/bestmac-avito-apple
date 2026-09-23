@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "node --test \"tests/*.test.ts\"",
     "prebuild": "node scripts/build-buyout-data.mjs && (node scripts/build-avito-offers.mjs || echo 'Scraping skipped') || echo 'Data builds skipped'",
     "export:buyout": "node scripts/export-macbook-csv.mjs",
     "export:buyout:xlsx": "node scripts/export-macbook-xlsx.mjs",

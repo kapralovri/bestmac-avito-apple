@@ -43,6 +43,7 @@
     "node_modules",
     "src/main.tsx",
     "src/App.tsx",
-    "supabase"
+    "supabase",
+    "tests"
   ]
 }
