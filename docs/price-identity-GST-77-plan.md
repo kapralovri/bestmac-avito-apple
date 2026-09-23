@@ -130,8 +130,12 @@ r = canonicalize_row(row("Mac Studio m1", "Apple M4 Max", 64, 1024, median_price
 check("десктоп: имя по реальной модели", r["model_name"] == "Mac Studio M4 Max")
 check("десктоп: процессор с уровнем", r["processor"] == "Apple M4 Max")
 check("прочие поля не тронуты", r["median_price"] == 399990)
-r = canonicalize_row(row("MacBook Air M1", "Apple M1", 8, 256), cat)
+r = canonicalize_row(row("MacBook Air 13 M1", "Apple M1", 8, 256), cat)
 check("MacBook из каталога → имя каталога", r["model_name"] == "MacBook Air 13 (2020, M1)")
+# Без диагонали — отдельная конфигурация: так же классифицируются живые объявления
+# «MacBook Air M1», и сканеру нужна строка под их ключ.
+r = canonicalize_row(row("MacBook Air M1", "Apple M1", 8, 256), cat)
+check("Air без диагонали не сливается с каталожной", r["model_name"] == "MacBook Air M1")
 r = canonicalize_row(row("MacBook Pro 14 M5 Pro", "Apple M5", 16, 1024), cat)
 check("MacBook вне каталога: имя сохраняется", r["model_name"] == "MacBook Pro 14 M5 Pro")
 check("…а уровень в процессоре восстанавливается", r["processor"] == "Apple M5 Pro")
@@ -772,7 +776,7 @@ BEFORE = [
     r("Mac Studio m1", "Apple M1 Ultra", 64, 1024, 279990, 3, "2026-07-14 20:06"),
     r("Mac mini M4 Pro", "Apple M4", 24, 512, 90000, 6, "2026-09-18 10:00", collector_synced=True),
     r("MacBook Air 13 (2020, M1)", "Apple M1", 8, 256, 45000, 13, "2026-09-19 05:10"),
-    r("MacBook Air M1", "Apple M1", 8, 256, 35000, 16, "2026-09-19 05:10"),
+    r("MacBook Air 13 M1", "Apple M1", 8, 256, 35000, 16, "2026-09-19 05:10"),
     r("MacBook Pro 14 (2023)", "", 0, 0, 93900, 141, "Thu Apr 23 16:02:18 2026"),
     r("mac mini m4", "Apple M4", 16, 256, 50000, 4, "2026-09-01 10:00", manual_override=True),
 ]
@@ -790,7 +794,7 @@ mini = by.get(("Mac mini M4 Pro", 24, 512))
 check("синк: уровень чипа вернулся в процессор", bool(mini) and mini["processor"] == "Apple M4 Pro")
 check("флаг синка сохранён", bool(mini) and mini.get("collector_synced") is True)
 air = by.get(("MacBook Air 13 (2020, M1)", 8, 256))
-check("дубль Air M1 склеен под имя из каталога", air is not None and ("MacBook Air M1", 8, 256) not in by)
+check("дубль Air M1 склеен под имя из каталога", air is not None and ("MacBook Air 13 M1", 8, 256) not in by)
 check("из двух свежих победила большая выборка", bool(air) and air["samples_count"] == 16)
 agg = by.get(("MacBook Pro 14 (2023)", 0, 0))
 check("сводка 0/0 не тронута", agg == BEFORE[6])
@@ -800,7 +804,7 @@ check("ручной оверрайд сохранил флаг", bool(ov) and ov
 print("\n[2] Адреса /ceny")
 sc = REP["slug_changes"]
 check("вкладка m4 переименована в M4 Max", sc["renamed"].get("mac-studio-m4") == "mac-studio-m4-max")
-check("дубль Air M1 ведёт на канон", sc["renamed"].get("macbook-air-m1") == "macbook-air-13-2020-m1")
+check("дубль Air M1 ведёт на канон", sc["renamed"].get("macbook-air-13-m1") == "macbook-air-13-2020-m1")
 check("вкладка m1 распалась на несколько моделей", "mac-studio-m1" in sc["split"])
 check("неизменные адреса в отчёт не попадают",
       "macbook-air-13-2020-m1" not in sc["renamed"] and "mac-mini-m4-pro" not in sc["renamed"])
@@ -810,14 +814,14 @@ check("устаревшая строка в отчёте, но не удален
 
 print("\n[3] Ключи ручных оверрайдов")
 new_ov, moved, ambiguous = migrate_overrides(
-    {"__comment__": "x", "macbook air m1|8|256": {"median": 1}, "mac mini m4|16|256": {"median": 2},
+    {"__comment__": "x", "macbook air 13 m1|8|256": {"median": 1}, "mac mini m4|16|256": {"median": 2},
      "mac studio m1|64|1024": {"buyout": 3}},
     BEFORE, CAT)
 check("ключ переехал на каноническое имя",
-      new_ov.get("macbook air 13 (2020, m1)|8|256") == {"median": 1} and "macbook air m1|8|256" not in new_ov)
+      new_ov.get("macbook air 13 (2020, m1)|8|256") == {"median": 1} and "macbook air 13 m1|8|256" not in new_ov)
 check("совпадающий с каноном ключ остался", new_ov.get("mac mini m4|16|256") == {"median": 2})
 check("служебный комментарий на месте", new_ov.get("__comment__") == "x")
-check("переезд записан в отчёт", {"from": "macbook air m1|8|256", "to": "macbook air 13 (2020, m1)|8|256"} in moved)
+check("переезд записан в отчёт", {"from": "macbook air 13 m1|8|256", "to": "macbook air 13 (2020, m1)|8|256"} in moved)
 check("неоднозначный ключ не тронут", new_ov.get("mac studio m1|64|1024") == {"buyout": 3})
 check("…и попал в отчёт", "mac studio m1|64|1024" in ambiguous)
 
