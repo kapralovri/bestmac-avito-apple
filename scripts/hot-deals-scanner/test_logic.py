@@ -407,7 +407,6 @@ s.deep_analyze = _fake_deep
 
 _notif, _enq = [], []
 s.notify = lambda c: _notif.append(c['url'])
-s._send_copilot = lambda c: None
 s._enqueue_lead = lambda c, **kw: _enq.append(c['url'])
 
 cards = [
