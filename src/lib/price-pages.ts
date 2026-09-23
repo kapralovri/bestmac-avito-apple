@@ -16,7 +16,7 @@
 import type { AvitoPriceStat } from '@/types/avito-prices';
 import { loadAvitoPricesServer } from '@/lib/server-prices';
 import { modelToSlug } from '@/lib/model-slugs';
-import { PRICE_SLUG_REDIRECTS } from '@/data/seo-redirects';
+import { PRICE_SLUG_REDIRECTS, PRICE_SLUGS_TO_INDEX } from '@/data/seo-redirects';
 
 export interface ModelConfig {
   processor: string;
@@ -172,9 +172,9 @@ export async function getAllModelPrices(): Promise<ModelPrice[]> {
     .map(([name, rows]) => toModelPrice(name, rows))
     // Отсекаем модели без реальных цен (не создаём пустых страниц).
     .filter((m) => m.minPrice > 0 && m.maxPrice > 0)
-    // Склеенные дубли (GST-76): адрес отдаёт 301, поэтому страница не должна
+    // Склеенные и распавшиеся адреса (GST-76/77) отдают 301 — страница не должна
     // попадать ни в список /ceny, ни в статическую сборку, ни в sitemap.
-    .filter((m) => !(m.slug in PRICE_SLUG_REDIRECTS));
+    .filter((m) => !(m.slug in PRICE_SLUG_REDIRECTS) && !PRICE_SLUGS_TO_INDEX.includes(m.slug));
 
   // Стабильный порядок: по семейству, затем по названию.
   models.sort((a, b) => {

@@ -56,6 +56,7 @@ except ImportError:
 
 from common.config import VALID_RAM, VALID_SSD, MIN_PRICE, MAX_PRICE, JUNK_KEYWORDS, NEW_SEALED_KEYWORDS
 from common.classifier import classify
+from common.price_identity import row_identity, canonicalize_row, build_catalog, pick_winner
 from common.canary import run_canary
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -558,7 +559,7 @@ class AvitoParser:
         logger.info(f"\n[discovery] {model} (seed: chip={seed_chip!r} ram={seed_ram} ssd={seed_ssd})")
         listings = self.collect_listings(url, max_pages)
 
-        groups: dict[tuple, list[int]] = {}
+        groups: dict[tuple, list[tuple[str, int]]] = {}   # ключ → [(url, цена)]
         deep_count   = 0
         skipped_intel = 0
         skipped_junk = 0
@@ -613,7 +614,9 @@ class AvitoParser:
                 continue
 
             key = (model, chip, ram, ssd)
-            groups.setdefault(key, []).append(it["price"])
+            # GST-77: храним и адрес — одно объявление видно на нескольких вкладках
+            # семейства, и при склейке по конфигурации его нельзя посчитать дважды.
+            groups.setdefault(key, []).append((it.get("url") or "", it["price"]))
             self._record_listing(model, chip, ram, ssd, it)  # GST-61
 
         logger.info(
@@ -683,18 +686,90 @@ def build_stat(
     }
 
 
+def discovery_stats(tab_groups: list[dict], tab_name: str, catalog: dict,
+                    min_samples: int = MIN_SAMPLES_DEFAULT) -> list[dict]:
+    """Группы всех discovery-вкладок семейства → строки базы, по одной на конфигурацию.
+
+    GST-77: раньше каждая вкладка давала свои строки с подписью вкладки в имени, и
+    Mac Studio M4 Max, найденный на вкладках «m1» и «m4», жил в базе двумя строками
+    с разными ценами. Теперь выборки одной конфигурации объединяются (объявление с
+    двух вкладок — один раз), а имя строки — по реальной модели.
+    """
+    merged: dict = {}
+    for groups in tab_groups:
+        for (m, p, r, s), items in groups.items():
+            raw = {"model_name": m, "processor": p, "ram": r, "ssd": s}
+            key = row_identity(raw) or (m, p, r, s)
+            slot = merged.setdefault(key, {"row": canonicalize_row(raw, catalog),
+                                           "by_url": {}, "anon": []})
+            for url, price in items:
+                if url:
+                    slot["by_url"][url] = price
+                else:
+                    slot["anon"].append(price)
+    stats = []
+    for slot in merged.values():
+        row = slot["row"]
+        prices = list(slot["by_url"].values()) + slot["anon"]
+        if len(prices) < min_samples:
+            logger.info(f"   ⏭ {row['model_name']} | {row['processor']} {row['ram']}/{row['ssd']}: "
+                        f"{len(prices)} цен < {min_samples}")
+            continue
+        stats.append(build_stat(row["model_name"], row["processor"], row["ram"], row["ssd"],
+                                tab_name, prices))
+    return stats
+
+
+def db_key(s: dict):
+    """Ключ строки в базе: идентичность конфигурации; у сводок 0/0 — прежний кортеж."""
+    return row_identity(s) or (s["model_name"], s.get("processor", ""), s["ram"], s["ssd"])
+
+
+def build_db(stats: list[dict], now: datetime = None) -> dict:
+    """Существующая база → словарь по db_key.
+
+    GST-77: если в файле лежат дубли одной конфигурации (база ещё не нормализована),
+    оставляем строку по правилу приоритета, а не последнюю попавшуюся.
+    """
+    now = now or datetime.now()
+    groups: dict = {}
+    for s in stats:
+        groups.setdefault(db_key(s), []).append(s)
+    return {k: (v[0] if len(v) == 1 else pick_winner(v, now)) for k, v in groups.items()}
+
+
 def merge_into_db(
-    db: dict[tuple, dict], new_stats: list[dict]
+    db: dict, new_stats: list[dict]
 ) -> tuple[int, int]:
     new_count = updated_count = 0
     for s in new_stats:
-        key = (s["model_name"], s["processor"], s["ram"], s["ssd"])
+        key = db_key(s)
         if key in db:
             updated_count += 1
         else:
             new_count += 1
         db[key] = s
     return new_count, updated_count
+
+
+def run_listings(listings: list[dict], run_stats: list[dict], catalog: dict,
+                 seen_at: str) -> list[dict]:
+    """GST-61 фид: объявления только тех конфигов, что попали в статистику прогона.
+
+    GST-77: лот записывается с подписью вкладки («Mac Studio m1»), а строка
+    статистики — с каноническим именем. Лот приводится к той же записи, иначе
+    ни один discovery-лот не находит свою строку и лента их теряет. Дедуп по url —
+    одно объявление встречается на нескольких страницах и вкладках.
+    """
+    run_keys = {db_key(s) for s in run_stats}
+    by_url: dict[str, dict] = {}
+    for lst in listings:
+        row = canonicalize_row(lst, catalog)
+        if db_key(row) not in run_keys:
+            continue  # конфиг не прошёл MIN_SAMPLES / не даёт сигнала
+        by_url[row["url"]] = {**row, "seen_at": seen_at}  # дедуп: оставляем последнее
+    return sorted(by_url.values(),
+                  key=lambda x: (x["model_name"], x["processor"], x["ram"], x["ssd"], x["price"]))
 
 
 def build_url_entries(stats: list[dict], tabs_data: dict) -> list[dict]:
@@ -834,6 +909,7 @@ def main():
 
     cfg = load_config()
     tabs_cfg = cfg["tabs"]
+    catalog = build_catalog(cfg)   # GST-77: канонические имена MacBook из вкладок direct
 
     if args.tab == "all":
         target_tabs = list(tabs_cfg.keys())
@@ -856,10 +932,7 @@ def main():
                 existing = json.load(f)
         except Exception:
             pass
-    db: dict[tuple, dict] = {
-        (s["model_name"], s.get("processor", ""), s["ram"], s["ssd"]): s
-        for s in existing.get("stats", [])
-    }
+    db = build_db(existing.get("stats", []))
     logger.info(f"📥 В БД сейчас: {len(db)} записей")
 
     # Карта model_name.lower() → url из models-config.json (price-builder)
@@ -928,6 +1001,7 @@ def main():
                         continue
 
             else:
+                tab_groups = []
                 for idx, entry in enumerate(entries, 1):
                     if deadline and datetime.now() >= deadline:
                         logger.warning(f"⏱ Время вышло, прерываюсь на {idx}/{len(entries)}")
@@ -935,18 +1009,14 @@ def main():
 
                     logger.info(f"\n[{tab_name} {idx}/{len(entries)}] {entry['model']}")
                     try:
-                        groups = ap_obj.parse_discovery(
+                        tab_groups.append(ap_obj.parse_discovery(
                             entry, tab_name, args.max_pages, exclude_intel
-                        )
-                        for (m, p, r, s), prices in groups.items():
-                            if len(prices) < MIN_SAMPLES_DEFAULT:
-                                logger.info(f"   ⏭ {m} | {p} {r}/{s}: {len(prices)} цен < {MIN_SAMPLES_DEFAULT}")
-                                continue
-                            stat = build_stat(m, p, r, s, tab_name, prices)
-                            new_stats.append(stat)
+                        ))
                     except Exception as e:
                         logger.error(f"   ❌ {entry['model']}: {e}")
                         continue
+                # GST-77: одна строка на реальную конфигурацию по всем вкладкам семейства
+                new_stats.extend(discovery_stats(tab_groups, tab_name, catalog))
 
         ap_obj.close()
 
@@ -985,18 +1055,8 @@ def main():
     # Только объявления конфигов, попавших в статистику этого прогона (те же, что
     # порождают сигналы). Дедуп по url — одно объявление может встретиться на
     # нескольких страницах. seen_at = метка прогона (для фильтра свежести в БД).
-    run_config_keys = {
-        (s["model_name"], s.get("processor", ""), s["ram"], s["ssd"]) for s in new_stats
-    }
     seen_at = datetime.now().strftime("%Y-%m-%d %H:%M")
-    by_url: dict[str, dict] = {}
-    for lst in ap_obj.listings_out:
-        cfg_key = (lst["model_name"], lst["processor"], lst["ram"], lst["ssd"])
-        if cfg_key not in run_config_keys:
-            continue  # конфиг не прошёл MIN_SAMPLES / не даёт сигнала
-        by_url[lst["url"]] = {**lst, "seen_at": seen_at}  # дедуп: оставляем последнее
-    listings_final = sorted(by_url.values(),
-                            key=lambda x: (x["model_name"], x["processor"], x["ram"], x["ssd"], x["price"]))
+    listings_final = run_listings(ap_obj.listings_out, new_stats, catalog, seen_at)
     with open(LISTINGS_FILE, "w", encoding="utf-8") as f:
         json.dump({
             "generated_at": seen_at,

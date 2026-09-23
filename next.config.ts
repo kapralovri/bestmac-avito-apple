@@ -1,5 +1,5 @@
 import type { NextConfig } from 'next';
-import { GEO_REDIRECTS, PRICE_SLUG_REDIRECTS } from './src/data/seo-redirects';
+import { GEO_REDIRECTS, PRICE_SLUG_REDIRECTS, PRICE_SLUGS_TO_INDEX } from './src/data/seo-redirects';
 
 const nextConfig: NextConfig = {
   turbopack: {
@@ -36,6 +36,11 @@ const nextConfig: NextConfig = {
       ...Object.entries(PRICE_SLUG_REDIRECTS).map(([from, to]) => ({
         source: `/ceny/${from}`,
         destination: `/ceny/${to}`,
+        permanent: true,
+      })),
+      ...PRICE_SLUGS_TO_INDEX.map((slug) => ({
+        source: `/ceny/${slug}`,
+        destination: '/ceny',
         permanent: true,
       })),
       ...Object.entries(GEO_REDIRECTS).map(([from, to]) => ({
