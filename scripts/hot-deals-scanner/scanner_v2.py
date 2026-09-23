@@ -181,6 +181,34 @@ SESSION_FILE = Path(os.environ.get('AVITO_SESSION_PATH',
                                    'public/data/avito-session.json'))
 
 
+# GST-74: сканер как резерв. Домашний коллектор (Mac mini + расширение) ищет
+# с жилого IP и без капчи, поэтому пока он жив, серверный скан — чистый расход:
+# он повторяет ту же работу за деньги. Просыпаемся только на тревогу.
+SCANNER_STANDBY = os.environ.get('SCANNER_STANDBY', '1').lower() not in ('0', 'false', 'no', '')
+COLLECTOR_ALIVE_MIN = int(os.environ.get('COLLECTOR_ALIVE_MIN', '20'))
+INTAKE_STATS_FILE = Path(os.environ.get('INTAKE_STATS_PATH', 'public/data/intake-stats.json'))
+
+
+def should_run_scan(collector_last_at, now, *, standby=None, alive_min=None):
+    """Нужен ли серверный скан. → (bool, причина). Чистая функция.
+
+    «Жив» считается по последнему POST от расширения. Расширение шлёт пульс
+    даже когда новых лотов нет, поэтому тишина здесь означает реальную поломку,
+    а не просто спокойный час на Avito.
+    """
+    standby = SCANNER_STANDBY if standby is None else standby
+    alive_min = COLLECTOR_ALIVE_MIN if alive_min is None else alive_min
+    if not standby:
+        return True, "режим ожидания выключен"
+    if not collector_last_at:
+        return True, "коллектор ещё ни разу не присылал карточки"
+    silent = now - collector_last_at
+    if silent <= alive_min * 60:
+        mins = max(0, int(silent // 60))
+        return False, f"коллектор жив (последние карточки {mins} мин назад) — скан не нужен"
+    return True, f"коллектор молчит {int(silent // 60)} мин — подстраховываем сканом"
+
+
 class CaptchaBudget:
     """Потолок платных решений на один прогон. limit=0 — без потолка."""
 
@@ -1684,8 +1712,22 @@ class AvitoScannerV2:
         # Дохлый-выключатель: проверяем свежесть базы цен ДО скана
         # (не требует браузера; алерт уйдёт, даже если потом скан упадёт)
         self._check_prices_freshness()
-        self._check_captcha_balance()
 
+        # Резерв: пока домашний коллектор жив, серверный скан не запускаем —
+        # он бы платил капчей за ту же работу. Проверка идёт ДО браузера и
+        # до обращения к rucaptcha, чтобы холостой прогон не стоил ничего.
+        try:
+            rx = json.loads(INTAKE_STATS_FILE.read_text(encoding='utf-8'))
+            last_at = rx.get('last_at') if isinstance(rx, dict) else None
+        except (OSError, ValueError):
+            last_at = None
+        need_scan, why = should_run_scan(last_at, time.time())
+        if not need_scan:
+            logger.info(f"😴 {why}")
+            return
+        logger.info(f"🚨 {why}")
+
+        self._check_captcha_balance()
         self._start_browser()
         self._warmup()
 

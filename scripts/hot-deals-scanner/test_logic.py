@@ -512,6 +512,34 @@ check("минусовой баланс → предупреждение",
       low_balance_alert(-0.03, {}, 0, threshold=50)[0] is not None)
 
 
+# ─── 12d. GST-74: сканер в режиме ожидания ───────────────────────────────────
+# Когда домашний коллектор (Mac mini + расширение) жив, серверный скан не нужен:
+# он только жжёт капчу, повторяя то, что жилой IP делает бесплатно. Просыпаемся,
+# только если коллектор замолчал.
+print("\n[12d] Режим ожидания сканера")
+from scanner_v2 import should_run_scan
+
+MINUTE = 60
+_now = 1_000_000
+
+_ok, _why = should_run_scan(_now - 5 * MINUTE, _now, standby=True, alive_min=20)
+check("коллектор жив → скан пропускаем", _ok is False)
+check("причина пропуска названа", "коллектор" in _why.lower())
+
+_ok, _why = should_run_scan(_now - 40 * MINUTE, _now, standby=True, alive_min=20)
+check("коллектор замолчал → сканер просыпается", _ok is True)
+check("причина пробуждения названа", _why != "")
+
+check("коллектор не запускался ни разу → сканируем",
+      should_run_scan(None, _now, standby=True, alive_min=20)[0] is True)
+check("режим ожидания выключен → сканируем всегда",
+      should_run_scan(_now, _now, standby=False, alive_min=20)[0] is True)
+check("граница: ровно на пороге считаем живым",
+      should_run_scan(_now - 20 * MINUTE, _now, standby=True, alive_min=20)[0] is False)
+check("часы съехали назад → не считаем мёртвым",
+      should_run_scan(_now + 5 * MINUTE, _now, standby=True, alive_min=20)[0] is False)
+
+
 # ─── 13. Слияние вотчлиста при гонке с ботом ─────────────────────────────────
 print("\n[13] merge_watchlist (бот добавил/удалил за прогон --watch)")
 from scanner_v2 import merge_watchlist

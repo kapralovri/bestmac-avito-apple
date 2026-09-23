@@ -11,6 +11,12 @@
 const DEFAULT_ENDPOINT = "https://bestmac.ru/api/intake";
 const REFRESH_MS = 75000;
 const SEEN_KEY = "bm_seen_urls";
+// GST-74: пульс на сервер в тихие часы. Раньше POST уходил, только когда
+// нашлись НОВЫЕ лоты, поэтому спокойная ночь на Avito выглядела на сервере
+// ровно как сдохший коллектор. Из-за этого бот слал ложные «коллектор молчит»,
+// а сканер-резерв просыпался и жёг капчу на пустом месте. Пустой POST сервер
+// засчитывает как признак жизни (last_at обновляется на любом запросе).
+const HEARTBEAT_MS = 5 * 60 * 1000;
 
 function log(...a) { try { console.log("[BestMac]", ...a); } catch (e) {} }
 
@@ -80,7 +86,7 @@ async function tick() {
   let scraped = [];
   let captcha = false;
   try {
-    const cfg = await storageGet(["endpoint", "token", "sent"]);
+    const cfg = await storageGet(["endpoint", "token", "sent", "lastPostAt"]);
     captcha = isCaptchaPage();
     scraped = captcha ? [] : scrapeCards();
     storageSet({ lastScraped: scraped.length, lastScrapeAt: Date.now() });
@@ -104,7 +110,24 @@ async function tick() {
     catch (e) { seen = new Set(); }
     const fresh = scraped.filter((c) => !seen.has(c.url));
 
-    if (!fresh.length) { beat(scraped.length, false); scheduleReload(); return; }
+    // Новых лотов нет — но серверу всё равно надо знать, что мы живы.
+    // Шлём пустую пачку, если давно ничего не отправляли.
+    if (!fresh.length) {
+      if (Date.now() - (cfg.lastPostAt || 0) > HEARTBEAT_MS) {
+        try {
+          await fetch(endpoint, {
+            method: "POST",
+            headers: { "content-type": "application/json", "x-intake-token": cfg.token },
+            body: JSON.stringify({ cards: [] }),
+          });
+          storageSet({ lastPostAt: Date.now() });
+          log("пульс на сервер (новых лотов нет)");
+        } catch (e) { log("пульс не ушёл:", e && e.message); }
+      }
+      beat(scraped.length, false);
+      scheduleReload();
+      return;
+    }
 
     try {
       // Токен — в заголовке поверх HTTPS (не в теле). Кастомный заголовок делает
@@ -117,7 +140,8 @@ async function tick() {
       if (resp.ok) {
         fresh.forEach((c) => seen.add(c.url));
         try { localStorage.setItem(SEEN_KEY, JSON.stringify([...seen].slice(-4000))); } catch (e) {}
-        storageSet({ sent: (cfg.sent || 0) + fresh.length, lastSent: fresh.length, lastAt: Date.now(), lastError: "" });
+        storageSet({ sent: (cfg.sent || 0) + fresh.length, lastSent: fresh.length,
+                     lastAt: Date.now(), lastPostAt: Date.now(), lastError: "" });
         log("отправлено:", fresh.length);
       } else {
         storageSet({ lastError: "HTTP " + resp.status, lastAt: Date.now() });
