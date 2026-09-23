@@ -848,6 +848,27 @@ _cfg21b = classify("Mac mini M4", {'ram': 16, 'ssd': 256})
 check("_raw_comps: нет данных → []", s21._raw_comps(_cfg21b) == [])
 
 
+# ─── GST-77: индекс цен сканера по идентичности строки ───────────────────────
+print("\n[22] GST-77: индекс цен по идентичности строки")
+from common.price_identity import config_key
+_cfgI = classify("MacBook Air 13 M2", {'ram': 16, 'ssd': 512})
+check("live_key сканера совпадает с config_key", live_key(_cfgI) == config_key(_cfgI))
+import scanner_v2 as _svI
+_pfI = Path(_tmp.mkdtemp()) / "prices.json"
+_pfI.write_text(_json.dumps({"generated_at": "2026-09-22 10:00", "stats": [
+    {"model_name": "Mac Studio m1", "family": "Mac Studio", "processor": "Apple M4 Max",
+     "ram": 64, "ssd": 1024, "median_price": 400000, "buyout_price": 320000,
+     "min_price": 380000, "max_price": 420000, "samples_count": 7,
+     "updated_at": "2026-09-20 10:00"}]}), encoding="utf-8")
+_prevPF = _svI.PRICES_FILE
+_svI.PRICES_FILE = _pfI
+_sI = _svI.AvitoScannerV2(None)
+_svI.PRICES_FILE = _prevPF
+check("строка под подписью вкладки встаёт на свою конфигурацию",
+      ('Mac Studio', 'M4', 'Max', None, 64, 1024) in _sI.prices_by_livekey)
+check("и не выдаёт себя за M1",
+      ('Mac Studio', 'M1', 'base', None, 64, 1024) not in _sI.prices_by_livekey)
+
 # ─── Итог ────────────────────────────────────────────────────────────────────
 print()
 if _fails:

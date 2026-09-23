@@ -37,6 +37,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from common.classifier import classify, config_to_db_key, processor_label
 from common.condition import analyze_condition
+from common.price_identity import config_key, row_identity
 from common.subscriptions import load_subscriptions, find_matches, record_hits
 from common.market import robust_stats, assess_deal, MarketStats
 from common.negotiator import motivation_score, MotivationReport
@@ -563,15 +564,10 @@ def parse_item_age(item):
 # ─── Ключ живой выборки рынка ────────────────────────────────────────────────
 def live_key(config):
     """Каноничный ключ для группировки сопоставимых лотов в живой выборке.
-    Группируем по семейству+чипу+экрану+RAM+SSD — это и есть «такой же аппарат»."""
-    return (
-        config.family,
-        config.chip_gen,
-        config.chip_tier,
-        config.screen,
-        config.ram,
-        config.ssd,
-    )
+    Группируем по семейству+чипу+экрану+RAM+SSD — это и есть «такой же аппарат».
+    GST-77: определение живёт в common.price_identity.config_key — тем же ключом
+    идентифицируются строки базы цен, расхождения быть не должно."""
+    return config_key(config)
 
 
 # ─── Скоринг сделки (перекуп: якорь — выкуп + чистота состояния) ──────────────
@@ -701,11 +697,13 @@ class AvitoScannerV2:
                         int(s.get('ssd', 0)),
                     )
                     self.prices[key] = s
+                    # GST-77: идентичность по правилу price_identity. Раньше имя шло
+                    # первым, и строка «Mac Studio m1» с процессором M4 Max вставала
+                    # на ключ M1: сканер брал цену M4 Max за рынок M1.
                     try:
-                        c = classify(f"{s['model_name']} {s.get('processor', '')}",
-                                     {'ram': int(s.get('ram', 0)), 'ssd': int(s.get('ssd', 0))})
-                        if c.is_valid:
-                            self.prices_by_livekey[live_key(c)] = s
+                        ident = row_identity(s)
+                        if ident is not None:
+                            self.prices_by_livekey[ident] = s
                     except Exception:
                         pass
             logger.info(f"📊 База-фолбэк: {len(self.prices)} конфигов, "
