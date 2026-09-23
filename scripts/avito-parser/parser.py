@@ -752,7 +752,7 @@ def merge_into_db(
     return new_count, updated_count
 
 
-def run_listings(listings: list[dict], run_stats: list[dict], catalog: dict,
+def listing_feed(listings: list[dict], run_stats: list[dict], catalog: dict,
                  seen_at: str) -> list[dict]:
     """GST-61 фид: объявления только тех конфигов, что попали в статистику прогона.
 
@@ -1056,7 +1056,7 @@ def main():
     # порождают сигналы). Дедуп по url — одно объявление может встретиться на
     # нескольких страницах. seen_at = метка прогона (для фильтра свежести в БД).
     seen_at = datetime.now().strftime("%Y-%m-%d %H:%M")
-    listings_final = run_listings(ap_obj.listings_out, new_stats, catalog, seen_at)
+    listings_final = listing_feed(ap_obj.listings_out, new_stats, catalog, seen_at)
     with open(LISTINGS_FILE, "w", encoding="utf-8") as f:
         json.dump({
             "generated_at": seen_at,

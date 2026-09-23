@@ -89,11 +89,23 @@ raw = [{"model_name": "Mac Studio m1", "processor": "Apple M4 Max", "ram": 64, "
         "price": 400000, "url": "u1", "title": "t"},
        {"model_name": "Mac Studio m1", "processor": "Apple M2 Max", "ram": 32, "ssd": 512,
         "price": 1, "url": "u7", "title": "t"}]
-feed = P.run_listings(raw, run_stats, catalog={}, seen_at="2026-09-23 10:00")
+feed = P.listing_feed(raw, run_stats, catalog={}, seen_at="2026-09-23 10:00")
 check("лот конфигурации из статистики попал в ленту", [l["url"] for l in feed] == ["u1"])
 check("имя в ленте — как у строки статистики",
       bool(feed) and feed[0]["model_name"] == "Mac Studio M4 Max" and feed[0]["processor"] == "Apple M4 Max")
 check("метка прогона проставлена", bool(feed) and feed[0]["seen_at"] == "2026-09-23 10:00")
+
+print("\n[GST-77] main() не перекрывает функции модуля локальными именами")
+# main() локально не запустить (ходит на Avito), а локальная переменная с именем
+# функции модуля роняет прогон уже после сбора цен: так было с run_listings.
+import ast as _ast, inspect as _inspect
+_mod_funcs = {n.name for n in _ast.parse(_inspect.getsource(P)).body if isinstance(n, _ast.FunctionDef)}
+_main = next(n for n in _ast.parse(_inspect.getsource(P)).body
+             if isinstance(n, _ast.FunctionDef) and n.name == "main")
+_assigned = {t.id for n in _ast.walk(_main) if isinstance(n, (_ast.Assign, _ast.AugAssign, _ast.AnnAssign))
+             for t in (n.targets if isinstance(n, _ast.Assign) else [n.target]) if isinstance(t, _ast.Name)}
+_clash = sorted(_assigned & _mod_funcs)
+check(f"нет перекрытых имён: {_clash}", not _clash)
 
 print()
 if _fails:
