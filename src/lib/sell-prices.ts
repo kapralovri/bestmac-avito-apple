@@ -62,15 +62,47 @@ function processorFor(chip: string): string {
   return chip === 'Intel' ? 'Intel' : `Apple ${chip}`;
 }
 
+/**
+ * Самый большой диск, который бывает у модели. Парсер иногда путает объём
+ * (iMac 24 «8 ТБ»), а правило порядка цен такую строку не ловит: 8/8192 не
+ * сравнима с 16/256. Mac Studio с M3 Ultra бывает до 16 ТБ.
+ */
+function maxSsd(match: SellMatch): number {
+  const baseChip = !/ (Pro|Max|Ultra)$/.test(match.chip);
+  if (match.family === 'MacBook Air') return 2048;
+  if (match.family === 'iMac' && match.chip !== 'Intel') return 2048;
+  if (match.family === 'Mac mini' && baseChip) return 2048;
+  if (match.family === 'MacBook Pro' && match.screen === 13) return 2048;
+  return 16384;
+}
+
 /** Строки базы, относящиеся к модели. Сводки 0/0 — не конфигурации. */
 export function matchRows(stats: AvitoPriceStat[], match: SellMatch): AvitoPriceStat[] {
   const processor = processorFor(match.chip);
+  const ssdLimit = maxSsd(match);
   return stats.filter((s) => {
-    if (!(s.ram > 0 && s.ssd > 0)) return false;
+    if (!(s.ram > 0 && s.ssd > 0) || s.ssd > ssdLimit) return false;
     const screen = screenOf(s.model_name || '', match.family);
     if (screen === null || screen !== match.screen) return false;
     return s.processor === processor;
   });
+}
+
+/**
+ * Какую из строк одной конфигурации оставить — тот же приоритет, что у склейки
+ * базы в GST-77 (scripts/common/price_identity.py, pick_winner): ручная цена →
+ * свежая с выборкой → больше выборка → новее.
+ */
+function rank(s: AvitoPriceStat, now: Date): number[] {
+  const age = ageDays(s.updated_at || '', now);
+  const n = s.samples_count || 0;
+  const fresh = age !== null && age <= FRESH_DAYS && n >= MIN_SAMPLES;
+  return [s.manual_override ? 1 : 0, fresh ? 1 : 0, n, -(age ?? 1e6)];
+}
+
+function better(a: number[], b: number[]): boolean {
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return a[i] > b[i];
+  return false;
 }
 
 function toConfig(s: AvitoPriceStat): SellConfig {
@@ -122,7 +154,7 @@ export function buildSellModelPrices(
     for (const s of matchRows(stats || [], match)) {
       const key = `${s.ram}/${s.ssd}`;
       const prev = byConfig.get(key);
-      if (!prev || (s.samples_count || 0) > (prev.samples_count || 0)) byConfig.set(key, s);
+      if (!prev || better(rank(s, now), rank(prev, now))) byConfig.set(key, s);
     }
   }
   const configs = [...byConfig.values()].map(toConfig).sort((a, b) => a.ram - b.ram || a.ssd - b.ssd);
@@ -133,8 +165,11 @@ export function buildSellModelPrices(
   dropPriceInversions(configs);
 
   const reliable = configs.filter((c) => c.reliable);
+  // Выборка и дата — только по рыночным строкам: ручная цена — цифра владельца,
+  // а не «объявления за последние 30 дней».
+  const market = reliable.filter((c) => !c.manual);
   let latest: SellConfig | null = null;
-  for (const c of reliable) {
+  for (const c of market) {
     const age = ageDays(c.updatedAt, now);
     if (age !== null && (!latest || age < (ageDays(latest.updatedAt, now) ?? Infinity))) latest = c;
   }
@@ -142,7 +177,7 @@ export function buildSellModelPrices(
     configs,
     reliable,
     maxBuyout: reliable.reduce((m, c) => Math.max(m, c.buyoutPrice), 0),
-    reliableSamples: reliable.reduce((n, c) => n + c.samplesCount, 0),
+    reliableSamples: market.reduce((n, c) => n + c.samplesCount, 0),
     latestUpdate: latest ? latest.updatedAt : null,
     sourceModelNames: [...new Set([...byConfig.values()].map((s) => s.model_name))],
   };
@@ -207,12 +242,15 @@ export function buildModelFaq(shortName: string, prices: SellModelPrices): FaqIt
   const rel = prices.reliable;
   const top = rel.reduce((a, b) => (b.buyoutPrice > a.buyoutPrice ? b : a));
   const cheap = rel.reduce((a, b) => (b.buyoutPrice < a.buyoutPrice ? b : a));
-  const common = rel.reduce((a, b) => (b.samplesCount > a.samplesCount ? b : a));
+  const market = rel.filter((c) => !c.manual);
+  const common = market.length ? market.reduce((a, b) => (b.samplesCount > a.samplesCount ? b : a)) : null;
 
   const faq: FaqItem[] = [{
     question: priceQuestion,
-    answer: `До ${formatRub(top.buyoutPrice)} за ${configLabel(top)}. Цена ${byListings(prices.reliableSamples)} ` +
-      'на Авито за последние 30 дней; точную сумму назовём после осмотра.',
+    answer: prices.reliableSamples > 0
+      ? `До ${formatRub(top.buyoutPrice)} за ${configLabel(top)}. Цена ${byListings(prices.reliableSamples)} ` +
+        'на Авито за последние 30 дней; точную сумму назовём после осмотра.'
+      : `До ${formatRub(top.buyoutPrice)} за ${configLabel(top)}. Точную сумму назовём после осмотра.`,
   }];
   if (rel.length >= 2) {
     faq.push({
@@ -220,6 +258,7 @@ export function buildModelFaq(shortName: string, prices: SellModelPrices): FaqIt
       answer: `${configLabel(cheap)} — до ${formatRub(cheap.buyoutPrice)}, ${configLabel(top)} — до ${formatRub(top.buyoutPrice)}.`,
     });
   }
+  if (!common) return faq;
   faq.push({
     question: `Какая конфигурация ${shortName} встречается чаще всего?`,
     answer: `${configLabel(common)} — ${common.samplesCount} ` +

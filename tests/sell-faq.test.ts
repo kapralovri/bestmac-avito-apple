@@ -51,3 +51,14 @@ test('тексты есть у каждого семейства каталог�
     for (const f of FAMILY_FAQ[family]) assert.ok(f.question.endsWith('?') && f.answer.length > 20, f.question);
   }
 });
+
+test('FAQ: ручная цена без выдуманных объявлений', () => {
+  const manual = { ...row(16, 256, 40000, 34), updated_at: '2026-07-17 10:00', manual_override: true };
+  const onlyManual = buildModelFaq('Mac mini M4', buildSellModelPrices([manual], MINI_M4, NOW));
+  assert.deepEqual(onlyManual.map((f) => f.question), ['Сколько стоит выкуп Mac mini M4?']);
+  assert.equal(onlyManual[0].answer, 'До 40 000 ₽ за 16 ГБ / 256 ГБ. Точную сумму назовём после осмотра.');
+
+  const mixed = buildModelFaq('Mac mini M4', buildSellModelPrices([manual, row(16, 512, 70000, 6)], MINI_M4, NOW));
+  assert.ok(mixed[0].answer.includes('по 6 объявлениям'));
+  assert.ok(mixed.at(-1)!.answer.startsWith('16 ГБ / 512 ГБ — 6 объявлений'));
+});

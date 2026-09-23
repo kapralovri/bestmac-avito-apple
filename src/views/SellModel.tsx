@@ -32,7 +32,7 @@ interface SellModelProps {
 }
 
 type Result =
-  | { kind: 'price'; marketMin: number; marketMax: number; marketMedian: number; buyoutPrice: number; samplesCount: number }
+  | { kind: 'price'; marketMin: number; marketMax: number; marketMedian: number; buyoutPrice: number; samplesCount: number; manual: boolean }
   | { kind: 'photo' };
 
 /** calculateBuyoutPrice работает со строкой базы — собираем её из конфигурации. */
@@ -70,7 +70,7 @@ const SellModel = ({ modelName, slug, configs, totalListings, updatedLabel }: Se
     const r = calculateBuyoutPrice(toStat(cfg), condition);
     setResult({
       kind: 'price', marketMin: r.marketMin, marketMax: r.marketMax, marketMedian: r.marketMedian,
-      buyoutPrice: r.buyoutPrice, samplesCount: r.samplesCount,
+      buyoutPrice: r.buyoutPrice, samplesCount: r.samplesCount, manual: cfg.manual,
     });
   };
 
@@ -248,10 +248,13 @@ const SellModel = ({ modelName, slug, configs, totalListings, updatedLabel }: Se
                         <p className="text-sm font-medium text-primary mb-2">💰 Рекомендуемая цена выкупа</p>
                         <p className="text-4xl md:text-5xl font-bold text-primary">≈ {formatPrice(result.buyoutPrice)}</p>
                       </div>
-                      <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                        <BarChart3 className="w-4 h-4" />
-                        <span>На основе {result.samplesCount} объявлений за последние 30 дней</span>
-                      </div>
+                      {/* Ручная цена владельца — не выборка объявлений (GST-78) */}
+                      {!result.manual && (
+                        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                          <BarChart3 className="w-4 h-4" />
+                          <span>На основе {result.samplesCount} объявлений за последние 30 дней</span>
+                        </div>
+                      )}
                       <div className="bg-muted/50 p-4 rounded-lg text-xs text-muted-foreground">
                         <p>⚠️ Оценка на основе анализа открытого рынка. Итоговая цена может отличаться в зависимости от комплектации, циклов батареи и состояния устройства.</p>
                       </div>

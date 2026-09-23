@@ -24,10 +24,12 @@ export default function SellPriceBlock({ shortName, prices, updatedLabel, cenyHr
         </h2>
         {has ? (
           <>
-            <p className="text-center text-muted-foreground mb-6">
-              По {prices.reliableSamples} объявлениям на Авито за последние 30 дней
-              {updatedLabel ? `, обновлено ${updatedLabel}` : ''}
-            </p>
+            {prices.reliableSamples > 0 && (
+              <p className="text-center text-muted-foreground mb-6">
+                По {prices.reliableSamples} объявлениям на Авито за последние 30 дней
+                {updatedLabel ? `, обновлено ${updatedLabel}` : ''}
+              </p>
+            )}
             <table className="w-full border border-border/60 rounded-xl overflow-hidden">
               <thead className="bg-muted/50">
                 <tr>

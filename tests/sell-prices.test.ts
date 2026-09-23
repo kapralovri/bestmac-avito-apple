@@ -151,3 +151,46 @@ test('калькулятор: опции памяти и диска, поиск 
   assert.equal(findConfig(p.configs, 24, 512)?.reliable, false);
   assert.equal(findConfig(p.configs, 8, 256), undefined);
 });
+
+// ─── Итоги ревью GST-78 ──────────────────────────────────────────────────────
+
+test('дубль: ручная цена побеждает большую выборку', () => {
+  const p = buildSellModelPrices([
+    row('Mac mini M4', 'Apple M4', 16, 256, 40000, 1, '2026-07-17 10:00', { manual_override: true }),
+    row('mac mini m4', 'Apple M4', 16, 256, 44000, 30),
+  ], MINI_M4, NOW);
+  assert.equal(p.configs.length, 1);
+  assert.equal(p.configs[0].buyoutPrice, 40000);
+  assert.equal(p.configs[0].manual, true);
+});
+
+test('дубль: свежая с выборкой побеждает большую устаревшую', () => {
+  const p = buildSellModelPrices([
+    row('Mac mini M4', 'Apple M4', 16, 256, 50000, 20, '2026-06-01 10:00'),
+    row('mac mini m4', 'Apple M4', 16, 256, 47000, 8),
+  ], MINI_M4, NOW);
+  assert.equal(p.configs[0].buyoutPrice, 47000);
+  assert.equal(p.configs[0].reliable, true);
+});
+
+test('невозможный объём диска не попадает на страницу', () => {
+  const stats = [
+    row('iMac 24 M4', 'Apple M4', 8, 8192, 142000, 5),
+    row('iMac 24 M4', 'Apple M4', 16, 512, 90000, 9),
+    row('MacBook Air 13 (2025, M4)', 'Apple M4', 16, 4096, 90000, 9),
+    row('Mac mini M4 Pro', 'Apple M4 Pro', 24, 8192, 250000, 6),
+  ];
+  assert.deepEqual(matchRows(stats, { family: 'iMac', screen: 24, chip: 'M4' }).map((s) => s.ssd), [512]);
+  assert.deepEqual(matchRows(stats, { family: 'MacBook Air', screen: 13, chip: 'M4' }), []);
+  assert.equal(matchRows(stats, { family: 'Mac mini', chip: 'M4 Pro' }).length, 1);
+});
+
+test('ручная цена не считается «объявлениями за 30 дней»', () => {
+  const p = buildSellModelPrices([
+    row('Mac mini M4', 'Apple M4', 16, 256, 40000, 34, '2026-07-17 10:00', { manual_override: true }),
+    row('Mac mini M4', 'Apple M4', 16, 512, 70000, 6),
+  ], MINI_M4, NOW);
+  assert.equal(p.reliable.length, 2);
+  assert.equal(p.reliableSamples, 6);
+  assert.equal(p.latestUpdate, '2026-09-20 10:00');
+});
