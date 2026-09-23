@@ -18,6 +18,7 @@ export interface AvitoPriceStat {
   buyout_price: number;    // Рекомендуемая цена выкупа
   samples_count: number;   // Количество объявлений
   updated_at: string;      // ISO дата обновления
+  manual_override?: boolean; // ручная цена владельца (price-overrides.json) — не «протухает»
 }
 
 export interface AvitoPricesData {
