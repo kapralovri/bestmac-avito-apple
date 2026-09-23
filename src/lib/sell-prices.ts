@@ -267,3 +267,29 @@ export function buildModelFaq(shortName: string, prices: SellModelPrices): FaqIt
   });
   return faq;
 }
+
+// ─── Сводка по моделям для /vykup и /sell ───────────────────────────────────
+// Посадочные страницы выкупа показывали цены только в браузере. Сводка «до X ₽»
+// по моделям с надёжными ценами попадает в HTML и ведёт на страницы моделей.
+
+export interface ModelPriceSummary {
+  name: string;
+  slug: string;
+  family: string;
+  maxBuyout: number;
+  configs: number; // надёжных конфигураций
+}
+
+export function modelPriceSummaries(
+  stats: AvitoPriceStat[] | null | undefined,
+  catalog: Array<{ name: string; slug: string; match: SellMatch }>,
+  now: Date,
+): ModelPriceSummary[] {
+  const out: ModelPriceSummary[] = [];
+  for (const m of catalog) {
+    const p = buildSellModelPrices(stats, m.match, now);
+    if (!p.reliable.length) continue;
+    out.push({ name: m.name, slug: m.slug, family: m.match.family, maxBuyout: p.maxBuyout, configs: p.reliable.length });
+  }
+  return out;
+}

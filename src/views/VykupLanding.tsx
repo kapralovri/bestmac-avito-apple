@@ -1,5 +1,7 @@
 "use client";
 
+import type React from "react";
+
 import Breadcrumbs from "@/components/Breadcrumbs";
 import LeadForm from "@/components/LeadForm";
 import PhotoEstimate from "@/components/PhotoEstimate";
@@ -18,7 +20,9 @@ const ICONS: Record<string, LucideIcon> = {
   KeyRound, ShieldCheck, Zap, Clock, Wrench, Cpu, DollarSign,
 };
 
-const VykupLanding = ({ landing }: { landing: VykupLandingConfig }) => {
+// prices — серверный блок «Сколько мы платим сейчас» (PopularBuyoutPrices),
+// передаётся со страницы: клиентский компонент сам на сервере не отрисует цены.
+const VykupLanding = ({ landing, prices }: { landing: VykupLandingConfig; prices?: React.ReactNode }) => {
   const breadcrumbItems = [
     { name: "Главная", url: "/" },
     { name: "Продать", url: "/sell" },
@@ -101,6 +105,8 @@ const VykupLanding = ({ landing }: { landing: VykupLandingConfig }) => {
             </div>
           )}
         </div>
+
+        {prices}
 
         {/* Таблица цен */}
         {landing.showTable && (
