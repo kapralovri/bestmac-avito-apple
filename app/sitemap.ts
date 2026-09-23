@@ -95,12 +95,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     })),
 
-    // Geo
+    // Geo — хаб; районы склеены редиректами (GST-76, src/data/seo-redirects.ts)
     { url: '/moskva', changeFrequency: 'monthly', priority: 0.7 },
-    { url: '/moskva/kievskaya', changeFrequency: 'monthly', priority: 0.7 },
-    { url: '/moskva/dorogomilovo', changeFrequency: 'monthly', priority: 0.7 },
-    { url: '/moskva/arbat', changeFrequency: 'monthly', priority: 0.7 },
-    { url: '/moskva/hamovniki', changeFrequency: 'monthly', priority: 0.7 },
 
     // Vykup — интент-лендинги
     ...VYKUP_LANDINGS.map((l) => ({

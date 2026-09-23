@@ -4,7 +4,7 @@ import SellImacSeo from '@/components/seo/SellImacSeo';
 import { loadAvitoPricesServer } from '@/lib/server-prices';
 
 export const metadata: Metadata = {
-  title: 'Выкуп iMac в Москве дорого — цены сегодня, выезд и вывоз | BestMac',
+  title: 'Выкуп iMac в Москве дорого — цены сегодня, выезд и вывоз',
   description: 'Выкуп iMac 24 (M1–M4) и iMac 27 в Москве. Цены обновляются ежедневно по объявлениям Авито. Сами приедем, упакуем и вывезем — деньги сразу.',
   alternates: { canonical: '/sell/imac' },
 };

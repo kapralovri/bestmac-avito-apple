@@ -5,7 +5,7 @@ import BuyNew from '@/views/BuyNew';
 import BuyNewSeo, { type NewProductsSeoData } from '@/components/seo/BuyNewSeo';
 
 export const metadata: Metadata = {
-  title: 'Новая техника Apple в Москве — цены сегодня на MacBook и iPhone | BestMac',
+  title: 'Новая техника Apple в Москве — цены сегодня на MacBook и iPhone',
   description: 'Купить новую технику Apple в Москве: MacBook Air/Pro, iPhone, iMac. Цены обновляются ежедневно, проверка при получении, гарантия. Дешевле сетевой розницы.',
   alternates: { canonical: '/buy/new' },
 };

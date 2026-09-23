@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { GEO_REDIRECTS, PRICE_SLUG_REDIRECTS } from './src/data/seo-redirects';
 
 const nextConfig: NextConfig = {
   turbopack: {
@@ -31,6 +32,17 @@ const nextConfig: NextConfig = {
       })),
       // Битые URL, найденные Яндекс.Вебмастером (404 в «Исключённых»)
       { source: '/macbook', destination: '/sell', permanent: true },
+      // GST-76: склейка страниц, признанных Яндексом малоценными (см. seo-redirects.ts)
+      ...Object.entries(PRICE_SLUG_REDIRECTS).map(([from, to]) => ({
+        source: `/ceny/${from}`,
+        destination: `/ceny/${to}`,
+        permanent: true,
+      })),
+      ...Object.entries(GEO_REDIRECTS).map(([from, to]) => ({
+        source: `/moskva/${from}`,
+        destination: to,
+        permanent: true,
+      })),
     ];
   },
 

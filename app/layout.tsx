@@ -67,11 +67,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           src="https://www.googletagmanager.com/gtag/js?id=G-Z7HMP0832W"
           strategy="afterInteractive"
         />
+        {/* GST-76: счётчики шлют данные только с боевого домена. Раньше их
+            исправно заряжали превью-сборки Vercel (*.vercel.app): каждый деплой
+            открывали боты, и в Метрике весной набегало ~500 «прямых визитов»
+            в месяц — с отказом 100% и нулём секунд на сайте. Проверка идёт по
+            адресу в браузере, а не по окружению сборки: у боевых деплоев тоже
+            есть свой *.vercel.app, и туда боты заходят так же. */}
         <Script id="google-analytics" strategy="afterInteractive">
           {`window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', 'G-Z7HMP0832W');`}
+          if (location.hostname === 'bestmac.ru') gtag('config', 'G-Z7HMP0832W');`}
         </Script>
 
         {/* Yandex.Metrika */}
@@ -79,6 +85,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {`(function(m,e,t,r,i,k,a){
             try{m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
             m[i].l=1*new Date();
+            // Заглушку ym оставляем везде: формы зовут ym(..., 'reachGoal', ...),
+            // и без неё отправка заявки на превью падала бы с ошибкой. Сам счётчик
+            // грузим только на боевом домене — без него вызовы копятся в очереди
+            // и никуда не уходят.
+            if (location.hostname !== 'bestmac.ru') return;
             for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}
             k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a);
             }catch(e){console.warn('Yandex.Metrika loading error:',e);}
