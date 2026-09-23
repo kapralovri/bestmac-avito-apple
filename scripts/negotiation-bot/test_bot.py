@@ -384,6 +384,35 @@ check("в подтверждении подписки есть ссылка на
 check("ссылка подана как действие, а не справка", "http" in _txt)
 
 
+# ─── 14. GST-75: меню команд Telegram ───────────────────────────────────────
+# Telegram показывает список команд по «/» только если бот зарегистрировал его
+# через setMyCommands. Имена там обязаны быть латиницей — кириллические
+# /сделки, /модель, /подписки в меню не попадут, поэтому регистрируем алиасы.
+print("\n[14] Меню команд")
+from bot import BOT_COMMANDS
+import re as _re
+
+check("команд в меню больше одной", len(BOT_COMMANDS) >= 6)
+check("имена — латиница, цифры, подчёркивание (требование Telegram)",
+      all(_re.fullmatch(r"[a-z0-9_]{1,32}", c) for c, _ in BOT_COMMANDS))
+check("описания непустые и в лимите 256 символов",
+      all(1 <= len(d) <= 256 for _, d in BOT_COMMANDS))
+check("дубликатов нет", len({c for c, _ in BOT_COMMANDS}) == len(BOT_COMMANDS))
+
+# Меню не должно предлагать команду, которой бот не знает.
+for _cmd, _ in BOT_COMMANDS:
+    _acts = msg(777, f"/{_cmd}")
+    check(f"/{_cmd} — бот отвечает", len(find_send(_acts)) > 0)
+
+# /cancel — латинский алиас к /отмена, без него кнопка меню была бы мёртвой.
+cb(777, "sub:new:0:0:0")
+acts = msg(777, "/cancel")
+check("/cancel отменяет ввод цены",
+      any("тмен" in a.get("text", "") for a in find_send(acts)))
+acts = msg(777, "88000")
+check("после /cancel число не создаёт подписку", load_subscriptions(_subs_path) == {})
+
+
 print()
 if _fails:
     print(f"❌ ПРОВАЛЕНО {len(_fails)}: " + "; ".join(_fails))
