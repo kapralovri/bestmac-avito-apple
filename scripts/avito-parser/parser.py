@@ -752,6 +752,26 @@ def merge_into_db(
     return new_count, updated_count
 
 
+def run_listings(listings: list[dict], run_stats: list[dict], catalog: dict,
+                 seen_at: str) -> list[dict]:
+    """GST-61 фид: объявления только тех конфигов, что попали в статистику прогона.
+
+    GST-77: лот записывается с подписью вкладки («Mac Studio m1»), а строка
+    статистики — с каноническим именем. Лот приводится к той же записи, иначе
+    ни один discovery-лот не находит свою строку и лента их теряет. Дедуп по url —
+    одно объявление встречается на нескольких страницах и вкладках.
+    """
+    run_keys = {db_key(s) for s in run_stats}
+    by_url: dict[str, dict] = {}
+    for lst in listings:
+        row = canonicalize_row(lst, catalog)
+        if db_key(row) not in run_keys:
+            continue  # конфиг не прошёл MIN_SAMPLES / не даёт сигнала
+        by_url[row["url"]] = {**row, "seen_at": seen_at}  # дедуп: оставляем последнее
+    return sorted(by_url.values(),
+                  key=lambda x: (x["model_name"], x["processor"], x["ram"], x["ssd"], x["price"]))
+
+
 def build_url_entries(stats: list[dict], tabs_data: dict) -> list[dict]:
     """Опции дропдаунов для фронта. URL берём из таблицы по семейству."""
     family_url: dict[str, str] = {}
@@ -1035,18 +1055,8 @@ def main():
     # Только объявления конфигов, попавших в статистику этого прогона (те же, что
     # порождают сигналы). Дедуп по url — одно объявление может встретиться на
     # нескольких страницах. seen_at = метка прогона (для фильтра свежести в БД).
-    run_config_keys = {
-        (s["model_name"], s.get("processor", ""), s["ram"], s["ssd"]) for s in new_stats
-    }
     seen_at = datetime.now().strftime("%Y-%m-%d %H:%M")
-    by_url: dict[str, dict] = {}
-    for lst in ap_obj.listings_out:
-        cfg_key = (lst["model_name"], lst["processor"], lst["ram"], lst["ssd"])
-        if cfg_key not in run_config_keys:
-            continue  # конфиг не прошёл MIN_SAMPLES / не даёт сигнала
-        by_url[lst["url"]] = {**lst, "seen_at": seen_at}  # дедуп: оставляем последнее
-    listings_final = sorted(by_url.values(),
-                            key=lambda x: (x["model_name"], x["processor"], x["ram"], x["ssd"], x["price"]))
+    listings_final = run_listings(ap_obj.listings_out, new_stats, catalog, seen_at)
     with open(LISTINGS_FILE, "w", encoding="utf-8") as f:
         json.dump({
             "generated_at": seen_at,

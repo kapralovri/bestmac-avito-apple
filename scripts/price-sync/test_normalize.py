@@ -9,7 +9,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))          # price-sync/
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))   # scripts/
-from normalize_prices import normalize, migrate_overrides  # noqa: E402
+from normalize_prices import normalize, migrate_overrides, url_entries  # noqa: E402
 from common.price_identity import build_catalog  # noqa: E402
 
 _fails = []
@@ -86,6 +86,12 @@ check("служебный комментарий на месте", new_ov.get("_
 check("переезд записан в отчёт", {"from": "macbook air 13 m1|8|256", "to": "macbook air 13 (2020, m1)|8|256"} in moved)
 check("неоднозначный ключ не тронут", new_ov.get("mac studio m1|64|1024") == {"buyout": 3})
 check("…и попал в отчёт", "mac studio m1|64|1024" in ambiguous)
+
+print("\n[4] Опции калькулятора (avito-urls.json) — по новым именам")
+ue = url_entries(AFTER, {"tabs": {"Mac Studio": {"entries": [{"url": "https://studio"}]}}})
+check("каждая опция находит строку базы по имени",
+      {e["model_name"] for e in ue} <= {s["model_name"] for s in AFTER})
+check("старых подписей вкладок нет", not any(e["model_name"] == "Mac Studio m1" for e in ue))
 
 print()
 if _fails:

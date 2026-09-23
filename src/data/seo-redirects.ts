@@ -35,6 +35,14 @@ export const PRICE_SLUG_REDIRECTS: Record<string, string> = {
 export const PRICE_SLUGS_TO_INDEX: string[] = [
   'imac-24',
   'mac-studio-m1',
+  // Mac Studio без уровня чипа (M2, M3, M4) и M4 Pro не выпускались: это объявления,
+  // где продавец не указал Max/Ultra, или Mac mini, найденные поиском Mac Studio.
+  // Раньше эти адреса показывали смесь вкладки, теперь — только такие строки.
+  // Страницы Mac Studio сводятся в одну в GST-78.
+  'mac-studio-m2',
+  'mac-studio-m3',
+  'mac-studio-m4',
+  'mac-studio-m4-pro',
 ];
 
 /**

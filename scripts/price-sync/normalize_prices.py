@@ -29,6 +29,7 @@ DATA = SD / "../../public/data"
 PRICES_FILE = Path(os.environ.get("PRICES_FILE_PATH", DATA / "avito-prices.json"))
 CONFIG_FILE = Path(os.environ.get("PARSER_CONFIG_PATH", DATA / "parser-config.json"))
 OVERRIDES_FILE = Path(os.environ.get("PRICE_OVERRIDES_PATH", DATA / "price-overrides.json"))
+URLS_FILE = Path(os.environ.get("AVITO_URLS_PATH", DATA / "avito-urls.json"))
 
 _BRIEF = ("model_name", "processor", "ram", "ssd", "median_price", "buyout_price",
           "samples_count", "updated_at")
@@ -119,6 +120,18 @@ def migrate_overrides(overrides, before, catalog):
     return out, moved, ambiguous
 
 
+def url_entries(stats, parser_config):
+    """Опции дропдаунов калькулятора — тем же кодом, что пишет парсер.
+
+    Калькулятор ищет цену точным совпадением model_name, поэтому после миграции
+    avito-urls.json пересобирается сразу: иначе до следующего прогона парсера
+    (раз в три дня) у десктопов в калькуляторе нет цен.
+    """
+    sys.path.insert(0, str(SD.parent / "avito-parser"))
+    from parser import build_url_entries  # noqa: E402 — модуль парсера, не stdlib
+    return build_url_entries(stats, parser_config.get("tabs") or {})
+
+
 def _write_json(path, data):
     tmp = path.parent / (path.name + ".tmp")
     tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -158,7 +171,8 @@ def main():
 
     now = datetime.now()
     data = json.loads(PRICES_FILE.read_text(encoding="utf-8"))
-    catalog = build_catalog(json.loads(CONFIG_FILE.read_text(encoding="utf-8")))
+    parser_config = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
+    catalog = build_catalog(parser_config)
     before = data.get("stats", [])
     after, report = normalize(before, catalog, now)
     overrides = json.loads(OVERRIDES_FILE.read_text(encoding="utf-8")) if OVERRIDES_FILE.exists() else {}
@@ -178,6 +192,11 @@ def main():
     data["stats"] = after
     data["total_listings"] = sum(int(s.get("samples_count") or 0) for s in after)
     _write_json(PRICES_FILE, data)
+    _write_json(URLS_FILE, {
+        "description": "Опции дропдаунов фронта. Автогенерируется парсером.",
+        "updated_at": now.strftime("%Y-%m-%d"),
+        "entries": url_entries(after, parser_config),
+    })
     if moved:
         _write_json(OVERRIDES_FILE, new_overrides)
     print(f"\n✅ Записано: {PRICES_FILE}")

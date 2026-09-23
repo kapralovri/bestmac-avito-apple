@@ -81,6 +81,20 @@ n, u = P.merge_into_db(db, [new])
 check("новый прогон обновляет ту же конфигурацию",
       (n, u) == (0, 1) and list(db.values())[0]["median_price"] == 333)
 
+print("\n[GST-77] лента объявлений: discovery-лоты не теряются")
+run_stats = P.discovery_stats([g_m1], "Mac Studio", catalog={}, min_samples=2)
+raw = [{"model_name": "Mac Studio m1", "processor": "Apple M4 Max", "ram": 64, "ssd": 1024,
+        "price": 400000, "url": "u1", "title": "t"},
+       {"model_name": "Mac Studio m4", "processor": "Apple M4 Max", "ram": 64, "ssd": 1024,
+        "price": 400000, "url": "u1", "title": "t"},
+       {"model_name": "Mac Studio m1", "processor": "Apple M2 Max", "ram": 32, "ssd": 512,
+        "price": 1, "url": "u7", "title": "t"}]
+feed = P.run_listings(raw, run_stats, catalog={}, seen_at="2026-09-23 10:00")
+check("лот конфигурации из статистики попал в ленту", [l["url"] for l in feed] == ["u1"])
+check("имя в ленте — как у строки статистики",
+      bool(feed) and feed[0]["model_name"] == "Mac Studio M4 Max" and feed[0]["processor"] == "Apple M4 Max")
+check("метка прогона проставлена", bool(feed) and feed[0]["seen_at"] == "2026-09-23 10:00")
+
 print()
 if _fails:
     print(f"❌ ПРОВАЛЕНО {len(_fails)}: " + "; ".join(_fails))
