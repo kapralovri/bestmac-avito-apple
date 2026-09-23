@@ -9,7 +9,9 @@ import { modelPriceSummaries, formatRub } from '@/lib/sell-prices';
  * выкупа без цифр. Здесь — «до X ₽» по моделям с надёжными ценами (правило
  * GST-78) и ссылки на страницы моделей.
  */
-export default async function PopularBuyoutPrices({ slugs }: { slugs?: string[] } = {}) {
+export default async function PopularBuyoutPrices(
+  { slugs, allLink = false }: { slugs?: string[]; allLink?: boolean } = {},
+) {
   const data = await loadAvitoPricesServer();
   // slugs — подмножество моделей (главная показывает только популярные).
   const catalog = slugs ? ALL_BUYOUT_MODELS.filter((m) => slugs.includes(m.slug)) : ALL_BUYOUT_MODELS;
@@ -34,6 +36,11 @@ export default async function PopularBuyoutPrices({ slugs }: { slugs?: string[] 
           </Link>
         ))}
       </div>
+      {allLink && (
+        <p className="text-center mt-6">
+          <Link href="/sell" className="text-primary underline">Все модели и калькулятор выкупа →</Link>
+        </p>
+      )}
     </section>
   );
 }

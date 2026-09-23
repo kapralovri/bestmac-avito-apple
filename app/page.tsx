@@ -25,16 +25,11 @@ export default function HomePage() {
       <AboutSection />
       <OffersSection />
 
-      {/* Цены выкупа популярных моделей в HTML главной — главная точка входа
-          на сайт, а на страницы моделей с ценами с неё не вела ни одна ссылка. */}
-      <section className="apple-section">
-        <div className="apple-container max-w-4xl">
-          <PopularBuyoutPrices slugs={POPULAR_MODELS.map((m) => m.slug)} />
-          <p className="text-center">
-            <a href="/sell" className="text-primary underline">Все модели и калькулятор выкупа →</a>
-          </p>
-        </div>
-      </section>
+      {/* Цены выкупа популярных моделей в HTML главной — главной точки входа
+          на сайт; раньше цифр выкупа на ней не было вовсе. */}
+      <div className="apple-container max-w-4xl pt-12">
+        <PopularBuyoutPrices slugs={POPULAR_MODELS.map((m) => m.slug)} allLink />
+      </div>
       <Reviews />
       <SEOContent />
 
