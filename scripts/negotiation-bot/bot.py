@@ -101,6 +101,28 @@ PARSER_CONFIG_FILE = Path(os.environ.get('PARSER_CONFIG_PATH', 'public/data/pars
 MODEL_WIZARD_FAMILIES = ["MacBook", "iMac", "Mac mini", "Mac Studio"]
 
 
+# ─── GST-75: меню команд Telegram ────────────────────────────────────────────
+# Без setMyCommands по «/» виден только /start, и обо всём остальном нужно знать
+# наизусть. Имена команд Telegram принимает ТОЛЬКО латиницей (a-z, 0-9, _), так
+# что в меню уезжают английские алиасы — русские /сделки, /модель, /подписки
+# продолжают работать в чате, но зарегистрировать их нельзя. Описания кириллицей
+# можно, они и видны в списке.
+BOT_COMMANDS: list[tuple[str, str]] = [
+    ("deals",  "🔍 Какие Mac выгодно выкупать прямо сейчас"),
+    ("model",  "🔎 Выбрать модель → ссылка на мониторинг"),
+    ("subs",   "🔔 Мои подписки «модель + моя цена»"),
+    ("status", "🩺 Жив ли домашний коллектор Avito"),
+    ("cancel", "✖️ Отменить текущий ввод"),
+    ("help",   "❓ Как всё это работает"),
+    ("start",  "▶️ Запуск и подключение чата"),
+]
+
+
+def _is_cancel(text: str) -> bool:
+    """Отмена ввода: русская команда и латинский алиас для меню Telegram."""
+    return text.startswith("/отмена") or text.startswith("/cancel")
+
+
 def _fmt(n) -> str:
     return f"{int(n):,}".replace(",", " ")
 
@@ -255,6 +277,25 @@ class TelegramTransport:
         except Exception as e:
             logger.error(f"getUpdates: {e}")
             return []
+
+    def set_my_commands(self, commands):
+        """Регистрирует меню команд (список по «/» в Telegram).
+
+        Вызывается один раз при старте: Telegram хранит список на своей стороне,
+        так что повторять на каждый апдейт не нужно. Сбой не должен мешать боту
+        работать — меню это удобство, а не условие работы.
+        """
+        try:
+            r = self._r.post(f"{self.base}/setMyCommands",
+                             json={"commands": [{"command": c, "description": d}
+                                                for c, d in commands]},
+                             timeout=15)
+            ok = r.json().get("ok", False)
+            logger.info(f"меню команд: {'обновлено' if ok else r.text[:160]}")
+            return ok
+        except Exception as e:   # noqa: BLE001 — сеть не должна ронять запуск
+            logger.warning(f"setMyCommands: {e}")
+            return False
 
     def send_message(self, chat_id, text, buttons=None):
         payload = {"chat_id": chat_id, "text": text, "parse_mode": "HTML",
@@ -679,8 +720,7 @@ class NegotiationBot:
         # GST-73: любая команда важнее незавершённого ввода цены подписки —
         # иначе «/модель» уходил бы в разбор цены и выйти из режима было бы
         # нечем. «/отмена» разбирается со своим состоянием сама, ниже.
-        if (text.startswith("/") and not text.startswith("/отмена")
-                and self.state.get("pending_sub")):
+        if text.startswith("/") and not _is_cancel(text) and self.state.get("pending_sub"):
             self.state.pop("pending_sub", None)
             self._save()
 
@@ -690,7 +730,7 @@ class NegotiationBot:
                      "buttons": [[("🔄 Обновить", "status:refresh")]]}]
 
         # ── GST-73: подписки ─────────────────────────────────────────────────
-        if text.startswith("/отмена"):
+        if _is_cancel(text):
             had = self.state.pop("pending_sub", None)
             self._save()
             return [{"type": "send", "chat_id": chat_id,
@@ -1043,6 +1083,9 @@ class NegotiationBot:
 
     def run_forever(self, poll_timeout=25):
         logger.info("🤖 Бот переговоров запущен (long-polling)")
+        # Меню команд регистрируем при старте: список живёт на стороне Telegram.
+        if hasattr(self.tx, "set_my_commands"):
+            self.tx.set_my_commands(BOT_COMMANDS)
         while True:
             self._exec(self.pull_new_leads())
             self._exec(self.check_collector())
