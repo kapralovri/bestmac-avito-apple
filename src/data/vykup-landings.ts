@@ -27,6 +27,9 @@ export interface VykupLandingConfig {
   faq: { q: string; a: string }[];
   showPhoto: boolean; // показывать виджет AI-оценки по фото
   showTable: boolean; // показывать BuyoutTable
+  // Блок «Сколько мы платим сейчас» — цены за исправные Mac. Только там, где они
+  // уместны: на «запчастях» или «залитых» такие цифры ввели бы в заблуждение.
+  showPriceSummary?: boolean;
   cta: { title: string; sub: string };
 }
 
@@ -34,6 +37,7 @@ export const VYKUP_LANDINGS: VykupLandingConfig[] = [
   // ─────────────────────────────────────────────────────────────────────────
   {
     slug: "na-domu-moskva",
+    showPriceSummary: true,
     nav: "Выкуп MacBook на дому",
     h1: "Выкуп MacBook на дому в Москве с выездом",
     title: "Выкуп MacBook на дому в Москве — выезд за 1–2 часа",
@@ -172,6 +176,7 @@ export const VYKUP_LANDINGS: VykupLandingConfig[] = [
   // ─────────────────────────────────────────────────────────────────────────
   {
     slug: "srochno",
+    showPriceSummary: true,
     nav: "Срочный выкуп MacBook",
     h1: "Срочный выкуп MacBook в Москве за час",
     title: "Срочный выкуп MacBook в Москве — деньги за 1 час",
@@ -214,9 +219,10 @@ export const VYKUP_LANDINGS: VykupLandingConfig[] = [
   // месте без отдельной страницы под этот интент (Вебмастер, сентябрь 2026).
   {
     slug: "ocenka-onlajn",
+    showPriceSummary: true,
     nav: "Оценка MacBook онлайн",
-    h1: "Оценка MacBook онлайн — узнайте цену за минуту",
-    title: "Оценка MacBook онлайн — цена выкупа по данным Авито за 1 минуту",
+    h1: "Оценка MacBook онлайн по данным Авито",
+    title: "Оценка MacBook онлайн — цена выкупа по данным Авито",
     description:
       "Бесплатная онлайн-оценка MacBook, iMac, Mac mini и Mac Studio: цена выкупа по свежим объявлениям Авито, оценка по фото за 15 минут. Без регистрации и звонков.",
     intro:
@@ -242,7 +248,7 @@ export const VYKUP_LANDINGS: VykupLandingConfig[] = [
           "Конфигурация: версия чипа (обычный, Pro, Max), объём памяти и диска.",
           "Состояние корпуса и экрана, износ аккумулятора.",
           "Комплектность: зарядка, коробка.",
-          "Отвязка от iCloud — без неё выкуп невозможен.",
+          "Привязка к iCloud: заблокированный Mac тоже выкупаем, но дешевле.",
         ],
       },
       {

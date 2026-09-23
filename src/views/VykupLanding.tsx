@@ -106,7 +106,7 @@ const VykupLanding = ({ landing, prices }: { landing: VykupLandingConfig; prices
           )}
         </div>
 
-        {prices}
+        {landing.showPriceSummary && prices}
 
         {/* Таблица цен */}
         {landing.showTable && (
