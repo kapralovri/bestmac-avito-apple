@@ -173,3 +173,58 @@ export function ssdOptions(configs: SellConfig[], ram: number): number[] {
 export function findConfig(configs: SellConfig[], ram: number, ssd: number): SellConfig | undefined {
   return configs.find((c) => c.ram === ram && c.ssd === ssd);
 }
+
+// ─── FAQ модели из данных ────────────────────────────────────────────────────
+// Раньше у всех 31 страницы был один общий FAQ — Яндекс видел их одинаковыми.
+// Вопросы с цифрами модели делают страницу своей и обновляются вместе с ценами.
+
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+function plural(n: number, one: string, few: string, many: string): string {
+  const d = n % 10;
+  const dd = n % 100;
+  if (d === 1 && dd !== 11) return one;
+  if (d >= 2 && d <= 4 && (dd < 12 || dd > 14)) return few;
+  return many;
+}
+
+/** «по N объявлениям» — дательный падеж. */
+function byListings(n: number): string {
+  return `по ${n} ${n % 10 === 1 && n % 100 !== 11 ? 'объявлению' : 'объявлениям'}`;
+}
+
+export function buildModelFaq(shortName: string, prices: SellModelPrices): FaqItem[] {
+  const priceQuestion = `Сколько стоит выкуп ${shortName}?`;
+  if (!prices.reliable.length) {
+    return [{
+      question: priceQuestion,
+      answer: 'Свежих объявлений по этой модели мало, поэтому цену назовём по фото за 15 минут.',
+    }];
+  }
+  const rel = prices.reliable;
+  const top = rel.reduce((a, b) => (b.buyoutPrice > a.buyoutPrice ? b : a));
+  const cheap = rel.reduce((a, b) => (b.buyoutPrice < a.buyoutPrice ? b : a));
+  const common = rel.reduce((a, b) => (b.samplesCount > a.samplesCount ? b : a));
+
+  const faq: FaqItem[] = [{
+    question: priceQuestion,
+    answer: `До ${formatRub(top.buyoutPrice)} за ${configLabel(top)}. Цена ${byListings(prices.reliableSamples)} ` +
+      'на Авито за последние 30 дней; точную сумму назовём после осмотра.',
+  }];
+  if (rel.length >= 2) {
+    faq.push({
+      question: `Как память и диск влияют на цену ${shortName}?`,
+      answer: `${configLabel(cheap)} — до ${formatRub(cheap.buyoutPrice)}, ${configLabel(top)} — до ${formatRub(top.buyoutPrice)}.`,
+    });
+  }
+  faq.push({
+    question: `Какая конфигурация ${shortName} встречается чаще всего?`,
+    answer: `${configLabel(common)} — ${common.samplesCount} ` +
+      `${plural(common.samplesCount, 'объявление', 'объявления', 'объявлений')} на Авито за последние 30 дней. ` +
+      `Её выкупаем до ${formatRub(common.buyoutPrice)}.`,
+  });
+  return faq;
+}
