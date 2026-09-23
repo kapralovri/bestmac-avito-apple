@@ -8,8 +8,12 @@
  */
 export type ContactGoal = 'click_phone' | 'click_telegram' | 'click_whatsapp' | 'click_email';
 
+// Контакты партнёрского сервисного центра на /service — не заявки BestMac.
+const PARTNER_CONTACTS = ['tel:+74953695162', 'mailto:info@appleprofessional.ru'];
+
 export function contactGoal(href: string): ContactGoal | null {
   const h = (href || '').trim().toLowerCase();
+  if (PARTNER_CONTACTS.includes(h)) return null;
   if (h.startsWith('tel:')) return 'click_phone';
   if (h.startsWith('mailto:')) return 'click_email';
   let host = '';

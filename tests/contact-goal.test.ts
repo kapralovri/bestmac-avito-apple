@@ -17,3 +17,8 @@ test('обычные ссылки — не контакт', () => {
     assert.equal(contactGoal(href), null, href);
   }
 });
+
+test('контакты партнёров — не заявки BestMac', () => {
+  assert.equal(contactGoal('tel:+74953695162'), null);
+  assert.equal(contactGoal('mailto:info@appleprofessional.ru'), null);
+});
