@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import SellMacMini from '@/views/sell/SellMacMini';
 import SellMacMiniSeo from '@/components/seo/SellMacMiniSeo';
 import { loadAvitoPricesServer } from '@/lib/server-prices';
+import FamilyModelLinks from '@/components/sell/FamilyModelLinks';
 
 export const metadata: Metadata = {
   title: 'Выкуп Mac mini в Москве дорого — цены сегодня',
@@ -14,6 +15,7 @@ export default async function SellMacMiniPage() {
   return (
     <>
       <SellMacMini />
+      <FamilyModelLinks family="Mac mini" />
       {data && <SellMacMiniSeo data={data} />}
     </>
   );

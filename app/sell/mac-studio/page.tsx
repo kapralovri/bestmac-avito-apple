@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import SellMacStudioSeo from '@/components/seo/SellMacStudioSeo';
 import { loadAvitoPricesServer } from '@/lib/server-prices';
+import FamilyModelLinks from '@/components/sell/FamilyModelLinks';
 
 export const metadata: Metadata = {
   title: 'Выкуп Mac Studio в Москве дорого — M1/M2/M4 Max и Ultra',
@@ -24,6 +25,7 @@ export default async function SellMacStudioPage() {
           </p>
         </div>
       </div>
+      <FamilyModelLinks family="Mac Studio" />
       {data && <SellMacStudioSeo data={data} />}
     </div>
   );
