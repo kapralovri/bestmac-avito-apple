@@ -20,7 +20,7 @@ import { sendEmail } from "@/services/email";
 import { organizationSchema } from "@/lib/schema";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ContactMap from "@/components/ContactMap";
-import { trackFormSubmit, trackContactClick } from "@/components/Analytics";
+import { trackFormSubmit } from "@/components/Analytics";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -209,7 +209,6 @@ const Contact = () => {
                     <a 
                       href="tel:+79032990029" 
                       className="text-primary hover:underline"
-                      onClick={() => trackContactClick('phone')}
                     >
                       +7 (903) 299-00-29
                     </a>
@@ -223,7 +222,6 @@ const Contact = () => {
                     <a 
                       href="mailto:info@bestmac.ru" 
                       className="text-primary hover:underline"
-                      onClick={() => trackContactClick('email')}
                     >
                       info@bestmac.ru
                     </a>
@@ -265,7 +263,6 @@ const Contact = () => {
                     href="https://t.me/romanmanro" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    onClick={() => trackContactClick('telegram')}
                   >
                     💬 Telegram: @romanmanro
                   </a>
@@ -275,7 +272,6 @@ const Contact = () => {
                     href="https://wa.me/79032990029" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    onClick={() => trackContactClick('whatsapp')}
                   >
                     📱 WhatsApp: +7 (903) 299-00-29
                   </a>

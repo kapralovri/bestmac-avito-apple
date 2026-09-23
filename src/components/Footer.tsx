@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { MapPin, Phone, Mail } from "lucide-react";
-import { trackContactClick } from "@/components/Analytics";
 import { POPULAR_MODELS, modelShortName } from "@/lib/model-slugs";
 
 const Footer = () => {
@@ -28,18 +27,18 @@ const Footer = () => {
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-3.5 h-3.5" />
-                <a href="tel:+79032990029" itemProp="telephone" className="text-primary hover:underline" onClick={() => trackContactClick('phone')}>
+                <a href="tel:+79032990029" itemProp="telephone" className="text-primary hover:underline">
                   +7 (903) 299-00-29
                 </a>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-3.5 h-3.5" />
-                <a href="mailto:info@bestmac.ru" itemProp="email" className="text-primary hover:underline" onClick={() => trackContactClick('email')}>
+                <a href="mailto:info@bestmac.ru" itemProp="email" className="text-primary hover:underline">
                   info@bestmac.ru
                 </a>
               </div>
               <p>
-                <a href="https://t.me/romanmanro" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline" onClick={() => trackContactClick('telegram')}>
+                <a href="https://t.me/romanmanro" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                   Telegram: @romanmanro
                 </a>
               </p>

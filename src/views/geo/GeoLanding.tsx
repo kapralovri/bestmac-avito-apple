@@ -7,7 +7,6 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import FAQ from "@/components/FAQ";
 import LeadForm from "@/components/LeadForm";
 import { Button } from "@/components/ui/button";
-import { trackContactClick } from "@/components/Analytics";
 
 interface GeoLandingProps {
   district: string;
@@ -124,13 +123,13 @@ const GeoLanding = ({ district, metroStation, slug, nearbyAreas, landmarks, cust
 
           <div className="flex flex-wrap justify-center gap-3">
             <Button asChild size="lg" className="bg-gradient-primary">
-              <a href="https://t.me/romanmanro" onClick={() => trackContactClick('telegram')}>
+              <a href="https://t.me/romanmanro">
                 <MessageCircle className="w-5 h-5 mr-2" />
                 Написать в Telegram
               </a>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <a href="tel:+79032990029" onClick={() => trackContactClick('phone')}>
+              <a href="tel:+79032990029">
                 <Phone className="w-5 h-5 mr-2" />
                 Позвонить
               </a>
