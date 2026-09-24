@@ -284,6 +284,20 @@ class QuoteBot:
                          "contact": True})
             return acts
 
+        # Свободный текст клиента (вопрос, ответ на /reply оценщика) — переписка:
+        # пересылаем оценщику, иначе ответ клиента терялся бы в боте.
+        if text and not text.startswith("/") and self.leads_chat and str(chat_id) != str(self.leads_chat):
+            frm = msg.get("from", {})
+            return [
+                {"t": "send", "chat": self.leads_chat,
+                 "text": (f"💬 <b>Сообщение от клиента</b> {html.escape(frm.get('first_name', ''))}\n"
+                          f"«{html.escape(text)}»\n"
+                          f"{_client_line(frm, chat_id)}")},
+                {"t": "send", "chat": chat_id,
+                 "text": "Передал оценщику — он ответит здесь. А пока можно оценить технику 👇",
+                 "btn": [[("▶️ Оценить технику", "go:family")]]},
+            ]
+
         # прочее
         return [{"t": "send", "chat": chat_id,
                  "text": "Нажмите «Оценить технику», чтобы начать 👇",
