@@ -9,6 +9,8 @@ import BlogPreview from "@/components/BlogPreview";
 import SEOContent from "@/components/SEOContent";
 import LeadForm from "@/components/LeadForm";
 import { faqData } from "@/lib/schema";
+import PopularBuyoutPrices from "@/components/sell/PopularBuyoutPrices";
+import { POPULAR_MODELS } from "@/lib/model-slugs";
 
 export const metadata: Metadata = {
   title: { absolute: 'BestMac — Честный выкуп и продажа MacBook в Москве с гарантией' },
@@ -22,6 +24,12 @@ export default function HomePage() {
       <Hero />
       <AboutSection />
       <OffersSection />
+
+      {/* Цены выкупа популярных моделей в HTML главной — главной точки входа
+          на сайт; раньше цифр выкупа на ней не было вовсе. */}
+      <div className="apple-container max-w-4xl pt-12">
+        <PopularBuyoutPrices slugs={POPULAR_MODELS.map((m) => m.slug)} allLink />
+      </div>
       <Reviews />
       <SEOContent />
 
