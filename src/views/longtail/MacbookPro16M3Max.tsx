@@ -159,7 +159,7 @@ const MacbookPro16M3Max = () => {
                     </a>
                   </Button>
                   <Button variant="outline" className="w-full" asChild>
-                    <a href="tel:+79999999999">Позвонить</a>
+                    <a href="tel:+79032990029">Позвонить</a>
                   </Button>
                 </div>
               </Card>

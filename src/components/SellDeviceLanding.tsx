@@ -5,7 +5,6 @@ import Link from "next/link";
 import { MessageCircle, CheckCircle2, Shield, Clock, MapPin, Calculator } from "lucide-react";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
-import { trackContactClick } from "@/components/Analytics";
 import { generateLocalBusinessSchema, generateProductSchema } from "@/lib/structured-data";
 
 interface SellDeviceLandingProps {
@@ -79,7 +78,6 @@ const SellDeviceLanding = ({
                                     href="https://t.me/romanmanro"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    onClick={() => trackContactClick('telegram')}
                                     className="flex items-center justify-center gap-2"
                                 >
                                     <MessageCircle className="w-5 h-5" />
@@ -96,7 +94,6 @@ const SellDeviceLanding = ({
                                     href="https://wa.me/79032990029"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    onClick={() => trackContactClick('whatsapp')}
                                     className="flex items-center justify-center gap-2"
                                 >
                                     <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current" xmlns="http://www.w3.org/2000/svg">
