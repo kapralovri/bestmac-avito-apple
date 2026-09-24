@@ -172,6 +172,18 @@ bot.handle_update({"update_id": 32, "message": {"chat": {"id": 889}, "text": "/s
 check("главная → /", bot.users["889"].get("source") == "/")
 
 
+# ─── 6. Ответ клиента после /reply доходит до оценщика ──────────────────────────
+print("\n[6] Переписка: текст клиента вне шагов оценки → оценщику")
+bot.users["777"]["step"] = "done"
+acts = bot.handle_update({"update_id": 40, "message": {"chat": {"id": 777},
+                          "from": {"id": 777, "first_name": "ritiki", "username": "ritiki_r"}, "text": "Хочу 80 тысяч"}})
+to_leads = [a for a in acts if a["t"] == "send" and a["chat"] == LEADS]
+check("ответ клиента переслан оценщику", any("Хочу 80 тысяч" in a["text"] for a in to_leads))
+check("с подсказкой /reply и @username", any("/reply 777" in a["text"] and "@ritiki_r" in a["text"] for a in to_leads))
+to_client = [a for a in acts if a["t"] == "send" and a["chat"] == 777]
+check("клиенту — «передал оценщику»", any("оценщик" in a["text"].lower() for a in to_client))
+
+
 print()
 if _fails:
     print(f"❌ ПРОВАЛЕНО {len(_fails)}: " + "; ".join(_fails))
