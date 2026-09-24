@@ -118,6 +118,44 @@ client_msg = [a for a in acts if a["t"] == "send" and a["chat"] == CHAT]
 check("клиенту — подтверждение + реф-ссылка", any("Заявка принята" in s["text"] and "ref_" in s["text"] for s in client_msg))
 
 
+# ─── 3. Шаг контакта: не номер → переспросить, текст — оценщику ────────────────
+print("\n[3] Контакт: проверка номера и связь с клиентом")
+
+
+def at_contact(chat):
+    bot.users[str(chat)] = {"step": "contact", "model": MODEL, "ram": 8, "ssd": 256, "condition": "A",
+                            "has_charger": True, "has_box": True, "icloud_blocked": False, "photos": []}
+
+
+C2 = 777
+at_contact(C2)
+acts = bot.handle_update({"update_id": 20, "message": {"chat": {"id": C2},
+                          "from": {"id": C2, "first_name": "ritiki", "username": "ritiki_r"}, "text": "Мало не"}})
+leads = [a for a in acts if a["t"] == "send" and a["chat"] == LEADS]
+check("текст без номера — заявка не создаётся", not any("ЗАЯВКА НА ВЫКУП" in a["text"] for a in leads))
+check("оценщику уходит комментарий клиента", any("Мало не" in a["text"] for a in leads))
+check("в комментарии — как связаться: @username и ID", any("@ritiki_r" in a["text"] and "777" in a["text"] for a in leads))
+ask = [a for a in acts if a["t"] == "send" and a["chat"] == C2]
+check("клиента переспрашивают номер с кнопкой", any(a.get("contact") and "номер" in a["text"].lower() for a in ask))
+check("шаг остаётся contact", bot.users[str(C2)]["step"] == "contact")
+
+acts = bot.handle_update({"update_id": 21, "message": {"chat": {"id": C2},
+                          "from": {"id": C2, "first_name": "ritiki", "username": "ritiki_r"}, "text": "8 903 123-45-67"}})
+leads = [a for a in acts if a["t"] == "send" and a["chat"] == LEADS]
+check("номер текстом принимается", any("ЗАЯВКА НА ВЫКУП" in a["text"] and "8 903 123-45-67" in a["text"] for a in leads))
+check("в заявке — Telegram клиента и ID для /reply",
+      any("@ritiki_r" in a["text"] and "/reply 777" in a["text"] for a in leads))
+
+# ─── 4. /reply из чата заявок → сообщение клиенту от имени бота ───────────────
+print("\n[4] /reply: ответ клиенту через бота")
+acts = bot.handle_update({"update_id": 22, "message": {"chat": {"id": int(LEADS)}, "text": "/reply 777 Здравствуйте! Какую цену ждёте?"}})
+to_client = [a for a in acts if a["t"] == "send" and str(a["chat"]) == "777"]
+check("текст ушёл клиенту", any("Какую цену ждёте?" in a["text"] for a in to_client))
+check("оценщику подтверждение", any(a["t"] == "send" and str(a["chat"]) == LEADS and "Отправлено" in a["text"] for a in acts))
+acts = bot.handle_update({"update_id": 23, "message": {"chat": {"id": 12345}, "text": "/reply 777 спам"}})
+check("/reply из чужого чата не пересылается", not any(str(a.get("chat")) == "777" for a in acts))
+
+
 print()
 if _fails:
     print(f"❌ ПРОВАЛЕНО {len(_fails)}: " + "; ".join(_fails))
