@@ -42,7 +42,7 @@ const GeoLanding = ({ district, metroStation, slug, nearbyAreas, landmarks, cust
     },
     {
       question: "Какие устройства вы скупаете?",
-      answer: "Мы покупаем MacBook Pro, MacBook Air, iMac, Mac mini, Mac Pro, iPhone и iPad любых моделей и в любом состоянии — от идеального до неисправного."
+      answer: "Мы покупаем MacBook Pro, MacBook Air, iMac, Mac mini, Mac Studio и Mac Pro любых моделей и в любом состоянии — от идеального до неисправного."
     },
     {
       question: "Как быстро я получу деньги?",
@@ -96,7 +96,7 @@ const GeoLanding = ({ district, metroStation, slug, nearbyAreas, landmarks, cust
     ]
   };
 
-  const desc = customDescription || `Скупка MacBook, iMac, iPhone в ${place} (м. ${metroStation}). Выезд курьера бесплатно, оценка за 5 минут, оплата на месте. Работаем ежедневно.`;
+  const desc = customDescription || `Скупка MacBook, iMac и Mac mini в ${place} (м. ${metroStation}). Выезд курьера бесплатно, оценка за 5 минут, оплата на месте. Работаем ежедневно.`;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -218,7 +218,7 @@ const GeoLanding = ({ district, metroStation, slug, nearbyAreas, landmarks, cust
           <h2 className="text-2xl font-bold mb-4">Скупка техники Apple в {place}</h2>
           <p className="text-muted-foreground">
             BestMac — профессиональный сервис выкупа техники Apple в Москве и Подмосковье. Если вы живёте или работаете
-            в {place} (рядом м. {metroStation}), вы можете продать свой MacBook, iMac или iPhone быстро и выгодно.
+            в {place} (рядом м. {metroStation}), вы можете продать свой MacBook, iMac или Mac mini быстро и выгодно.
             Наш офис расположен на ул. Дениса Давыдова 3, в нескольких минутах от метро Киевская.
           </p>
           <p className="text-muted-foreground">

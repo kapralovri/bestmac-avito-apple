@@ -13,8 +13,8 @@ import PopularBuyoutPrices from "@/components/sell/PopularBuyoutPrices";
 import { POPULAR_MODELS } from "@/lib/model-slugs";
 
 export const metadata: Metadata = {
-  title: { absolute: 'BestMac — Честный выкуп и продажа MacBook в Москве с гарантией' },
-  description: 'Купить или продать MacBook б/у в Москве с гарантией 1 месяц. Официальная скупка MacBook, iMac, iPhone через ИП. Дорогомилово, Киевская, ЦАО. Онлайн-калькулятор оценки, выезд на дом.',
+  title: { absolute: 'BestMac — скупка и продажа макбуков в Москве с гарантией' },
+  description: 'Продать или сдать макбук в Москве по цене рынка: скупка MacBook, iMac, Mac mini и Mac Studio через ИП, онлайн-калькулятор оценки, выезд на дом. Продажа б/у MacBook с гарантией 1 месяц. Офис у м. Киевская.',
   alternates: { canonical: '/' },
 };
 
