@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import SellSeries from '@/views/sell/SellSeries';
 import SellMacbookProSeo from '@/components/seo/SellMacbookProSeo';
 import { loadAvitoPricesServer } from '@/lib/server-prices';
+import FamilyModelLinks from '@/components/sell/FamilyModelLinks';
 
 export const metadata: Metadata = {
   title: 'Выкуп MacBook Pro в Москве дорого — цены сегодня (14/16, M1–M5)',
@@ -14,6 +15,7 @@ export default async function SellMacbookProPage() {
   return (
     <>
       <SellSeries series="pro" />
+      <FamilyModelLinks family="MacBook Pro" />
       {data && <SellMacbookProSeo data={data} />}
     </>
   );
