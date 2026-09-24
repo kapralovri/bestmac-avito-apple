@@ -22,7 +22,7 @@ const ICONS: Record<string, LucideIcon> = {
 
 // prices — серверный блок «Сколько мы платим сейчас» (PopularBuyoutPrices),
 // передаётся со страницы: клиентский компонент сам на сервере не отрисует цены.
-const VykupLanding = ({ landing, prices }: { landing: VykupLandingConfig; prices?: React.ReactNode }) => {
+const VykupLanding = ({ landing, prices, reviews }: { landing: VykupLandingConfig; prices?: React.ReactNode; reviews?: React.ReactNode }) => {
   const breadcrumbItems = [
     { name: "Главная", url: "/" },
     { name: "Продать", url: "/sell" },
@@ -115,6 +115,8 @@ const VykupLanding = ({ landing, prices }: { landing: VykupLandingConfig; prices
             <BuyoutTable />
           </section>
         )}
+
+        {reviews}
 
         {/* FAQ */}
         <section className="mb-12">

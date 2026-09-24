@@ -3,7 +3,7 @@ import Hero from "@/components/Hero";
 import AboutSection from "@/components/AboutSection";
 import ContactSection from "@/components/ContactSection";
 import OffersSection from "@/components/OffersSection";
-import Reviews from "@/components/Reviews";
+import AvitoReviews from "@/components/AvitoReviews";
 import FAQ from "@/components/FAQ";
 import BlogPreview from "@/components/BlogPreview";
 import SEOContent from "@/components/SEOContent";
@@ -30,7 +30,7 @@ export default function HomePage() {
       <div className="apple-container max-w-4xl pt-12">
         <PopularBuyoutPrices slugs={POPULAR_MODELS.map((m) => m.slug)} allLink />
       </div>
-      <Reviews />
+      <AvitoReviews />
       <SEOContent />
 
       <section className="apple-section bg-card/30">

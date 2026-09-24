@@ -17,6 +17,7 @@ import { buildSellModelPrices, buildModelFaq, ageDays } from '@/lib/sell-prices'
 import { FAMILY_FAQ } from '@/data/family-faq';
 import SellModel from '@/views/SellModel';
 import SellPriceBlock from '@/components/sell/SellPriceBlock';
+import AvitoReviews from '@/components/AvitoReviews';
 
 interface AvitoUrlsData {
   entries: Array<{ model_name: string }>;
@@ -133,6 +134,8 @@ export default async function SellModelPage({
       />
 
       <SellPriceBlock shortName={shortName} prices={prices} updatedLabel={updatedLabel} cenyHref={cenyHref} />
+
+      <AvitoReviews limit={3} />
 
       {/* Серверный FAQ: вопросы модели из данных + блок семейства (GST-78). */}
       <section className="container mx-auto px-4 pb-16">
