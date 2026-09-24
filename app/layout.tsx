@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     default: 'BestMac — Честный выкуп и продажа MacBook в Москве с гарантией',
     template: '%s | BestMac',
   },
-  description: 'Купить или продать MacBook б/у в Москве с гарантией. Скупка MacBook, iMac, iPhone. Дорогомилово, Киевская, ЦАО.',
+  description: 'Продать или купить б/у макбук в Москве с гарантией. Скупка MacBook, iMac, Mac mini и Mac Studio. Дорогомилово, м. Киевская.',
   openGraph: {
     type: 'website',
     locale: 'ru_RU',

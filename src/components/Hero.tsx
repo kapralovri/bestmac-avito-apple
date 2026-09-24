@@ -91,9 +91,9 @@ const Hero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            <span className="text-gradient">Выкуп и продажа</span>
+            <span className="text-gradient">Скупка и продажа</span>
             <br />
-            <span className="text-gradient-blue">MacBook в Москве</span>
+            <span className="text-gradient-blue">макбуков в Москве</span>
           </motion.h1>
 
           {/* Subtitle — стартует видимым (opacity:1), чтобы текст был в HTML без JS */}
@@ -103,7 +103,7 @@ const Hero = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.8 }}
           >
-            Честная скупка и продажа б/у техники Apple — MacBook, iMac, iPhone.
+            Честная скупка и продажа б/у техники Apple — MacBook, iMac, Mac mini и Mac Studio.
             <br className="hidden sm:block" />
             Гарантия · Проверка · Документы · Выгодно
           </motion.p>

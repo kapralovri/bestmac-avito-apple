@@ -235,7 +235,7 @@ export default function BuyNewSeo({ data }: { data: NewProductsSeoData }) {
             выдаче. Гарантийный срок Apple отсчитывается именно с даты активации.
           </p>
 
-          <h4 className="text-lg font-semibold mb-2">Можно ли сдать старый Mac или iPhone в счёт нового?</h4>
+          <h4 className="text-lg font-semibold mb-2">Можно ли сдать старый Mac в счёт нового?</h4>
           <p className="mb-6 leading-relaxed text-muted-foreground">
             Да, это наш профильный сценарий. Оцените устройство в <Link className="text-primary hover:underline" href="/sell">калькуляторе выкупа</Link> —
             расчёт идёт по свежим рыночным ценам, которые мы ежедневно собираем

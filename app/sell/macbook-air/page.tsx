@@ -5,8 +5,8 @@ import { loadAvitoPricesServer } from '@/lib/server-prices';
 import FamilyModelLinks from '@/components/sell/FamilyModelLinks';
 
 export const metadata: Metadata = {
-  title: 'Выкуп MacBook Air в Москве дорого — цены сегодня (M1–M4)',
-  description: 'Выкуп MacBook Air 13 и 15 (M1, M2, M3, M4) в Москве до 80% от рынка. Таблица цен обновляется ежедневно по объявлениям Авито. Оценка за 30 секунд, деньги сразу.',
+  title: 'Продать макбук эйр в Москве — скупка MacBook Air, цены сегодня',
+  description: 'Продать макбук эйр (MacBook Air 13 и 15, M1–M4) в Москве до 80% от рынка. Таблица цен обновляется ежедневно по объявлениям Авито. Оценка за 30 секунд, деньги сразу.',
   alternates: { canonical: '/sell/macbook-air' },
 };
 

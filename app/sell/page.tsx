@@ -4,9 +4,9 @@ import SellPricesSeo from '@/components/SellPricesSeo';
 import { loadAvitoPricesServer } from '@/lib/server-prices';
 
 export const metadata: Metadata = {
-  title: 'Выкуп MacBook в Москве дорого — оценка онлайн за 30 секунд',
+  title: 'Продать макбук в Москве дорого — скупка MacBook, оценка за 30 секунд',
   description:
-    'Выкуп MacBook (Air, Pro), iMac и Mac mini в Москве до 80% от рынка. Цены обновляются ежедневно по 3000+ объявлениям Авито. Онлайн-калькулятор, деньги за 30 минут, выезд по Москве.',
+    'Продать или сдать макбук (MacBook Air, Pro), iMac и Mac mini в Москве до 80% от рынка. Скупка макбуков по ценам Авито, которые обновляются ежедневно. Онлайн-калькулятор, деньги за 30 минут, выезд по Москве.',
   alternates: { canonical: '/sell' },
 };
 

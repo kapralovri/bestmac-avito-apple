@@ -321,7 +321,7 @@ const Sell = ({ initialData = null }: SellProps) => {
             transition={{ duration: 0.5 }}
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Выкуп MacBook в Москве дорого
+              Продать макбук в Москве дорого
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
               Узнайте реальную рыночную стоимость в онлайн-калькуляторе.
