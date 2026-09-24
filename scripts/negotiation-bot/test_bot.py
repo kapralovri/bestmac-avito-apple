@@ -413,6 +413,17 @@ acts = msg(777, "88000")
 check("после /cancel число не создаёт подписку", load_subscriptions(_subs_path) == {})
 
 
+
+print("\n[15] /review — готовое сообщение клиенту с просьбой об отзыве")
+from bot import REVIEW_URL
+for _cmd in ("/review", "/otzyv", "/отзыв"):
+    _s = find_send(msg(777, _cmd))
+    _all = " ".join(a.get("text", "") for a in _s)
+    check(f"{_cmd}: есть ссылка на отзыв в Яндекс Картах", REVIEW_URL in _all)
+check("ссылка ведёт на форму отзыва карточки BestMac",
+      REVIEW_URL == "https://yandex.ru/maps/org/215912324656/reviews/?add-review=true")
+check("/review в меню команд", any(c == "review" for c, _ in BOT_COMMANDS))
+
 print()
 if _fails:
     print(f"❌ ПРОВАЛЕНО {len(_fails)}: " + "; ".join(_fails))
