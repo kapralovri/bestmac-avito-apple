@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import SellImac from '@/views/sell/SellImac';
 import SellImacSeo from '@/components/seo/SellImacSeo';
 import { loadAvitoPricesServer } from '@/lib/server-prices';
+import FamilyModelLinks from '@/components/sell/FamilyModelLinks';
 
 export const metadata: Metadata = {
   title: 'Выкуп iMac в Москве дорого — цены сегодня, выезд и вывоз',
@@ -14,6 +15,7 @@ export default async function SellImacPage() {
   return (
     <>
       <SellImac />
+      <FamilyModelLinks family="iMac" />
       {data && <SellImacSeo data={data} />}
     </>
   );
