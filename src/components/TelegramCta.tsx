@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { botStartParam } from '@/lib/bot-start';
 
 const BOT_URL = 'https://t.me/thebestmac_bot';
 
@@ -11,6 +13,8 @@ const BOT_URL = 'https://t.me/thebestmac_bot';
  */
 export default function TelegramCta() {
   const [show, setShow] = useState(false);
+  // Метка страницы: бот покажет её в заявке («С сайта: /sell/…»).
+  const href = `${BOT_URL}?start=${botStartParam(usePathname() || '/')}`;
 
   useEffect(() => {
     // показываем с задержкой, чтобы не мешать LCP
@@ -33,7 +37,7 @@ export default function TelegramCta() {
 
   return (
     <a
-      href={BOT_URL}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
       onClick={handleClick}
