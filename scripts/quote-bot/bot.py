@@ -117,6 +117,23 @@ class TelegramTransport:
         return self._post("answerCallbackQuery", {"callback_query_id": cb_id, "text": text or ""})
 
 
+def _looks_like_phone(text: str) -> bool:
+    """Номер — от 10 цифр. Раньше шаг контакта принимал любой текст, и заявка
+    приходила с «📞 Мало не» — без способа связаться с клиентом."""
+    return sum(ch.isdigit() for ch in text or "") >= 10
+
+
+def _client_line(frm: dict, chat_id) -> str:
+    """Как связаться с клиентом из Telegram: @username (если есть) или ссылка на
+    профиль, плюс ID для ответа через бота командой /reply."""
+    frm = frm or {}
+    if frm.get("username"):
+        who = f"@{html.escape(frm['username'])}"
+    else:
+        who = f'<a href="tg://user?id={chat_id}">профиль</a>'
+    return f"💬 Telegram: {who} • ответить через бота: <code>/reply {chat_id} текст</code>"
+
+
 def _load_json(path, default):
     try:
         with open(path, encoding="utf-8") as f:
@@ -205,6 +222,18 @@ class QuoteBot:
         chat_id = msg.get("chat", {}).get("id")
         if not chat_id:
             return []
+
+        # /reply <id> <текст> — оценщик отвечает клиенту из чата заявок от имени
+        # бота: у заявки из Telegram может не быть телефона, а написать клиенту
+        # напрямую можно не всегда (скрытый username).
+        text0 = (msg.get("text") or "").strip()
+        if self.leads_chat and str(chat_id) == str(self.leads_chat) and text0.startswith("/reply"):
+            parts = text0.split(maxsplit=2)
+            if len(parts) < 3 or not parts[1].lstrip("-").isdigit():
+                return [{"t": "send", "chat": chat_id, "text": "Формат: /reply ID текст"}]
+            return [{"t": "send", "chat": int(parts[1]), "text": html.escape(parts[2])},
+                    {"t": "send", "chat": chat_id, "text": f"✅ Отправлено клиенту {parts[1]}"}]
+
         u = self._u(chat_id)
 
         # фото — принимаем на любом шаге
@@ -229,10 +258,27 @@ class QuoteBot:
             return [{"t": "send", "chat": chat_id, "text": g_text, "btn": g_btn}]
 
         if u.get("step") == "contact" and (contact or text):
-            phone = contact.get("phone_number") if contact else text
-            name = (contact.get("first_name", "") if contact else
-                    msg.get("from", {}).get("first_name", ""))
-            return self._finish(chat_id, u, phone, name)
+            frm = msg.get("from", {})
+            if contact or _looks_like_phone(text):
+                phone = contact.get("phone_number") if contact else text
+                name = contact.get("first_name", "") if contact else frm.get("first_name", "")
+                return self._finish(chat_id, u, phone, name, frm)
+            # Не номер — это ответ клиента («мало», вопрос). Передаём оценщику
+            # вместе со способом связаться и переспрашиваем номер.
+            acts = []
+            if self.leads_chat:
+                acts.append({"t": "send", "chat": self.leads_chat,
+                             "text": (f"💬 <b>Клиент на шаге контакта написал вместо номера</b>\n"
+                                      f"💻 {html.escape(u.get('model', '?'))} • {u.get('ram')}/{u.get('ssd')} ГБ\n"
+                                      f"«{html.escape(text)}»\n"
+                                      f"👤 {html.escape(frm.get('first_name', ''))}\n"
+                                      f"{_client_line(frm, chat_id)}")})
+            acts.append({"t": "send", "chat": chat_id,
+                         "text": ("Спасибо, передал оценщику 🙌\n\n"
+                                  "Чтобы он мог связаться и обсудить цену, нажмите "
+                                  "«📞 Отправить мой номер» или напишите номер цифрами."),
+                         "contact": True})
+            return acts
 
         # прочее
         return [{"t": "send", "chat": chat_id,
@@ -324,7 +370,7 @@ class QuoteBot:
                      "text": "Оцените состояние корпуса/экрана:", "btn": rows})
         self._save(); return acts
 
-    def _finish(self, chat_id, u, phone, name):
+    def _finish(self, chat_id, u, phone, name, frm=None):
         q = estimate(self.cat, u["model"], u["ram"], u["ssd"], condition=u["condition"],
                      has_charger=u["has_charger"], has_box=u["has_box"],
                      icloud_blocked=u["icloud_blocked"])
@@ -338,6 +384,7 @@ class QuoteBot:
             f" • {'iCloud привязан' if u['icloud_blocked'] else 'iCloud отвязан'}\n"
             f"💰 Предв. оценка: <b>{q.vilka()}</b>\n"
             f"👤 {html.escape(name or '')} • 📞 {html.escape(str(phone))}\n"
+            f"{_client_line(frm, chat_id)}\n"
             f"📷 Фото: {len(u['photos'])}{ref_line}"
         )
         acts = []
