@@ -156,6 +156,22 @@ acts = bot.handle_update({"update_id": 23, "message": {"chat": {"id": 12345}, "t
 check("/reply из чужого чата не пересылается", not any(str(a.get("chat")) == "777" for a in acts))
 
 
+# ─── 5. Метка страницы сайта из /start site_… → в заявке ───────────────────────
+print("\n[5] Источник: страница сайта в заявке")
+C3 = 888
+bot.handle_update({"update_id": 30, "message": {"chat": {"id": C3}, "text": "/start site_sell_mac-mini-2024-m4"}})
+check("метка страницы сохранена", bot.users[str(C3)].get("source") == "/sell/mac-mini-2024-m4")
+src_saved = bot.users[str(C3)]["source"]
+at_contact(C3)
+bot.users[str(C3)]["source"] = src_saved
+acts = bot.handle_update({"update_id": 31, "message": {"chat": {"id": C3}, "from": {"id": C3, "first_name": "A"},
+                          "contact": {"phone_number": "+79990000001", "first_name": "A"}}})
+leads = [a for a in acts if a["t"] == "send" and a["chat"] == LEADS]
+check("в заявке — страница сайта", any("С сайта: /sell/mac-mini-2024-m4" in a["text"] for a in leads))
+bot.handle_update({"update_id": 32, "message": {"chat": {"id": 889}, "text": "/start site"}})
+check("главная → /", bot.users["889"].get("source") == "/")
+
+
 print()
 if _fails:
     print(f"❌ ПРОВАЛЕНО {len(_fails)}: " + "; ".join(_fails))

@@ -252,6 +252,10 @@ class QuoteBot:
             parts = text.split(maxsplit=1)
             if len(parts) > 1 and parts[1].startswith("ref_"):
                 u["ref"] = parts[1][4:]
+            # Кнопка на сайте передаёт страницу: site_sell_mac-mini → /sell/mac-mini
+            u.pop("source", None)
+            if len(parts) > 1 and (parts[1] == "site" or parts[1].startswith("site_")):
+                u["source"] = "/" + "/".join(parts[1].split("_")[1:])
             u["step"] = "new"
             self._save()
             g_text, g_btn = self._greet()
@@ -375,6 +379,8 @@ class QuoteBot:
                      has_charger=u["has_charger"], has_box=u["has_box"],
                      icloud_blocked=u["icloud_blocked"])
         ref_line = f"\n🔗 Пришёл по рефералу: {u['ref']}" if u.get("ref") else ""
+        if u.get("source"):
+            ref_line += f"\n🌐 С сайта: {html.escape(u['source'])}"
         lead = (
             "🆕 <b>ЗАЯВКА НА ВЫКУП</b>\n"
             f"💻 {html.escape(u.get('model','?'))} • {u.get('ram')}/{u.get('ssd')} ГБ\n"
