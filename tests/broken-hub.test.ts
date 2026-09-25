@@ -28,3 +28,11 @@ test('без выдуманных сумм ремонта', () => {
   const all = [...BROKEN_SECTIONS.map((s) => s.text), BROKEN_PRICING, ...BROKEN_FAQ.map((f) => f.answer)].join(' ');
   assert.ok(!/\d[\d\s]*₽|руб/.test(all));
 });
+
+test('заблокированные — только с подтверждением, что устройство ваше', () => {
+  const section = BROKEN_SECTIONS.find((s) => s.id === 'blokirovka')!;
+  const faq = BROKEN_FAQ.find((f) => f.question.includes('заблокированные'))!;
+  for (const text of [section.text, faq.answer]) {
+    assert.match(text, /подтвердить, что (Mac|устройство) ваш/, text);
+  }
+});
