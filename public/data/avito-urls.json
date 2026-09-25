@@ -1,6 +1,6 @@
 {
   "description": "Опции дропдаунов фронта. Автогенерируется парсером.",
-  "updated_at": "2026-09-23",
+  "updated_at": "2026-09-25",
   "entries": [
     {
       "family": "",
@@ -699,6 +699,14 @@
       "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
     },
     {
+      "family": "Mac mini",
+      "model_name": "Mac mini M5 Pro",
+      "processor": "Apple M5 Pro",
+      "ram": 64,
+      "ssd": 1024,
+      "url": "https://www.avito.ru/moskva_i_mo/nastolnye_kompyutery?f=ASgBAgICAUSwsxT~oY8D&localPriority=0&q=mac+mini+m1"
+    },
+    {
       "family": "MacBook",
       "model_name": "MacBook Air 13 (2020, M1)",
       "processor": "Apple M1",
@@ -1388,6 +1396,14 @@
     },
     {
       "family": "MacBook Air",
+      "model_name": "MacBook Air M1",
+      "processor": "Apple M1",
+      "ram": 8,
+      "ssd": 512,
+      "url": ""
+    },
+    {
+      "family": "MacBook Air",
       "model_name": "MacBook Air M4",
       "processor": "Apple M4",
       "ram": 16,
@@ -1432,6 +1448,14 @@
       "processor": "Apple M5",
       "ram": 16,
       "ssd": 1024,
+      "url": ""
+    },
+    {
+      "family": "MacBook Pro",
+      "model_name": "MacBook Pro 14 M5",
+      "processor": "Apple M5",
+      "ram": 24,
+      "ssd": 512,
       "url": ""
     },
     {
