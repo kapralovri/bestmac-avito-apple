@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import SellBroken from '@/views/sell/SellBroken';
+import SellBrokenHub from '@/views/sell/SellBrokenHub';
 
 export const metadata: Metadata = {
   title: 'Продать сломанный макбук — скупка неисправных MacBook в Москве',
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function SellBrokenPage() {
-  return <SellBroken />;
+  return <SellBrokenHub />;
 }
