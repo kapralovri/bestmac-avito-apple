@@ -1,11 +1,15 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import localFont from 'next/font/local';
 import Script from 'next/script';
 import './globals.css';
 
-const inter = Inter({
-  subsets: ['latin', 'cyrillic'],
-  weight: ['400', '500', '600', '700'],
+// Inter хранится в репозитории (латиница + кириллица, переменный 400–700), а не
+// скачивается с Google Fonts при сборке: Turbopack в Next 16 иногда падает на
+// ответе Google (vercel/next.js#99114) — так упала сборка PR #47.
+const inter = localFont({
+  src: '../src/fonts/inter-latin-cyrillic.woff2',
+  weight: '400 700',
+  style: 'normal',
   display: 'swap',
 });
 import Header from '@/components/Header';
