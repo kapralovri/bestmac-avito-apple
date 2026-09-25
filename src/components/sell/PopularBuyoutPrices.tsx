@@ -9,8 +9,13 @@ import { modelPriceSummaries, formatRub } from '@/lib/sell-prices';
  * выкупа без цифр. Здесь — «до X ₽» по моделям с надёжными ценами (правило
  * GST-78) и ссылки на страницы моделей.
  */
+const DEFAULT_INTRO =
+  'Цена выкупа за самую дорогую конфигурацию модели, по которой у нас надёжные данные: свежие '
+  + 'объявления Авито или наши сделки. Точную сумму за ваш Mac назовём по фото за 15 минут.';
+
 export default async function PopularBuyoutPrices(
-  { slugs, allLink = false }: { slugs?: string[]; allLink?: boolean } = {},
+  { slugs, allLink = false, title = 'Сколько мы платим сейчас', intro = DEFAULT_INTRO }:
+  { slugs?: string[]; allLink?: boolean; title?: string; intro?: string } = {},
 ) {
   const data = await loadAvitoPricesServer();
   // slugs — подмножество моделей (главная показывает только популярные).
@@ -18,12 +23,10 @@ export default async function PopularBuyoutPrices(
   const rows = modelPriceSummaries(data?.stats, catalog, new Date());
   if (!rows.length) return null;
   return (
-    <section className="mb-12" id="skolko-platim">
-      <h2 className="text-2xl md:text-3xl font-bold mb-2">Сколько мы платим сейчас</h2>
-      <p className="text-muted-foreground mb-6">
-        Цена выкупа за самую дорогую конфигурацию модели, по которой у нас надёжные данные: свежие
-        объявления Авито или наши сделки. Точную сумму за ваш Mac назовём по фото за 15 минут.
-      </p>
+    // data-shared-block: общий блок нескольких страниц — проверка уникальности (GST-81) его не считает
+    <section className="mb-12" id="skolko-platim" data-shared-block="prices">
+      <h2 className="text-2xl md:text-3xl font-bold mb-2">{title}</h2>
+      <p className="text-muted-foreground mb-6">{intro}</p>
       <div className="grid sm:grid-cols-2 gap-x-8">
         {rows.map((r) => (
           <Link

@@ -692,6 +692,11 @@ const Sell = ({ initialData = null }: SellProps) => {
                       </div>
                     </Link>
                   </div>
+                  <p className="text-center mt-6">
+                    <Link href="/trade-in" className="text-primary underline">
+                      Меняете Mac на другой? Сдайте старый в трейд-ин — доплатим к цене выкупа →
+                    </Link>
+                  </p>
                 </motion.section>
 
                 <motion.section className="grid lg:grid-cols-2 gap-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.25 }}>
