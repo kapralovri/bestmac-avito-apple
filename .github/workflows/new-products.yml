@@ -1,8 +1,11 @@
 name: New Products Parser
 
 on:
-  schedule:
-    - cron: '0 6 * * *'   # каждый день в 09:00 МСК (06:00 UTC)
+  # Расписание на паузе: канал @BigSaleApple не отдаётся веб-версии Telegram,
+  # сборщик с 2 сентября получает 0 позиций и зря перезапускает сборку сайта.
+  # Вернуть: раскомментировать schedule (и снять редирект /buy/new в next.config.ts).
+  # schedule:
+  #   - cron: '0 6 * * *'   # каждый день в 09:00 МСК (06:00 UTC)
   workflow_dispatch:       # ручной запуск
 
 env:
