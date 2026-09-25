@@ -32,6 +32,10 @@ const nextConfig: NextConfig = {
       })),
       // Битые URL, найденные Яндекс.Вебмастером (404 в «Исключённых»)
       { source: '/macbook', destination: '/sell', permanent: true },
+      // Каталог новых Mac на паузе: канал поставщика перестал отдаваться веб-версии
+      // Telegram, и страница с 2 сентября пустая. Временный редирект; чтобы вернуть —
+      // убрать эту строку, вернуть /buy/new в sitemap и расписание new-products.yml.
+      { source: '/buy/new', destination: '/buy', permanent: false },
       // GST-76: склейка страниц, признанных Яндексом малоценными (см. seo-redirects.ts)
       ...Object.entries(PRICE_SLUG_REDIRECTS).map(([from, to]) => ({
         source: `/ceny/${from}`,

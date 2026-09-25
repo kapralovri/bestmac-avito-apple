@@ -38,7 +38,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Main pages
     { url: '/', changeFrequency: 'weekly', priority: 1.0 },
     { url: '/buy', changeFrequency: 'daily', priority: 0.9 },
-    { url: '/buy/new', changeFrequency: 'daily', priority: 0.9 },
+    // /buy/new на паузе (временный редирект на /buy) — каталог новых Mac пуст
     { url: '/sell', changeFrequency: 'daily', priority: 1.0 },
     { url: '/selection', changeFrequency: 'monthly', priority: 0.8 },
     { url: '/service', changeFrequency: 'monthly', priority: 0.8 },
