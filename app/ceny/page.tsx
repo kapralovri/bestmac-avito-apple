@@ -7,11 +7,13 @@ import {
   getPricesGeneratedAt,
 } from '@/lib/price-pages';
 import { generateBreadcrumbSchema } from '@/lib/structured-data';
+import { loadAvitoPricesServer } from '@/lib/server-prices';
+import { CENY_FAQ } from '@/data/ceny-faq';
 
 export const metadata: Metadata = {
-  title: 'Цены на технику Apple б/у в Москве — индекс цен MacBook, iMac, Mac',
+  title: 'Сколько стоит б/у макбук сегодня — цены на MacBook в Москве',
   description:
-    'Актуальные цены на б/у MacBook Air, MacBook Pro, iMac, Mac mini и Mac Studio в Москве. Индекс рыночных цен по данным Авито, обновляется ежедневно.',
+    'Сколько стоит б/у макбук сегодня: цены MacBook Air, MacBook Pro, iMac, Mac mini и Mac Studio в Москве по объявлениям Авито — минимальная, медиана и максимальная. Обновляется ежедневно.',
   alternates: { canonical: '/ceny' },
 };
 
@@ -32,6 +34,16 @@ export default async function PriceIndexPage() {
   const groups = groupByFamily(models);
   const generatedAt = await getPricesGeneratedAt();
   const updated = humanDate(generatedAt);
+  // GST-81: страница отвечает на «сколько стоит б/у макбук» (~250 запросов в месяц по Москве).
+  const listings = (await loadAvitoPricesServer())?.total_listings ?? 0;
+  const faqSchema = {
+    '@type': 'FAQPage',
+    mainEntity: CENY_FAQ.map((f) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  };
 
   const breadcrumb = generateBreadcrumbSchema([
     { name: 'Главная', url: '/' },
@@ -57,7 +69,7 @@ export default async function PriceIndexPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({ '@context': 'https://schema.org', '@graph': [breadcrumb, itemList] }),
+          __html: JSON.stringify({ '@context': 'https://schema.org', '@graph': [breadcrumb, itemList, faqSchema] }),
         }}
       />
 
@@ -70,14 +82,20 @@ export default async function PriceIndexPage() {
           </nav>
 
           <h1 className="text-3xl md:text-4xl font-bold mb-4">
-            Цены на технику Apple б/у в Москве
+            Сколько стоит б/у макбук сегодня
           </h1>
 
+          <p className="text-muted-foreground leading-relaxed mb-3 max-w-3xl">
+            Цена б/у макбука зависит от модели, чипа, памяти и диска. Здесь — цены продажи
+            MacBook Air, MacBook Pro, iMac, Mac mini и Mac Studio в Москве
+            {listings > 0 ? ` по ${listings.toLocaleString('ru-RU')} объявлениям Авито` : ' по объявлениям Авито'}:
+            минимальная, медиана и максимальная по каждой модели. Выберите модель, чтобы увидеть
+            цену по конфигурациям.
+          </p>
           <p className="text-muted-foreground leading-relaxed mb-2 max-w-3xl">
-            Индекс актуальных рыночных цен на подержанные MacBook Air, MacBook Pro, iMac,
-            Mac mini и Mac Studio. Цены рассчитаны по объявлениям Авито в Москве:
-            минимальная, медианная и максимальная стоимость по каждой модели.
-            Выберите модель, чтобы увидеть цену по конфигурациям (процессор, память, накопитель).
+            Цена продажи на Авито и цена выкупа — разные вещи: объявление показывает, за сколько хотят
+            продать, а скупка платит сразу и берёт на себя проверку и риски. Цену выкупа вашего Mac
+            покажет <Link href="/sell" className="text-primary hover:underline">калькулятор выкупа</Link>.
           </p>
           {updated && (
             <p className="text-sm text-muted-foreground mb-8">
@@ -136,6 +154,18 @@ export default async function PriceIndexPage() {
               Ищете, что купить? Смотрите{' '}
               <Link href="/buy" className="text-primary hover:underline">каталог MacBook б/у с гарантией</Link>.
             </p>
+          </section>
+
+          <section className="mt-12">
+            <h2 className="text-2xl font-bold mb-6">Частые вопросы о ценах на б/у макбуки</h2>
+            <div className="space-y-4">
+              {CENY_FAQ.map((f) => (
+                <div key={f.question} className="bg-card border border-border/60 rounded-xl p-5">
+                  <h3 className="font-semibold mb-2">{f.question}</h3>
+                  <p className="text-muted-foreground leading-relaxed">{f.answer}</p>
+                </div>
+              ))}
+            </div>
           </section>
         </div>
       </main>
