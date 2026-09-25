@@ -16,7 +16,7 @@ function ratingsWord(n: number): string {
 export default function AvitoReviews({ limit = 6 }: { limit?: number }) {
   const reviews = AVITO_REVIEWS.slice(0, limit);
   return (
-    <section className="py-12">
+    <section className="py-12" data-shared-block="reviews">
       <div className="max-w-5xl mx-auto px-4">
         <div className="text-center mb-8">
           <h2 className="text-2xl md:text-3xl font-bold mb-2">

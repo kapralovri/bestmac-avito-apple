@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 import AvitoOffers from "@/components/AvitoOffers";
 import MarketTrends from "@/components/MarketTrends";
 import FAQ from "@/components/FAQ";
@@ -33,6 +34,11 @@ const Buy = () => {
               Большой выбор проверенной техники Apple с гарантией в районах Дорогомилово, Киевская, ЦАО. 
               Все устройства тщательно протестированы и готовы к использованию. Официальная сделка с документами, 
               самовывоз или доставка по Москве.
+            </p>
+            <p className="mt-4">
+              <Link href="/trade-in" className="text-primary underline">
+                Есть старый Mac? Сдайте его в трейд-ин — доплатим к цене выкупа
+              </Link>
             </p>
           </motion.div>
           <AvitoOffers />

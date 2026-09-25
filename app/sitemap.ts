@@ -86,6 +86,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: '/sell/mac-mini', changeFrequency: 'weekly', priority: 0.7 },
     { url: '/sell/mac-studio', changeFrequency: 'weekly', priority: 0.7 },
     { url: '/sell/broken', changeFrequency: 'weekly', priority: 0.7 },
+    { url: '/trade-in', changeFrequency: 'monthly', priority: 0.8 },
 
     // Sell specific models — генерируются из канонического каталога,
     // чтобы slug в sitemap == маршрут == canonical (без дублей).
