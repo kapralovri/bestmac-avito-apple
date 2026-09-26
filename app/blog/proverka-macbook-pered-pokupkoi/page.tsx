@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import ProverkaMacbookPeredPokupkoi from '@/views/blog/ProverkaMacbookPeredPokupkoi';
 
 export const metadata: Metadata = {
-  title: 'Проверка MacBook перед покупкой — чек-лист',
-  description: 'Как проверить MacBook б/у перед покупкой. Полный чек-лист проверки.',
+  title: 'Как проверить макбук при покупке — чек-лист для б/у и нового MacBook',
+  description: 'Как проверить макбук при покупке с рук и в магазине: серийный номер и оригинальность, корпус и экран, аккумулятор, iCloud и MDM, проверка нового MacBook и на пункте выдачи.',
   alternates: { canonical: '/blog/proverka-macbook-pered-pokupkoi' },
 };
 
