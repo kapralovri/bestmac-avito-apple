@@ -13,7 +13,7 @@ import {
 import { generateBreadcrumbSchema } from '@/lib/structured-data';
 import { loadAvitoPricesServer } from '@/lib/server-prices';
 import { getPriceModelSlugs } from '@/lib/price-pages';
-import { buildSellModelPrices, buildModelFaq, ageDays } from '@/lib/sell-prices';
+import { buildSellModelPrices, buildModelFaq, ageDays, shouldIndexModel } from '@/lib/sell-prices';
 import { FAMILY_FAQ } from '@/data/family-faq';
 import SellModel from '@/views/SellModel';
 import SellPriceBlock from '@/components/sell/SellPriceBlock';
@@ -62,10 +62,15 @@ export async function generateMetadata({
     ? `Узнайте реальную стоимость выкупа вашего ${shortName}. Прозрачная оценка, выплата до 80% от рынка, деньги сразу.`
     : 'Онлайн-оценка стоимости выкупа вашей модели MacBook. Узнайте рыночную цену за 10 секунд и продайте выгодно в BestMac.';
 
+  // GST-79: без надёжных цен страница остаётся для людей, но не для поиска
+  const data = await loadAvitoPricesServer();
+  const indexable = shouldIndexModel(data?.stats, modelMatchFromSlug(model_slug), new Date());
+
   return {
     title,
     description,
     alternates: { canonical: `/sell/${model_slug}` },
+    ...(indexable ? {} : { robots: { index: false, follow: true } }),
   };
 }
 
