@@ -12,6 +12,9 @@ const BLOG_LASTMOD = new Date('2026-03-31');
 const BLOG_LASTMOD_OVERRIDES: Record<string, Date> = {
   '/blog/kak-prodat-macbook-vygodno': new Date('2026-07-03'),
   '/blog/proverka-macbook-pered-pokupkoi': new Date('2026-07-03'),
+  '/blog/kak-sbrosit-macbook-do-zavodskih-nastroek': new Date('2026-09-26'),
+  '/blog/kak-uznat-model-macbook': new Date('2026-09-26'),
+  '/blog/sostoyanie-akkumulyatora-macbook': new Date('2026-09-26'),
 };
 
 // Дата обновления ценовых данных: ценовые страницы реально меняются вместе с ней
@@ -70,6 +73,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: '/blog/macbook-bu-podvodnye', changeFrequency: 'monthly', priority: 0.7 },
     { url: '/blog/macbook-dlia-studenta', changeFrequency: 'monthly', priority: 0.7 },
     { url: '/blog/macbook-apgreid', changeFrequency: 'monthly', priority: 0.7 },
+    { url: '/blog/kak-sbrosit-macbook-do-zavodskih-nastroek', changeFrequency: 'monthly', priority: 0.8 },
+    { url: '/blog/kak-uznat-model-macbook', changeFrequency: 'monthly', priority: 0.7 },
+    { url: '/blog/sostoyanie-akkumulyatora-macbook', changeFrequency: 'monthly', priority: 0.7 },
 
     // Buy longtail
     { url: '/buy/macbook-air-m2-16gb', changeFrequency: 'weekly', priority: 0.7 },

@@ -8,6 +8,33 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 // Метаданные существующих статей (из роутов App.tsx)
 const BLOG_POSTS = [
     {
+        id: "kak-sbrosit-macbook-do-zavodskih-nastroek",
+        title: "Как сбросить MacBook до заводских настроек и подготовить к продаже",
+        description: "Резервная копия, выход из Apple ID и «Локатора», «Стереть контент и настройки» и сброс через режим восстановления — пошагово.",
+        date: "2026-09-26",
+        readTime: "7 мин",
+        category: "Продажа",
+        slug: "/blog/kak-sbrosit-macbook-do-zavodskih-nastroek"
+    },
+    {
+        id: "kak-uznat-model-macbook",
+        title: "Как узнать модель MacBook: три способа",
+        description: "«Об этом Mac», «Информация о системе» и серийный номер — и где посмотреть цену своей модели.",
+        date: "2026-09-26",
+        readTime: "4 мин",
+        category: "Гайды",
+        slug: "/blog/kak-uznat-model-macbook"
+    },
+    {
+        id: "sostoyanie-akkumulyatora-macbook",
+        title: "Состояние аккумулятора MacBook: циклы, ёмкость и цена",
+        description: "Где смотреть циклы и максимальную ёмкость, сколько циклов — норма и как батарея влияет на цену при продаже.",
+        date: "2026-09-26",
+        readTime: "4 мин",
+        category: "Гайды",
+        slug: "/blog/sostoyanie-akkumulyatora-macbook"
+    },
+    {
         id: "zapret-importa-noutbukov-2026",
         title: "Запрет импорта ноутбуков 2026: почему выгоднее MacBook",
         description: "С 27 мая 2026 Минпромторг исключил из параллельного импорта Asus, HP, Acer, Intel, Samsung. Apple не затронут — разбираем, что это значит для покупателей.",
