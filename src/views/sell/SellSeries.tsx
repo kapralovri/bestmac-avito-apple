@@ -160,7 +160,7 @@ const SellSeries = ({ series }: SellSeriesProps) => {
                             </li>
                             <li className="flex items-start gap-2">
                                 <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                                <span>Заблокированные (MDM, EFI, iCloud)</span>
+                                <span>Заблокированные (iCloud, EFI)</span>
                             </li>
                             <li className="flex items-start gap-2">
                                 <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />

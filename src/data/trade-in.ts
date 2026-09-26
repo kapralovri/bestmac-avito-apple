@@ -5,7 +5,7 @@
  * его нет (null), на странице без цифры. Без рантайм-импортов: файл читает
  * `node --test`.
  */
-export const TRADE_IN_BONUS_PERCENT: number | null = null;
+export const TRADE_IN_BONUS_PERCENT: number | null = 10; // задано владельцем 26.09.2026
 
 export function tradeInBonusText(percent: number | null): string {
   if (percent !== null && percent > 0) return `доплатим +${percent}% к цене выкупа вашего Mac`;
