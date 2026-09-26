@@ -10,6 +10,7 @@ const OTHERS = [
   '/vykup/srochno', '/vykup/na-domu-moskva', '/vykup/ocenka-onlajn', '/vykup/zalitogo-macbook',
   '/vykup/zablokirovannogo-macbook', '/vykup/na-zapchasti', '/ceny/macbook-air-13-2022-m2',
   '/blog/kak-prodat-macbook-vygodno', '/blog/proverka-macbook-pered-pokupkoi', '/trade-in', '/sell/broken',
+  '/vykup/dlya-yurlits', '/moskva', '/blog/kak-sbrosit-macbook-do-zavodskih-nastroek',
 ];
 const LIMIT = 0.4;
 

@@ -694,7 +694,7 @@ const Sell = ({ initialData = null }: SellProps) => {
                   </div>
                   <p className="text-center mt-6">
                     <Link href="/trade-in" className="text-primary underline">
-                      Меняете Mac на другой? Сдайте старый в трейд-ин — доплатим к цене выкупа →
+                      Меняете Mac на другой? Сдайте старый в трейд-ин — добавим 10% к цене выкупа →
                     </Link>
                   </p>
                 </motion.section>

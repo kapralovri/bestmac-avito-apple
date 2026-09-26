@@ -37,7 +37,7 @@ const Buy = () => {
             </p>
             <p className="mt-4">
               <Link href="/trade-in" className="text-primary underline">
-                Есть старый Mac? Сдайте его в трейд-ин — доплатим к цене выкупа
+                Есть старый Mac? Сдайте его в трейд-ин — добавим 10% к цене выкупа
               </Link>
             </p>
           </motion.div>
