@@ -293,3 +293,17 @@ export function modelPriceSummaries(
   }
   return out;
 }
+
+// ─── Индексация страниц моделей (GST-79) ─────────────────────────────────────
+// Страницы поколений без надёжных цен (Mac Studio M1/M2, iMac 27 Intel и т.п.)
+// Яндекс исключал как малоценные. Такие страницы остаются на сайте, но с noindex
+// и вне sitemap; как только появятся надёжные данные — вернутся в поиск сами.
+// Если база не прочиталась (null/undefined), ничего не выкидываем из индекса.
+export function shouldIndexModel(
+  stats: AvitoPriceStat[] | null | undefined,
+  match: SellMatch | undefined,
+  now: Date,
+): boolean {
+  if (!stats || !match) return true;
+  return buildSellModelPrices(stats, match, now).reliable.length > 0;
+}

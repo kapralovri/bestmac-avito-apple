@@ -4,6 +4,8 @@ import path from 'path';
 import { VYKUP_LANDINGS } from '@/data/vykup-landings';
 import { GEO_LANDINGS } from '@/data/geo-landings';
 import { ALL_BUYOUT_MODELS } from '@/lib/model-slugs';
+import { loadAvitoPricesServer } from '@/lib/server-prices';
+import { shouldIndexModel } from '@/lib/sell-prices';
 import { getPriceModelSlugs } from '@/lib/price-pages';
 
 // Дата последней правки статей блога (см. dateModified в Article-схемах)
@@ -32,6 +34,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://bestmac.ru';
   const pricesDate = await pricesLastmod();
   const priceModelSlugs = await getPriceModelSlugs();
+  // GST-79: страницы моделей без надёжных цен — noindex, в sitemap их не отдаём
+  const priceStats = (await loadAvitoPricesServer())?.stats;
+  const now = new Date();
 
   const pages: Array<{
     url: string;
@@ -96,7 +101,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // Sell specific models — генерируются из канонического каталога,
     // чтобы slug в sitemap == маршрут == canonical (без дублей).
-    ...ALL_BUYOUT_MODELS.map((m) => ({
+    ...ALL_BUYOUT_MODELS.filter((m) => shouldIndexModel(priceStats, m.match, now)).map((m) => ({
       url: `/sell/${m.slug}`,
       changeFrequency: 'weekly' as const,
       priority: 0.8,
