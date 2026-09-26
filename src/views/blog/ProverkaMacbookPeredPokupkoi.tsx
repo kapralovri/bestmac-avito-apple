@@ -6,10 +6,38 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
+// Вопросы статьи — и в тексте, и в разметке FAQPage (обновлено 26.09.2026 под ядро запросов)
+const PROVERKA_FAQ = [
+  {
+    question: "Сколько циклов батареи — это уже много?",
+    answer: "Для MacBook Air начиная с M1 и современных MacBook Pro Apple указывает ресурс 1000 циклов. До 300 — батарея почти новая, 300–700 — обычный износ, ближе к 1000 — закладывайте замену. Но важнее цифры — максимальная ёмкость и статус: если система пишет «Рекомендуется обслуживание», аккумулятор своё отработал независимо от количества циклов.",
+  },
+  {
+    question: "Можно ли покупать MacBook со следами вскрытия?",
+    answer: "Можно, если продавец сам рассказал, что и зачем менялось: замена батареи или чистка с заменой термопасты — нормальные операции, после которых ноутбук живёт долго. Опасно другое — скрытое вскрытие: если о нём молчали, неизвестно и всё остальное — от неоригинального экрана до следов пролитой жидкости на плате.",
+  },
+  {
+    question: "Серийный номер в системе не совпадает с номером на корпусе — что это значит?",
+    answer: "Чаще всего Mac ремонтировали: меняли плату или нижнюю крышку. Это не обязательно подделка, но такой ноутбук стоит дешевле, а продавец должен объяснить, что и где чинили. Проверяйте на сайте Apple тот номер, который показывает система, — он относится к плате.",
+  },
+  {
+    question: "Как понять, что макбук не краденый?",
+    answer: "Продавец при вас выходит из Apple ID и выключает «Локатор», показывает чек или коробку с тем же серийным номером, что в системе, и не возражает против сброса до заводских настроек. Если блокировка активации остаётся включённой или документы «потерялись» все сразу — не покупайте.",
+  },
+  {
+    question: "Что делать, если после покупки в Mac оказался чужой Apple ID?",
+    answer: "Сразу свяжитесь с продавцом и попросите удалить устройство из аккаунта — это делается удалённо через iCloud.com за пару минут. Если продавец пропал, шансов мало: без пароля и документов о покупке блокировку активации не снимает никто, включая Apple. Именно поэтому проверка iCloud до передачи денег — самый важный пункт всего чек-листа.",
+  },
+  {
+    question: "Продавец торопит и не даёт всё проверить. Это нормально?",
+    answer: "Нет. Честному продавцу выгодно, чтобы вы проверили всё: меньше претензий потом. Настойчивое «давайте побыстрее» именно на этапе проверки iCloud или диагностики — причина отказаться от сделки, а не ускориться.",
+  },
+];
+
 const ProverkaMacbookPeredPokupkoi = () => {
   const breadcrumbItems = [
     { name: "Главная", url: "/" },
-    { name: "Проверка MacBook перед покупкой", url: "/blog/proverka-macbook-pered-pokupkoi" }
+    { name: "Как проверить макбук при покупке", url: "/blog/proverka-macbook-pered-pokupkoi" }
   ];
 
   return (
@@ -18,15 +46,20 @@ const ProverkaMacbookPeredPokupkoi = () => {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify({
     "@context": "https://schema.org",
+    "@graph": [{
     "@type": "Article",
-    "headline": "Проверка MacBook перед покупкой — чек-лист",
-    "description": "Полный чек-лист проверки б/у MacBook перед покупкой с рук: серийный номер, корпус и экран, аккумулятор, iCloud-блокировка, MDM, Apple Diagnostics и красные флаги продавца.",
+    "headline": "Как проверить макбук при покупке: чек-лист для б/у и нового MacBook",
+    "description": "Как проверить макбук при покупке с рук и в магазине: серийный номер и оригинальность, корпус и экран, аккумулятор, iCloud и MDM, проверка нового MacBook и на пункте выдачи.",
     "image": "https://bestmac.ru/og-image.jpg",
     "datePublished": "2025-11-01",
-    "dateModified": "2026-07-03",
+    "dateModified": "2026-09-26",
     "author": { "@type": "Person", "name": "Роман Капралов" },
     "publisher": { "@type": "Organization", "name": "BestMac", "logo": { "@type": "ImageObject", "url": "https://bestmac.ru/favicon.png" } },
     "mainEntityOfPage": { "@type": "WebPage", "@id": "https://bestmac.ru/blog/proverka-macbook-pered-pokupkoi" }
+    }, {
+      "@type": "FAQPage",
+      "mainEntity": PROVERKA_FAQ.map((f) => ({ "@type": "Question", "name": f.question, "acceptedAnswer": { "@type": "Answer", "text": f.answer } })),
+    }],
   }) }}
       />
 <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -44,10 +77,10 @@ const ProverkaMacbookPeredPokupkoi = () => {
           transition={{ duration: 0.6 }}
         >
           <h1 className="text-4xl md:text-5xl font-bold font-apple mb-6">
-            Проверка MacBook перед покупкой: полный чеклист
+            Как проверить макбук при покупке: чек-лист для б/у и нового MacBook
           </h1>
           <p className="text-sm text-muted-foreground mb-4">
-            Автор: Роман Капралов — выкупаю технику Apple с 2018 года · Обновлено 3 июля 2026
+            Автор: Роман Капралов — выкупаю технику Apple с 2018 года · Обновлено 26 сентября 2026
           </p>
           <p className="text-xl text-muted-foreground mb-8">
             Что обязательно нужно проверить при покупке б/у MacBook
@@ -240,6 +273,58 @@ const ProverkaMacbookPeredPokupkoi = () => {
             </section>
 
             <section>
+              <h2 className="text-2xl font-bold mb-4">✅ Как проверить макбук на оригинальность?</h2>
+              <p className="text-muted-foreground mb-4">
+                Поддельный MacBook целиком почти не встречается — чаще попадаются ноутбуки после ремонта
+                с чужими деталями или с «переклеенной» историей. Поэтому оригинальность проверяют через
+                серийный номер:
+              </p>
+              <ul className="list-disc pl-6 space-y-2 mb-4">
+                <li>Серийный номер в «Об этом Mac», на нижней крышке и на коробке должен совпадать.</li>
+                <li>Введите его на сайте Apple в проверке права на обслуживание: модель и год должны совпадать с объявлением.</li>
+                <li>Конфигурация в «Об этом Mac» — чип, память и диск — должна совпадать с наклейкой на коробке.</li>
+                <li>Если номер в системе и на корпусе разный, Mac ремонтировали: меняли плату или крышку. Это не всегда плохо, но цена должна быть ниже, а продавец — объяснить, что меняли.</li>
+              </ul>
+              <p className="text-muted-foreground mb-4">
+                Как быстро найти название модели и конфигурацию — в статье{" "}
+                <Link href="/blog/kak-uznat-model-macbook" className="text-primary hover:underline">«Как узнать модель MacBook»</Link>.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold mb-4">📦 Как проверить новый MacBook при покупке?</h2>
+              <p className="text-muted-foreground mb-4">
+                Даже «новый в плёнке» стоит проверить — особенно если покупаете с рук, а не в магазине:
+              </p>
+              <ul className="list-disc pl-6 space-y-2 mb-4">
+                <li>Коробка без следов вскрытия и переупаковки, серийный номер на коробке совпадает с системой.</li>
+                <li>На сайте Apple нет даты начала гарантии или она совпадает с датой покупки из чека.</li>
+                <li>У аккумулятора всего несколько циклов — у нового Mac их не больше пяти.</li>
+                <li>Экран, клавиатура и порты — так же, как у б/у: новые тоже бывают с браком.</li>
+                <li>Возьмите чек и узнайте условия гарантии продавца: у техники из параллельного импорта гарантию даёт магазин, а не Apple в России.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold mb-4">🚚 Как проверить макбук на пункте выдачи?</h2>
+              <p className="text-muted-foreground mb-4">
+                На пункте выдачи времени мало, поэтому проверьте главное — то, что потом не докажешь:
+              </p>
+              <ol className="list-decimal pl-6 space-y-2 mb-4">
+                <li>Упаковка целая, внутри тот Mac и тот комплект, что в объявлении.</li>
+                <li>Mac включается; в «Об этом Mac» совпадают модель, чип, память, диск и серийный номер.</li>
+                <li>В «Системных настройках» нет чужого Apple ID, «Локатор» выключен.</li>
+                <li>Экран на белом и чёрном фоне — без полос, пятен и битых пикселей; клавиатура и трекпад отвечают.</li>
+                <li>Mac заряжается от комплектного адаптера.</li>
+              </ol>
+              <p className="text-muted-foreground mb-4">
+                Если что-то не так — не подтверждайте получение и оформляйте отказ или спор прямо на пункте:
+                после подтверждения вернуть деньги сложнее. Подробнее про состояние батареи — в статье{" "}
+                <Link href="/blog/sostoyanie-akkumulyatora-macbook" className="text-primary hover:underline">«Состояние аккумулятора MacBook»</Link>.
+              </p>
+            </section>
+
+            <section>
               <h2 className="text-2xl font-bold mb-4">🚩 Какие красные флаги у продавца?</h2>
               <ul className="list-disc pl-6 space-y-2 mb-6">
                 <li>Торопит: «через час уезжаю, решайте сейчас»</li>
@@ -297,36 +382,12 @@ const ProverkaMacbookPeredPokupkoi = () => {
 
             <section>
               <h2 className="text-2xl font-bold mb-4">❓ Частые вопросы</h2>
-
-              <h3 className="text-xl font-semibold mb-3">Сколько циклов батареи — это уже много?</h3>
-              <p className="text-muted-foreground mb-4">
-                Ориентир простой: до 300 циклов — батарея почти новая, 300–600 — рабочая, 600–800 —
-                доживает, больше 800 — закладывайте замену в бюджет. Но важнее цифры — статус: если система
-                пишет «Требуется обслуживание», аккумулятор своё отработал независимо от количества циклов.
-              </p>
-
-              <h3 className="text-xl font-semibold mb-3">Можно ли покупать MacBook со следами вскрытия?</h3>
-              <p className="text-muted-foreground mb-4">
-                Можно, если продавец сам рассказал, что и зачем менялось: замена батареи или чистка с
-                заменой термопасты — нормальные операции, после которых ноутбук живёт долго. Опасно другое —
-                скрытое вскрытие: если о нём молчали, неизвестно и всё остальное — от неоригинального экрана
-                до следов пролитой жидкости на плате.
-              </p>
-
-              <h3 className="text-xl font-semibold mb-3">Что делать, если после покупки в Mac оказался чужой Apple ID?</h3>
-              <p className="text-muted-foreground mb-4">
-                Сразу свяжитесь с продавцом и попросите удалить устройство из аккаунта — это делается
-                удалённо через iCloud.com за пару минут. Если продавец пропал, шансов мало: без пароля и
-                документов о покупке блокировку активации не снимает никто, включая Apple. Именно поэтому
-                проверка iCloud до передачи денег — самый важный пункт всего чек-листа.
-              </p>
-
-              <h3 className="text-xl font-semibold mb-3">Продавец торопит и не даёт всё проверить. Это нормально?</h3>
-              <p className="text-muted-foreground mb-4">
-                Нет. Честному продавцу выгодно, чтобы вы проверили всё: меньше претензий потом. Настойчивое
-                «давайте побыстрее» именно на этапе проверки iCloud или диагностики — причина отказаться
-                от сделки, а не ускориться.
-              </p>
+              {PROVERKA_FAQ.map((f) => (
+                <div key={f.question}>
+                  <h3 className="text-xl font-semibold mb-3">{f.question}</h3>
+                  <p className="text-muted-foreground mb-4">{f.answer}</p>
+                </div>
+              ))}
             </section>
 
             <section>
@@ -348,6 +409,8 @@ const ProverkaMacbookPeredPokupkoi = () => {
                 <ul className="space-y-2 text-sm">
                   <li><Link href="/blog/kak-vybrat-macbook-2024" className="text-primary hover:underline">→ Как выбрать MacBook в 2024 году</Link></li>
                   <li><Link href="/blog/macbook-bu-podvodnye" className="text-primary hover:underline">→ Подводные камни покупки б/у MacBook</Link></li>
+                  <li><Link href="/blog/kak-uznat-model-macbook" className="text-primary hover:underline">→ Как узнать модель MacBook</Link></li>
+                  <li><Link href="/blog/sostoyanie-akkumulyatora-macbook" className="text-primary hover:underline">→ Состояние аккумулятора MacBook: циклы и ёмкость</Link></li>
                   <li><Link href="/buy" className="text-primary hover:underline">→ Купить проверенный MacBook с гарантией</Link></li>
                 </ul>
               </div>

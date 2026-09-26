@@ -11,7 +11,7 @@ const BLOG_LASTMOD = new Date('2026-03-31');
 // Точечные правки отдельных статей (расширены 03.07.2026)
 const BLOG_LASTMOD_OVERRIDES: Record<string, Date> = {
   '/blog/kak-prodat-macbook-vygodno': new Date('2026-07-03'),
-  '/blog/proverka-macbook-pered-pokupkoi': new Date('2026-07-03'),
+  '/blog/proverka-macbook-pered-pokupkoi': new Date('2026-09-26'),
   '/blog/kak-sbrosit-macbook-do-zavodskih-nastroek': new Date('2026-09-26'),
   '/blog/kak-uznat-model-macbook': new Date('2026-09-26'),
   '/blog/sostoyanie-akkumulyatora-macbook': new Date('2026-09-26'),
