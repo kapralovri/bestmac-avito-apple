@@ -122,6 +122,10 @@ const KakProdatMacbookVygodno = () => {
               <li>Выберите «Переустановить macOS»</li>
               <li>После установки не проходите настройку — оставьте её новому владельцу</li>
             </ol>
+            <p className="mb-4">
+              Подробная пошаговая инструкция для разных Mac — в статье{" "}
+              <Link href="/blog/kak-sbrosit-macbook-do-zavodskih-nastroek" className="text-primary hover:underline">«Как сбросить MacBook до заводских настроек»</Link>.
+            </p>
 
             <h3 className="text-2xl font-semibold mb-4">Что оставить в комплекте?</h3>
             <p className="mb-4">

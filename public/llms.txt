@@ -35,6 +35,9 @@
 ## Блог (гайды)
 
 - [Как продать MacBook выгодно](https://bestmac.ru/blog/kak-prodat-macbook-vygodno)
+- [Как сбросить MacBook до заводских настроек перед продажей](https://bestmac.ru/blog/kak-sbrosit-macbook-do-zavodskih-nastroek)
+- [Как узнать модель MacBook](https://bestmac.ru/blog/kak-uznat-model-macbook)
+- [Состояние аккумулятора MacBook: циклы и ёмкость](https://bestmac.ru/blog/sostoyanie-akkumulyatora-macbook)
 - [Проверка MacBook перед покупкой](https://bestmac.ru/blog/proverka-macbook-pered-pokupkoi)
 - [MacBook Air M2 vs M3](https://bestmac.ru/blog/macbook-air-m2-vs-m3)
 - [WUXGA vs Full HD — какой монитор выбрать для работы](https://bestmac.ru/blog/wuxga-vs-full-hd)
