@@ -13,7 +13,7 @@ import {
 export const metadata: Metadata = {
   title: 'Трейд-ин макбука в Москве — сдать MacBook в зачёт нового или б/у',
   description:
-    'Трейд-ин MacBook, iMac и Mac mini в Москве: сдайте старый макбук в зачёт б/у Mac из наличия или нового под заказ. Доплачиваем к цене выкупа, одна встреча, договор.',
+    'Трейд-ин MacBook, iMac и Mac mini в Москве: сдайте старый макбук в зачёт б/у Mac из наличия или нового под заказ. Добавляем 10% к цене выкупа, одна встреча, договор.',
   alternates: { canonical: '/trade-in' },
 };
 
@@ -76,6 +76,10 @@ export default function TradeInPage() {
               </div>
             ))}
           </div>
+          <p className="text-muted-foreground mt-4">
+            Сломанный Mac тоже можно сдать в зачёт — как мы его оцениваем, рассказываем на странице{' '}
+            <Link href="/sell/broken" className="text-primary underline">о выкупе сломанных MacBook</Link>.
+          </p>
         </section>
 
         <section className="mb-12">
@@ -84,7 +88,7 @@ export default function TradeInPage() {
             <li>При зачёте {bonus}.</li>
             <li>Одна встреча вместо двух сделок: не нужно сначала продавать старый MacBook, а потом искать новый.</li>
             <li>Не нужно выставлять объявление на Авито, торговаться и встречаться с незнакомыми покупателями.</li>
-            <li>Официальных магазинов Apple в России нет, программы Apple Trade In тоже — зачёт старого Mac остаётся за независимыми продавцами.</li>
+            <li>Официальных магазинов Apple в России нет, программы Apple Trade In тоже — сдать старый Mac в зачёт можно у независимых продавцов, например у нас.</li>
           </ul>
         </section>
 
@@ -136,7 +140,7 @@ export default function TradeInPage() {
         <LeadForm
           formType="sell"
           title="Заявка на трейд-ин"
-          subtitle="Напишите, какой Mac сдаёте и какой хотите взять, — посчитаем доплату"
+          subtitle="Напишите, какой Mac сдаёте и какой хотите взять, — посчитаем, сколько останется доплатить"
         />
       </div>
     </main>

@@ -11,3 +11,8 @@ test('FAQ цен: вопросы из ядра запросов', () => {
     assert.ok(f.answer.length > 30, f.answer);
   }
 });
+
+test('медиана — цена объявлений, а не итог сделки', () => {
+  const f = CENY_FAQ.find((x) => x.question.startsWith('За сколько можно продать макбук'))!;
+  assert.match(f.answer, /выставляют/);
+});

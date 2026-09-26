@@ -31,5 +31,5 @@ test('списки «что выкупаем» без MDM', () => {
 
 test('доплата при трейд-ине — 10%', () => {
   assert.equal(TRADE_IN_BONUS_PERCENT, 10);
-  assert.equal(tradeInBonusText(TRADE_IN_BONUS_PERCENT), 'доплатим +10% к цене выкупа вашего Mac');
+  assert.equal(tradeInBonusText(TRADE_IN_BONUS_PERCENT), 'добавим 10% к цене выкупа вашего Mac');
 });

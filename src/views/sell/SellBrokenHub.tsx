@@ -6,6 +6,7 @@ import PopularBuyoutPrices from '@/components/sell/PopularBuyoutPrices';
 import Link from 'next/link';
 import { POPULAR_MODELS } from '@/lib/model-slugs';
 import { BROKEN_SECTIONS, BROKEN_PRICING, BROKEN_FAQ } from '@/data/broken-hub';
+import { TRADE_IN_BONUS_PERCENT, tradeInBonusText } from '@/data/trade-in';
 
 /**
  * /sell/broken — серверный хаб «сломанный макбук» (GST-81). Раньше страница была
@@ -46,6 +47,7 @@ export default function SellBrokenHub() {
         </p>
 
         <section className="mb-12">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">Оценка по фото онлайн</h2>
           <PhotoEstimate />
         </section>
 
@@ -59,7 +61,11 @@ export default function SellBrokenHub() {
 
         <section className="mb-6">
           <h2 className="text-2xl md:text-3xl font-bold mb-3">Как мы считаем цену сломанного MacBook</h2>
-          <p className="text-muted-foreground leading-relaxed">{BROKEN_PRICING}</p>
+          <p className="text-muted-foreground leading-relaxed mb-3">{BROKEN_PRICING}</p>
+          <p className="text-muted-foreground leading-relaxed">
+            Меняете сломанный Mac на другой? Его можно сдать в{' '}
+            <Link href="/trade-in" className="text-primary underline">трейд-ин</Link>: {tradeInBonusText(TRADE_IN_BONUS_PERCENT)}.
+          </p>
         </section>
 
         <PopularBuyoutPrices

@@ -8,8 +8,9 @@
 export const TRADE_IN_BONUS_PERCENT: number | null = 10; // задано владельцем 26.09.2026
 
 export function tradeInBonusText(percent: number | null): string {
-  if (percent !== null && percent > 0) return `доплатим +${percent}% к цене выкупа вашего Mac`;
-  return 'доплатим процент к цене выкупа вашего Mac — точный размер назовём при оценке';
+  // «добавим», а не «доплатим»: доплачивает разницу клиент, а это наша надбавка
+  if (percent !== null && percent > 0) return `добавим ${percent.toLocaleString('ru-RU')}% к цене выкупа вашего Mac`;
+  return 'добавим процент к цене выкупа вашего Mac — точный размер назовём при оценке';
 }
 
 export const TRADE_IN_STEPS = [
@@ -61,7 +62,7 @@ export function tradeInFaq(percent: number | null): { question: string; answer: 
       answer: 'Да. Неисправный Mac оцениваем от цены исправного такой же конфигурации за вычетом ремонта и засчитываем эту сумму в покупку.',
     },
     {
-      question: 'Как считается доплата при трейд-ине?',
+      question: 'Как считается цена при трейд-ине?',
       answer: `Цена старого Mac — это цена выкупа по данным рынка; при трейд-ине ${tradeInBonusText(percent)}. Разницу со стоимостью нового Mac доплачиваете вы.`,
     },
     {
