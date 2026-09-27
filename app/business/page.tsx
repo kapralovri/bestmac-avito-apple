@@ -133,7 +133,7 @@ export default async function BusinessPage() {
           <p className="text-muted-foreground mt-4">
             Старые Mac сотрудников можно{' '}
             <Link href="/trade-in" className="text-primary underline">сдать в трейд-ин</Link>{' '}
-            в зачёт новых.
+            в зачёт других Mac.
           </p>
         </section>
 

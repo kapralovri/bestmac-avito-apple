@@ -38,3 +38,13 @@ test('офисные модели есть в каталоге выкупа', ()
   const known = new Set(ALL_BUYOUT_MODELS.map((m) => m.slug));
   for (const s of B.OFFICE_MODEL_SLUGS) assert.ok(known.has(s), s);
 });
+
+test('ревью: нет непроверяемых и устаревших утверждений', () => {
+  for (const w of ['не заметит', 'Windows', 'УСН это не важно', 'упрощёнке разницы нет', 'достаточно, чтобы поставить',
+    'Техника дешевле 100 000']) {
+    assert.ok(!ALL_TEXT.includes(w), w);
+  }
+  // НДС: зависит от того, принимает ли компания налог к вычету, а не от системы налогообложения.
+  assert.ok(B.BUSINESS_DOCS.includes('к вычету'));
+  assert.ok(B.BUSINESS_FAQ[0].answer.includes('5% или 7%'), B.BUSINESS_FAQ[0].answer);
+});
