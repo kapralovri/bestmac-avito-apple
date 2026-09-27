@@ -924,6 +924,68 @@ check("капча считается по строкам журнала",
       count_captcha(["[ШАГ 1] ✅ RuCaptcha ответила", "🏁 Intake: карточек 3", "RuCaptcha ответила"]) == 2)
 
 
+# ─── 24. Разбор DeepSeek: отсев явных проблем и подсказка в алерте ──────────
+print("\n[24] Разбор DeepSeek в intake")
+import json as _jA
+import scanner_v2 as _svA
+
+_svA.time.sleep = lambda *a, **k: None
+
+def _mk_ai(ai_payload):
+    sc = _svA.AvitoScannerV2(None)
+    sc.seen = set()
+    sc._market_for = lambda cfg, comps: (robust_stats([100000] * 12), 'db')
+    sc._db_stat = lambda cfg: None
+    for n in ('_start_browser', '_warmup', '_close', '_save_seen'):
+        setattr(sc, n, lambda *a, **k: None)
+    sc._write_proc_stats = lambda *a: None
+    sc._accumulate_raw = lambda *a: None
+    sc.deep_analyze = lambda url: {
+        'cycles': None, 'is_urgent': False, 'specs': {}, 'price_reduced': False,
+        'is_private': True, 'seller_type': 'Частное лицо', 'seller_reviews': 2,
+        'location': 'Москва', 'desc_ok': True,
+        'desc_text': 'Работает отлично, но попал кофе на клавиатуру месяц назад. Торг.'}
+    sc.ai_call = lambda messages, max_tokens=600: _jA.dumps(ai_payload, ensure_ascii=False)
+    sent = []
+    sc._send_telegram = lambda text, log_msg: sent.append(text) or True
+    sc._enqueue_lead = lambda c, **kw: None
+    return sc, sent
+
+_prev_tg = _svA.TELEGRAM_URL
+_svA.TELEGRAM_URL = 'https://example.invalid'
+_card = [{'url': 'https://www.avito.ru/ai_1', 'title': 'MacBook Air 13 M2 16/512', 'price': 70000}]
+
+_sA, _sentA = _mk_ai({"problems": [{"kind": "liquid", "severity": "hard",
+                                    "quote": "попал кофе на клавиатуру"}]})
+_sA.process_cards(_card)
+check("DeepSeek нашёл залитие с цитатой → лот не отправлен", _sentA == [])
+
+_sB, _sentB = _mk_ai({"problems": [], "bargain": {"signals": ["торг"], "open_price": 60000},
+                      "action": "Звонить, предложить 60 000"})
+_sB.process_cards(_card)
+check("чистый лот → алерт ушёл", len(_sentB) == 1)
+check("в алерте блок разбора DeepSeek", _sentB and "🧠 <b>Разбор DeepSeek</b>" in _sentB[0])
+check("цена предложения в блоке не испорчена заменой запятых", _sentB and "60 000 ₽" in _sentB[0])
+
+_sC, _sentC = _mk_ai(None)
+_sC.ai_call = lambda messages, max_tokens=600: None
+_sC.process_cards(_card)
+check("DeepSeek молчит → алерт как раньше, без блока",
+      len(_sentC) == 1 and "Разбор DeepSeek" not in _sentC[0])
+
+from common.subscriptions import make_subscription as _mkSub
+_sD, _sentD = _mk_ai({"problems": [{"kind": "liquid", "severity": "hard",
+                                    "quote": "попал кофе на клавиатуру"}]})
+_cfgD = classify('MacBook Air 13 M2 16/512')
+_subD = _mkSub(chat_id=1, model='MacBook Air 13 (2022, M2)', label='M2 16/512', match=match_from_config(_cfgD), max_price=90000)
+_LD = {'url': 'https://www.avito.ru/ai_2', 'raw_url': 'https://www.avito.ru/ai_2',
+       'title': 'MacBook Air 13 M2 16/512', 'price': 70000, 'age_str': 'только что'}
+check("подписка: залитие по DeepSeek → разобран и отброшен",
+      _sD._notify_subscription(_LD, _cfgD, [_subD]) is True and _sentD == [])
+
+_svA.TELEGRAM_URL = _prev_tg
+
+
 # ─── Итог ────────────────────────────────────────────────────────────────────
 print()
 if _fails:
