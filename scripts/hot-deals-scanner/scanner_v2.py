@@ -17,6 +17,7 @@ Scanner v2 — детектор лотов НИЖЕ ЖИВОГО РЫНКА дл
 import json
 import os
 import re
+import subprocess
 import sys
 import time
 import random
@@ -808,6 +809,18 @@ class AvitoScannerV2:
         except OSError:
             pass
 
+    def _ensure_browser(self):
+        """Поднимает браузер и прогревает сессию, если это ещё не сделано.
+
+        Intake: прогрев avito.ru с IP датацентра — это платная капча. Раньше
+        process_cards платил её на КАЖДОЙ пачке от расширения, хотя браузер нужен
+        только кандидатам (описание для гейта состояния): ~200 капч в сутки при
+        10–40 кандидатах. Теперь браузер поднимается при первой загрузке страницы.
+        """
+        if self.page is None:
+            self._start_browser()
+            self._warmup()
+
     def _load_page(self, url):
         """Загружает страницу через Playwright с обходом капчи. Возвращает HTML или None.
 
@@ -819,6 +832,7 @@ class AvitoScannerV2:
         достаточен, иначе — None (вызывающий код уже трактует None как «стр. пустая»
         и сам решает, ретраить ли через _warmup()).
         """
+        self._ensure_browser()
         ok = navigate_with_captcha(self.page, url)
         if not ok:
             return None
@@ -1938,9 +1952,9 @@ class AvitoScannerV2:
         """Обрабатывает карточки от домашнего расширения (intake): без сканирования
         поиска — классификация → рынок (база, Москва) → маржа → deep_analyze →
         состояние/перекуп → скоринг → рассылка. Поиск делает домашний браузер, а
-        VPS только оценивает кандидатов (мало → троттлинг не страшен)."""
-        self._start_browser()
-        self._warmup()
+        VPS только оценивает кандидатов (мало → троттлинг не страшен).
+        Браузер не запускаем заранее: его поднимет первая загрузка страницы
+        (_ensure_browser), а пачка без кандидатов обойдётся без капчи."""
         candidates = []
         raw_batch = {}   # live_key -> [цены] для накопителя (--modal-report)
         # Подписки читаем один раз на прогон: бот мог их поменять с прошлого раза.
@@ -2184,6 +2198,24 @@ def compute_health(lines):
     return h
 
 
+def count_captcha(lines):
+    """Сколько капч решено по строкам лога (чистая функция, тестируемо)."""
+    return sum(1 for l in lines if "RuCaptcha ответила" in l)
+
+
+def _journal_lines(unit, hours=24):
+    """Строки journald юнита за период. Разбор карточек (bestmac-intake-proc)
+    пишет только в журнал, и дашборд его капчу раньше не видел — а это был
+    главный расход. Нет прав или journalctl — пустой список, дашборд не падает."""
+    try:
+        r = subprocess.run(
+            ["journalctl", "-u", unit, "--since", f"-{hours}h", "-o", "cat", "--no-pager"],
+            capture_output=True, text=True, timeout=30)
+        return r.stdout.splitlines() if r.returncode == 0 else []
+    except Exception:
+        return []
+
+
 def _rucaptcha_balance():
     if not RUCAPTCHA_API_KEY:
         return None
@@ -2200,9 +2232,10 @@ def send_health():
     """Шлёт суточную сводку здоровья сканера в Telegram."""
     scn_lines = _read_recent_log(os.environ.get('SCANNER_LOG_PATH', '/var/log/bestmac-scanner.log'))
     h = compute_health(scn_lines)
-    # капчу решает и охотник за залежавшимися
-    h["captcha"] += sum(1 for l in _read_recent_log(
-        os.environ.get('STALE_LOG_PATH', '/var/log/bestmac-stale.log')) if "RuCaptcha ответила" in l)
+    # капчу решают и охотник за залежавшимися, и разбор карточек от коллектора
+    h["captcha"] += count_captcha(_read_recent_log(
+        os.environ.get('STALE_LOG_PATH', '/var/log/bestmac-stale.log')))
+    h["captcha"] += count_captcha(_journal_lines(os.environ.get('INTAKE_UNIT', 'bestmac-intake-proc')))
     stale_leads = sum(int(m.group(1)) for l in _read_recent_log(
         os.environ.get('STALE_LOG_PATH', '/var/log/bestmac-stale.log'))
         for m in [re.search(r"Новых лидов:\s*(\d+)", l)] if m)
