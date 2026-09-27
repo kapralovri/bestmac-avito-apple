@@ -42,6 +42,7 @@ from common.price_identity import config_key, row_identity
 from common.subscriptions import load_subscriptions, find_matches, record_hits
 from common.market import robust_stats, assess_deal, MarketStats
 from common.negotiator import motivation_score, MotivationReport
+from common.ai_review import review_lot, format_block
 from common.config import (
     SCAN_FAMILIES, JUNK_KEYWORDS, NEW_SEALED_KEYWORDS, URGENT_KEYWORDS, MOSCOW_MARKERS,
     MIN_PRICE, MAX_PRICE, PRICE_THRESHOLD_FACTOR, MIN_YEARS,
@@ -679,6 +680,8 @@ class AvitoScannerV2:
         self.browser = None
         self.context = None
         self.page = None
+        # Разбор DeepSeek: None — настоящий вызов (ключ DEEPSEEK_API_KEY), в тестах — заглушка.
+        self.ai_call = None
 
         # База цен — фолбэк рыночной медианы и выкупа, когда живых сопоставимых мало.
         # Индексируем по live_key через тот же классификатор: надёжнее точной сверки
@@ -1057,6 +1060,9 @@ class AvitoScannerV2:
         text += f"⏱ {c['age_str']}\n"
         text += f"🔗 <a href='{c['url']}'>Открыть на Avito</a>"
         text = text.replace(',', ' ')
+        # Блок DeepSeek — после замены запятых: в нём живой текст модели
+        if c.get('ai'):
+            text += "\n\n" + format_block(c['ai'])
 
         self._send_telegram(text, f"[{c['score']}] {c['title'][:40]}")
 
@@ -1834,6 +1840,12 @@ class AvitoScannerV2:
         else:
             buyout = int(market.median * BUYOUT_FACTOR)
 
+        # ── Разбор DeepSeek: явные проблемы (залит, экран, MDM…) — отсев ──
+        ai = self._ai_review(L['title'], price, market.median, buyout, analysis.get('desc_text', ''))
+        if ai and ai.is_reject:
+            logger.info(f"   🧠⛔ {L['title'][:45]} | {price:,}₽ | {ai.reason()}")
+            return None
+
         full_preview = (L['title'] + ' ' + L['snippet']).lower()
         urgent = (analysis['is_urgent'] or analysis['price_reduced']
                   or any(w in full_preview for w in URGENT_KEYWORDS))
@@ -1868,9 +1880,15 @@ class AvitoScannerV2:
             'is_private': analysis['is_private'],
             'reseller': reseller,
             'condition': condition,
+            'ai': ai,
             'urgent': urgent,
             'suspicious': assess.is_suspicious,
         }
+
+    def _ai_review(self, title, price, median, buyout, desc):
+        """Разбор описания DeepSeek; None — разбора нет, лот идёт по правилам."""
+        return review_lot(title=title, price=price, median=median, buyout=buyout,
+                          desc=desc, llm_call=self.ai_call)
 
     def _notify_subscription(self, L, cfg, hits):
         """GST-73: алерт по подписке «эта конфигурация дешевле моей цены».
@@ -1908,6 +1926,12 @@ class AvitoScannerV2:
             market_line = (f"📊 Рынок: медиана {market.median:,} ₽ "
                            f"(по {market.n} лотам)\n").replace(',', ' ')
 
+        ai = self._ai_review(L['title'], price, market.median if market else None,
+                             int(best.get('max_price') or 0), analysis.get('desc_text', ''))
+        if ai and ai.is_reject:
+            logger.info(f"   🔔🧠⛔ по подписке, но {ai.reason()}: {L['title'][:40]}")
+            return True
+
         diag = f" {cfg.screen}\"" if cfg.screen else ""
         loc = analysis.get('location') or ''
         sub_model = html.escape(best.get('model') or '')
@@ -1926,6 +1950,8 @@ class AvitoScannerV2:
             + f"⏱ {L['age_str']}\n"
             f"🔗 <a href='{L['url']}'>Открыть на Avito</a>"
         )
+        if ai:
+            text += "\n\n" + format_block(ai)
         if self._send_telegram(text, f"[подписка] {L['title'][:40]}"):
             record_hits([s.get('id') for s in hits])
             return True
