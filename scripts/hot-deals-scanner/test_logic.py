@@ -869,6 +869,61 @@ check("строка под подписью вкладки встаёт на с�
 check("и не выдаёт себя за M1",
       ('Mac Studio', 'M1', 'base', None, 64, 1024) not in _sI.prices_by_livekey)
 
+# ─── 23. Intake: браузер только по необходимости ─────────────────────────────
+# Каждая пачка от расширения запускала браузер и прогрев avito.ru — платная капча
+# с IP датацентра, даже когда в пачке ни одного кандидата (~200 капч в сутки при
+# 10–40 кандидатах). Теперь браузер поднимается при первой загрузке страницы.
+print("\n[23] Intake: ленивый браузер")
+import scanner_v2 as _svL
+
+_svL.time.sleep = lambda *a, **k: None
+_calls = {"start": 0, "warm": 0}
+
+class _FakePage:
+    def content(self):
+        return "<html></html>"
+    def wait_for_timeout(self, ms):
+        pass
+
+def _mk_lazy():
+    sc = _svL.AvitoScannerV2(None)
+    sc.seen = set()
+    sc._market_for = lambda cfg, comps: (robust_stats([100000] * 12), 'db')
+    sc._db_stat = lambda cfg: None
+    sc._save_seen = lambda: None
+    sc._write_proc_stats = lambda *a: None
+    sc._accumulate_raw = lambda *a: None
+    sc.subscriptions = {}
+    def _start():
+        _calls["start"] += 1
+        sc.page = _FakePage()
+    def _warm():
+        _calls["warm"] += 1
+    sc._start_browser = _start
+    sc._warmup = _warm
+    return sc
+
+_scL = _mk_lazy()
+_scL.process_cards([
+    {'url': 'https://www.avito.ru/fair_20', 'title': 'MacBook Air 13 M2 16/256', 'price': 98000},
+    {'url': 'https://www.avito.ru/junk_20', 'title': 'Чехол для MacBook', 'price': 900},
+])
+check("пачка без кандидатов → браузер не запускался", _calls["start"] == 0)
+check("пачка без кандидатов → прогрева (капчи) не было", _calls["warm"] == 0)
+
+_prev_nav = _svL.navigate_with_captcha
+_svL.navigate_with_captcha = lambda page, url: True
+_scL._load_page('https://www.avito.ru/item_1')
+_scL._load_page('https://www.avito.ru/item_2')
+_svL.navigate_with_captcha = _prev_nav
+check("первая загрузка страницы → браузер и прогрев ровно один раз",
+      _calls["start"] == 1 and _calls["warm"] == 1)
+
+from scanner_v2 import count_captcha
+check("капча считается по строкам журнала",
+      count_captcha(["[ШАГ 1] ✅ RuCaptcha ответила", "🏁 Intake: карточек 3", "RuCaptcha ответила"]) == 2)
+
+
 # ─── Итог ────────────────────────────────────────────────────────────────────
 print()
 if _fails:
