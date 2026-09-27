@@ -307,3 +307,44 @@ export function shouldIndexModel(
   if (!stats || !match) return true;
   return buildSellModelPrices(stats, match, now).reliable.length > 0;
 }
+
+// ─── /business: цены б/у для компаний (docs/business-bu-mac.md) ─────────────
+// Компании покупают, а не продают: показываем рыночную медиану типичной
+// конфигурации, а не цену выкупа. Ручная цена — цифра владельца, не «медиана
+// Авито», поэтому в выбор не входит.
+
+export interface OfficePriceRow {
+  slug: string;
+  name: string;
+  config: SellConfig;           // типичная конфигурация
+  sourceModelNames: string[];   // для ссылки на /ceny/<slug>
+}
+
+export function officePriceRows(
+  stats: AvitoPriceStat[] | null | undefined,
+  catalog: Array<{ name: string; slug: string; match: SellMatch }>,
+  slugs: string[],
+  now: Date,
+): { rows: OfficePriceRow[]; latestUpdate: string | null } {
+  const rows: OfficePriceRow[] = [];
+  if (!stats) return { rows, latestUpdate: null };
+  for (const slug of slugs) {
+    const m = catalog.find((c) => c.slug === slug);
+    if (!m) continue;
+    const p = buildSellModelPrices(stats, m.match, now);
+    // reliable уже отсортированы по памяти и диску — при ничьей остаётся младшая.
+    let typical: SellConfig | null = null;
+    for (const c of p.reliable) {
+      if (c.manual) continue;
+      if (!typical || c.samplesCount > typical.samplesCount) typical = c;
+    }
+    if (typical) rows.push({ slug, name: m.name, config: typical, sourceModelNames: p.sourceModelNames });
+  }
+  let latestUpdate: string | null = null;
+  for (const r of rows) {
+    const age = ageDays(r.config.updatedAt, now);
+    if (age === null) continue;
+    if (latestUpdate === null || age < (ageDays(latestUpdate, now) ?? Infinity)) latestUpdate = r.config.updatedAt;
+  }
+  return { rows, latestUpdate };
+}
