@@ -47,6 +47,7 @@ _SYSTEM = (
     "Ответь ТОЛЬКО JSON-объектом без пояснений:\n"
     '{"problems": [{"kind": "...", "severity": "hard|minor", "quote": "..."}], '
     '"bargain": {"signals": ["..."], "open_price": число или null}, '
+    '"listing": "new|used|unknown", "fake_signals": ["..."], '
     '"action": "одна короткая фраза, что сделать скупщику"}\n'
     "Правила:\n"
     "- problems — только то, что прямо написано в объявлении. quote — ДОСЛОВНАЯ "
@@ -59,6 +60,13 @@ _SYSTEM = (
     "переезд, снижена цена) или наоборот («без торга»). Коротко, по-русски.\n"
     "- bargain.open_price — разумная первая цена предложения в рублях: ниже цены "
     "объявления и не выше цели выкупа. null, если торговаться не стоит.\n"
+    "- listing — new, если аппарат новый (запечатан, не активирован, «новый» в "
+    "значении нераспакованного), used — б/у, unknown — непонятно.\n"
+    "- fake_signals — признаки фейкового объявления: цена сильно ниже рынка, "
+    "давление сроком («цена действительна один день»), предоплата, уход в "
+    "мессенджеры, шаблонный текст. Пусто, если признаков нет.\n"
+    "- Если description пустой — описание прочитать не удалось: суди только по "
+    "заголовку и цене, problems — только из заголовка.\n"
     "- action — по-русски, до 15 слов."
 )
 
@@ -76,6 +84,9 @@ class AiReview:
     signals: List[str] = field(default_factory=list)
     open_price: Optional[int] = None
     action: str = ""
+    is_new: Optional[bool] = None      # None — непонятно
+    fake: List[str] = field(default_factory=list)
+    title_only: bool = False           # описание не прочитано, разбор по заголовку
 
     @property
     def is_reject(self) -> bool:
@@ -124,14 +135,19 @@ def _parse(data: dict, source_text: str, price: int, buyout: int) -> AiReview:
     if offer and 0 < offer < price:
         out.open_price = min(offer, buyout) if buyout else offer
     out.action = str(data.get("action") or "").strip()[:200]
+    listing = str(data.get("listing") or "").strip().lower()
+    out.is_new = True if listing == "new" else (False if listing == "used" else None)
+    out.fake = [str(s).strip()[:100] for s in (data.get("fake_signals") or [])
+                if str(s).strip()][:MAX_SIGNALS]
     return out
 
 
 def review_lot(*, title: str, price: int, median: Optional[int], buyout: Optional[int],
                desc: str, llm_call: Optional[Callable] = None) -> Optional[AiReview]:
-    """Разбор лота DeepSeek. None — разбора нет (нет описания/ключа/ответа)."""
-    if not (desc or "").strip():
-        return None
+    """Разбор лота DeepSeek. None — разбора нет (нет ключа/ответа).
+    Без описания (капча) — разбор по заголовку и цене: новый/б/у, признаки фейка;
+    отсеять можно только по дефекту, написанному в самом заголовке."""
+    desc = (desc or "").strip()
     call = llm_call if llm_call is not None else _deepseek_call
     lot = {"title": title, "price": price, "market_median": median,
            "buyout_target": buyout, "description": desc}
@@ -145,7 +161,9 @@ def review_lot(*, title: str, price: int, median: Optional[int], buyout: Optiona
     data = _strip_json(raw) if isinstance(raw, str) else None
     if not isinstance(data, dict):
         return None
-    return _parse(data, f"{title} {desc}", int(price), int(buyout or 0))
+    review = _parse(data, f"{title} {desc}", int(price), int(buyout or 0))
+    review.title_only = not desc
+    return review
 
 
 def _rub(n: int) -> str:
@@ -157,10 +175,15 @@ def format_block(r: Optional[AiReview]) -> str:
     if r is None:
         return ""
     e = html.escape
-    lines = ["🧠 <b>Разбор DeepSeek</b>"]
+    lines = ["🧠 <b>Разбор DeepSeek</b>"
+             + (" <i>(описание не прочитано — по заголовку)</i>" if r.title_only else "")]
+    if r.is_new:
+        lines.append("🆕 Похоже, новый — сравнивай с ценами новых")
+    if r.fake:
+        lines.append("🚩 Признаки фейка: " + "; ".join(e(f) for f in r.fake))
     if r.minor:
         lines.append("⚠️ " + "; ".join(e(p.quote) for p in r.minor))
-    elif not r.hard:
+    elif not r.hard and not r.title_only:
         lines.append("✅ Серьёзных проблем в описании нет")
     if r.signals:
         lines.append("💬 Торг: " + ", ".join(e(s) for s in r.signals))

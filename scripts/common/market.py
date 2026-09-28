@@ -107,3 +107,32 @@ def assess_deal(
                               f"подозрительно дёшево ({margin*100:.0f}% ниже медианы)")
 
     return DealAssessment(True, False, margin, f"ниже рынка на {margin*100:.0f}%")
+
+
+# ─── Заработок при перепродаже (правило владельца: минимум MIN_PROFIT_RUB) ───
+
+def resale_profit(price: int, quick_sale: int, min_profit: int):
+    """Заработок, если купить за price и быстро продать за quick_sale.
+    Возвращает (заработок, потолок покупки, проходит ли порог)."""
+    profit = int(quick_sale) - int(price)
+    return profit, int(quick_sale) - int(min_profit), profit >= min_profit
+
+
+# Фразы-приманки фейковых объявлений: давят сроком или уводят с Авито.
+FAKE_PHRASES = [
+    'цена действительна', 'только сегодня', 'только предоплат', 'по предоплате',
+    'только доставка', 'только авито доставк', 'пишите в whatsapp', 'пишите в телеграм',
+]
+# Цена ниже нижнего края рынка больше чем на столько — повод насторожиться.
+# Не меньше 0.30: при правиле «заработок ≥ 12 000» обычная хорошая сделка на
+# Mac за ~110 000 уже на 11% ниже нижнего края — её фейком не называем.
+FAKE_BELOW_FLOOR = 0.30
+
+
+def fake_signals(text: str, price: int, floor: int) -> List[str]:
+    """Признаки возможного фейка. Лот не отсеиваем — пометка для владельца."""
+    low = (text or '').lower()
+    out = [f'«{p}»' for p in FAKE_PHRASES if p in low]
+    if floor and price < floor * (1 - FAKE_BELOW_FLOOR):
+        out.append(f'цена на {round((1 - price / floor) * 100)}% ниже нижнего края рынка')
+    return out

@@ -6,6 +6,7 @@
 Запуск:  python3 scripts/hot-deals-scanner/test_logic.py
 """
 import sys
+import re
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))   # scripts/
@@ -375,6 +376,12 @@ import scanner_v2 as _sv
 from scanner_v2 import AvitoScannerV2, clean_url, is_reseller
 
 _sv.time.sleep = lambda *a, **k: None   # без задержек в тесте
+# Накопитель цен — во временный файл: иначе тест пишет в public/data рядом со
+# скриптом, а следующие прогоны читают эти цены как «рынок за 7 дней».
+import tempfile as _tmpR
+_tmpDirR = Path(_tmpR.mkdtemp())
+_sv.RAW_PRICES_FILE = _tmpDirR / 'intake-raw-prices.json'
+_sv.PROC_STATS_FILE = _tmpDirR / 'intake-proc-stats.json'
 
 s = AvitoScannerV2(None)
 s.seen = set()
@@ -984,6 +991,83 @@ check("подписка: залитие по DeepSeek → разобран и о
       _sD._notify_subscription(_LD, _cfgD, [_subD]) is True and _sentD == [])
 
 _svA.TELEGRAM_URL = _prev_tg
+
+
+# ─── 25. Заработок ≥ MIN_PROFIT_RUB: быстрая продажа = P10 рынка за 7 дней ──
+# Владелец: «мне нужно зарабатывать минимум 12 тр». Скидка к медиане врёт: M5
+# 16/512 за 100 000 при медиане 131 000 — «−24%», но быстро продать можно только
+# по нижнему краю (~109 000), заработок ~9 000.
+print("\n[25] Правило заработка")
+from common.market import resale_profit, fake_signals
+from common.config import MIN_PROFIT_RUB
+import scanner_v2 as _svP
+
+check("порог заработка по умолчанию 12 000", MIN_PROFIT_RUB == 12000)
+check("100 000 при быстрой продаже 109 000 → 9 000, покупать до 97 000, не проходит",
+      resale_profit(100000, 109000, 12000) == (9000, 97000, False))
+check("90 000 → 19 000, проходит", resale_profit(90000, 109000, 12000) == (19000, 97000, True))
+
+check("фейк: «цена действительна один день»",
+      any('действительна' in x for x in fake_signals('Срочная продажа! Цена действительна на один день', 104000, 109000)))
+check("фейк: цена сильно ниже нижнего края (70 000 при 109 000)",
+      any('ниже нижнего края' in x for x in fake_signals('MacBook Air', 70000, 109000)))
+check("хорошая сделка (заработок 12–20 тыс.) фейком не считается",
+      fake_signals('MacBook Air', 89000, 109000) == [])
+check("обычный лот — без пометки", fake_signals('MacBook Air M5, торг', 104000, 109000) == [])
+
+_svP.time.sleep = lambda *a, **k: None
+import time as _tP
+_now = _tP.time()
+_cfgP = classify('MacBook Air 13 M5 16/512')
+_kP = str(live_key(_cfgP))
+# 7-дневный рынок: 40 цен 105–144 тыс; старые (30 дней назад) дешёвые цены не учитываются
+_fresh = [[105000 + i * 1000, int(_now) - 3600, 0] for i in range(40)]
+_old = [[60000, int(_now) - 30 * 86400, 0] for _ in range(40)]
+_p10 = robust_stats([e[0] for e in _fresh]).p10
+
+def _mk_profit():
+    sc = _svP.AvitoScannerV2(None)
+    sc.seen = set()
+    sc._raw_prices_cache = {_kP: _old + _fresh}
+    sc._db_stat = lambda cfg: None
+    for n in ('_start_browser', '_warmup', '_close', '_save_seen'):
+        setattr(sc, n, lambda *a, **k: None)
+    sc._write_proc_stats = lambda *a: None
+    sc._accumulate_raw = lambda *a: None
+    sc.ai_call = lambda messages, max_tokens=600: None
+    sc.deep_analyze = lambda url: {
+        'cycles': None, 'is_urgent': False, 'specs': {}, 'price_reduced': False,
+        'is_private': True, 'seller_type': 'Частное лицо', 'seller_reviews': 2,
+        'location': 'Москва', 'desc_ok': True, 'desc_text': 'Отличное состояние, АКБ 100%'}
+    sent, enq = [], []
+    sc._send_telegram = lambda text, log_msg: sent.append(text) or True
+    sc._enqueue_lead = lambda c, **kw: enq.append(c)
+    return sc, sent, enq
+
+check("быстрая продажа — P10 свежих 7 дней, старые цены не тянут вниз",
+      _mk_profit()[0]._quick_sale(_cfgP, None)[0] == _p10)
+
+_prev_tgP = _svP.TELEGRAM_URL
+_svP.TELEGRAM_URL = 'https://example.invalid'
+_sP, _sentP, _ = _mk_profit()
+_sP.process_cards([{'url': 'https://www.avito.ru/m5_100', 'title': 'Apple macbook air 13 m5 16 512 gb', 'price': _p10 - 9000}])
+check("заработок 9 000 < 12 000 → алерта нет", _sentP == [])
+
+_sQ, _sentQ, _enqQ = _mk_profit()
+_sQ.process_cards([{'url': 'https://www.avito.ru/m5_90', 'title': 'Apple macbook air 13 m5 16 512 gb', 'price': _p10 - 19000}])
+_rub = lambda n: f"{n:,}".replace(',', ' ')
+check("заработок 19 000 → алерт ушёл", len(_sentQ) == 1)
+_txtQ = re.sub(r'<[^>]+>', '', _sentQ[0]) if _sentQ else ''
+check("в алерте быстрая продажа, заработок и потолок покупки",
+      f"Заработок: ~{_rub(19000)} ₽" in _txtQ
+      and f"Покупать не дороже: {_rub(_p10 - 12000)} ₽" in _txtQ
+      and "Быстрая продажа" in _txtQ)
+check("медиана в алерте — по свежим ценам, не ниже быстрой продажи",
+      int(re.search(r'Медиана рынка: ([\d ]+) ₽', _txtQ).group(1).replace(' ', '')) >= _p10)
+check("хорошая сделка без пометки «фейк»", 'фейк' not in _txtQ)
+check("в торг уходит потолок покупки, а не старая выкуп-цель",
+      _enqQ and _enqQ[0]['buyout'] == _p10 - 12000)
+_svP.TELEGRAM_URL = _prev_tgP
 
 
 # ─── Итог ────────────────────────────────────────────────────────────────────
