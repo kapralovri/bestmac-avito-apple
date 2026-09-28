@@ -40,7 +40,7 @@ from common.classifier import classify, config_to_db_key, processor_label
 from common.condition import analyze_condition
 from common.price_identity import config_key, row_identity
 from common.subscriptions import load_subscriptions, find_matches, record_hits
-from common.market import robust_stats, assess_deal, MarketStats
+from common.market import robust_stats, assess_deal, MarketStats, resale_profit, fake_signals
 from common.negotiator import motivation_score, MotivationReport
 from common.ai_review import review_lot, format_block
 from common.config import (
@@ -51,6 +51,7 @@ from common.config import (
     STALE_PRICES_HOURS, STALE_ALERT_COOLDOWN_HOURS, EXCLUDE_INTEL_FAMILIES,
     STALE_LISTING_DAYS, STALE_MIN_DROP, STALE_SCAN_PAGES, STALE_MAX_LEADS, REGISTRY_MAX,
     RESELLER_REVIEWS, DELIVERY_MAX_PRICE, WATCH_DROP, WATCH_DAYS,
+    MIN_PROFIT_RUB, QUICK_SALE_DAYS,
 )
 
 try:
@@ -1043,15 +1044,31 @@ class AvitoScannerV2:
 
         urgent = " 🚨 торг/срочно" if c.get('urgent') else ""
 
+        if c.get('quick_sale'):
+            # Правило заработка: сколько получим на быстрой продаже и потолок торга
+            money = (
+                f"💰 Цена: <b>{price:,} ₽</b>\n"
+                f"📈 Быстрая продажа: ~{c['quick_sale']:,} ₽ ({c['quick_label']} • {c['quick_n']} лотов)\n"
+                f"💵 Заработок: <b>~{c['profit']:,} ₽</b>\n"
+                f"🤝 Покупать не дороже: <b>{buyout:,} ₽</b>\n"
+                f"📊 Медиана рынка: {median:,} ₽\n"
+            )
+        else:   # карточки без расчёта заработка (дайджест, старые записи)
+            money = (
+                f"💰 Цена: <b>{price:,} ₽</b> <b>(−{disc}% к медиане)</b>\n"
+                f"📊 Рынок сейчас: медиана {median:,} ₽ • P20 {p20:,} ₽ (по {n} лотам)\n"
+                f"🤝 Выкуп-цель: <b>{buyout:,} ₽</b>\n"
+            )
+
         text = (
             f"{header} [{c['score']}/100]{urgent}{src_tag}\n\n"
             f"💻 {c['title']}\n"
             f"⚙️ <b>{c['ram']}GB / {c['ssd']}GB{diag}</b>\n"
-            f"💰 Цена: <b>{price:,} ₽</b> <b>(−{disc}% к медиане)</b>\n"
-            f"📊 Рынок сейчас: медиана {median:,} ₽ • P20 {p20:,} ₽ (по {n} лотам)\n"
-            f"🤝 Выкуп-цель: <b>{buyout:,} ₽</b>\n"
+            + money +
             f"🩺 Состояние: {cond.summary()}\n"
         )
+        if c.get('fake'):
+            text += "⚠️ Возможен фейк: " + "; ".join(c['fake']) + "\n"
         if kind == 'delivery' and c.get('location'):
             text += f"📍 {c['location']} (доставка)\n"
         elif c.get('location'):
@@ -1583,7 +1600,7 @@ class AvitoScannerV2:
         """Запись базы по live_key (надёжный матч), иначе по точной строке (фолбэк)."""
         return self.prices_by_livekey.get(live_key(cfg)) or self.match_to_db(cfg)
 
-    def _raw_comps(self, cfg):
+    def _raw_comps(self, cfg, days=None):
         """Живые компы из накопителя коллектора (intake-raw-prices.json) — цены,
         собранные домашним браузером без троттлинга. Используются в intake, где
         страниц выдачи нет: закрывают конфиги без базы (новые M5) и протухшую базу."""
@@ -1596,7 +1613,24 @@ class AvitoScannerV2:
         entries = self._raw_prices_cache.get(str(live_key(cfg)))
         if not isinstance(entries, list):
             return []
-        return [int(e[0]) if isinstance(e, list) else int(e) for e in entries]
+        if days is None:
+            return [int(e[0]) if isinstance(e, list) else int(e) for e in entries]
+        # Только свежие: у легаси-чисел времени нет — они в окно не попадают
+        since = time.time() - days * 86400
+        return [int(e[0]) for e in entries
+                if isinstance(e, list) and len(e) >= 2 and int(e[1]) >= since]
+
+    def _quick_sale(self, cfg, market):
+        """Цена быстрой продажи = P10 рынка коллектора за QUICK_SALE_DAYS дней.
+        Медиана для перекупа врёт: по ней аппарат висит неделями, быстро уходит
+        только по нижнему краю. Мало свежих цен → нижний край выбранного рынка.
+        Возвращает (цена, лотов, подпись) или (None, 0, '')."""
+        fresh = robust_stats(self._raw_comps(cfg, days=QUICK_SALE_DAYS))
+        if fresh and fresh.n >= MIN_COMPS:
+            return fresh.p10, fresh.n, f"нижние 10% рынка за {QUICK_SALE_DAYS} дн."
+        if market:
+            return market.p10, market.n, "нижний край рынка"
+        return None, 0, ''
 
     def _market_for(self, cfg, comps):
         """Эталон рынка = МОСКВА (база цен), т.к. перепродажа в Москве. Поиск идёт по
@@ -1810,7 +1844,11 @@ class AvitoScannerV2:
                     cfg, market, source = cfg2, market2, source2
                     assess = assess_deal(price, market, min_margin=MIN_MARGIN, scam_floor=SCAM_FLOOR)
 
-        if assess.margin < MIN_MARGIN:
+        quick, quick_n, quick_label = self._quick_sale(cfg, market)
+        if not quick:
+            return None
+        profit, max_buy, profit_ok = resale_profit(price, quick, MIN_PROFIT_RUB)
+        if not profit_ok:
             return None
 
         # ── Гейт состояния по ПОЛНОМУ описанию ──────────────────
@@ -1833,12 +1871,10 @@ class AvitoScannerV2:
         if not moscow and price > DELIVERY_MAX_PRICE:
             return None
 
-        # Выкуп: курируемый из базы, иначе от медианы рынка
-        stat_db = self._db_stat(cfg)
-        if stat_db and stat_db.get('buyout_price'):
-            buyout = int(stat_db['buyout_price'])
-        else:
-            buyout = int(market.median * BUYOUT_FACTOR)
+        # Потолок покупки = быстрая продажа − MIN_PROFIT_RUB. Он же цель торга:
+        # старая «выкуп-цель» (медиана × 0.8 / выкуп из базы) — цифра для клиентов
+        # сайта, к заработку перекупа отношения не имеет.
+        buyout = max_buy
 
         # ── Разбор DeepSeek: явные проблемы (залит, экран, MDM…) — отсев ──
         ai = self._ai_review(L['title'], price, market.median, buyout, analysis.get('desc_text', ''))
@@ -1881,6 +1917,12 @@ class AvitoScannerV2:
             'reseller': reseller,
             'condition': condition,
             'ai': ai,
+            'quick_sale': quick,
+            'quick_n': quick_n,
+            'quick_label': quick_label,
+            'profit': profit,
+            'fake': fake_signals(' '.join([L['title'], L['snippet'], analysis.get('desc_text', '')]),
+                                 price, quick),
             'urgent': urgent,
             'suspicious': assess.is_suspicious,
         }
@@ -2022,7 +2064,11 @@ class AvitoScannerV2:
                 # НЕ помечаем seen: резервный VPS-сканер построит живой рынок из
                 # выдачи и поймает лот отдельно (расширение дедупит карточки само).
                 price = L['price']
-                comps = self._raw_comps(cfg)
+                # Рынок — по свежим ценам, если их хватает: иначе медиана тянется
+                # за ценами месячной давности и расходится с быстрой продажей.
+                comps = self._raw_comps(cfg, days=QUICK_SALE_DAYS)
+                if len(comps) < MIN_COMPS:
+                    comps = self._raw_comps(cfg)
                 if price in comps:
                     comps.remove(price)   # не сравниваем лот сам с собой
                 market, source = self._market_for(cfg, comps)
@@ -2031,7 +2077,9 @@ class AvitoScannerV2:
                                 f"{live_key(cfg)} | {L['title'][:45]}")
                     continue
                 assess = assess_deal(price, market, min_margin=MIN_MARGIN, scam_floor=SCAM_FLOOR)
-                if assess.margin < MIN_MARGIN:
+                # Правило владельца: заработок на быстрой продаже ≥ MIN_PROFIT_RUB
+                quick, _n, _lbl = self._quick_sale(cfg, market)
+                if not quick or not resale_profit(price, quick, MIN_PROFIT_RUB)[2]:
                     self.seen.add(url); continue
                 # Тот же хвост оценки, что и в run(); компы — из накопителя коллектора
                 cand = self._build_candidate(L, cfg, market, source, assess,

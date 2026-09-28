@@ -87,9 +87,23 @@ print("\n[6] Нет ответа, мусор, нет описания → раз
 check("LLM вернул None", review_lot(**lot(), llm_call=llm(None)) is None)
 check("LLM вернул не JSON", review_lot(**lot(), llm_call=llm("не знаю")) is None)
 check("LLM упал", review_lot(**lot(), llm_call=lambda m, max_tokens=600: 1 / 0) is None)
-called = []
-review_lot(**lot(desc=""), llm_call=lambda m, max_tokens=600: called.append(1))
-check("пустое описание → LLM не вызываем", called == [])
+
+print("\n[6b] Описание не прочитано → разбор по заголовку: новый/б/у и признаки фейка")
+r = review_lot(**lot(desc="", title="Apple MacBook Air 13 M5 16/512 новый, чек"), llm_call=llm({
+    "problems": [{"kind": "liquid", "severity": "hard", "quote": "был залит чаем"}],
+    "listing": "new", "fake_signals": ["цена ниже рынка на 20%"],
+}))
+check("разбор по заголовку получен", r is not None and r.title_only)
+check("дефект, которого нет в заголовке, не засчитан", not r.is_reject)
+check("новый распознан", r.is_new is True)
+b = format_block(r)
+check("в блоке сказано, что разбор по заголовку", "по заголовку" in b)
+check("в блоке пометка «новый»", "🆕" in b)
+check("в блоке признаки фейка", "Признаки фейка" in b and "ниже рынка на 20%" in b)
+check("без описания не обещаем «проблем нет»", "проблем в описании нет" not in b)
+r = review_lot(**lot(desc="", title="MacBook Air M2 разбит экран"), llm_call=llm({
+    "problems": [{"kind": "screen_crack", "severity": "hard", "quote": "разбит экран"}], "listing": "used"}))
+check("дефект в самом заголовке → отсев и без описания", r.is_reject and r.is_new is False)
 
 print("\n[7] Блок в алерте")
 r = review_lot(**lot(), llm_call=llm({
