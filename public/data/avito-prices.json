@@ -160,7 +160,7 @@
       "median_price": 194390,
       "buyout_price": 155000,
       "samples_count": 16,
-      "updated_at": "2026-09-27 05:10",
+      "updated_at": "2026-09-28 05:10",
       "collector_synced": true
     },
     {
@@ -193,12 +193,13 @@
       "processor": "Apple M1 Pro",
       "ram": 32,
       "ssd": 512,
-      "min_price": 73000,
-      "max_price": 154990,
-      "median_price": 110000,
-      "buyout_price": 88000,
+      "min_price": 88000,
+      "max_price": 119990,
+      "median_price": 94995,
+      "buyout_price": 75000,
       "samples_count": 35,
-      "updated_at": "2026-04-25 20:12"
+      "updated_at": "2026-09-28 05:10",
+      "collector_synced": true
     },
     {
       "model_name": "MacBook Pro 16 (2021)",
@@ -647,10 +648,10 @@
       "ssd": 512,
       "min_price": 199990,
       "max_price": 360000,
-      "median_price": 204990,
-      "buyout_price": 163000,
+      "median_price": 205000,
+      "buyout_price": 164000,
       "samples_count": 13,
-      "updated_at": "2026-09-21 05:10",
+      "updated_at": "2026-09-28 05:10",
       "collector_synced": true
     },
     {
@@ -1004,7 +1005,7 @@
       "median_price": 89890,
       "buyout_price": 71000,
       "samples_count": 21,
-      "updated_at": "2026-09-27 05:10",
+      "updated_at": "2026-09-28 05:10",
       "collector_synced": true
     },
     {
@@ -1044,7 +1045,7 @@
       "median_price": 139390,
       "buyout_price": 111000,
       "samples_count": 33,
-      "updated_at": "2026-09-27 05:10",
+      "updated_at": "2026-09-28 05:10",
       "collector_synced": true
     },
     {
@@ -1058,7 +1059,7 @@
       "median_price": 160890,
       "buyout_price": 128000,
       "samples_count": 33,
-      "updated_at": "2026-09-27 05:10",
+      "updated_at": "2026-09-28 05:10",
       "collector_synced": true
     },
     {
@@ -1328,7 +1329,7 @@
       "median_price": 79990,
       "buyout_price": 63000,
       "samples_count": 21,
-      "updated_at": "2026-09-26 05:10",
+      "updated_at": "2026-09-28 05:10",
       "collector_synced": true
     },
     {
@@ -1583,12 +1584,12 @@
       "processor": "Apple M1",
       "ram": 16,
       "ssd": 512,
-      "min_price": 35500,
-      "max_price": 85000,
-      "median_price": 64945,
+      "min_price": 15000,
+      "max_price": 90000,
+      "median_price": 64995,
       "buyout_price": 51000,
       "samples_count": 3,
-      "updated_at": "2026-09-21 05:10",
+      "updated_at": "2026-09-28 05:10",
       "collector_synced": true
     },
     {
@@ -1610,12 +1611,13 @@
       "processor": "Apple M2",
       "ram": 8,
       "ssd": 256,
-      "min_price": 40000,
-      "max_price": 55000,
-      "median_price": 52900,
-      "buyout_price": 45000,
+      "min_price": 49900,
+      "max_price": 69990,
+      "median_price": 52500,
+      "buyout_price": 42000,
       "samples_count": 17,
-      "updated_at": "2026-07-18 03:59"
+      "updated_at": "2026-09-28 05:10",
+      "collector_synced": true
     },
     {
       "model_name": "MacBook Pro 13 (2022, M2)",
@@ -1808,12 +1810,12 @@
       "processor": "Apple M3 Pro",
       "ram": 18,
       "ssd": 512,
-      "min_price": 120000,
-      "max_price": 155000,
-      "median_price": 125000,
-      "buyout_price": 100000,
+      "min_price": 110000,
+      "max_price": 170000,
+      "median_price": 130000,
+      "buyout_price": 104000,
       "samples_count": 4,
-      "updated_at": "2026-09-21 05:10",
+      "updated_at": "2026-09-28 05:10",
       "collector_synced": true
     },
     {
@@ -2076,12 +2078,12 @@
       "processor": "Apple M4 Max",
       "ram": 36,
       "ssd": 1024,
-      "min_price": 239000,
+      "min_price": 235000,
       "max_price": 314500,
       "median_price": 287990,
       "buyout_price": 230000,
       "samples_count": 8,
-      "updated_at": "2026-09-21 05:10",
+      "updated_at": "2026-09-28 05:10",
       "collector_synced": true
     },
     {
@@ -2164,7 +2166,7 @@
       "median_price": 157390,
       "buyout_price": 125000,
       "samples_count": 12,
-      "updated_at": "2026-09-27 05:10",
+      "updated_at": "2026-09-28 05:10",
       "collector_synced": true
     },
     {
@@ -2192,7 +2194,7 @@
       "median_price": 173890,
       "buyout_price": 139000,
       "samples_count": 39,
-      "updated_at": "2026-09-27 05:10",
+      "updated_at": "2026-09-28 05:10",
       "collector_synced": true
     },
     {
@@ -2201,12 +2203,12 @@
       "processor": "Apple M5",
       "ram": 32,
       "ssd": 512,
-      "min_price": 136990,
-      "max_price": 167500,
-      "median_price": 159990,
-      "buyout_price": 127000,
+      "min_price": 163990,
+      "max_price": 203990,
+      "median_price": 193950,
+      "buyout_price": 155000,
       "samples_count": 13,
-      "updated_at": "2026-07-28 05:10",
+      "updated_at": "2026-09-28 05:10",
       "collector_synced": true
     },
     {
@@ -2217,10 +2219,10 @@
       "ssd": 1024,
       "min_price": 159990,
       "max_price": 234990,
-      "median_price": 217800,
-      "buyout_price": 174000,
+      "median_price": 210990,
+      "buyout_price": 168000,
       "samples_count": 27,
-      "updated_at": "2026-09-16 05:10",
+      "updated_at": "2026-09-28 05:10",
       "collector_synced": true
     },
     {
@@ -2234,7 +2236,7 @@
       "median_price": 165390,
       "buyout_price": 132000,
       "samples_count": 25,
-      "updated_at": "2026-09-27 05:10",
+      "updated_at": "2026-09-28 05:10",
       "collector_synced": true
     },
     {
@@ -2248,7 +2250,7 @@
       "median_price": 176890,
       "buyout_price": 141000,
       "samples_count": 13,
-      "updated_at": "2026-09-27 05:10",
+      "updated_at": "2026-09-28 05:10",
       "collector_synced": true
     },
     {
@@ -2262,7 +2264,7 @@
       "median_price": 202390,
       "buyout_price": 161000,
       "samples_count": 24,
-      "updated_at": "2026-09-27 05:10",
+      "updated_at": "2026-09-28 05:10",
       "collector_synced": true
     },
     {
@@ -2272,11 +2274,11 @@
       "ram": 32,
       "ssd": 512,
       "min_price": 164990,
-      "max_price": 210000,
-      "median_price": 206900,
+      "max_price": 219990,
+      "median_price": 207000,
       "buyout_price": 165000,
       "samples_count": 15,
-      "updated_at": "2026-09-21 05:10",
+      "updated_at": "2026-09-28 05:10",
       "collector_synced": true
     },
     {
@@ -2402,7 +2404,7 @@
       "median_price": 198890,
       "buyout_price": 159000,
       "samples_count": 12,
-      "updated_at": "2026-09-27 05:10",
+      "updated_at": "2026-09-28 05:10",
       "collector_synced": true
     },
     {
@@ -2430,7 +2432,7 @@
       "median_price": 216390,
       "buyout_price": 173000,
       "samples_count": 30,
-      "updated_at": "2026-09-27 05:10",
+      "updated_at": "2026-09-28 05:10",
       "collector_synced": true
     },
     {
@@ -2439,12 +2441,12 @@
       "processor": "Apple M5",
       "ram": 32,
       "ssd": 1024,
-      "min_price": 162990,
-      "max_price": 217990,
-      "median_price": 212000,
-      "buyout_price": 169000,
+      "min_price": 215990,
+      "max_price": 244000,
+      "median_price": 222480,
+      "buyout_price": 177000,
       "samples_count": 22,
-      "updated_at": "2026-08-15 05:10",
+      "updated_at": "2026-09-28 05:10",
       "collector_synced": true
     },
     {
@@ -2500,7 +2502,7 @@
       "median_price": 359390,
       "buyout_price": 287000,
       "samples_count": 15,
-      "updated_at": "2026-09-21 05:10",
+      "updated_at": "2026-09-28 05:10",
       "collector_synced": true
     },
     {
@@ -2890,6 +2892,104 @@
       "buyout_price": 65000,
       "samples_count": 13,
       "updated_at": "2026-09-27 05:10",
+      "collector_synced": true
+    },
+    {
+      "model_name": "Mac mini M6",
+      "family": "Mac mini",
+      "processor": "Apple M6",
+      "ram": 16,
+      "ssd": 256,
+      "min_price": 88888,
+      "max_price": 114990,
+      "median_price": 94000,
+      "buyout_price": 75000,
+      "samples_count": 14,
+      "updated_at": "2026-09-28 05:10",
+      "collector_synced": true
+    },
+    {
+      "model_name": "Mac mini M6",
+      "family": "Mac mini",
+      "processor": "Apple M6",
+      "ram": 16,
+      "ssd": 512,
+      "min_price": 88888,
+      "max_price": 145000,
+      "median_price": 137499,
+      "buyout_price": 109000,
+      "samples_count": 15,
+      "updated_at": "2026-09-28 05:10",
+      "collector_synced": true
+    },
+    {
+      "model_name": "MacBook Air M2",
+      "family": "MacBook Air",
+      "processor": "Apple M2",
+      "ram": 16,
+      "ssd": 256,
+      "min_price": 42000,
+      "max_price": 85000,
+      "median_price": 64990,
+      "buyout_price": 51000,
+      "samples_count": 13,
+      "updated_at": "2026-09-28 05:10",
+      "collector_synced": true
+    },
+    {
+      "model_name": "MacBook Air M2",
+      "family": "MacBook Air",
+      "processor": "Apple M2",
+      "ram": 8,
+      "ssd": 256,
+      "min_price": 30000,
+      "max_price": 79500,
+      "median_price": 64990,
+      "buyout_price": 51000,
+      "samples_count": 13,
+      "updated_at": "2026-09-28 05:10",
+      "collector_synced": true
+    },
+    {
+      "model_name": "MacBook Air 16 M4",
+      "family": "MacBook Air",
+      "processor": "Apple M4",
+      "ram": 16,
+      "ssd": 256,
+      "min_price": 78999,
+      "max_price": 120000,
+      "median_price": 84000,
+      "buyout_price": 67000,
+      "samples_count": 13,
+      "updated_at": "2026-09-28 05:10",
+      "collector_synced": true
+    },
+    {
+      "model_name": "MacBook Air 13 M5",
+      "family": "MacBook Air",
+      "processor": "Apple M5",
+      "ram": 32,
+      "ssd": 4096,
+      "min_price": 234990,
+      "max_price": 369990,
+      "median_price": 344400,
+      "buyout_price": 275000,
+      "samples_count": 13,
+      "updated_at": "2026-09-28 05:10",
+      "collector_synced": true
+    },
+    {
+      "model_name": "MacBook Air 15 M5",
+      "family": "MacBook Air",
+      "processor": "Apple M5",
+      "ram": 32,
+      "ssd": 4096,
+      "min_price": 244990,
+      "max_price": 395990,
+      "median_price": 371950,
+      "buyout_price": 297000,
+      "samples_count": 13,
+      "updated_at": "2026-09-28 05:10",
       "collector_synced": true
     }
   ]
