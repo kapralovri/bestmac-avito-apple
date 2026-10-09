@@ -10,6 +10,7 @@ import SEOContent from "@/components/SEOContent";
 import LeadForm from "@/components/LeadForm";
 import { faqData } from "@/lib/schema";
 import PopularBuyoutPrices from "@/components/sell/PopularBuyoutPrices";
+import HomeSkupka from "@/components/HomeSkupka";
 import { POPULAR_MODELS } from "@/lib/model-slugs";
 
 export const metadata: Metadata = {
@@ -23,6 +24,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-background text-foreground">
       <Hero />
       <AboutSection />
+      <HomeSkupka />
       <OffersSection />
 
       {/* Цены выкупа популярных моделей в HTML главной — главной точки входа
