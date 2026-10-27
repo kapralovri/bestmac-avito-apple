@@ -14,7 +14,6 @@ const Header = () => {
   const navItems = [
     { path: "/buy", label: "В продаже" },
     { path: "/sell", label: "Выкуп" },
-    { path: "/monitory", label: "Мониторы" },
     { path: "/selection", label: "Подбор" },
     { path: "/service", label: "Сервис" },
     { path: "/blog", label: "Блог" },
