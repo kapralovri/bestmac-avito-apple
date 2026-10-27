@@ -350,7 +350,7 @@ export const VYKUP_LANDINGS: VykupLandingConfig[] = [
       },
       {
         h: "Что выкупаем",
-        p: "MacBook Air и Pro (Intel и Apple Silicon), iMac, Mac mini, Mac Studio, мониторы Apple. Неисправные устройства тоже включим в оценку — по цене запчастей, отдельной строкой в КП.",
+        p: "MacBook Air и Pro (Intel и Apple Silicon), iMac, Mac mini, Mac Studio. Неисправные устройства тоже включим в оценку — по цене запчастей, отдельной строкой в КП.",
       },
     ],
     faq: [
