@@ -93,11 +93,11 @@
       "ram": 16,
       "ssd": 512,
       "min_price": 100000,
-      "max_price": 151990,
-      "median_price": 134990,
-      "buyout_price": 107000,
+      "max_price": 160000,
+      "median_price": 130000,
+      "buyout_price": 104000,
       "samples_count": 51,
-      "updated_at": "2026-10-21 05:10",
+      "updated_at": "2026-10-28 05:10",
       "collector_synced": true
     },
     {
@@ -123,7 +123,7 @@
       "median_price": 312890,
       "buyout_price": 250000,
       "samples_count": 4,
-      "updated_at": "2026-10-21 05:10",
+      "updated_at": "2026-10-28 05:10",
       "collector_synced": true
     },
     {
@@ -160,7 +160,7 @@
       "median_price": 192390,
       "buyout_price": 153000,
       "samples_count": 16,
-      "updated_at": "2026-10-27 05:10",
+      "updated_at": "2026-10-28 05:10",
       "collector_synced": true
     },
     {
@@ -1061,7 +1061,7 @@
       "median_price": 169390,
       "buyout_price": 135000,
       "samples_count": 33,
-      "updated_at": "2026-10-27 05:10",
+      "updated_at": "2026-10-28 05:10",
       "collector_synced": true
     },
     {
@@ -1124,10 +1124,10 @@
       "ssd": 1024,
       "min_price": 165000,
       "max_price": 272990,
-      "median_price": 221000,
+      "median_price": 220000,
       "buyout_price": 176000,
       "samples_count": 3,
-      "updated_at": "2026-10-21 05:10",
+      "updated_at": "2026-10-28 05:10",
       "collector_synced": true
     },
     {
@@ -2146,11 +2146,11 @@
       "ram": 48,
       "ssd": 512,
       "min_price": 180000,
-      "max_price": 307990,
-      "median_price": 255091,
-      "buyout_price": 204000,
+      "max_price": 300990,
+      "median_price": 259990,
+      "buyout_price": 207000,
       "samples_count": 5,
-      "updated_at": "2026-10-21 05:10",
+      "updated_at": "2026-10-28 05:10",
       "collector_synced": true
     },
     {
@@ -2357,10 +2357,10 @@
       "ssd": 512,
       "min_price": 40000,
       "max_price": 161200,
-      "median_price": 104000,
-      "buyout_price": 83000,
+      "median_price": 105000,
+      "buyout_price": 84000,
       "samples_count": 15,
-      "updated_at": "2026-10-21 05:10",
+      "updated_at": "2026-10-28 05:10",
       "collector_synced": true
     },
     {
@@ -2383,12 +2383,12 @@
       "processor": "Apple M4",
       "ram": 24,
       "ssd": 512,
-      "min_price": 125000,
+      "min_price": 140000,
       "max_price": 221100,
-      "median_price": 149990,
-      "buyout_price": 119000,
+      "median_price": 179000,
+      "buyout_price": 143000,
       "samples_count": 18,
-      "updated_at": "2026-10-21 05:10",
+      "updated_at": "2026-10-28 05:10",
       "collector_synced": true
     },
     {
@@ -3025,12 +3025,12 @@
       "processor": "Apple M5 Max",
       "ram": 64,
       "ssd": 2048,
-      "min_price": 459990,
+      "min_price": 459000,
       "max_price": 779990,
-      "median_price": 480000,
-      "buyout_price": 384000,
+      "median_price": 484995,
+      "buyout_price": 387000,
       "samples_count": 12,
-      "updated_at": "2026-10-21 05:10",
+      "updated_at": "2026-10-28 05:10",
       "collector_synced": true
     },
     {
@@ -3055,10 +3055,10 @@
       "ssd": 512,
       "min_price": 162700,
       "max_price": 209990,
-      "median_price": 194990,
-      "buyout_price": 155000,
+      "median_price": 174595,
+      "buyout_price": 139000,
       "samples_count": 12,
-      "updated_at": "2026-10-21 05:10",
+      "updated_at": "2026-10-28 05:10",
       "collector_synced": true
     },
     {
@@ -3193,12 +3193,12 @@
       "processor": "Apple M5",
       "ram": 32,
       "ssd": 2048,
-      "min_price": 260000,
-      "max_price": 282590,
+      "min_price": 259400,
+      "max_price": 285990,
       "median_price": 267990,
       "buyout_price": 214000,
       "samples_count": 12,
-      "updated_at": "2026-10-21 05:10",
+      "updated_at": "2026-10-28 05:10",
       "collector_synced": true
     },
     {
@@ -3311,6 +3311,20 @@
       "buyout_price": 262000,
       "samples_count": 12,
       "updated_at": "2026-10-22 05:10",
+      "collector_synced": true
+    },
+    {
+      "model_name": "MacBook Air 13 M5",
+      "family": "MacBook Air",
+      "processor": "Apple M5",
+      "ram": 32,
+      "ssd": 2048,
+      "min_price": 238600,
+      "max_price": 274690,
+      "median_price": 249990,
+      "buyout_price": 199000,
+      "samples_count": 13,
+      "updated_at": "2026-10-28 05:10",
       "collector_synced": true
     }
   ]
