@@ -36,6 +36,7 @@ from common.classifier import classify
 from common.subscriptions import (
     load_subscriptions, save_subscriptions, make_subscription, match_from_config,
 )
+from common import url_watches as _uw
 
 # GST-60: «Найти сделки» прямо из бота. Переиспуем готовый сорсинг-дайджест
 # (тот же, что уходит в рассылке). Импорт защищён — бот поднимается даже без модуля.
@@ -111,6 +112,8 @@ BOT_COMMANDS: list[tuple[str, str]] = [
     ("deals",  "🔍 Какие Mac выгодно выкупать прямо сейчас"),
     ("model",  "🔎 Выбрать модель → ссылка на мониторинг"),
     ("subs",   "🔔 Мои подписки «модель + моя цена»"),
+    ("filter", "🚗 Следить за фильтром Авито: /filter ссылка"),
+    ("filters", "🚗 Мои фильтры Авито"),
     ("status", "🩺 Жив ли домашний коллектор Avito"),
     ("review", "⭐ Сообщение клиенту с просьбой об отзыве"),
     ("cancel", "✖️ Отменить текущий ввод"),
@@ -437,6 +440,7 @@ def _wizard_monitor_text(model_name: str, c: dict) -> str:
 # ─── GST-73: подписки «эта конфигурация — до такой-то цены» ──────────────────
 SUBSCRIPTIONS_FILE = Path(
     os.environ.get('SUBSCRIPTIONS_PATH', 'public/data/subscriptions.json'))
+URL_WATCHES_FILE = _uw.URL_WATCHES_FILE   # фильтры Авито (/filter)
 
 _PRICE_RE = re.compile(r'\d[\d\s  .,]*')
 # Ниже этой суммы Mac не стоит: такое число почти наверняка приехало из фразы
@@ -757,6 +761,12 @@ class NegotiationBot:
         if text.startswith("/подписки") or text.startswith("/subs"):
             return [{"type": "send", "chat_id": chat_id, **self._subscriptions_view()}]
 
+        # ── Фильтры Авито: каждое новое объявление (docs/avito-filter-watch.md) ──
+        if text.startswith("/filters") or text.startswith("/фильтры"):
+            return [{"type": "send", "chat_id": chat_id, **self._filters_view()}]
+        if text.startswith("/filter") or text.startswith("/фильтр"):
+            return [{"type": "send", "chat_id": chat_id, **self._add_filter(chat_id, text)}]
+
         # Ждём цену для подписки — этот режим должен перехватывать текст РАНЬШЕ
         # ветки «ответ продавца», иначе число уедет в переговоры.
         pending = self.state.get("pending_sub")
@@ -840,6 +850,7 @@ class NegotiationBot:
                              "🔍 /сделки — какие Mac выгодно выкупать прямо сейчас.\n"
                              "🔎 /модель — выбрать модель кнопками и получить ссылку на мониторинг.\n"
                              "🔔 /подписки — следить за конфигурацией по вашей цене.\n"
+                             "🚗 /filter ссылка — каждое новое объявление из фильтра Авито; /filters — список.\n"
                              "🩺 /status — статус домашнего коллектора Avito.\n"
                              "⭐ /review — сообщение клиенту с просьбой об отзыве на Картах."}]
 
@@ -869,6 +880,18 @@ class NegotiationBot:
             actions.append({"type": "send", "chat_id": chat_id,
                             "text": self._sourcing_digest(),
                             "buttons": [[("🔄 Обновить поиск", "sourcing:now")]]})
+            return actions
+
+        if data.startswith("filt:del:"):
+            watches = _uw.load_watches(URL_WATCHES_FILE)
+            gone = watches.pop(data.split(":", 2)[2], None)
+            if gone is None:
+                actions.append({"type": "send", "chat_id": chat_id, "text": "Фильтр уже удалён."})
+                return actions
+            _uw.save_watches(watches, URL_WATCHES_FILE)
+            actions.append({"type": "send", "chat_id": chat_id,
+                            "text": f"🗑 Фильтр «{_esc(gone.get('label') or '')}» удалён — "
+                                    "вкладку Chrome закроет сам."})
             return actions
 
         # ── GST-73: подписки «эта конфигурация — до такой-то цены» ───────────
@@ -1065,6 +1088,49 @@ class NegotiationBot:
                 self.tx.send_message(a["chat_id"], a["text"], a.get("buttons"))
             elif a["type"] == "answer_callback":
                 self.tx.answer_callback(a["id"], a.get("text"))
+
+    def _add_filter(self, chat_id, text: str) -> dict:
+        cmd = _uw.parse_filter_command(text)
+        if cmd is None:
+            return {"text": ("Пришлите ссылку на поиск Авито с настроенным фильтром:\n"
+                             "<code>/filter ссылка до 5000000 Камри</code>\n"
+                             "Цена и название — по желанию. Буду присылать каждое новое "
+                             "объявление из этого фильтра.")}
+        if _uw.normalize_url(cmd["url"]) is None:
+            return {"text": "Это не ссылка на поиск Авито. Настройте фильтр на avito.ru "
+                            "и пришлите адрес страницы с результатами."}
+        watches = _uw.load_watches(URL_WATCHES_FILE)
+        key = _uw.normalize_url(cmd["url"])[1]
+        dup = next((w for w in watches.values() if w.get("key") == key), None)
+        if dup:
+            return {"text": f"Этот фильтр уже отслеживаю: «{_esc(dup.get('label') or '')}». "
+                            "Все фильтры: /filters"}
+        if len(watches) >= _uw.MAX_WATCHES:
+            return {"text": f"Уже {_uw.MAX_WATCHES} фильтров — это предел для домашнего Chrome. "
+                            "Удалите ненужный: /filters"}
+        w = _uw.make_watch(chat_id=chat_id, url=cmd["url"], max_price=cmd["max_price"],
+                           label=cmd["label"])
+        watches[w["id"]] = w
+        _uw.save_watches(watches, URL_WATCHES_FILE)
+        cap = f"\nПотолок: <b>{_fmt(w['max_price'])} ₽</b>" if w.get("max_price") else ""
+        return {"text": (f"✅ <b>Слежу за фильтром «{_esc(w['label'])}»</b>{cap}\n\n"
+                         "Домашний Chrome откроет вкладку с фильтром в течение нескольких минут. "
+                         "Объявления, которые уже висят, присылать не буду — только новые. "
+                         "Не больше 20 в час.\n"
+                         "Все фильтры: /filters"),
+                "buttons": [[("🗑 Удалить этот фильтр", f"filt:del:{w['id']}")]]}
+
+    def _filters_view(self) -> dict:
+        watches = _uw.load_watches(URL_WATCHES_FILE)
+        if not watches:
+            return {"text": ("Фильтров нет.\n\nЧтобы добавить: настройте поиск на avito.ru и "
+                             "пришлите <code>/filter ссылка до цены название</code>.")}
+        lines, buttons = ["🚗 <b>Ваши фильтры Авито</b>", ""], []
+        for w in watches.values():
+            cap = f" до {_fmt(w['max_price'])} ₽" if w.get("max_price") else ""
+            lines.append(f"• <a href='{_esc(w.get('url') or '')}'>{_esc(w.get('label') or '')}</a>{cap}")
+            buttons.append([(f"🗑 {w.get('label') or 'удалить'}", f"filt:del:{w.get('id')}")])
+        return {"text": "\n".join(lines), "buttons": buttons}
 
     def _subscriptions_view(self) -> dict:
         """Список активных подписок с кнопками снятия (тело действия «send»)."""

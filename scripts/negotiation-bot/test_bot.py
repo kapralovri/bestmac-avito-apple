@@ -424,6 +424,32 @@ check("ссылка ведёт на форму отзыва карточки Bes
       REVIEW_URL == "https://yandex.ru/maps/org/215912324656/reviews/?add-review=true")
 check("/review в меню команд", any(c == "review" for c, _ in BOT_COMMANDS))
 
+print("\n[16] /filter — слежение за фильтром Авито (docs/avito-filter-watch.md)")
+botmod.URL_WATCHES_FILE = tmp / "url-watches16.json"
+from common.url_watches import load_watches as _lw
+_CARURL = ("https://www.avito.ru/moskva_i_mo/avtomobili/s_probegom-ASgBAgICAUSGFMjmAQ?cd=1"
+           "&context=H4sIAAAA&f=ASgBAQECAkSGFMjmAfrwD&localPriority=0&s=104")
+_s = find_send(msg(777, f"/filter {_CARURL} до 5000000 Камри"))
+_t = " ".join(a.get("text", "") for a in _s)
+check("фильтр принят", "Слежу за фильтром" in _t and "Камри" in _t)
+check("потолок цены показан", "5 000 000" in _t)
+_w = list(_lw(botmod.URL_WATCHES_FILE).values())
+check("фильтр сохранён без служебных параметров", len(_w) == 1 and "context=" not in _w[0]["url"])
+_s = find_send(msg(777, "/filter https://auto.ru/cars/"))
+check("не Авито — понятная ошибка", any("Авито" in a.get("text", "") for a in _s))
+_s = find_send(msg(777, "/filter"))
+check("без ссылки — подсказка с примером", any("/filter" in a.get("text", "") for a in _s))
+_s = find_send(msg(777, f"/filter {_CARURL}"))
+check("тот же фильтр второй раз — не дублируем", len(_lw(botmod.URL_WATCHES_FILE)) == 1
+      and any("уже" in a.get("text", "") for a in _s))
+_s = find_send(msg(777, "/filters"))
+_btns = [cbd for a in _s for row in (a.get("buttons") or []) for (_lbl, cbd) in row]
+check("/filters — список с кнопкой удаления", any(c.startswith("filt:del:") for c in _btns))
+_acts = bot2.handle_update({"update_id": 1601, "callback_query": {
+    "id": "fd", "data": _btns[0], "message": {"chat": {"id": 777}}}})
+check("удаление фильтра", _lw(botmod.URL_WATCHES_FILE) == {})
+check("/filters в меню команд", any(c == "filters" for c, _ in BOT_COMMANDS))
+
 print()
 if _fails:
     print(f"❌ ПРОВАЛЕНО {len(_fails)}: " + "; ".join(_fails))

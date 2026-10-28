@@ -1070,6 +1070,62 @@ check("в торг уходит потолок покупки, а не стар�
 _svP.TELEGRAM_URL = _prev_tgP
 
 
+# ─── 26. Фильтр Авито из бота: каждое новое объявление (docs/avito-filter-watch.md) ─
+print("\n[26] Фильтр Авито")
+import scanner_v2 as _svW
+from common.url_watches import make_watch as _mkW, save_watches as _saveW, load_watches as _loadW
+
+_svW.time.sleep = lambda *a, **k: None
+_CAR = "https://www.avito.ru/moskva_i_mo/avtomobili/s_probegom?f=ASgB&s=104"
+_wfile = Path(_tmpR.mkdtemp()) / 'url-watches.json'
+_svW.URL_WATCHES_FILE = _wfile
+_wW = _mkW(chat_id=1, url=_CAR, max_price=5000000, label="Камри")
+_saveW({_wW['id']: _wW}, _wfile)
+
+def _mk_watch_scanner():
+    sc = _svW.AvitoScannerV2(None)
+    sc.seen = set()
+    for n in ('_start_browser', '_warmup', '_close', '_save_seen'):
+        setattr(sc, n, lambda *a, **k: None)
+    sc._write_proc_stats = lambda *a: None
+    sc._accumulate_raw = lambda *a: None
+    sc._market_for = lambda cfg, comps: (None, None)
+    sent = []
+    sc._send_telegram = lambda text, log_msg: sent.append(text) or True
+    return sc, sent
+
+_src = _CAR.replace('s=104', 's=104&context=abc&p=1')
+_cars1 = [{'url': f'https://www.avito.ru/a/{i}', 'title': f'Toyota Camry {i}', 'price': 4500000,
+           'source_url': _src} for i in range(3)]
+_s1, _sent1 = _mk_watch_scanner()
+_s1.process_cards(_cars1)
+check("первая пачка фильтра — молча (базовая линия)", _sent1 == [])
+check("базовая линия отмечена на диске", _loadW(_wfile)[_wW['id']]['baseline_done'] is True)
+
+_cars2 = [{'url': 'https://www.avito.ru/a/new', 'title': 'Toyota Camry 2019', 'price': 4400000, 'source_url': _src},
+          {'url': 'https://www.avito.ru/a/expensive', 'title': 'Camry', 'price': 5900000, 'source_url': _src},
+          {'url': 'https://www.avito.ru/a/0', 'title': 'Toyota Camry 0', 'price': 4500000, 'source_url': _src}]
+_s2, _sent2 = _mk_watch_scanner()
+_s2.process_cards(_cars2)
+check("новое объявление ниже потолка — пришло одно сообщение", len(_sent2) == 1 and 'Toyota Camry 2019' in _sent2[0])
+check("сообщение про машину", _sent2 and _sent2[0].startswith('🚗'))
+
+_s3, _sent3 = _mk_watch_scanner()
+_s3.process_cards([{'url': 'https://www.avito.ru/a/other', 'title': 'Toyota Camry', 'price': 1000,
+                    'source_url': 'https://www.avito.ru/moskva/avtomobili?q=bmw&s=104'}])
+check("машина не из фильтра — молча отброшена (как раньше)", _sent3 == [])
+
+# бот удалил фильтр во время прогона — сканер его не воскрешает
+_s4, _sent4 = _mk_watch_scanner()
+_orig_send = _s4._send_telegram
+def _delete_then_send(text, log_msg):
+    _saveW({}, _wfile)
+    return _orig_send(text, log_msg)
+_s4._send_telegram = _delete_then_send
+_s4.process_cards([{'url': 'https://www.avito.ru/a/late', 'title': 'Camry', 'price': 4000000, 'source_url': _src}])
+check("удалённый ботом фильтр не воскрешён", _loadW(_wfile) == {})
+
+
 # ─── Итог ────────────────────────────────────────────────────────────────────
 print()
 if _fails:

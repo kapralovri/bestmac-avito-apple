@@ -31,6 +31,16 @@ function storageSet(obj) {
   try { chrome.storage.local.set(obj); } catch (e) {}
 }
 
+// Фильтры Авито из бота (/filter): сервер отдаёт их список в ответе на каждую
+// пачку и пульс. Кладём в storage — сторож в background откроет по вкладке на
+// фильтр. Нет списка в ответе (сбой, старый сервер) — ничего не трогаем.
+async function rememberWatches(resp) {
+  try {
+    const j = await resp.clone().json();
+    if (j && Array.isArray(j.watches)) storageSet({ watchUrls: j.watches.slice(0, 10) });
+  } catch (e) { /* не JSON — не наше дело */ }
+}
+
 // Пульс сторожу: «вкладка жива, прошла круг, вот что видела».
 // Ошибку глотаем — если SW спит или расширение перезагружают, это не повод
 // ронять сбор: sendMessage без слушателя бросает runtime.lastError.
@@ -115,11 +125,12 @@ async function tick() {
     if (!fresh.length) {
       if (Date.now() - (cfg.lastPostAt || 0) > HEARTBEAT_MS) {
         try {
-          await fetch(endpoint, {
+          const hb = await fetch(endpoint, {
             method: "POST",
             headers: { "content-type": "application/json", "x-intake-token": cfg.token },
-            body: JSON.stringify({ cards: [] }),
+            body: JSON.stringify({ cards: [], source_url: location.href }),
           });
+          rememberWatches(hb);
           storageSet({ lastPostAt: Date.now() });
           log("пульс на сервер (новых лотов нет)");
         } catch (e) { log("пульс не ушёл:", e && e.message); }
@@ -135,8 +146,9 @@ async function tick() {
       const resp = await fetch(endpoint, {
         method: "POST",
         headers: { "content-type": "application/json", "x-intake-token": cfg.token },
-        body: JSON.stringify({ cards: fresh }),
+        body: JSON.stringify({ cards: fresh, source_url: location.href }),
       });
+      rememberWatches(resp);
       if (resp.ok) {
         fresh.forEach((c) => seen.add(c.url));
         try { localStorage.setItem(SEEN_KEY, JSON.stringify([...seen].slice(-4000))); } catch (e) {}

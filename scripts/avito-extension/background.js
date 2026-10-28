@@ -88,15 +88,16 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       const tabId = sender.tab && sender.tab.id;
       if (!tabId) return sendResponse({ ok: false });
       const url = (sender.tab && sender.tab.url) || "";
-      const { beats = {}, monitors = {}, adopted = {} } = await get(
-        ["beats", "monitors", "adopted"]);
+      const { beats = {}, monitors = {}, adopted = {}, watchTabs = {} } = await get(
+        ["beats", "monitors", "adopted", "watchTabs"]);
       beats[tabId] = { at: now(), count: msg.count | 0, captcha: !!msg.captcha, url };
       // GST-74: вкладку могли открыть по ссылке из бота («следить за этой
       // конфигурацией до N ₽»), а не кнопкой «Запустить мониторинг». Такая
       // вкладка собирает исправно, но раньше выпадала из-под сторожа и через
       // пару часов тихо умирала — ровно та болезнь, от которой сторож и заводили.
       // Считаем своей любую вкладку Avito, которая подаёт пульс.
-      const managed = Object.values(monitors).indexOf(tabId) !== -1;
+      const managed = Object.values(monitors).indexOf(tabId) !== -1
+        || Object.values(watchTabs).indexOf(tabId) !== -1;
       if (!managed && /:\/\/www\.avito\.ru\//.test(url)) adopted[tabId] = url;
       await set({ beats, adopted });
       if (msg.captcha) await notifyCaptcha();
@@ -185,7 +186,7 @@ async function watchdog() {
   // Вкладки из бота сторожим всегда: их могли открыть, ни разу не нажав
   // «Запустить мониторинг», и тогда ранний выход оставил бы их без присмотра.
   if (!monitoring) {
-    const healedAdopted = await watchAdopted(beats);
+    const healedAdopted = await watchAdopted(beats) + await watchFilters(beats);
     await set({ lastWatchdogAt: now(), lastHealed: healedAdopted });
     return;
   }
@@ -227,6 +228,7 @@ async function watchdog() {
   }
 
   healed += await watchAdopted(beats);
+  healed += await watchFilters(beats);
   await set({ monitors, lastWatchdogAt: now(), lastHealed: healed });
 }
 
@@ -255,5 +257,46 @@ async function watchAdopted(beats) {
     }
   }
   if (dirty) await set({ adopted });
+  return healed;
+}
+
+// Фильтры Авито из бота (/filter, docs/avito-filter-watch.md). Список приходит
+// от сервера через content.js (storage.watchUrls). На каждый фильтр — своя
+// фоновая вкладка: нет — открываем, фильтр удалили в боте — закрываем,
+// выгружена или молчит — лечим, как основные вкладки. Пока сервер ни разу не
+// ответил списком (watchUrls не массив) — ничего не трогаем.
+async function watchFilters(beats) {
+  const { watchUrls, watchTabs = {} } = await get(["watchUrls", "watchTabs"]);
+  if (!Array.isArray(watchUrls)) return 0;
+  const want = new Set(watchUrls);
+  let healed = 0;
+  for (const [url, tabId] of Object.entries(watchTabs)) {
+    if (want.has(url)) continue;
+    try { await chrome.tabs.remove(tabId); } catch (e) { /* уже закрыта */ }
+    delete watchTabs[url];
+    log("фильтр снят в боте — вкладка закрыта:", url);
+  }
+  for (const url of watchUrls) {
+    const tabId = watchTabs[url];
+    const tab = tabId ? await getTab(tabId) : null;
+    if (!tab) {
+      const fresh = await chrome.tabs.create({ url, active: false });
+      watchTabs[url] = fresh.id;
+      healed++;
+      log("вкладка фильтра открыта:", url);
+      continue;
+    }
+    if (tab.discarded) {
+      try { await chrome.tabs.reload(tabId); healed++; } catch (e) { log("reload fail", e && e.message); }
+      continue;
+    }
+    const b = beats[tabId];
+    const silentFor = b ? now() - b.at : Infinity;
+    if (silentFor > STUCK_MS) {
+      try { await chrome.tabs.update(tabId, { url }); healed++; log("молчащий фильтр перезапущен:", url); }
+      catch (e) { log("update fail", e && e.message); }
+    }
+  }
+  await set({ watchTabs });
   return healed;
 }

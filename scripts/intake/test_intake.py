@@ -54,6 +54,25 @@ def run():
     # 5) атомарность: временный файл убран
     assert not tmp.with_suffix('.tmp').exists()
 
+    # фильтр Авито: адрес вкладки уходит в каждую карточку пачки (docs/avito-filter-watch.md)
+    server.INCOMING = Path(tempfile.mkdtemp()) / 'incoming2.json'
+    server._append([{'url': 'car1', 'title': 'Camry', 'price': 4500000}],
+                   source_url='https://www.avito.ru/moskva/avtomobili?q=camry&s=104')
+    car = json.loads(server.INCOMING.read_text(encoding='utf-8'))[0]
+    assert car['source_url'] == 'https://www.avito.ru/moskva/avtomobili?q=camry&s=104', car
+    server._append([{'url': 'mac1', 'title': 'MacBook', 'price': 50000}], source_url=12345)
+    mac = [c for c in json.loads(server.INCOMING.read_text(encoding='utf-8')) if c['url'] == 'mac1'][0]
+    assert mac.get('source_url', '') == '', mac          # не строка — не пишем
+
+    # список фильтров для расширения — из url-watches.json; битый файл не роняет приём
+    wf = Path(tempfile.mkdtemp()) / 'url-watches.json'
+    server.URL_WATCHES = wf
+    assert server._watch_urls() == []
+    wf.write_text(json.dumps({'a': {'url': 'https://www.avito.ru/x?s=104'}, 'b': 'junk'}), encoding='utf-8')
+    assert server._watch_urls() == ['https://www.avito.ru/x?s=104']
+    wf.write_text('{битый', encoding='utf-8')
+    assert server._watch_urls() == []
+
     print('✅ intake _append тесты прошли')
 
 
