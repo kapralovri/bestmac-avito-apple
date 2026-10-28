@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
   const cors = corsHeaders(req.headers.get('origin'));
   // Тело читаем как текст и парсим вручную: расширение может слать content-type
   // text/plain (простой запрос), поэтому не полагаемся на req.json().
-  let body: { cards?: unknown };
+  let body: { cards?: unknown; source_url?: unknown };
   try {
     const raw = await req.text();
     body = raw ? JSON.parse(raw) : {};
@@ -68,11 +68,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'no vps url' }, { status: 500, headers: cors });
   }
   const cards = Array.isArray(body.cards) ? body.cards : [];
+  // Адрес вкладки — по нему VPS узнаёт карточки фильтров из бота (/filter).
+  const sourceUrl = typeof body.source_url === 'string' ? body.source_url.slice(0, 1000) : '';
   try {
     const r = await fetch(vps, {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-intake-token': token },
-      body: JSON.stringify({ cards }),
+      body: JSON.stringify({ cards, source_url: sourceUrl }),
       signal: AbortSignal.timeout(10000),
     });
     const j = await r.json().catch(() => ({ ok: true }));

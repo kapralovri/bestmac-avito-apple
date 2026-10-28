@@ -25,8 +25,24 @@ HOST = os.environ.get('INTAKE_HOST', '127.0.0.1')  # за Caddy-TLS на localho
 TOKEN = os.environ.get('INTAKE_TOKEN', '')
 INCOMING = Path(os.environ.get('INTAKE_CARDS_PATH', 'public/data/incoming-cards.json'))
 STATS = Path(os.environ.get('INTAKE_STATS_PATH', 'public/data/intake-stats.json'))
+# Фильтры Авито из бота (/filter): их URL отдаём расширению в ответе, чтобы оно
+# само открыло вкладку на каждый фильтр (docs/avito-filter-watch.md).
+URL_WATCHES = Path(os.environ.get('URL_WATCHES_PATH', 'public/data/url-watches.json'))
 MAX_CARDS = 3000
 MAX_BODY = 2 * 1024 * 1024   # 2 МБ — защита от раздувания памяти
+
+
+def _watch_urls():
+    """URL фильтров для расширения. Нет файла или он битый — пустой список:
+    приём карточек от этого не зависит."""
+    try:
+        data = json.loads(URL_WATCHES.read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return []
+    if not isinstance(data, dict):
+        return []
+    return [w['url'] for w in data.values()
+            if isinstance(w, dict) and isinstance(w.get('url'), str) and w['url']]
 
 
 def _bump_stats(n_received, n_added):
@@ -54,7 +70,7 @@ def _bump_stats(n_received, n_added):
         pass
 
 
-def _append(cards):
+def _append(cards, source_url=''):
     cur = []
     if INCOMING.exists():
         try:
@@ -75,8 +91,12 @@ def _append(cards):
             price = 0
         if price <= 0:
             continue
-        cur.append({'url': str(u), 'title': str(c.get('title', ''))[:160],
-                    'price': price, 'date': str(c.get('date', ''))[:40]})
+        card = {'url': str(u), 'title': str(c.get('title', ''))[:160],
+                'price': price, 'date': str(c.get('date', ''))[:40]}
+        # Адрес вкладки — по нему сканер узнаёт карточки фильтра из бота
+        if isinstance(source_url, str) and source_url:
+            card['source_url'] = source_url[:1000]
+        cur.append(card)
         seen.add(u)
         added += 1
     INCOMING.parent.mkdir(parents=True, exist_ok=True)
@@ -122,16 +142,17 @@ class Handler(BaseHTTPRequestHandler):
         try:
             data = json.loads(self.rfile.read(n) or b'{}')
             cards = data.get('cards') or []
+            source_url = data.get('source_url') or ''
         except Exception:
             return self._send(400, {'ok': False, 'error': 'json'})
         card_list = cards if isinstance(cards, list) else []
         with _WRITE_LOCK:
-            added = _append(card_list)
+            added = _append(card_list, source_url)
             try:
                 _bump_stats(len(card_list), added)
             except Exception:
                 pass
-        self._send(200, {'ok': True, 'added': added})
+        self._send(200, {'ok': True, 'added': added, 'watches': _watch_urls()})
 
     def do_GET(self):  # healthcheck
         self._send(200, {'ok': True, 'service': 'bestmac-intake'})

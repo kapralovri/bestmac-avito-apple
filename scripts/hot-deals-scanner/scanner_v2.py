@@ -40,6 +40,10 @@ from common.classifier import classify, config_to_db_key, processor_label
 from common.condition import analyze_condition
 from common.price_identity import config_key, row_identity
 from common.subscriptions import load_subscriptions, find_matches, record_hits
+from common.url_watches import (
+    URL_WATCHES_FILE, load_watches, save_watches, find_watch, decide, merge_state,
+    alert_text as watch_alert_text, rate_warn_text,
+)
 from common.market import robust_stats, assess_deal, MarketStats, resale_profit, fake_signals
 from common.negotiator import motivation_score, MotivationReport
 from common.ai_review import review_lot, format_block
@@ -2025,6 +2029,11 @@ class AvitoScannerV2:
         (_ensure_browser), а пачка без кандидатов обойдётся без капчи."""
         candidates = []
         raw_batch = {}   # live_key -> [цены] для накопителя (--modal-report)
+        # Фильтры Авито из бота (/filter): карточки их вкладок идут своим путём —
+        # каждое новое объявление владельцу, без классификатора Mac и рынка.
+        watches = load_watches(URL_WATCHES_FILE)
+        baseline_ids = {wid for wid, w in watches.items() if not w.get('baseline_done')}
+        touched = set()
         # Подписки читаем один раз на прогон: бот мог их поменять с прошлого раза.
         self.subscriptions = load_subscriptions()
         sub_hits = 0
@@ -2032,6 +2041,11 @@ class AvitoScannerV2:
             logger.info(f"🔔 Подписок активно: {len(self.subscriptions)}")
         for card in cards:
             try:
+                w = find_watch(watches, card.get('source_url') or '') if watches else None
+                if w is not None:
+                    touched.add(w['id'])
+                    self._watch_card(w, card, baseline=w['id'] in baseline_ids)
+                    continue
                 raw_url = card.get('url') or ''
                 url = clean_url(raw_url)
                 if not url or not card.get('price') or url in self.seen:
@@ -2090,6 +2104,11 @@ class AvitoScannerV2:
             except Exception as e:
                 logger.error(f"intake card: {e}")
         sent = self._dispatch_candidates(candidates)
+        if touched:
+            for wid in touched & baseline_ids:
+                watches[wid]['baseline_done'] = True
+            # Бот мог добавить или удалить фильтр за время прогона — диск решает состав
+            save_watches(merge_state(watches, load_watches(URL_WATCHES_FILE)), URL_WATCHES_FILE)
         self._save_seen()
         self._close()
         self._write_proc_stats(len(cards), len(candidates), sent)
@@ -2097,6 +2116,16 @@ class AvitoScannerV2:
         sub_tail = f", по подписке {sub_hits}" if sub_hits else ""
         logger.info(f"🏁 Intake: карточек {len(cards)}, кандидатов {len(candidates)}, "
                     f"алертов {sent}{sub_tail}")
+
+    def _watch_card(self, watch, card, *, baseline):
+        """Карточка из вкладки фильтра: первая пачка — молча, дальше каждое новое
+        объявление не дороже потолка — владельцу (docs/avito-filter-watch.md)."""
+        verdict = decide(watch, card, time.time(), baseline=baseline)
+        if verdict == 'send':
+            self._send_telegram(watch_alert_text(watch, card),
+                                f"[фильтр {watch.get('label')}] {str(card.get('title'))[:40]}")
+        elif verdict == 'rate_warn':
+            self._send_telegram(rate_warn_text(watch), f"[фильтр {watch.get('label')}] слишком широкий")
 
     def _accumulate_raw(self, raw_batch):
         """Дописывает цены партии в intake-raw-prices.json (скользящее окно RAW_CAP на конфиг)."""

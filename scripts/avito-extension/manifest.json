@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "BestMac Avito Collector",
-  "version": "1.8.0",
-  "description": "Собирает новые объявления Mac с Avito (на домашнем браузере) и шлёт на BestMac для оценки.",
+  "version": "1.9.0",
+  "description": "Собирает новые объявления Mac и фильтров из бота с Avito (на домашнем браузере) и шлёт на BestMac.",
   "permissions": [
     "storage",
     "tabs",
@@ -17,7 +17,8 @@
     {
       "matches": [
         "*://www.avito.ru/*noutbuki*",
-        "*://www.avito.ru/*nastolnye_kompyutery*"
+        "*://www.avito.ru/*nastolnye_kompyutery*",
+        "*://www.avito.ru/*avtomobili*"
       ],
       "js": [
         "content.js"
